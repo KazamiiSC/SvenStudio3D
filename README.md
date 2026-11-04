@@ -25,7 +25,7 @@ Sven Studio 3D is a browser-based map editor designed to make creating maps for 
 - **Sven Co-op** — required to play and test maps.
 
 ### Installation
-1. Download and extract the project.
+1. Download and extract the project in Released.
 2. Install [Node.js](https://nodejs.org/).
 3. Run `START_WINDOWS.bat`.
 4. Open the editor in your browser.
@@ -53,7 +53,7 @@ Sven Studio 3D is a browser-based map editor designed to make creating maps for 
 - **Sven Co-op** — necesario para jugar y probar mapas.
 
 ### Instalación
-1. Descargá y extraé el proyecto.
+1. Descargá y extraé el proyecto en Released.
 2. Instalá [Node.js](https://nodejs.org/).
 3. Ejecutá `START_WINDOWS.bat`.
 4. Abrí el editor en tu navegador.
