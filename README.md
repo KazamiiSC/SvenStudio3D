@@ -56,22 +56,22 @@ Steam: https://steamcommunity.com/id/KazamiiSC
 **Sven Studio 3D** es un editor de mapas 3D para Sven Co-op, diseñado para facilitar la creación de mapas mediante una interfaz moderna e intuitiva.
 
 ### Características
-**-Editor 3D:** vistas en perspectiva y ortográficas, cámara libre y controles personalizables.
-**-Modelado avanzado:** brushes, CSG (Union, Subtract, Intersect), Extrude, Bevel, Inset, Clip y Hollow.
-**-Texturas WAD:** importación, explorador visual, búsqueda y edición UV.
-**-Entidades FGD:** creación, edición de propiedades y conexiones visuales.
-**-NPC & AI Studio:** colocación de NPC, rutas, waypoints y generadores de enemigos.
-**-Lighting Studio:** iluminación, sombras aproximadas, niebla y skyboxes.
-**-Sound Studio:** sonidos ambientales, música y vista previa de audio.
-**-Model Browser:** exploración de modelos MDL, animaciones, skins y bodygroups.
-**-Gameplay Studio:** configuración visual de puertas, botones, triggers y lógica.
-**-Construcción:** grupos, capas, prefabs y herramientas de medición.
-**-Map Doctor:** detección de errores de geometría, entidades y recursos.
-**-Compilación BSP:** integración con SC-CSG, SC-BSP, SC-VIS y SC-RAD.
-**-Optimización:** perfiles de rendimiento para mapas grandes y carga progresiva de recursos.
-**-Autoguardado:** recuperación automática de mapas y sesiones.
-**-Interfaz personalizable:** paneles, temas, tamaños, atajos y menús contextuales.
-**-Multilenguaje:** español, inglés, ruso y coreano.
+-**Editor 3D:** vistas en perspectiva y ortográficas, cámara libre y controles personalizables.
+-**Modelado avanzado:** brushes, CSG (Union, Subtract, Intersect), Extrude, Bevel, Inset, Clip y Hollow.
+-**Texturas WAD:** importación, explorador visual, búsqueda y edición UV.
+-**Entidades FGD:** creación, edición de propiedades y conexiones visuales.
+-**NPC & AI Studio:** colocación de NPC, rutas, waypoints y generadores de enemigos.
+-**Lighting Studio:** iluminación, sombras aproximadas, niebla y skyboxes.
+-**Sound Studio:** sonidos ambientales, música y vista previa de audio.
+-**Model Browser:** exploración de modelos MDL, animaciones, skins y bodygroups.
+-**Gameplay Studio:** configuración visual de puertas, botones, triggers y lógica.
+-**Construcción:** grupos, capas, prefabs y herramientas de medición.
+-**Map Doctor:** detección de errores de geometría, entidades y recursos.
+-**Compilación BSP:** integración con SC-CSG, SC-BSP, SC-VIS y SC-RAD.
+-**Optimización:** perfiles de rendimiento para mapas grandes y carga progresiva de recursos.
+-**Autoguardado:** recuperación automática de mapas y sesiones.
+-**Interfaz personalizable:** paneles, temas, tamaños, atajos y menús contextuales.
+-**Multilenguaje:** español, inglés, ruso y coreano.
 
 ### Requisitos
 - **Node.js 22 o superior** — necesario para ejecutar el editor.
