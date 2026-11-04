@@ -8,7 +8,6 @@ Created by **KZ-Sheez** with the help of ChatGPT-6 Astra.
 
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/64620c00-98c6-4305-a076-e2cf4e0a19ac" width="320" />
   <img src="https://github.com/user-attachments/assets/1e8a824c-5213-40cb-825d-d42f5d3fd401" width="320" />
   <img src="https://github.com/user-attachments/assets/46f33462-659f-4dd6-90ad-26379ccd9622" width="320" />
   <img src="https://github.com/user-attachments/assets/d2a7a31b-219f-4ad6-b488-6ed16a1c55a4" width="320" />
