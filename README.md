@@ -39,6 +39,7 @@ Sven Studio 3D is a browser-based map editor designed to make creating maps for 
 I would appreciate your help in further improving this project; please reach out to me on Discord or Steam.
 
 Discord: kzsheez
+
 Steam: https://steamcommunity.com/id/KazamiiSC
 
 ---
@@ -72,6 +73,7 @@ Steam: https://steamcommunity.com/id/KazamiiSC
 Agradecería tu ayuda para seguir mejorando este proyecto; por favor, contáctame a través de Discord o Steam.
 
 Discord: kzsheez
+
 Steam: https://steamcommunity.com/id/KazamiiSC
 
 ---
