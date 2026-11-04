@@ -1,4 +1,4 @@
-# Sven Studio 3D
+# SvenStudio 3D
 
 **A modern 3D map editor for Sven Co-op (GoldSrc / Svengine).**
 
