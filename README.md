@@ -15,15 +15,22 @@ Created by **KZ-Sheez** with the help of ChatGPT-6 Astra.
 Sven Studio 3D is a browser-based map editor designed to make creating maps for Sven Co-op easier and more intuitive.
 
 ### Features
-- 3D and orthographic editing.
-- Advanced brush modeling (CSG, Extrude, Bevel, Inset).
-- WAD texture browser and UV editing.
-- Entity editor with FGD support.
-- Real-time lighting preview.
-- Prefabs, groups and customizable controls.
-- BSP compilation using Sven Co-op SDK.
-- Autosave and project recovery.
-- Multilingual interface.
+- **3D Editor:** Perspective and orthographic views, free camera movement, and customizable controls.
+- **Advanced Modeling:** Brushes, CSG (Union, Subtract, Intersect), Extrude, Bevel, Inset, Clip, and Hollow.
+- **WAD Textures:** Importing, visual browser, search, and UV editing.
+- **FGD Entities:** Creation, property editing, and visual connections.
+- **NPC & AI Studio:** NPC placement, paths, waypoints, and enemy spawners.
+- **Lighting Studio:** Lighting, approximate shadows, fog, and skyboxes.
+- **Sound Studio:** Ambient sounds, music, and audio previews.
+- **Model Browser:** Browsing MDL models, animations, skins, and bodygroups.
+- **Gameplay Studio:** Visual configuration of doors, buttons, triggers, and game logic.
+- **Building Tools:** Groups, layers, prefabs, and measurement tools.
+- **Map Doctor:** Detection of geometry, entity, and resource errors.
+- **BSP Compilation:** Integration with SC-CSG, SC-BSP, SC-VIS, and SC-RAD.
+- **Optimization:** Performance profiles for large maps and progressive resource loading.
+- **Autosave:** Automatic map and session recovery.
+- **Customizable Interface:** Panels, themes, sizes, keyboard shortcuts, and context menus.
+- **Multilingual Support:** Spanish, English, Russian, and Korean.
 
 ### Requirements
 - **Node.js 22 or newer** — required to run the editor.
@@ -49,15 +56,22 @@ Steam: https://steamcommunity.com/id/KazamiiSC
 **Sven Studio 3D** es un editor de mapas 3D para Sven Co-op, diseñado para facilitar la creación de mapas mediante una interfaz moderna e intuitiva.
 
 ### Características
-- Edición 3D y vistas ortográficas.
-- Modelado avanzado de brushes (CSG, Extrude, Bevel, Inset).
-- Explorador de texturas WAD y edición UV.
-- Editor de entidades compatible con FGD.
-- Vista previa de iluminación en tiempo real.
-- Prefabs, grupos y controles personalizables.
-- Compilación BSP mediante Sven Co-op SDK.
-- Autoguardado y recuperación de proyectos.
-- Interfaz en varios idiomas.
+**-Editor 3D:** vistas en perspectiva y ortográficas, cámara libre y controles personalizables.
+**-Modelado avanzado:** brushes, CSG (Union, Subtract, Intersect), Extrude, Bevel, Inset, Clip y Hollow.
+**-Texturas WAD:** importación, explorador visual, búsqueda y edición UV.
+**-Entidades FGD:** creación, edición de propiedades y conexiones visuales.
+**-NPC & AI Studio:** colocación de NPC, rutas, waypoints y generadores de enemigos.
+**-Lighting Studio:** iluminación, sombras aproximadas, niebla y skyboxes.
+**-Sound Studio:** sonidos ambientales, música y vista previa de audio.
+**-Model Browser:** exploración de modelos MDL, animaciones, skins y bodygroups.
+**-Gameplay Studio:** configuración visual de puertas, botones, triggers y lógica.
+**-Construcción:** grupos, capas, prefabs y herramientas de medición.
+**-Map Doctor:** detección de errores de geometría, entidades y recursos.
+**-Compilación BSP:** integración con SC-CSG, SC-BSP, SC-VIS y SC-RAD.
+**-Optimización:** perfiles de rendimiento para mapas grandes y carga progresiva de recursos.
+**-Autoguardado:** recuperación automática de mapas y sesiones.
+**-Interfaz personalizable:** paneles, temas, tamaños, atajos y menús contextuales.
+**-Multilenguaje:** español, inglés, ruso y coreano.
 
 ### Requisitos
 - **Node.js 22 o superior** — necesario para ejecutar el editor.
