@@ -1,0 +1,1006 @@
+{
+  "version": 1,
+  "target": "svengine",
+  "name": "Svengine Modeling Demo",
+  "world": {
+    "classname": "worldspawn",
+    "mapversion": "220",
+    "skyname": "desert",
+    "message": "Sven Studio 3D Svengine modeling example"
+  },
+  "wadNames": [
+    "svstudio.wad"
+  ],
+  "objects": [
+    {
+      "id": "54679146-e4d8-4a82-84d1-99527c6e5fda",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Room / Shell 1",
+      "position": [
+        0,
+        0,
+        12
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -256,
+          -256,
+          -12
+        ],
+        [
+          256,
+          -256,
+          -12
+        ],
+        [
+          256,
+          256,
+          -12
+        ],
+        [
+          -256,
+          256,
+          -12
+        ],
+        [
+          -256,
+          -256,
+          12
+        ],
+        [
+          256,
+          -256,
+          12
+        ],
+        [
+          256,
+          256,
+          12
+        ],
+        [
+          -256,
+          256,
+          12
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_TILE01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "2875d60c-a74c-4b9e-b4cc-cc1a55efa15b",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Room / Shell 2",
+      "position": [
+        0,
+        0,
+        244
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -256,
+          -256,
+          -12
+        ],
+        [
+          256,
+          -256,
+          -12
+        ],
+        [
+          256,
+          256,
+          -12
+        ],
+        [
+          -256,
+          256,
+          -12
+        ],
+        [
+          -256,
+          -256,
+          12
+        ],
+        [
+          256,
+          -256,
+          12
+        ],
+        [
+          256,
+          256,
+          12
+        ],
+        [
+          -256,
+          256,
+          12
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "91fd2a2d-3ee8-4c2d-a142-b23c4769294e",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Room / Shell 3",
+      "position": [
+        -244,
+        0,
+        128
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -12,
+          -256,
+          -104
+        ],
+        [
+          12,
+          -256,
+          -104
+        ],
+        [
+          12,
+          256,
+          -104
+        ],
+        [
+          -12,
+          256,
+          -104
+        ],
+        [
+          -12,
+          -256,
+          104
+        ],
+        [
+          12,
+          -256,
+          104
+        ],
+        [
+          12,
+          256,
+          104
+        ],
+        [
+          -12,
+          256,
+          104
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "caa983ba-b5a5-4c8e-9a1a-a4498233753a",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Room / Shell 4",
+      "position": [
+        244,
+        0,
+        128
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -12,
+          -256,
+          -104
+        ],
+        [
+          12,
+          -256,
+          -104
+        ],
+        [
+          12,
+          256,
+          -104
+        ],
+        [
+          -12,
+          256,
+          -104
+        ],
+        [
+          -12,
+          -256,
+          104
+        ],
+        [
+          12,
+          -256,
+          104
+        ],
+        [
+          12,
+          256,
+          104
+        ],
+        [
+          -12,
+          256,
+          104
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "972f39ad-8baa-4c41-a8e7-42cf19e18581",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Room / Shell 5",
+      "position": [
+        0,
+        -244,
+        128
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -232,
+          -12,
+          -104
+        ],
+        [
+          232,
+          -12,
+          -104
+        ],
+        [
+          232,
+          12,
+          -104
+        ],
+        [
+          -232,
+          12,
+          -104
+        ],
+        [
+          -232,
+          -12,
+          104
+        ],
+        [
+          232,
+          -12,
+          104
+        ],
+        [
+          232,
+          12,
+          104
+        ],
+        [
+          -232,
+          12,
+          104
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "6e5d4561-d5a3-498d-966d-6af372a95bae",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Room / Shell 6",
+      "position": [
+        0,
+        244,
+        128
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -232,
+          -12,
+          -104
+        ],
+        [
+          232,
+          -12,
+          -104
+        ],
+        [
+          232,
+          12,
+          -104
+        ],
+        [
+          -232,
+          12,
+          -104
+        ],
+        [
+          -232,
+          -12,
+          104
+        ],
+        [
+          232,
+          -12,
+          104
+        ],
+        [
+          232,
+          12,
+          104
+        ],
+        [
+          -232,
+          12,
+          104
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "a107ce88-ef8c-46a5-a477-bc202a3a37b9",
+      "kind": "brush",
+      "primitive": "poly",
+      "name": "Demo pillar (+)",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          176,
+          36,
+          0
+        ],
+        [
+          176,
+          164,
+          0
+        ],
+        [
+          176,
+          36,
+          96
+        ],
+        [
+          176,
+          164,
+          96
+        ],
+        [
+          144,
+          164,
+          0
+        ],
+        [
+          144,
+          36,
+          0
+        ],
+        [
+          144,
+          36,
+          96
+        ],
+        [
+          144,
+          164,
+          96
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            1,
+            3,
+            2
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            5,
+            0,
+            2,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            6,
+            2,
+            3,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            5,
+            4,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            4,
+            7,
+            3
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "9e30500f-952f-49fb-a243-f0a2a7396595",
+      "kind": "brush",
+      "primitive": "poly",
+      "name": "Demo pillar (-)",
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          112,
+          36,
+          0
+        ],
+        [
+          112,
+          164,
+          0
+        ],
+        [
+          112,
+          36,
+          96
+        ],
+        [
+          112,
+          164,
+          96
+        ],
+        [
+          144,
+          164,
+          0
+        ],
+        [
+          144,
+          36,
+          0
+        ],
+        [
+          144,
+          36,
+          96
+        ],
+        [
+          144,
+          164,
+          96
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            1,
+            0,
+            2,
+            3
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            5,
+            6,
+            2
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            6,
+            7,
+            3
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            5,
+            0,
+            1,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            5,
+            4,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            1,
+            3,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "spawn",
+      "kind": "entity",
+      "name": "info_player_start",
+      "classname": "info_player_start",
+      "position": [
+        0,
+        0,
+        48
+      ],
+      "props": {
+        "angles": "0 0 0"
+      },
+      "layer": "Gameplay"
+    },
+    {
+      "id": "light",
+      "kind": "entity",
+      "name": "light",
+      "classname": "light",
+      "position": [
+        0,
+        0,
+        210
+      ],
+      "props": {
+        "_light": "255 250 220 350"
+      },
+      "layer": "Lighting"
+    }
+  ]
+}
