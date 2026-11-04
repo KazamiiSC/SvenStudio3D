@@ -31,6 +31,7 @@ Sven Studio 3D is a browser-based map editor designed to make creating maps for 
 - **Autosave:** Automatic map and session recovery.
 - **Customizable Interface:** Panels, themes, sizes, keyboard shortcuts, and context menus.
 - **Multilingual Support:** Spanish, English, Russian, and Korean.
+- **AND MUCH MORE !!**
 
 ### Requirements
 - **Node.js 22 or newer** — required to run the editor.
@@ -72,6 +73,7 @@ Steam: https://steamcommunity.com/id/KazamiiSC
 - **Autoguardado:** Recuperación automática de mapas y sesiones.
 - **Interfaz personalizable:** Paneles, temas, tamaños, atajos de teclado y menús contextuales.
 - **Compatibilidad multilingüe:** Español, inglés, ruso y coreano.
+- **Y MUCHO MAASS !!**
 
 ### Requisitos
 - **Node.js 22 o superior** — necesario para ejecutar el editor.
