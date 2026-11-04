@@ -2,7 +2,7 @@
 
 **A modern 3D map editor for Sven Co-op (GoldSrc / Svengine).**
 
-Created by **KZ-Sheez** with the help of ChatGPT.
+Created by **KZ-Sheez** with the help of ChatGPT-6 Astra.
 
 ## English
 
