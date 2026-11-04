@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Sven Studio 3D — Svengine / Sven Co-op Studio</title>
+  <style>
+    #boot-diagnostic{display:none;position:fixed;inset:0;z-index:99999;box-sizing:border-box;
+      padding:40px 6vw;background:#101821;color:#edf5ff;font-family:Segoe UI,Arial,sans-serif;overflow:auto}
+    #boot-diagnostic h1{font-size:23px;color:#ffc5ba}
+    #boot-diagnostic p{font-size:14px;line-height:1.6}
+    #boot-diagnostic pre{background:#1e2d3b;color:#ffd2c8;padding:16px;overflow:auto;
+      white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #445462;max-height:48vh}
+    #boot-diagnostic button{padding:10px 15px;margin:10px 10px 0 0;color:white;
+      background:#216394;border:1px solid #6a9ebf;border-radius:5px;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <div id="boot-diagnostic" role="alert">
+    <h1>No se pudo iniciar Sven Studio 3D</h1>
+    <p>La interfaz se detuvo por un error de JavaScript. Puedes copiar el informe técnico o abrir la consola con <strong>F12 → Console</strong>.</p>
+    <pre id="boot-error"></pre>
+    <button id="boot-copy">Copiar error</button>
+    <button id="boot-reload">Recargar página</button>
+  </div>
+  <script>
+    (() => {
+      const errors=[];
+      let scheduled=false;
+      function showError(){
+        scheduled=false;
+        if(document.querySelector('.app-shell') || document.querySelector('.error-boundary'))return;
+        const overlay=document.getElementById('boot-diagnostic');
+        if(!overlay)return;
+        document.getElementById('boot-error').textContent=errors.join('\n\n') || 'La aplicación no se ha montado. Abre F12 → Console para ver detalles.';
+        overlay.style.display='block';
+      }
+      function schedule(){if(scheduled)return;scheduled=true;setTimeout(showError,250)}
+      addEventListener('error',(ev)=>{
+        const location=ev.filename?`\n${ev.filename}:${ev.lineno}:${ev.colno}`:'';
+        errors.push((ev.error?.stack||ev.message||'Unknown module error')+location);schedule();
+      });
+      addEventListener('unhandledrejection',(ev)=>{
+        errors.push('Unhandled rejection: '+(ev.reason?.stack||String(ev.reason)));schedule();
+      });
+      addEventListener('DOMContentLoaded',()=>{
+        document.getElementById('boot-copy').addEventListener('click',()=>{
+          navigator.clipboard?.writeText(document.getElementById('boot-error').textContent||'').catch(()=>{});
+        });
+        document.getElementById('boot-reload').addEventListener('click',()=>location.reload());
+        setTimeout(()=>{if(!document.querySelector('.app-shell')&&!document.querySelector('.error-boundary'))showError()},10000);
+      });
+    })();
+  </script>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>

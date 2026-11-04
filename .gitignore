@@ -1,0 +1,32 @@
+# Dependencies and generated builds
+node_modules/
+dist/
+coverage/
+.vite/
+*.tsbuildinfo
+
+# Runtime and local data
+.env
+.env.*
+!.env.example
+*.log
+logs/
+*.bsp
+*.prt
+*.pts
+*.lin
+*.err
+*.wa_
+*.rmf.bak
+
+# OS and editors
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+
+# Uploaded archives and local artifacts
+*.rar
+*.7z
+*.zip
