@@ -4,6 +4,9 @@
 
 Created by **KZ-Sheez** with the help of ChatGPT-6 Astra.
 
+<img width="1917" height="935" alt="image" src="https://github.com/user-attachments/assets/64620c00-98c6-4305-a076-e2cf4e0a19ac" />
+
+
 ## English
 
 Sven Studio 3D is a browser-based map editor designed to make creating maps for Sven Co-op easier and more intuitive.
