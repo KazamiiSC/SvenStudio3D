@@ -1,4 +1,4 @@
-# SvenStudio 3D
+# SvenStudio 3D *Version 0.8.5 — Work in progress.*
 
 **A modern 3D map editor for Sven Co-op (GoldSrc / Svengine).**
 
@@ -94,4 +94,3 @@ Steam: https://steamcommunity.com/id/KazamiiSC
 
 **Developed by KZ-Sheez with the help of ChatGPT.**
 
-*Version 0.8.4 — Work in progress.*
