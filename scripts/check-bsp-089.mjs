@@ -1,0 +1,45 @@
+/** New BSP Viewer 2.0 regression checks (pure asset handling + UI wiring). */
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import ts from 'typescript';
+const filename=new URL('../src/engine/bspViewerAssets.ts',import.meta.url);
+const input=readFileSync(filename,'utf8');
+const output=ts.transpileModule(input,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
+const {BSP_SKY_CUBE_SIDES,findInstalledBspSky,bspSkyFaceUrl,bspMdlPath,bspModelPlacements,bspSpatialBatchCell}=await import(`data:text/javascript;base64,${Buffer.from(output).toString('base64')}`);
+assert.deepEqual(BSP_SKY_CUBE_SIDES,['rt','lf','up','dn','bk','ft']);
+const skies=[{name:'desert',source:'svencoop',complete:true,faces:6},{name:'broken',source:'svencoop',complete:false,faces:5}];
+assert.equal(findInstalledBspSky(skies,'DESERT')?.name,'desert');
+assert.equal(findInstalledBspSky(skies,'broken'),null);
+assert.equal(findInstalledBspSky(skies,'../x'),null);
+assert.equal(findInstalledBspSky([{name:'desert',source:'other',complete:true,faces:6}],'desert'),null);
+const url=bspSkyFaceUrl('F:/Steam Library/Sven Co-op/svencoop',skies[0],'ft');
+assert(url.startsWith('/api/assets/sky-face?'));
+assert.equal(new URLSearchParams(url.split('?')[1]).get('gameDir'),'F:/Steam Library/Sven Co-op/svencoop');
+assert.equal(bspMdlPath('models/props/chair.mdl'),'models/props/chair.mdl');
+assert.equal(bspMdlPath('models\\props\\chair.mdl'),'models/props/chair.mdl');
+for(const bad of ['*4','../models/a.mdl','models/../a.mdl','https://evil/a.mdl','models/a.png','C:/models/a.mdl'])assert.equal(bspMdlPath(bad),null);
+const entity=(classname,model,origin,more={})=>({classname,origin,properties:{model,...more}});
+const entities=[entity('worldspawn','models/prop.mdl',[0,0,0]),entity('env_model','models/props/chair.mdl',[100,20,30],{angles:'15 180 5',skin:'2',body:'3'}),entity('env_model','*1',[0,0,0]),entity('env_model','models/props/box.mdl',[10,20,30],{angle:'90'})];
+const models=bspModelPlacements(entities);
+assert.equal(models.length,2);
+assert.deepEqual(models[0].angles,[15,180,5]);
+assert.equal(models[0].index,1);
+assert.equal(models[0].skin,2);
+assert.equal(models[0].body,3);
+assert.deepEqual(models[1].angles,[0,90,0]);
+assert.equal(bspModelPlacements(entities,1).length,1);
+assert.equal(bspModelPlacements(entities,48,1).length,1);
+assert.equal(bspSpatialBatchCell([[0,0,0],[256,0,0]]),'0:0:0');
+assert.equal(bspSpatialBatchCell([[4096,0,0],[4096,0,0]]),'2:0:0');
+const ui=readFileSync(new URL('../src/components/BspViewer.tsx',import.meta.url),'utf8');
+const assets=readFileSync(new URL('../src/components/BspViewerAssets.tsx',import.meta.url),'utf8');
+const locale=readFileSync(new URL('../src/i18n.ts',import.meta.url),'utf8');
+for(const component of ['src/components/BspViewer.tsx','src/components/BspViewerAssets.tsx','src/engine/bspViewerAssets.ts']){
+ const original=readFileSync(new URL(`../${component}`,import.meta.url),'utf8');
+ const checked=ts.transpileModule(original,{fileName:component,compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX},reportDiagnostics:true});
+ assert.equal(checked.diagnostics?.length||0,0,component);
+}
+for(const token of ['<BspSkyBackground','<BspStaticModels',"t('Real skybox')","t('Lightmap intensity')",'bspSpatialBatchCell(face.points)','<BspNavigation','<BspSurface'])assert(ui.includes(token),`Missing integration ${token}`);
+for(const token of ['CubeTextureLoader','loadModelByPath','gameToThree','geometry.dispose','texture.dispose'])assert(assets.includes(token),`Missing asset lifecycle ${token}`);
+for(const lang of ['es','ru','ko'])assert(locale.includes(`Object.assign(${lang},{\n  'Real skybox'`));
+console.log('PASS BSP Viewer 2.0 v0.8.9: sky lookup, path guards, bounded MDL placements, spatial cells, rendering hooks, cleanup and ES/RU/KO labels.');

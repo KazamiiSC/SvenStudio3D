@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const viewport=readFileSync(new URL('../src/components/Viewport.tsx',import.meta.url),'utf8');
+const css=readFileSync(new URL('../src/style.css',import.meta.url),'utf8');
+assert.match(viewport,/function EntityNameLabel\(/,'Missing shared entity label');
+assert.match(viewport,/<Html position=\{position\} center zIndexRange=/,'HTML overlay should remain screen-space');
+assert.doesNotMatch(viewport,/<Html[^>]*distanceFactor\s*=/,'Distance-scaled Html causes giant ortho labels');
+assert.match(viewport,/classname=\{routeText\|\|object\.classname\|\|object\.name\}/,'Point entities must display classname');
+assert.match(viewport,/isSpawn=\{isSpawn\}/,'Spawn requires an explicit nameplate');
+assert.match(viewport,/const worldLabel=gameToThree\(/,'Point labels must use stable independent WORLD anchors');
+assert.match(viewport,/zIndexRange=\{\[3000,3000\]\}/,'Labels should appear above the viewport regardless of depth');
+assert.match(viewport,/classname=\{associatedEntity\.classname\}/,'Brush-linked entities must display name');
+assert.match(css,/\.entity-world-label strong\{font-size:inherit/,'Label text should inherit the customizable font size');
+assert.match(viewport,/appearance\.alwaysShowSpawn/,'Spawn label must remain visible when configured');
+console.log('PASS: fixed-size perspective/ortho nameplates, point + brush labels, spawn name, larger font.');
