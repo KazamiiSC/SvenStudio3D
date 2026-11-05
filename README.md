@@ -34,7 +34,20 @@ Sven Studio 3D is a browser-based map editor designed to make creating maps for 
 - **Autosave:** Automatic map and session recovery.
 - **Customizable Interface:** Panels, themes, sizes, keyboard shortcuts, and context menus.
 - **Multilingual Support:** Spanish, English, Russian, and Korean.
-- **AND MUCH MORE !!**
+- **Player Walk Mode:** Explore maps in first person with WASD movement, mouse look, jumping, sprinting, crouching, gravity, collision detection, and noclip.
+- **Player Flashlight & HUD:** Integrated flashlight with adjustable intensity, player coordinates, movement speed, and customizable HUD.
+- **Advanced BSP Viewer:** Preview compiled BSP maps with lightmaps, textures, skyboxes, static models, and entity information.
+- **GoldSrc Rendered Preview:** Improved real-time lighting simulation supporting light, light_spot, and light_environment, including colors, intensity, and distance attenuation.
+- **GoldSrc Material Effects:** Visual previews of water, glass, masked textures, transparency, and additive materials.
+- **Blender-Style Shading Pie Menu:** Hold Z to switch between Wireframe, Solid, Material Preview, and Rendered modes.
+- **3D Transform Gizmos:** Interactive Move, Rotate, and Scale handles with keyboard shortcuts, snapping, and toggleable transform modes.
+- **Automatic SKY Enclosure:** Generate a sealed, hollow SKY environment around your map to help prevent leaks.
+- **Visual Leak Detection:** Automatically import .pts files from compilation, display leak paths in 3D, and navigate to their endpoints.
+- **Advanced Compilation Diagnostics:** Detailed error reporting for SC-CSG, SC-BSP, SC-VIS, SC-RAD, invalid brushes, missing resources, and SKY problems.
+- **Safe MAP Import & Export:** Valve 220 MAP compatibility, geometry validation, and warnings before importing maps that could lose unsupported brushes.
+- **Project Integrity Protection:** Validation of project files, automatic recovery checkpoints, and protection against corrupted or incomplete imports.
+- **Protected Walk Controls:** Optional fullscreen Keyboard Lock, safer keyboard shortcuts, and protection against accidental browser navigation.
+- **Windows Launcher & Branding:** Dedicated SvenStudio3D.bat launcher, application icon, desktop shortcut, and browser favicon.
 
 ### Requirements
 - **Node.js 22 or newer** — required to run the editor.
@@ -60,23 +73,36 @@ Steam: https://steamcommunity.com/id/KazamiiSC
 **Sven Studio 3D** es un editor de mapas 3D para Sven Co-op, diseñado para facilitar la creación de mapas mediante una interfaz moderna e intuitiva.
 
 ### Características
-- **Editor 3D:** Vistas en perspectiva y ortográficas, cámara libre y controles personalizables.
-- **Modelado avanzado:** Brushes, CSG (Union, Subtract, Intersect), Extrude, Bevel, Inset, Clip y Hollow.
-- **Texturas WAD:** Importación, explorador visual, búsqueda y edición UV.
+- **Editor 3D:** Vistas en perspectiva y ortográficas, movimiento libre de cámara y controles personalizables.
+- **Modelado avanzado:** Brushes, operaciones CSG (Unión, Sustracción e Intersección), Extrusión, Biselado, Inset, Clip y Hollow.
+- **Texturas WAD:** Importación, explorador visual, búsqueda y edición de coordenadas UV.
 - **Entidades FGD:** Creación, edición de propiedades y conexiones visuales.
-- **NPC & AI Studio:** Colocación de NPC, rutas, waypoints y generadores de enemigos.
+- **NPC & AI Studio:** Colocación de NPC, creación de rutas, waypoints y generadores de enemigos.
 - **Lighting Studio:** Iluminación, sombras aproximadas, niebla y skyboxes.
-- **Sound Studio:** Sonidos ambientales, música y vista previa de audio.
-- **Model Browser:** Exploración de modelos MDL, animaciones, skins y bodygroups.
+- **Sound Studio:** Sonidos ambientales, música y vistas previas de audio.
+- **Explorador de modelos:** Visualización de modelos MDL, animaciones, skins y bodygroups.
 - **Gameplay Studio:** Configuración visual de puertas, botones, triggers y lógica del juego.
 - **Herramientas de construcción:** Grupos, capas, prefabs y herramientas de medición.
 - **Map Doctor:** Detección de errores de geometría, entidades y recursos.
 - **Compilación BSP:** Integración con SC-CSG, SC-BSP, SC-VIS y SC-RAD.
 - **Optimización:** Perfiles de rendimiento para mapas grandes y carga progresiva de recursos.
-- **Autoguardado:** Recuperación automática de mapas y sesiones.
+- **Guardado automático:** Recuperación automática de mapas y sesiones.
 - **Interfaz personalizable:** Paneles, temas, tamaños, atajos de teclado y menús contextuales.
-- **Compatibilidad multilingüe:** Español, inglés, ruso y coreano.
-- **Y MUCHO MAASS !!**
+- **Soporte multilingüe:** Español, inglés, ruso y coreano.
+- **Modo Player Walk:** Exploración de mapas en primera persona con movimiento WASD, control de cámara con el mouse, saltos, carrera, agacharse, gravedad, detección de colisiones y noclip.
+- **Linterna y HUD del jugador:** Linterna integrada con intensidad ajustable, coordenadas del jugador, velocidad de movimiento y HUD personalizable.
+- **Visor BSP avanzado:** Vista previa de mapas BSP compilados con lightmaps, texturas, skyboxes, modelos estáticos e información de entidades.
+- **Vista previa de renderizado GoldSrc:** Simulación mejorada de iluminación en tiempo real compatible con `light`, `light_spot` y `light_environment`, incluyendo colores, intensidad y atenuación según la distancia.
+- **Efectos de materiales GoldSrc:** Vista previa de agua, cristales, texturas enmascaradas, transparencias y materiales aditivos.
+- **Menú radial de sombreado estilo Blender:** Mantené presionada la tecla Z para alternar entre los modos Wireframe, Solid, Material Preview y Rendered.
+- **Gizmos de transformación 3D:** Controles interactivos para mover, rotar y escalar objetos, con atajos de teclado, ajuste a la cuadrícula (snapping) y modos de transformación que se pueden activar o desactivar.
+- **Cerramiento SKY automático:** Generación de un entorno SKY hueco y sellado alrededor del mapa para ayudar a prevenir fugas (LEAKs).
+- **Detección visual de LEAKs:** Importación automática de archivos `.pts` generados durante la compilación, visualización de recorridos de fuga en 3D y navegación hacia sus extremos.
+- **Diagnóstico avanzado de compilación:** Informes detallados de errores de SC-CSG, SC-BSP, SC-VIS y SC-RAD, brushes inválidos, recursos faltantes y problemas con SKY.
+- **Importación y exportación MAP segura:** Compatibilidad con el formato Valve 220, validación de geometría y advertencias antes de importar mapas que podrían perder brushes no compatibles.
+- **Protección de integridad de proyectos:** Validación de archivos de proyecto, puntos de recuperación automáticos y protección contra importaciones dañadas o incompletas.
+- **Controles protegidos en Player Walk:** Bloqueo de teclado opcional en pantalla completa (Keyboard Lock), atajos de teclado más seguros y protección contra navegación accidental del navegador.
+- **Lanzador e identidad visual para Windows:** Lanzador dedicado `SvenStudio3D.bat`, icono de aplicación, acceso directo de escritorio y favicon para el navegador.
 
 ### Requisitos
 - **Node.js 22 o superior** — necesario para ejecutar el editor.
