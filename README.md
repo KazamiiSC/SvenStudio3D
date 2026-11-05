@@ -37,17 +37,17 @@ Sven Studio 3D is a browser-based map editor designed to make creating maps for 
 - **Player Walk Mode:** Explore maps in first person with WASD movement, mouse look, jumping, sprinting, crouching, gravity, collision detection, and noclip.
 - **Player Flashlight & HUD:** Integrated flashlight with adjustable intensity, player coordinates, movement speed, and customizable HUD.
 - **Advanced BSP Viewer:** Preview compiled BSP maps with lightmaps, textures, skyboxes, static models, and entity information.
-- **GoldSrc Rendered Preview:** Improved real-time lighting simulation supporting light, light_spot, and light_environment, including colors, intensity, and distance attenuation.
+- **GoldSrc Rendered Preview:** Improved real-time lighting simulation supporting `light`, `light_spot`, and `light_environment`, including colors, intensity, and distance attenuation.
 - **GoldSrc Material Effects:** Visual previews of water, glass, masked textures, transparency, and additive materials.
 - **Blender-Style Shading Pie Menu:** Hold Z to switch between Wireframe, Solid, Material Preview, and Rendered modes.
 - **3D Transform Gizmos:** Interactive Move, Rotate, and Scale handles with keyboard shortcuts, snapping, and toggleable transform modes.
 - **Automatic SKY Enclosure:** Generate a sealed, hollow SKY environment around your map to help prevent leaks.
-- **Visual Leak Detection:** Automatically import .pts files from compilation, display leak paths in 3D, and navigate to their endpoints.
+- **Visual Leak Detection:** Automatically import `.pts` files from compilation, display leak paths in 3D, and navigate to their endpoints.
 - **Advanced Compilation Diagnostics:** Detailed error reporting for SC-CSG, SC-BSP, SC-VIS, SC-RAD, invalid brushes, missing resources, and SKY problems.
 - **Safe MAP Import & Export:** Valve 220 MAP compatibility, geometry validation, and warnings before importing maps that could lose unsupported brushes.
 - **Project Integrity Protection:** Validation of project files, automatic recovery checkpoints, and protection against corrupted or incomplete imports.
 - **Protected Walk Controls:** Optional fullscreen Keyboard Lock, safer keyboard shortcuts, and protection against accidental browser navigation.
-- **Windows Launcher & Branding:** Dedicated SvenStudio3D.bat launcher, application icon, desktop shortcut, and browser favicon.
+- **Windows Launcher & Branding:** Dedicated `SvenStudio3D.bat` launcher, application icon, desktop shortcut, and browser favicon.
 
 ### Requirements
 - **Node.js 22 or newer** — required to run the editor.
@@ -57,7 +57,7 @@ Sven Studio 3D is a browser-based map editor designed to make creating maps for 
 ### Installation
 1. Download and extract the project in Released.
 2. Install [Node.js](https://nodejs.org/).
-3. Run `START_WINDOWS.bat`.
+3. Run `SvenStudio3D.bat`.
 4. Open the editor in your browser.
 
 I would appreciate your help in further improving this project; please reach out to me on Discord or Steam.
@@ -112,7 +112,7 @@ Steam: https://steamcommunity.com/id/KazamiiSC
 ### Instalación
 1. Descargá y extraé el proyecto en Released.
 2. Instalá [Node.js](https://nodejs.org/).
-3. Ejecutá `START_WINDOWS.bat`.
+3. Ejecutá `SvenStudio3D.bat`.
 4. Abrí el editor en tu navegador.
 
 Agradecería tu ayuda para seguir mejorando este proyecto; por favor, contáctame a través de Discord o Steam.
