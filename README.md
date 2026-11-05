@@ -4,13 +4,13 @@
 
 Created by **KZ-Sheez** with the help of ChatGPT-6 Astra.
 
-<img width="1920" height="925" alt="image" src="https://github.com/user-attachments/assets/ad5dd0b4-4974-4f29-b051-879623809434" />
-
+<img width="1917" height="1021" alt="image" src="https://github.com/user-attachments/assets/77ec0600-5631-4eb8-a8ef-371e6c216f92" />
+<img width="1918" height="927" alt="image" src="https://github.com/user-attachments/assets/4190bfbd-0f4c-4b1a-b0dc-d1ee305e723e" />
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/1e8a824c-5213-40cb-825d-d42f5d3fd401" width="320" />
-  <img src="https://github.com/user-attachments/assets/46f33462-659f-4dd6-90ad-26379ccd9622" width="320" />
-  <img src="https://github.com/user-attachments/assets/d2a7a31b-219f-4ad6-b488-6ed16a1c55a4" width="320" />
+  <img src="https://github.com/user-attachments/assets/486250ad-6e6d-4212-8ffe-a3d29c8203ea" width="320" />
+  <img src="https://github.com/user-attachments/assets/ce78c907-e3c7-4448-8878-9b0089493648" width="320" />
+  <img src="https://github.com/user-attachments/assets/9866e363-2f30-4fd4-98de-0cd2010d6ba7" width="320" />
 </p>
 
 ## English
