@@ -4,7 +4,7 @@
 
 Created by **KZ-Sheez** with the help of ChatGPT-6 Astra.
 
-<img width="1917" height="1021" alt="image" src="https://github.com/user-attachments/assets/77ec0600-5631-4eb8-a8ef-371e6c216f92" />
+<img width="1917" height="929" alt="image" src="https://github.com/user-attachments/assets/292d6b05-58db-4483-8eb8-52bd1d5f99ed" />
 <img width="1918" height="927" alt="image" src="https://github.com/user-attachments/assets/4190bfbd-0f4c-4b1a-b0dc-d1ee305e723e" />
 
 <p align="center">
