@@ -32,10 +32,10 @@ export function QuickToolRail(){
     catch(error){const message=String(error);setOperationMessage(message);editor.appendLogs([`Advanced Building Studio: ${message}`]);}
   };
   // Toolbar buttons activate persistent TransformControls gizmos.
-  // G keeps its modal move; R/C keyboard shortcuts toggle persistent gizmos.
+  // G/R/C now all toggle persistent gizmos; no automatic transformation.
   const activateGizmo=(mode:'translate'|'rotate'|'scale')=>{
     if(editor.geometryMode!=='object')editor.setGeometryMode('object');
-    editor.activateGizmoMode(mode);
+    editor.toggleShortcutGizmo(mode);
   };
   const tool=(name:string,icon:ReactNode,callback:()=>void,active=false)=>
     <button type="button" title={t(name)} aria-label={t(name)} aria-pressed={active} className={active?'quick-tool active':'quick-tool'} onClick={callback}>{icon}<span>{t(name)}</span></button>;
@@ -45,10 +45,9 @@ export function QuickToolRail(){
       {tool('Move',<Move3D size={19}/>,()=>activateGizmo('translate'),editor.mode==='translate'&&!editor.modalTransform)}
       {tool('Rotate',<Rotate3D size={19}/>,()=>activateGizmo('rotate'),editor.mode==='rotate'&&!editor.modalTransform)}
       {tool('Scale',<Scaling size={19}/>,()=>activateGizmo('scale'),editor.mode==='scale'&&!editor.modalTransform)}
-      {tool(editor.showTransformGizmo?'Hide transform gizmo':'Show transform gizmo',editor.showTransformGizmo?<Move3D size={19}/>:<EyeOff size={19}/>,()=>editor.setShowTransformGizmo(!editor.showTransformGizmo),editor.showTransformGizmo)}
+      {tool(editor.mode!=='select'&&editor.showTransformGizmo?'Hide transform gizmo':'Show transform gizmo',editor.mode!=='select'&&editor.showTransformGizmo?<Move3D size={19}/>:<EyeOff size={19}/>,()=>editor.mode==='select'?editor.toggleShortcutGizmo('translate'):editor.setShowTransformGizmo(!editor.showTransformGizmo),editor.mode!=='select'&&editor.showTransformGizmo)}
       <div className="quick-divider"/>
       {tool('Model / CSG',<Wrench size={19}/>,()=>{setOperationMessage('');setMenu(menu==='modeling'?null:'modeling')},menu==='modeling'||editor.geometryMode!=='object')}
-      {tool('Shapes',<Shapes size={19}/>,()=>setMenu(menu==='shapes'?null:'shapes'),menu==='shapes')}
       {tool('Assets',<Layers size={19}/>,()=>setMenu(menu==='assets'?null:'assets'),menu==='assets')}
       {tool('Measure',<Ruler size={19}/>,()=>editor.toggleMeasure(),editor.measureMode)}
       {tool('Map Doctor',<Wrench size={19}/>,()=>{launch('doctor')})}
@@ -79,7 +78,7 @@ export function QuickToolRail(){
       </div>}
       {menu==='shapes'&&<div className="quick-flyout-grid">{(['box','wedge','cylinder','arch','vault','cone','pyramid','icosphere','stairs','pipe'] as PlaceableShape[]).map(shape=>
         <button key={shape} className={editor.placementShape===shape?'active':''} onClick={()=>{editor.setPlacementShape(editor.placementShape===shape?null:shape);setMenu(null)}}><Box size={17}/>{t(shape[0].toUpperCase()+shape.slice(1))}</button>)}</div>}
-      {menu==='assets'&&<div className="quick-flyout-list">{([['objects','Shapes',Box],['entities','Entities',Settings2],['textures','Texture Browser',Paintbrush],['models','Model Browser',Layers],['npcs','NPC Browser',Skull],['sounds','Sound Browser',Headphones],['layers','Layers',Layers]] as const).map(([id,title,Icon])=><button key={id} onClick={()=>activate(id)}><Icon size={16}/>{t(title)}</button>)}
+      {menu==='assets'&&<div className="quick-flyout-list">{([['entities','Entities',Settings2],['textures','Texture Browser',Paintbrush],['models','Model Browser',Layers],['npcs','NPC Browser',Skull],['sounds','Sound Browser',Headphones],['layers','Layers',Layers]] as const).map(([id,title,Icon])=><button key={id} onClick={()=>activate(id)}><Icon size={16}/>{t(title)}</button>)}
         <div className="quick-divider"/><button onClick={()=>launch('npc')}><Skull size={16}/>{t('NPC & AI Studio')}</button><button onClick={()=>launch('gameplay')}><GitBranch size={16}/>{t('Gameplay Studio')}</button><button onClick={()=>launch('sound')}><Headphones size={16}/>{t('Sound & Atmosphere Studio')}</button></div>}
       {menu==='scene'&&<div className="quick-flyout-list">{([['explorer','Explorer',FolderTree],['properties','Properties',SlidersHorizontal],['assets','Asset Library',PanelLeft],['console','Output',Terminal]] as const).map(([id,title,Icon])=><button key={id} onClick={()=>{if(id==='console')document.dispatchEvent(new CustomEvent('svenstudio:open-studio',{detail:'output'}));else layout.setVisible(id,!layout.visible[id]);setMenu(null)}}><Icon size={16}/>{t(title)} {id!=='console'&&<span>{layout.visible[id]?'✓':'+'}</span>}</button>)}</div>}
     </div>}

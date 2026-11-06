@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { transformedVertices,round,textureAxes } from './geometry';
+import { transformedVertices,round,safeFaceTextureAxes } from './geometry';
 import type { Brush,PointEntity,Project,Vec3 } from './types';
 
 const safe = (s: string) => s.replace(/["\r\n]/g,' ').trim();
@@ -37,10 +37,10 @@ export function exportBrush(b:Brush):string {
     const inward=normal.dot(faceCenter.sub(center))>0;
     const second=inward?d:c,third=inward?c:d;
     normal.normalize();
-    const {u,v}=textureAxes(vertices,face);
+    const {u,v,uShift,vShift}=safeFaceTextureAxes(vertices,face);
     const texture=safe(face.texture||'NULL').toUpperCase();
     // Valve 220 compiler reads explicit axes; the rotation is baked in above.
-    return `${point(a)} ${point(second)} ${point(third)} ${texture} [ ${u.map(fmt).join(' ')} ${fmt(face.uShift||0)} ] [ ${v.map(fmt).join(' ')} ${fmt(face.vShift||0)} ] 0 ${fmt(face.uScale||1)} ${fmt(face.vScale||1)}`;
+    return `${point(a)} ${point(second)} ${point(third)} ${texture} [ ${u.map(fmt).join(' ')} ${fmt(uShift)} ] [ ${v.map(fmt).join(' ')} ${fmt(vShift)} ] 0 ${fmt(face.uScale||1)} ${fmt(face.vScale||1)}`;
   }).filter(Boolean);
   if(lines.length<4)throw new Error(`${b.name}: brush has fewer than 4 valid faces`);
   return `{\n${lines.join('\n')}\n}`;

@@ -1,9 +1,10 @@
 import type { TextureAsset } from './types';
+import {rememberWadFile} from './wadPersistence';
 const ascii=(v:DataView,start:number,n:number)=>{let out='';for(let i=0;i<n;i++){const x=v.getUint8(start+i);if(!x)break;out+=String.fromCharCode(x)}return out;};
 let importSerial=0;
 /** Index mip textures in O(entries). Pixel conversion is lazy: a 3,000-texture
  * WAD should NOT allocate 3,000 canvases or PNG data URLs on import. */
-export async function parseWad(file:File):Promise<TextureAsset[]>{
+export async function parseWad(file:File,options:{remember?:boolean}|number={}):Promise<TextureAsset[]>{
   const buffer=await file.arrayBuffer(),v=new DataView(buffer);
   if(buffer.byteLength<12||ascii(v,0,4)!=='WAD3')throw Error('Only uncompressed WAD3 files are supported.');
   const count=v.getInt32(4,true),offset=v.getInt32(8,true);
@@ -43,5 +44,13 @@ export async function parseWad(file:File):Promise<TextureAsset[]>{
     }catch{ /* Skip malformed directory entry without losing the rest. */ }
   }
   if(!result.length)throw Error(`No readable WAD3 mip textures found in ${file.name}.`);
+  if(typeof options==='number'||options.remember!==false){
+    try{await rememberWadFile(file)}
+    catch(error){
+      const message=`Could not save imported WAD ${file.name} for the next session: ${String(error)}`;
+      console.warn(message);
+      if(typeof window!=='undefined')window.dispatchEvent(new CustomEvent('svenstudio:wad-cache-warning',{detail:message}));
+    }
+  }
   return result;
 }

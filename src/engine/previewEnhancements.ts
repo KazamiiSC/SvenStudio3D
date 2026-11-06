@@ -1,12 +1,12 @@
 /** Visual-only preview options. These values never affect the GoldSrc MAP export. */
-export type WalkPreviewSettings={spawn:'entity'|'camera';walkSpeed:number;runMultiplier:number;crouchMultiplier:number;flashlight:boolean;flashlightPower:number;noclip:boolean;showHud:boolean;safeFullscreen:boolean};
+export type WalkPreviewSettings={spawn:'entity'|'camera';walkSpeed:number;runMultiplier:number;crouchMultiplier:number;flashlight:boolean;flashlightPower:number;noclip:boolean;showHud:boolean;safeFullscreen:boolean;rendered:boolean;showModels:boolean;interactions:boolean};
 export type GoldSrcPreviewSettings={enabled:boolean;waterAnimation:boolean;transparency:boolean;exposure:number;ambientFill:number};
-export const DEFAULT_WALK_PREVIEW:WalkPreviewSettings={spawn:'entity',walkSpeed:210,runMultiplier:1.62,crouchMultiplier:.5,flashlight:false,flashlightPower:60000,noclip:false,showHud:true,safeFullscreen:false};
+export const DEFAULT_WALK_PREVIEW:WalkPreviewSettings={spawn:'entity',walkSpeed:210,runMultiplier:1.62,crouchMultiplier:.5,flashlight:false,flashlightPower:60000,noclip:false,showHud:true,safeFullscreen:false,rendered:true,showModels:true,interactions:true};
 export const DEFAULT_GOLDSRC_PREVIEW:GoldSrcPreviewSettings={enabled:true,waterAnimation:true,transparency:true,exposure:1,ambientFill:.36};
 export const limit=(value:number,min:number,max:number)=>Number.isFinite(value)?Math.max(min,Math.min(max,value)):min;
 export function normalizeWalkPreview(value:Partial<WalkPreviewSettings>|null|undefined):WalkPreviewSettings{
  const v=value||{};
- return {spawn:v.spawn==='camera'?'camera':'entity',walkSpeed:limit(Number(v.walkSpeed??210),60,600),runMultiplier:limit(Number(v.runMultiplier??1.62),1,4),crouchMultiplier:limit(Number(v.crouchMultiplier??.5),.15,1),flashlight:v.flashlight===true,flashlightPower:limit(Number(v.flashlightPower??60000),10000,120000),noclip:v.noclip===true,showHud:v.showHud!==false,safeFullscreen:v.safeFullscreen===true};
+ return {spawn:v.spawn==='camera'?'camera':'entity',walkSpeed:limit(Number(v.walkSpeed??210),60,600),runMultiplier:limit(Number(v.runMultiplier??1.62),1,4),crouchMultiplier:limit(Number(v.crouchMultiplier??.5),.15,1),flashlight:v.flashlight===true,flashlightPower:limit(Number(v.flashlightPower??60000),10000,120000),noclip:v.noclip===true,showHud:v.showHud!==false,safeFullscreen:v.safeFullscreen===true,rendered:v.rendered!==false,showModels:v.showModels!==false,interactions:v.interactions!==false};
 }
 export function normalizeGoldSrcPreview(value:Partial<GoldSrcPreviewSettings>|null|undefined):GoldSrcPreviewSettings{
  const v=value||{};

@@ -1,6 +1,6 @@
 import {Canvas,useFrame,useThree} from '@react-three/fiber';
 import {OrbitControls} from '@react-three/drei';
-import {ArrowLeft,FileUp,Layers,Sun,Grid3x3,Move3D,RotateCcw,Info,Box,Tags,Focus,Settings2,Cloud,Package} from 'lucide-react';
+import {ArrowLeft,FileUp,Layers,Sun,Grid3x3,Move3D,RotateCcw,Info,Box,Tags,Focus,Settings2,Cloud,Package,ShieldCheck} from 'lucide-react';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import type {MutableRefObject} from 'react';
 import * as THREE from 'three';
@@ -14,6 +14,8 @@ import {gameToThree} from '../engine/geometry';
 import {useT} from '../i18n';
 import {useEditor} from '../store';
 import {bspEntityLabel,bspEntitySearchText,bspFlyAxes,bspFlyMultiplier,clampBspFlySpeed,clampBspFlySensitivity} from '../engine/bspViewerTools';
+import {BspRecoveryStudio} from './BspRecoveryStudio';
+import {readNativeBsp} from '../engine/bspNativeEdit';
 import {BspSkyBackground,BspStaticModels,type BspAssetStatus} from './BspViewerAssets';
 import {bspModelPlacements,bspSpatialBatchCell} from '../engine/bspViewerAssets';
 import {BSP_LIGHTMAP_UV_CHANNEL,BSP_LIGHTMAP_DEFAULT_INTENSITY,BSP_LIGHTMAP_DEFAULT_AMBIENT,bspLightmapAtlasUv} from '../engine/bspLightmap';
@@ -316,11 +318,12 @@ function BspNavigation({map,fly,reset,flyRef,speed,sensitivity,smooth,focus}:{ma
   });
   return <OrbitControls ref={orbit} enabled={!fly} makeDefault enableDamping dampingFactor={.12} maxDistance={100000}/>;
 }
-export function BspViewer({map,onBack,onOpen,onCompiled}:{map:BspMap;onBack:()=>void;onOpen:()=>void;onCompiled:()=>void}){
+export function BspViewer({map,source,onBack,onOpen,onCompiled,onOpenRecoveredMap}:{map:BspMap;source:ArrayBuffer|null;onBack:()=>void;onOpen:()=>void;onCompiled:()=>void;onOpenRecoveredMap:(source:string,name:string,textures?:TextureAsset[])=>Promise<boolean>}){
   const editorAssets=useEditor(s=>s.textureAssets);
   const gameDir=useEditor(s=>s.settings.gameDir);
   const t=useT(),[lightmaps,setLightmaps]=useState(true),[wireframe,setWireframe]=useState(false),[showEntities,setShowEntities]=useState(true);
-  const [showLabels,setShowLabels]=useState(true),[navSettings,setNavSettings]=useState(false);
+  const [showLabels,setShowLabels]=useState(true),[navSettings,setNavSettings]=useState(false),[recoveryOpen,setRecoveryOpen]=useState(false);
+  useEffect(()=>setRecoveryOpen(false),[source]);
   const [smartLabels,setSmartLabels]=useState(true),[labelLimit,setLabelLimit]=useState(32),[labelDistance,setLabelDistance]=useState(2400);
   const [lightBrightness,setLightBrightness]=useState(BSP_LIGHTMAP_DEFAULT_INTENSITY);
   const [rendererPreview,setRendererPreview]=useState(()=>readPreviewSettings('goldsrc-preview-2',normalizeGoldSrcPreview));
@@ -394,12 +397,14 @@ export function BspViewer({map,onBack,onOpen,onCompiled}:{map:BspMap;onBack:()=>
     catch(err){setWadError(String(err))}finally{setLoadingWads(false)}
   };
   return <div className="bsp-viewer">
+    {recoveryOpen&&source&&<BspRecoveryStudio key={map.name} source={source} filename={map.name} map={map} knownTextures={allAssets} onClose={()=>setRecoveryOpen(false)} onOpenMap={onOpenRecoveredMap}/> }
     <div className="bsp-toolbar">
       <button onClick={onBack}><ArrowLeft size={15}/>{t('MAP Editor')}</button>
       <strong><Box size={15}/> {t('BSP Viewer')}</strong>
       <span className="bsp-file-name" title={map.name}>{map.name}</span>
       <button onClick={onOpen}><FileUp size={15}/>{t('Open BSP')}</button>
       <button onClick={onCompiled} title={t('Open compiled BSP')}>{t('Compiled BSP')}</button>
+      <button className="bsp-on" disabled={!source} onClick={()=>{if(!source)return;try{readNativeBsp(source);if(fly){document.exitPointerLock?.();setFly(false)}setRecoveryOpen(true)}catch(e){window.alert(`${t('BSP Recovery cannot edit this map safely')}: ${String(e)}`)}}} title={t('Native BSP entity editing — original remains untouched')}><ShieldCheck size={15}/>{t('BSP Recovery')}</button>
       <button className={lightmaps?'bsp-on':''} onClick={()=>setLightmaps(v=>!v)} title={t('Compiled lightmaps')}><Sun size={15}/>{t('Lightmaps')}</button>
       <button className={wireframe?'bsp-on':''} onClick={()=>setWireframe(v=>!v)}><Grid3x3 size={15}/>{t('Wireframe')}</button>
       <button className={showSky?'bsp-on':''} onClick={()=>setShowSky(v=>!v)} title={t('Use installed sky textures')}><Cloud size={15}/>{t('Real skybox')}</button>

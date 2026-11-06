@@ -4,6 +4,7 @@
  * be able to open an editable map with a brush that Map Doctor needs to repair.
  */
 import type {Face,MapObject,Project,Vec3} from './types';
+import {validateCustomNpc} from './customNpc';
 
 type Obj=Record<string,unknown>;
 const record=(v:unknown):v is Obj=>v!==null&&typeof v==='object'&&!Array.isArray(v);
@@ -63,10 +64,56 @@ export function validateProjectFile(input:unknown):Project{
     if(ids.has(obj.id))bad(`duplicate object ID at ${i+1}.`);
     ids.add(obj.id);
   }
+  if(input.customNpcs!==undefined){
+    if(!Array.isArray(input.customNpcs)||input.customNpcs.length>80)bad('custom NPC definitions are malformed.');
+    const seen=new Set<string>();
+    for(const [i,d] of input.customNpcs.entries()){
+      if(!record(d)||!str(d.classname,96)||!d.classname||!str(d.description,256)||!str(d.modelPath,256)||
+         !str(d.entryScript,240)||!str(d.registerFunction,128)||!Array.isArray(d.scripts)||d.scripts.length>40||
+         !d.scripts.every((s:unknown)=>record(s)&&str(s.path,240)&&str(s.source,2_000_000)))
+         bad(`custom NPC ${i+1} has invalid metadata.`);
+      if(validateCustomNpc(d as unknown as import('./customNpc').CustomNpcDefinition).length)bad(`custom NPC ${i+1} has invalid source or paths.`);
+      if(seen.has(d.classname))bad(`duplicate custom NPC classname: ${d.classname}`);
+      seen.add(d.classname);
+      if(d.fgd!==undefined&&(!record(d.fgd)||d.fgd.type!=='point'||d.fgd.name!==d.classname||!record(d.fgd.props)||
+        Object.keys(d.fgd.props).length>256||!Object.values(d.fgd.props).every(p=>record(p)&&str(p.label,256)&&str(p.type,32))))bad('custom NPC FGD definition is malformed.');
+    }
+    if(JSON.stringify(input.customNpcs).length>7_000_000)bad('embedded custom NPC source files exceed safe project size.');
+  }
   if(input.graphPositions!==undefined){
     if(!record(input.graphPositions)||Object.keys(input.graphPositions).length>100000||
        !Object.values(input.graphPositions).every(v=>Array.isArray(v)&&v.length===2&&v.every(n=>typeof n==='number'&&Number.isFinite(n)&&Math.abs(n)<1_000_000)))
       bad('graph positions are malformed.');
+  }
+  if(input.cinematicPreviewSpeeds!==undefined){
+    if(!record(input.cinematicPreviewSpeeds)||Object.keys(input.cinematicPreviewSpeeds).length>1000||
+       !Object.entries(input.cinematicPreviewSpeeds).every(([id,speed])=>id.length>0&&id.length<=256&&typeof speed==='number'&&Number.isFinite(speed)&&speed>=1&&speed<=2000))
+      bad('cinematic preview speeds are malformed.');
+  }
+  if(input.terrainGroups!==undefined){
+    if(!Array.isArray(input.terrainGroups)||input.terrainGroups.length>128)bad('terrain group collection is malformed.');
+    const groupIds=new Set<string>();
+    for(const [i,group] of input.terrainGroups.entries()){
+      if(!record(group)||!str(group.id,256)||!str(group.name,96)||!vec3(group.origin)||
+         typeof group.width!=='number'||typeof group.depth!=='number'||typeof group.resolution!=='number'||
+         !Array.isArray(group.heights)||!group.heights.every(n=>typeof n==='number'&&Number.isFinite(n))||
+         !str(group.texture,32)||!Array.isArray(group.brushIds)||!Array.isArray(group.brushSignatures)||
+         group.brushIds.length!==2*group.resolution*group.resolution||
+         group.brushSignatures.length!==group.brushIds.length||
+         !group.brushIds.every(id=>str(id,256)&&ids.has(id))||
+         !group.brushSignatures.every(signature=>str(signature,8192)))bad(`terrain group ${i+1} is malformed.`);
+      if(![4,8,12,16].includes(group.resolution as number)||
+         (group.width as number)<64||(group.width as number)>4096||
+         (group.depth as number)<64||(group.depth as number)>4096||
+         (group.width as number)/(group.resolution as number)<8||
+         (group.depth as number)/(group.resolution as number)<8||
+         group.heights.length!==((group.resolution as number)+1)**2||
+         !group.heights.every(n=>n>=-512&&n<=512)||
+         (group.baseDepth!==undefined&&(typeof group.baseDepth!=='number'||!Number.isFinite(group.baseDepth)||group.baseDepth<64||group.baseDepth>1024))||
+         !/^[^\s\"()[\]]{1,32}$/.test(group.texture as string))bad(`terrain group ${i+1} has invalid geometry settings.`);
+      if(groupIds.has(group.id))bad('duplicate terrain group ID.');
+      groupIds.add(group.id);
+    }
   }
   if(input.architectureOpenings!==undefined){
     if(!Array.isArray(input.architectureOpenings)||input.architectureOpenings.length>8192)bad('architecture openings are malformed.');

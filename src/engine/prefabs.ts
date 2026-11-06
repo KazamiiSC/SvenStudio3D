@@ -2,6 +2,9 @@
 import type {MapObject,Vec3} from './types';
 import {uid} from './types';
 import {validateBrush} from './exportMap';
+import {lockTranslatedBrushTextures} from './textureStudio';
+import {rotateObjectsForPlacement} from './smartPlacement';
+import type {PlacementAxis} from './smartPlacementMath';
 export type Prefab={version:1;id:string;name:string;origin:Vec3;objects:MapObject[]};
 const copy=<T>(value:T):T=>structuredClone(value);
 const finitePosition=(p:unknown):p is Vec3=>Array.isArray(p)&&p.length===3&&p.every(v=>typeof v==='number'&&Number.isFinite(v)&&Math.abs(v)<=131072);
@@ -21,7 +24,7 @@ export function createPrefab(objects:MapObject[],label:string):Prefab{
   return {id:uid(),version:1,name,origin,objects:copies};
 }
 /** Create a copy at a desired pivot; remap func_ owner ids and group labels. */
-export function placePrefab(prefab:Prefab,at:Vec3):MapObject[]{
+export function placePrefab(prefab:Prefab,at:Vec3,axis:PlacementAxis='z',angle=0,autoYaw=0):MapObject[]{
   if(!finitePosition(at))throw Error('Invalid prefab placement.');
   const checked=validatePrefab(prefab);
   const ids=new Map(checked.objects.map(o=>[o.id,uid()]));
@@ -29,7 +32,10 @@ export function placePrefab(prefab:Prefab,at:Vec3):MapObject[]{
   const objects=checked.objects.map(original=>{
     const clone=copy(original);
     clone.id=ids.get(original.id)!;
-    clone.position=original.position.map((value,i)=>value-checked.origin[i]+at[i]) as Vec3;
+    const nextPosition=original.position.map((value,i)=>value-checked.origin[i]+at[i]) as Vec3;
+    // A reused door, button or wall must retain its original visible UV layout.
+    if(original.kind==='brush'&&clone.kind==='brush')clone.faces=lockTranslatedBrushTextures(original,nextPosition);
+    clone.position=nextPosition;
     if(clone.group){
       if(!groupNames.has(clone.group))groupNames.set(clone.group,`${clone.group} ${clone.id.slice(0,6)}`);
       clone.group=groupNames.get(clone.group);
@@ -37,13 +43,14 @@ export function placePrefab(prefab:Prefab,at:Vec3):MapObject[]{
     if(clone.kind==='brush'&&clone.entityId)clone.entityId=ids.get(clone.entityId);
     return clone;
   });
-  for(const object of objects){
+  const placed=rotateObjectsForPlacement(objects,at,axis,angle,autoYaw);
+  for(const object of placed){
     if(!finitePosition(object.position))throw Error('Prefab is outside the map limits.');
     if(object.kind==='brush'){
       const problems=validateBrush(object);if(problems.length)throw Error(problems[0]);
     }
   }
-  return objects;
+  return placed;
 }
 export function validatePrefab(value:unknown):Prefab{
   const o=value as Partial<Prefab>;

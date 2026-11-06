@@ -1,6 +1,6 @@
 import {useEffect,useState,type ReactNode,type PointerEvent as ReactPointerEvent,type DragEvent} from 'react';
-import {GripVertical,ArrowDownToLine,PanelLeft,PanelRight,PanelTop,PanelBottom,RotateCcw,SlidersHorizontal,Layers,Blocks,FolderTree,Terminal,LayoutTemplate,Eye,EyeOff,Move} from 'lucide-react';
-import {useStudioLayout,type DockPanelId,type DockSide} from '../layout';
+import {GripVertical,ArrowLeft,ArrowRight,ArrowDownToLine,PanelLeft,PanelRight,PanelTop,PanelBottom,RotateCcw,SlidersHorizontal,Layers,Blocks,FolderTree,Terminal,LayoutTemplate,Eye,EyeOff,Move} from 'lucide-react';
+import {useStudioLayout,TOOLBAR_GROUPS,normalizeToolbarGroups,type DockPanelId,type DockSide,type ToolbarGroup} from '../layout';
 import {useT} from '../i18n';
 import {AssetPanel,Explorer,Properties} from './Panels';
 
@@ -167,16 +167,25 @@ export function LayoutModal({onClose}:{onClose:()=>void}){
   },[onClose]);
   const t=useT();
   const layout=useStudioLayout();
+  const orderedToolbar=normalizeToolbarGroups(layout.toolbarGroups??TOOLBAR_GROUPS);
+  const toolbarLabels:Record<ToolbarGroup,string>={transform:'Transform',view:'View',geometry:'Geometry editing',tools:'Tools',grid:'Grid',edit:'Edit',studios:'Studios'};
   return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal-card layout-modal" onMouseDown={e=>e.stopPropagation()}>
     <div className="modal-title"><LayoutTemplate size={19}/><span>{t('Workspace layout')}</span><button onClick={onClose}>×</button></div>
     <p className="modal-subtext">{t('Drag panel headers or choose a docking side. Resize the dividers. Changes are saved automatically.')}</p>
     <div className="layout-subtitle">{t('Quick layouts')}</div>
-    <div className="layout-presets">{(['creative','classic','focus','wide','minimal'] as const).map(k=><button key={k} onClick={()=>layout.usePreset(k)}><LayoutTemplate size={19}/><span>{t(k[0].toUpperCase()+k.slice(1))}</span></button>)}</div>
+    <div className="layout-presets">{(['organized','creative','classic','focus','wide','minimal'] as const).map(k=><button key={k} onClick={()=>layout.usePreset(k)}><LayoutTemplate size={19}/><span>{t(k[0].toUpperCase()+k.slice(1))}</span></button>)}</div>
     <div className="layout-subtitle">{t('Toolbar style')}</div><div className="layout-side-choices"><button className={layout.compactTools!==false?'chosen':''} onClick={()=>layout.setCompactTools(true)}>{t('Floating tools')}</button><button className={layout.compactTools===false?'chosen':''} onClick={()=>layout.setCompactTools(false)}>{t('Classic ribbon')}</button></div>
     {layout.compactTools===false?<>
       <div className="layout-subtitle">{t('Toolbar location')}</div>
       <div className="layout-side-choices">{sides.map(side=>{const Icon=sideIcons[side];return <button key={side} className={layout.toolbarDock===side?'chosen':''} onClick={()=>layout.setToolbarDock(side)}><Icon size={18}/>{t(side[0].toUpperCase()+side.slice(1))}</button>})}</div>
     </>:<p className="modal-subtext">{t('Move floating tools with Edit HUD. Toolbar docking applies to Classic ribbon only.')}</p>}
+    <div className="layout-subtitle">{t('Toolbar sections')}</div>
+    <p className="modal-subtext">{t('Drag the section label on the classic toolbar, or use the arrows below to change its order.')}</p>
+    <div className="layout-toolbar-sections">{orderedToolbar.map((id,index)=><div key={id}>
+      <GripVertical size={14}/><strong>{t(toolbarLabels[id])}</strong>
+      <button type="button" title={t('Move left')} aria-label={`${t(toolbarLabels[id])} · ${t('Move left')}`} disabled={index===0} onClick={()=>layout.stepToolbarGroup(id,-1)}><ArrowLeft size={14}/></button>
+      <button type="button" title={t('Move right')} aria-label={`${t(toolbarLabels[id])} · ${t('Move right')}`} disabled={index===orderedToolbar.length-1} onClick={()=>layout.stepToolbarGroup(id,1)}><ArrowRight size={14}/></button>
+    </div>)}</div>
     <div className="layout-subtitle">{t('Panels')}</div>
     <div className="layout-panel-list">{(['assets','explorer','properties'] as const).map(id=>{const Icon=panelIcons[id];return <div key={id}><Icon size={16}/><strong>{t(panelNames[id])}</strong><AttachSelect value={layout.sides[id]} label={panelNames[id]} onChange={side=>layout.movePanel(id,side)}/><button className="visibility-toggle" onClick={()=>layout.setVisible(id,!layout.visible[id])}>{layout.visible[id]?<Eye size={16}/>:<EyeOff size={16}/>}</button></div>})}</div>
     <div className="layout-subtitle">{t('Interface size')} <output>{Math.round(layout.uiScale*100)}%</output></div>

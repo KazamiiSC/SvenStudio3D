@@ -2,39 +2,49 @@ import {useEffect,useState} from 'react';
 import {createPortal} from 'react-dom';
 import {useThree} from '@react-three/fiber';
 import * as THREE from 'three';
-import {Copy,Trash2,EyeOff,Eye,Lock,Unlock,Focus,Move3D,Rotate3D,Scaling,Box,Sun,Layers,Grid3x3,Users,Link2,FolderOpen,Paintbrush,Settings2,MousePointer2,Undo2,Redo2,Scan,FilePlus2,MapPin,Group,FolderTree} from 'lucide-react';
+import {Copy,Trash2,EyeOff,Eye,Lock,Unlock,Focus,Move3D,Rotate3D,Scaling,Box,Sun,Layers,Grid3x3,Users,Link2,Unlink,FolderOpen,Paintbrush,Settings2,MousePointer2,Undo2,Redo2,Scan,FilePlus2,MapPin,Group,FolderTree,PenLine} from 'lucide-react';
 import {useEditor} from '../store';
+import {confirmBrushDetach} from './brushEntityActions';
 import {useT} from '../i18n';
 import {useStudioLayout} from '../layout';
 import {orthoObjectUpdates,type OrthoAxis} from '../engine/orthoActions';
 export type SceneMenu={x:number;y:number;objectId:string|null};
+let contextPickingHidden=false;
+export function ghostContextOnlyRaycast(this:THREE.Mesh,raycaster:THREE.Raycaster,hits:THREE.Intersection[]){
+  if(contextPickingHidden)THREE.Mesh.prototype.raycast.call(this,raycaster,hits);
+}
+export function contextRaycast(ray:THREE.Raycaster,scene:THREE.Scene){
+  contextPickingHidden=true;
+  try{return ray.intersectObjects(scene.children,true);}finally{contextPickingHidden=false;}
+}
 export function ContextHitProbe({open}:{open:(menu:SceneMenu)=>void}){
   const {gl,camera,scene}=useThree();
   useEffect(()=>{
     const canvas=gl.domElement;
     let start:{x:number;y:number}|null=null,dragged=false;
     const down=(e:PointerEvent)=>{if(e.button===2){start={x:e.clientX,y:e.clientY};dragged=false}};
-    const move=(e:PointerEvent)=>{if(start&&Math.hypot(e.clientX-start.x,e.clientY-start.y)>6)dragged=true};
+    const move=(e:PointerEvent)=>{if(start&&(document.pointerLockElement===canvas?Math.hypot(e.movementX,e.movementY)>3:Math.hypot(e.clientX-start.x,e.clientY-start.y)>6))dragged=true};
     const show=(clientX:number,clientY:number)=>{
       const state=useEditor.getState();
-      if(dragged||state.modalTransform||state.placementShape||state.drawMode||state.flyMode)return;
+      if(dragged||state.modalTransform||state.placementShape||state.placementPrefabId||state.drawMode||state.flyMode)return;
       const r=canvas.getBoundingClientRect();if(!r.width||!r.height)return;
       const ndc=new THREE.Vector2((clientX-r.left)*2/r.width-1,1-(clientY-r.top)*2/r.height);
       const ray=new THREE.Raycaster();ray.setFromCamera(ndc,camera);
-      const hits=ray.intersectObjects(scene.children,true);
+      const hits=contextRaycast(ray,scene);
       const findId=(obj:THREE.Object3D):string|null=>{
         let parent:THREE.Object3D|null=obj;
-        while(parent){if(parent.userData.brushId||parent.userData.entityId)return (parent.userData.brushId||parent.userData.entityId) as string;parent=parent.parent}
+        while(parent){if(parent.userData.hiddenBrushId||parent.userData.brushId||parent.userData.entityId)return (parent.userData.hiddenBrushId||parent.userData.brushId||parent.userData.entityId) as string;parent=parent.parent}
         return null;
       };
       const id=hits.map(hit=>findId(hit.object)).find(Boolean)??null;
-      if(id&&!state.selectedIds.includes(id))state.setSelected(id);
+      // Hidden brushes are context-only. Do not change selection until revealed.
+      if(id&&!state.project.objects.some(obj=>obj.id===id&&obj.hidden)&&!state.selectedIds.includes(id))state.setSelected(id);
       open({x:clientX,y:clientY,objectId:id});
     };
     const up=(e:PointerEvent)=>{
       if(e.button!==2||!start)return;
-      const wasDragged=dragged;start=null;
-      if(!wasDragged)show(e.clientX,e.clientY);
+      const wasDragged=dragged;const previous=start;start=null;
+      if(!wasDragged)show(previous.x,previous.y);
     };
     const preventNative=(e:MouseEvent)=>e.preventDefault();
     canvas.addEventListener('pointerdown',down,true);canvas.addEventListener('pointermove',move,true);
@@ -78,15 +88,26 @@ export function ContextMenu({menu,onClose}:{menu:SceneMenu;onClose:()=>void}){
     if(match){store.setSelected(match.id);store.issueCameraCommand('frame')}
     else window.alert(t('No matching targetname found'));
   };
+  const attachedBrushes=obj?.kind==='entity'?objects.filter(o=>o.kind==='brush'&&o.entityId===obj.id):[];
+  const associatedBrushes=obj?.kind==='brush'&&obj.entityId?objects.filter(o=>o.kind==='brush'&&o.entityId===obj.entityId):[];
+  const detach=(ids:string[],whole:boolean)=>{
+    if(confirmBrushDetach(objects,ids,whole,t))store.detachBrushEntities(ids,whole);
+  };
   const groupName=obj?.group;
   const targetAvailable=obj?.kind==='entity'&&!!obj.props.target;
   const targetNameFound=targetAvailable&&objects.some(o=>o.kind==='entity'&&!!o.props.targetname&&(obj.props.target||'').split(/[;,\s]+/).includes(o.props.targetname));
   return createPortal(<div role="menu" className="studio-context-menu" style={{left,top}} onContextMenu={e=>e.preventDefault()}>
     <div className="context-head"><span>{obj?obj.name:t('Viewport tools')}</span><small>{obj?`${t(obj.kind==='brush'?'Brush':'Entity')} · ${obj.kind==='entity'?obj.classname:obj.primitive} · ${selectedIds.length} ${t('selected')}`:'Svengine · Valve 220'}</small></div>
-    {obj&&<>
+    {obj?.hidden&&obj.kind==='brush'&&<>
+      {section('Hidden brush')}
+      {item('Show brush',<Eye size={15}/>,()=>store.toggleVisibility(obj.id))}
+      {item('Show all objects',<Eye size={15}/>,store.revealAll)}
+    </>}
+    {obj&&!obj.hidden&&<>
       {section('Edit object')}
       {item('Open properties',<Settings2 size={15}/>,openProperties)}
-      {item('Duplicate',<Copy size={15}/>,store.duplicateSelected,'Ctrl+D',!selectedActive)}
+      {item('Rename in editor…',<PenLine size={15}/>,()=>promptName('Object display name',obj.name,name=>store.updateObject(obj.id,{name,editorAlias:name})),undefined,!!obj.locked)}
+      {item('Duplicate',<Copy size={15}/>,store.duplicateSelected,undefined,!selectedActive)}
       {item('Move',<Move3D size={15}/>,()=>{if(store.geometryMode!=='object')store.setGeometryMode('object');store.setMode('translate')},'G',obj.locked)}
       {obj.kind==='brush'&&item('Rotate',<Rotate3D size={15}/>,()=>{if(store.geometryMode!=='object')store.setGeometryMode('object');store.setMode('rotate')},'R',obj.locked)}
       {obj.kind==='brush'&&item('Scale',<Scaling size={15}/>,()=>{if(store.geometryMode!=='object')store.setGeometryMode('object');store.setMode('scale')},'C',obj.locked)}
@@ -110,11 +131,14 @@ export function ContextMenu({menu,onClose}:{menu:SceneMenu;onClose:()=>void}){
         {item('Face mode',<Paintbrush size={15}/>,()=>store.setGeometryMode('face'))}
         {item('Apply selected texture',<Paintbrush size={15}/>,()=>store.paintSelected(store.currentTexture),undefined,obj.locked)}
         {item('Save selection as prefab…',<FolderOpen size={15}/>,()=>promptName('Prefab name',obj.name||'Prefab',store.saveSelectedPrefab))}
+        {obj.entityId&&item('Detach brush from entity (worldspawn)',<Unlink size={15}/>,()=>detach([obj.id],false),undefined,obj.locked)}
+        {obj.entityId&&associatedBrushes.length>1&&item('Detach all brushes of this entity',<Unlink size={15}/>,()=>detach([obj.id],true),undefined,associatedBrushes.some(b=>b.locked))}
         {!obj.entityId&&item('Create func_door',<Box size={15}/>,()=>store.tieGameplayBrush(obj.id,'func_door'),undefined,obj.locked)}
         {!obj.entityId&&item('Create func_button',<Box size={15}/>,()=>store.tieGameplayBrush(obj.id,'func_button'),undefined,obj.locked)}
       </>}
       {obj.kind==='entity'&&<>
         {section('Entity tools')}
+        {attachedBrushes.length>0&&item('Convert linked brushes to worldspawn',<Unlink size={15}/>,()=>detach([obj.id],true),undefined,attachedBrushes.some(b=>b.locked)||obj.locked)}
         {item('Select same classname',<Users size={15}/>,showClasses)}
         {item('Find linked target',<Link2 size={15}/>,findTarget,undefined,!targetNameFound)}
         {item('Browse entities',<FolderTree size={15}/>,()=>openAssets('entities'))}

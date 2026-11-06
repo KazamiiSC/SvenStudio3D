@@ -15,7 +15,7 @@ export function HudCustomizer(){
   const preset=useHudLayout(s=>s.preset),applyPreset=useHudLayout(s=>s.applyPreset);
   const modalTransform=useEditor(s=>s.modalTransform);
   const flyMode=useEditor(s=>s.flyMode);
-  return <div className="hud-editor-controls" onPointerDown={e=>e.stopPropagation()}>
+  return <div className={`hud-editor-controls ${editing&&selected==='fps'?'hud-editor-avoid-fps':''}`} onPointerDown={e=>e.stopPropagation()}>
     <button type="button" className={`hud-editor-toggle ${editing?'active':''}`} disabled={!editing&&(!!modalTransform||flyMode)} onClick={()=>setEditing(!editing)}
       aria-label={t('Customize viewport HUD')} aria-pressed={editing} title={t('Customize viewport HUD')}>
       {editing?<Check size={17}/>:<LayoutTemplate size={17}/>} <span>{t(editing?'Done':'Edit HUD')}</span>
@@ -33,6 +33,13 @@ export function HudCustomizer(){
         <select aria-label={t('HUD element')} value={selected} onChange={e=>select(e.target.value as HudId)}>
           {HUD_IDS.map(id=><option key={id} value={id}>{t(HUD_NAMES[id])}{items[id].visible?'':` · ${t('Hidden')}`}</option>)}
         </select>
+      </label>
+      {/* Coordinates work even when another HUD layer or a panel hides the drag handle. */}
+      <label>X <output>{Math.round(item.x)}%</output>
+        <input type="range" aria-label="HUD X" min="0" max="99" step="1" value={Math.round(item.x)} onChange={e=>update(selected,{x:Number(e.target.value)})}/>
+      </label>
+      <label>Y <output>{Math.round(item.y)}%</output>
+        <input type="range" aria-label="HUD Y" min="0" max="99" step="1" value={Math.round(item.y)} onChange={e=>update(selected,{y:Number(e.target.value)})}/>
       </label>
       <button type="button" className="hud-panel-check" onClick={()=>update(selected,{visible:!item.visible})}>
         {item.visible?<Eye size={15}/>:<EyeOff size={15}/>}{t(item.visible?'Visible':'Hidden')}

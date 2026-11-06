@@ -6,6 +6,8 @@ export interface BspEntity {classname:string;origin?:Vec3;properties:Record<stri
 export interface BspFace {
   texture:number; flags:number; model:number; points:Vec3[];
   texels:[number,number][]; normal:Vec3;
+  /** Raw compiled texinfo axes and shifts for loss-minimizing MAP recovery. */
+  sTexinfo?:[number,number,number,number];tTexinfo?:[number,number,number,number];
   lightWidth:number; lightHeight:number; lightRgb?:Uint8Array;
   lightMin:[number,number];
 }
@@ -142,7 +144,7 @@ export function parseBsp(buffer:ArrayBuffer,name='map.bsp'):BspMap{
       lightRgb=new Uint8Array(buffer,light.start+offset,lightCount).slice();lightmappedFaces++;
     }
     const model=Math.max(0,models.findIndex(m=>index>=m.first&&index<m.first+m.count));
-    faces.push({texture:info.index,flags:info.flags,model,points,texels,normal,lightWidth,lightHeight,lightRgb,lightMin:[minU,minV]});
+    faces.push({texture:info.index,flags:info.flags,model,points,texels,normal,sTexinfo:info.s,tTexinfo:info.t,lightWidth,lightHeight,lightRgb,lightMin:[minU,minV]});
   }
   if(skipped)warnings.push(`${skipped} malformed faces were skipped.`);
   const entitiesText=new TextDecoder('latin1').decode(new Uint8Array(buffer,lumps[0].start,lumps[0].size));

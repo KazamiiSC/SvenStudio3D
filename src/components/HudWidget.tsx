@@ -39,7 +39,7 @@ export function HudWidget({id,children,className='',editPlaceholder}:{id:HudId;c
   const end=(event:ReactPointerEvent<HTMLButtonElement>)=>{
     if(motion.current?.pointer===event.pointerId){motion.current=null;event.stopPropagation()}
   };
-  const style:CSSProperties={left:`${config.x}%`,top:`${config.y}%`};
+  const style:CSSProperties={left:id==='shapes'?`clamp(0px, ${config.x}%, max(0px, calc(100% - 355px)))`:id==='fps'?`clamp(0px, ${config.x}%, max(0px, calc(100% - 90px)))`:`${config.x}%`,top:`${config.y}%`};
   return <div ref={root} className={`hud-widget hud-${id} ${editing?'hud-editing':''} ${selected===id?'hud-selected':''} ${!config.visible?'hud-hidden':''} ${className}`} style={style} data-hud-id={id}>
     {editing&&<div className="hud-widget-bar" onPointerDown={e=>e.stopPropagation()}>
       <button type="button" className="hud-widget-drag" aria-label={`${t('Move HUD element')} ${id}`} title={t('Drag to move')}
@@ -57,5 +57,5 @@ export function HudWidget({id,children,className='',editPlaceholder}:{id:HudId;c
 export const HUD_NAMES:Record<HudId,string>={
   status:'Viewport status',view:'View controls',pivot:'Scale pivot',tools:'Floating tools',
   orthographic:'Orthographic tools',help:'Mouse help',
-  stats:'Scene statistics',transform:'Transform readout',alerts:'Editor messages',axes:'Axis navigator'
+  stats:'Scene statistics',transform:'Transform readout',alerts:'Editor messages',axes:'Axis navigator',shapes:'Shapes',fps:'FPS'
 };

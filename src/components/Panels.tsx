@@ -2,8 +2,9 @@ import {ExplorerOrganized} from './ExplorerOrganized';
 import { useEffect,useMemo,useRef,useState,type ChangeEvent } from 'react';
 import {createPortal} from 'react-dom';
 import type React from 'react';
-import { Box,Layers,Image,Search,Plus,Star,Eye,EyeOff,Lock,Unlock,ChevronRight,ChevronDown,FileCode2,FolderOpen,Upload,Trash2,Copy,Paintbrush,Sun,UserRound,Info,Settings2,Grid3x3,Brush,Check,DoorOpen,CornerDownRight,Globe2, Skull, Route, Headphones } from 'lucide-react';
+import { Box,Layers,Image,Search,Plus,Star,Eye,EyeOff,Lock,Unlock,ChevronRight,ChevronDown,FileCode2,FolderOpen,Upload,Trash2,Copy,Unlink,Paintbrush,Sun,UserRound,Info,Settings2,Grid3x3,Brush,Check,DoorOpen,CornerDownRight,Globe2, Skull, Route, Headphones } from 'lucide-react';
 import { useEditor } from '../store';
+import {confirmBrushDetach} from './brushEntityActions';
 import { parseWad } from '../engine/wad';
 import { parseFgd } from '../engine/fgd';
 import type { MapObject,Brush as BrushObject,PointEntity,FgdClass,Face,TextureAsset } from '../engine/types';
@@ -13,13 +14,16 @@ import {ModelBrowser} from './ModelBrowser';
 import {Boxes} from 'lucide-react';
 import {npcClasses} from '../engine/npc';
 import {SoundBrowser} from './SoundStudio';
-import {ArchitectureBuilder} from './ArchitectureBuilder';
+import {EntityAssistant} from './EntityAssistant';
+import {spawnYaw,withSpawnYaw} from '../engine/spawnPresentation';
+import {entityConnectionLabel,connectionSearchText} from '../engine/entityNaming';
 
 function stopProp(e:React.MouseEvent){e.stopPropagation()}
 export function AssetPanel(){
   const tr=useT();
-  const resource=useEditor(s=>s.resourceView),setResource=useEditor(s=>s.setResourceView);
+  const savedResource=useEditor(s=>s.resourceView),resource=savedResource==='objects'?'entities':savedResource,setResource=useEditor(s=>s.setResourceView);
   const [query,setQuery]=useState('');
+  const [entityInfo,setEntityInfo]=useState<FgdClass|null>(null);
   useEffect(()=>{setQuery('');setTexturePage(1);},[resource]);
   const wadsRef=useRef<HTMLInputElement>(null),fgdRef=useRef<HTMLInputElement>(null);
   const setTextures=useEditor(s=>s.setTextures),setFgd=useEditor(s=>s.setFgd);
@@ -41,6 +45,12 @@ export function AssetPanel(){
   // A lightweight right-click menu for WAD tiles and FGD classes. Keeps
   // common actions discoverable without adding hundreds of extra buttons.
   const [assetMenu,setAssetMenu]=useState<{x:number;y:number;kind:'texture';value:TextureAsset}|{x:number;y:number;kind:'entity';value:FgdClass}|null>(null);
+  useEffect(()=>{
+    if(!entityInfo)return;
+    const close=(e:KeyboardEvent)=>{if(e.key==='Escape')setEntityInfo(null)};
+    window.addEventListener('keydown',close);
+    return()=>window.removeEventListener('keydown',close);
+  },[entityInfo]);
   useEffect(()=>{
     if(!assetMenu)return;
     const dismiss=(e:PointerEvent)=>{if(!(e.target as HTMLElement)?.closest('.asset-context-menu'))setAssetMenu(null)};
@@ -109,7 +119,6 @@ export function AssetPanel(){
   };
   return <aside className="asset-panel">
     <div className="asset-tabs">
-      <button className={resource==='objects'?'active':''} onClick={()=>{setResource('objects');setQuery('')}} title={tr('Toolbox')}><Box size={16}/></button>
       <button className={resource==='entities'?'active':''} onClick={()=>{setResource('entities');setQuery('')}} title={tr('Entities')}><UserRound size={16}/></button>
       <button className={resource==='textures'?'active':''} onClick={()=>{setResource('textures');setQuery('')}} title={tr('Texture Browser')}><Image size={16}/></button>
       <button className={resource==='models'?'active':''} onClick={()=>{setResource('models');setQuery('')}} title="Model Browser (.mdl)"><Boxes size={16}/></button>
@@ -117,7 +126,7 @@ export function AssetPanel(){
       <button className={resource==='npcs'?'active':''} onClick={()=>{setResource('npcs');setQuery('')}} title={tr('NPC Browser')}><Skull size={16}/></button>
       <button className={resource==='layers'?'active':''} onClick={()=>{setResource('layers');setQuery('')}} title={tr('Layers')}><Layers size={16}/></button>
     </div>
-    <div className="panel-header"><span>{tr(resource==='objects'?'Shapes':resource==='entities'?'Entity Browser':resource==='textures'?'Texture Browser':resource==='models'?'Model Browser':resource==='npcs'?'NPC Browser':resource==='sounds'?'Sound Browser':'Layers')}</span><span className="subtle">{resource==='entities'?classes.length:resource==='textures'?textures.length:''}</span></div>
+    <div className="panel-header"><span>{tr(resource==='entities'?'Entity Browser':resource==='textures'?'Texture Browser':resource==='models'?'Model Browser':resource==='npcs'?'NPC Browser':resource==='sounds'?'Sound Browser':'Layers')}</span><span className="subtle">{resource==='entities'?classes.length:resource==='textures'?textures.length:''}</span></div>
     {(resource==='entities'||resource==='textures'||resource==='npcs')&&<div className="search-field"><Search size={15}/><input value={query} onChange={e=>{setQuery(e.target.value);setTexturePage(1)}} placeholder={tr(resource==='textures'?'Search textures...':resource==='npcs'?'Search NPCs…':'Search classname...')} /></div>}
     {resource==='models'&&<ModelBrowser/>}
     {resource==='sounds'&&<SoundBrowser compact/>}
@@ -130,29 +139,16 @@ export function AssetPanel(){
         <span className="entity-type point"><Skull size={14}/></span><span><strong>{cls.name}</strong><small>{cls.studio||cls.description}</small></span><Plus size={13}/></button>)}
       <div className="npc-asset-footer"><Route size={15}/>{tr('Use NPC & AI Studio for routes, spawners and validation.')}</div>
     </div>}
-    {resource==='objects'&&<div className="assets-scroll">
-      <div className="hint-block">{tr('Select a primitive, then click any surface in the 3D viewport to place it. Esc cancels.')}</div>
-      <div className="category-label">{tr('SOLID PRIMITIVES')}</div>
-      <div className="primitive-grid">
-        {(['box','wedge','cylinder','arch','vault','cone','pyramid','icosphere','stairs','pipe'] as const).map(type=><button key={type} className={`primitive-item ${placementShape===type?'active':''}`} onClick={()=>useEditor.getState().setPlacementShape(useEditor.getState().placementShape===type?null:type)}><span className={`primitive-symbol primitive-${type}`}><Box size={24} strokeWidth={1.35}/></span><span>{tr(type[0].toUpperCase()+type.slice(1))}</span></button>)}
-      </div>
-      <ArchitectureBuilder/>
-      <div className="category-label">{tr('QUICK START')}</div>
-      <button className="panel-link" onClick={()=>useEditor.getState().addEntity(useEditor.getState().fgdClasses.find(e=>e.name==='info_player_start')||{name:'info_player_start',type:'point',description:'Player Start',props:{}})}><UserRound size={15}/> {tr('Player Spawn')} <Plus size={13}/></button>
-      <button className="panel-link" onClick={()=>useEditor.getState().addEntity(useEditor.getState().fgdClasses.find(e=>e.name==='light')||{name:'light',type:'point',description:'Light',props:{}})}><Sun size={15}/> {tr('Point Light')} <Plus size={13}/></button>
-      <div className="category-label">{tr('WORKFLOW')}</div>
-      <p className="panel-text">{tr('Build with convex solids. Use `.wad` textures and `.fgd` entity definitions from your Sven Co-op installation.')}</p>
-      <PrefabLibrary/>
-    </div>}
     {resource==='entities'&&<>
       <div className="import-area"><button className="soft-button" onClick={loadGameFgd}><FolderOpen size={14}/> {tr('Load Sven Co-op FGD')}</button><button className="soft-button" onClick={()=>fgdRef.current?.click()}><Upload size={14}/> {tr('Import .FGD')}</button><input ref={fgdRef} type="file" hidden accept=".fgd" onChange={importFgd}/><p>{tr(fgdLoaded?'Imported FGD definitions active':'Starter list. Import sven-coop.fgd for full list.')}</p></div>
       <div className="entity-category-row"><select value={entityCategory} onChange={e=>setEntityCategory(e.target.value)} title={tr('Entity category')}>
         {['all','NPCs','Triggers','Weapons','Items','Lighting','Brush entities','Logic & effects','Other'].map(v=><option value={v} key={v}>{tr(v==='all'?'All categories':v)}</option>)}
       </select><span>{filteredClasses.length}</span></div>
-      <div className="assets-scroll entity-list">{filteredClasses.map(cls=><button draggable={cls.type==='point'}
+      <div className="assets-scroll entity-list">{filteredClasses.map(cls=><div className="entity-entry-wrap" key={cls.name}><button draggable={cls.type==='point'}
         onDragStart={e=>{e.dataTransfer.setData('application/x-svenstudio-entity',cls.name);e.dataTransfer.effectAllowed='copy'}}
-        key={cls.name} className="entity-entry" onContextMenu={e=>{e.preventDefault();setAssetMenu({x:e.clientX,y:e.clientY,kind:'entity',value:cls})}} onClick={()=>addEntity(cls)} title={`${cls.description}\n${cls.type}\n${cls.type==='point'?tr('Drag into 3D viewport to place'):tr('Select a brush to tie this entity')}`}>
-<span className={`entity-type ${cls.type}`}>{cls.type==='point'?<UserRound size={13}/>:<Box size={13}/>}</span><span><strong>{cls.name}</strong><small>{cls.description}</small></span><Plus size={13}/></button>)}</div>
+        className="entity-entry" onContextMenu={e=>{e.preventDefault();setAssetMenu({x:e.clientX,y:e.clientY,kind:'entity',value:cls})}} onClick={()=>addEntity(cls)} title={`${cls.description} · ${cls.type}`}>
+        <span className={`entity-type ${cls.type}`}>{cls.type==='point'?<UserRound size={13}/>:<Box size={13}/>}</span><span><strong>{cls.name}</strong><small>{cls.description}</small></span><Plus size={13}/></button>
+        <button type="button" className="entity-guide-icon" aria-label={`Guía ${cls.name}`} title={`Guía: ${cls.name}`} onClick={()=>setEntityInfo(cls)}><Info size={14}/></button></div>)}</div>
     </>}
     {resource==='textures'&&<>
       <div className="import-area"><button className="soft-button" onClick={()=>wadsRef.current?.click()}><Upload size={14}/> {tr('Import WAD3')}</button><input ref={wadsRef} multiple type="file" hidden accept=".wad" onChange={importWads}/><p>{tr('Choose textures, then paint selected faces or brushes.')}</p></div>
@@ -174,8 +170,10 @@ export function AssetPanel(){
         <button type="button" onClick={()=>{addEntity(assetMenu.value);setAssetMenu(null)}}><Plus size={15}/><span>{tr('Add entity to map')}</span></button>
         <button type="button" onClick={()=>{useEditor.getState().selectSameClass(assetMenu.value.name);setAssetMenu(null)}}><UserRound size={15}/><span>{tr('Select same classname')}</span></button>
         <button type="button" onClick={()=>{void navigator.clipboard?.writeText(assetMenu.value.name);setAssetMenu(null)}}><Copy size={15}/><span>{tr('Copy classname')}</span></button>
+        <button type="button" onClick={()=>{setEntityInfo(assetMenu.value);setAssetMenu(null)}}><Info size={15}/><span>{tr('Entity guide')}</span></button>
       </>}
     </div>,document.body)}
+    {entityInfo&&createPortal(<div className="entity-guide-modal" onMouseDown={e=>{if(e.target===e.currentTarget)setEntityInfo(null)}} role="presentation"><div className="entity-guide-dialog" role="dialog" aria-modal="true" aria-label={entityInfo.name}><header><strong>{entityInfo.name}</strong><button onClick={()=>setEntityInfo(null)} aria-label={tr('Close')}>×</button></header><EntityAssistant key={entityInfo.name} entity={null} definition={entityInfo} initiallyOpen/></div></div>,document.body)}
   </aside>;
 }
 function LayerPanel(){
@@ -243,8 +241,17 @@ export function Properties(){
   const change=useEditor(s=>s.updateObject),setDimensions=useEditor(s=>s.changeDimensions),setProp=useEditor(s=>s.setObjectProp),setLayer=useEditor(s=>s.setLayer);
   const selectedIds=useEditor(s=>s.selectedIds);
   const cls=useEditor(s=>s.fgdClasses.find(c=>c.name===(object?.kind==='entity'?object.classname:'')));
-  const [newKey,setNewKey]=useState(''),[newValue,setNewValue]=useState('');
+  const [newKey,setNewKey]=useState(''),[newValue,setNewValue]=useState(''),[targetSearch,setTargetSearch]=useState('');
   const remove=useEditor(s=>s.removeSelected),duplicate=useEditor(s=>s.duplicateSelected);
+  const objects=useEditor(s=>s.project.objects);
+  const unlink=useEditor(s=>s.detachBrushEntities);
+  const tryDetach=(ids:string[],whole=false)=>{
+    if(confirmBrushDetach(objects,ids,whole,t))unlink(ids,whole);
+  };
+  const linkedEntity=object?.kind==='brush'&&object.entityId?objects.find(o=>o.kind==='entity'&&o.id===object.entityId):null;
+  const linkedBrushCount=object?.kind==='brush'&&object.entityId?objects.filter(o=>o.kind==='brush'&&o.entityId===object.entityId).length:0;
+  const attachedBrushCount=object?.kind==='entity'?objects.filter(o=>o.kind==='brush'&&o.entityId===object.id).length:0;
+  const detachCandidates=objects.filter(o=>selectedIds.includes(o.id)&&(o.kind==='brush'&&!!o.entityId||o.kind==='entity'&&objects.some(b=>b.kind==='brush'&&b.entityId===o.id)));
   const world=useEditor(s=>s.project.world),changeWorld=useEditor(s=>s.changeWorld);
   if(!object)return <div className="properties"><div className="panel-header"><span><Settings2 size={15}/> {t('World Properties')}</span></div><div className="property-scroll">
     <div className="property-object-header"><span className="property-avatar"><Globe2 size={19}/></span><span><strong>worldspawn</strong><small>{t('Map environment')}</small></span></div>
@@ -255,33 +262,56 @@ export function Properties(){
   if(selectedIds.length>1)return <div className="properties"><div className="panel-header"><span><Settings2 size={15}/> {t('Multi-selection')}</span><span className="counter">{selectedIds.length}</span></div><div className="property-scroll">
     <div className="property-object-header"><span className="property-avatar"><Layers size={19}/></span><span><strong>{selectedIds.length} {t('objects selected')}</strong><small>{t('Move group with the 3D gizmo')}</small></span></div>
     <p className="panel-text">{t('Use Ctrl/Shift + click in Explorer or the viewport to change the selection. Group move is committed when releasing the gizmo; Rotate and Scale remain individual operations.')}</p>
+    {detachCandidates.length>0&&<section className="modeling-properties">
+      <div className="property-group-title">{t('Brush entity association')}</div>
+      <p className="modeling-note">{t('Detach selected brush(es) or entire linked entities while preserving the brush geometry and UVs.')}</p>
+      <div className="operation-buttons">
+        <button onClick={()=>tryDetach(selectedIds,false)}><Unlink size={14}/> {t('Detach selected brushes')}</button>
+        <button onClick={()=>tryDetach(selectedIds,true)}><Unlink size={14}/> {t('Detach all brushes of these entities')}</button>
+      </div>
+    </section>}
     <AdvancedSelectionPanel/>
     <div className="property-buttons"><button onClick={duplicate}><Copy size={13}/> {t('Duplicate all')}</button><button className="danger" onClick={remove}><Trash2 size={13}/> {t('Delete all')}</button></div>
   </div></div>;
   const brush=object.kind==='brush'?object:null;
   const point=object.kind==='entity'?object:null;
+  const updateSpawnYaw=(yaw:number)=>{
+    if(!point||!Number.isFinite(yaw))return;
+    change(point.id,{props:{...point.props,angles:withSpawnYaw(point.props,yaw),
+      ...(point.props.angle!==undefined?{angle:String(Math.round(yaw))}:{})}});
+  };
   return <div className="properties"><div className="panel-header"><span><Settings2 size={15}/> {t('Properties')}</span><span className="counter">{t(brush?'Brush':'Entity')}</span></div>
     <div className="property-scroll">
       <div className="property-object-header"><span className="property-avatar">{brush?<Box size={19}/>:<UserRound size={19}/>}</span><span><strong>{object.name}</strong><small>{point?.classname||brush?.primitive||''}</small></span></div>
       <div className="property-group-title">{t('TRANSFORM')}</div>
-      <Field label={t('Name')} value={object.name} onChange={name=>change(object.id,{name})}/>
+      <Field label={t('Name')} value={object.name} onChange={name=>change(object.id,{name,editorAlias:name})}/>
       <VectorFields label={t('Position')} value={object.position} onChange={position=>change(object.id,{position})}/>
       {brush&&<><VectorFields label={t('Rotation')} value={brush.rotation} onChange={rotation=>change(brush.id,{rotation})}/><VectorFields label={t('Scale')} value={brush.scale} onChange={scale=>change(brush.id,{scale})}/><VectorFields label={t('Dimensions (units)')} value={brushDimensions(brush)} onChange={size=>{try{setDimensions(brush.id,size)}catch(error){alert(String(error))}}}/></>}
       <div className="property-group-title">{t('ORGANIZATION')}</div>
       <Field label={t('Layer')} value={object.layer||'Geometry'} onChange={layer=>setLayer(object.id,layer)}/>
       {point&&<><div className="property-group-title">{t('ENTITY KEYVALUES')}</div><Field label="classname" value={point.classname} onChange={classname=>change(object.id,{classname})}/>
-        <div className="entity-property-intro">{cls?.description||point.classname}</div>
+        {point.classname==='info_player_start'&&<section className="spawn-facing-editor">
+          <strong>{t('Start facing direction')}</strong>
+          <p>{t('Set where the player looks when spawning. The direction arrow in the viewport updates immediately.')}</p>
+          <label>{t('Yaw (degrees)')}<input type="number" step="15" value={spawnYaw(point.props)} onChange={e=>{const n=Number(e.target.value);if(Number.isFinite(n))updateSpawnYaw(n)}}/></label>
+          <div className="spawn-facing-presets">{[0,90,180,270].map(yaw=><button key={yaw} type="button" className={spawnYaw(point.props)===yaw?'active':''} onClick={()=>updateSpawnYaw(yaw)}>{yaw}°</button>)}</div>
+          <small>{t('The start marker rests on the floor. The original spawn origin and exported coordinates remain unchanged.')}</small>
+        </section>}
+
+        <div className="entity-property-intro">{cls?.description||point.classname}</div>        <EntityAssistant key={point.id} entity={point} definition={cls}/>
         <div className="entity-quick-links">
           <Field label="targetname" value={point.props.targetname||''} onChange={v=>setProp(object.id,'targetname',v)}/>
           <Field label="target" value={point.props.target||''} onChange={v=>setProp(object.id,'target',v)}/>
           <label className="entity-link-picker">{t('Connect to entity')}
-            <select value={point.props.target||''} onChange={e=>setProp(object.id,'target',e.target.value)}>
+            <input aria-label="Search connection destination" placeholder={t('Find entity by name…')} value={targetSearch} onChange={e=>setTargetSearch(e.target.value)} onKeyDown={e=>e.stopPropagation()}/>
+            <select value={objects.find(x=>x.kind==='entity'&&x.id!==point.id&&x.props.targetname&&x.props.targetname===point.props.target)?.id||''} onChange={e=>{const chosen=objects.find(o=>o.kind==='entity'&&o.id===e.target.value);if(!chosen){setProp(object.id,'target','');return;}try{useEditor.getState().connectGameplay(point.id,chosen.id,true)}catch(error){window.alert(String(error))}}}>
               <option value="">{t('No connection')}</option>
-              {useEditor.getState().project.objects.filter(x=>x.kind==='entity'&&x.id!==point.id&&x.props.targetname).map(x=><option key={x.id} value={(x as PointEntity).props.targetname}>{(x as PointEntity).props.targetname} — {x.name}</option>)}
+              {objects.filter((x):x is PointEntity=>x.kind==='entity'&&x.id!==point.id).filter(x=>x.props.targetname&&x.props.targetname===point.props.target||!targetSearch.trim()||connectionSearchText(x,objects).includes(targetSearch.trim().toLocaleLowerCase())).slice(0,80).map(x=><option key={x.id} value={x.id}>{entityConnectionLabel(x,objects)}</option>)}
             </select>
           </label>
         </div>
         {Object.entries({...cls?.props,...Object.fromEntries(Object.keys(point.props).map(k=>[k,cls?.props[k]||{type:'string',label:k}]))}).filter(([k])=>!['target','targetname'].includes(k)).map(([key,field])=>{
+          if(point.classname==='info_player_start'&&key==='angles')return null;
           const value=point.props[key]??field.defaultValue??'';
           if(field.type==='choices'&&field.options?.length)return <label key={key} className="entity-choice">{field.label}<select value={value} onChange={e=>setProp(object.id,key,e.target.value)}>
             {field.options.map(o=><option value={o.value} key={o.value}>{o.label} ({o.value})</option>)}
@@ -294,6 +324,21 @@ export function Properties(){
         })}
         <div className="add-property"><input value={newKey} placeholder="key" onChange={e=>setNewKey(e.target.value)}/><input value={newValue} placeholder="value" onChange={e=>setNewValue(e.target.value)}/><button title="Add keyvalue" onClick={()=>{if(newKey.trim()){setProp(object.id,newKey.trim(),newValue);setNewKey('');setNewValue('')}}}><Plus size={14}/></button></div>
       </>}
+      {brush?.entityId&&<section className="modeling-properties">
+        <div className="property-group-title">{t('Brush entity association')}</div>
+        {linkedEntity?.kind==='entity'&&<EntityAssistant key={linkedEntity.id} entity={linkedEntity} definition={useEditor.getState().fgdClasses.find(c=>c.name===linkedEntity.classname)}/>}
+        <div className="property-meta">{t('Linked entity')}: <strong>{linkedEntity?.kind==='entity'?linkedEntity.classname:t('Missing entity')}</strong> · {linkedBrushCount} {t('brushes')}</div>
+        <div className="operation-buttons">
+          <button disabled={!!brush.locked} onClick={()=>tryDetach([brush.id])}><Unlink size={14}/> {t('Detach this brush (worldspawn)')}</button>
+          {linkedBrushCount>1&&<button disabled={!!linkedEntity?.locked} onClick={()=>tryDetach([brush.id],true)}><Unlink size={14}/> {t('Detach entire entity')}</button>}
+        </div>
+        <p className="modeling-note">{t('Brush shape, textures, dimensions, position and grouping remain unchanged.')}</p>
+      </section>}
+      {point&&attachedBrushCount>0&&<section className="modeling-properties">
+        <div className="property-group-title">{t('Brush entity association')}</div>
+        <p className="property-meta">{attachedBrushCount} {t('linked brushes')} · {point.classname}</p>
+        <button disabled={!!point.locked} onClick={()=>tryDetach([point.id],true)}><Unlink size={14}/> {t('Convert linked brushes to worldspawn')}</button>
+      </section>}
       {brush&&<><ModelingPanel brush={brush}/><div className="property-group-title">{t('BRUSH MATERIAL')}</div>
         <div className="property-meta">{t('Faces')}: {brush.faces.length} · {t('Vertices')}: {brush.vertices.length}</div>
         {faceMode&&selectedFace!==null&&brush.faces[selectedFace]?<>

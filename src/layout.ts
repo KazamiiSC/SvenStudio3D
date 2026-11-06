@@ -3,6 +3,18 @@ import {create} from 'zustand';
 import {persist} from 'zustand/middleware';
 export type DockSide = 'left'|'right'|'top'|'bottom';
 export type DockPanelId = 'assets'|'explorer'|'properties'|'console';
+export const TOOLBAR_GROUPS = ['transform','view','geometry','tools','grid','edit','studios'] as const;
+export type ToolbarGroup = typeof TOOLBAR_GROUPS[number];
+export function normalizeToolbarGroups(value:unknown):ToolbarGroup[]{
+  const existing=Array.isArray(value)?value.filter((id):id is ToolbarGroup=>typeof id==='string'&&TOOLBAR_GROUPS.includes(id as ToolbarGroup)):[];
+  return [...new Set([...existing,...TOOLBAR_GROUPS])];
+}
+export function moveToolbarGroup(groups:readonly ToolbarGroup[],from:ToolbarGroup,to:ToolbarGroup):ToolbarGroup[]{
+  const normalized=normalizeToolbarGroups(groups);
+  if(from===to||!normalized.includes(from)||!normalized.includes(to))return normalized;
+  const next=normalized.filter(id=>id!==from);next.splice(next.indexOf(to),0,from);return next;
+}
+
 export type Accent = 'nebula'|'ice'|'ember'|'mint'|'orchid'|'gold';
 export type PerformancePreset = 'quality'|'balanced'|'large';
 type LayoutState = {
@@ -11,6 +23,9 @@ type LayoutState = {
   visible: Record<DockPanelId,boolean>;
   toolbarDock: DockSide;
   compactTools:boolean;
+  toolbarGroups:ToolbarGroup[];
+  reorderToolbarGroup:(from:ToolbarGroup,to:ToolbarGroup)=>void;
+  stepToolbarGroup:(id:ToolbarGroup,direction:-1|1)=>void;
   floatRailSide:'left'|'right';
   widths: {left:number;right:number};
   heights: {top:number;bottom:number};
@@ -30,13 +45,14 @@ type LayoutState = {
   setFontScale:(value:number)=>void;
   setPerformancePreset:(value:PerformancePreset)=>void;
   resetLayout:()=>void;
-  usePreset:(preset:'classic'|'focus'|'creative'|'wide'|'minimal')=>void;
+  usePreset:(preset:'organized'|'classic'|'focus'|'creative'|'wide'|'minimal')=>void;
 };
 const defaults = () => ({
   sides:{assets:'left',explorer:'right',properties:'right',console:'bottom'} as Record<DockPanelId,DockSide>,
   order:['assets','explorer','properties','console'] as DockPanelId[],
   visible:{assets:false,explorer:true,properties:true,console:false} as Record<DockPanelId,boolean>,
   toolbarDock:'left' as DockSide,
+  toolbarGroups:[...TOOLBAR_GROUPS],
   compactTools:true,floatRailSide:'left' as 'left'|'right',
   widths:{left:254,right:302},heights:{top:192,bottom:168},
   weights:{assets:1,explorer:1,properties:1,console:1},
@@ -52,6 +68,13 @@ export const useStudioLayout=create<LayoutState>()(persist((set)=>({
     return {sides:{...s.sides,[id]:side},visible:{...s.visible,[id]:true},order:others};
   }),
   setToolbarDock:side=>set({toolbarDock:side}),
+  reorderToolbarGroup:(from,to)=>set(s=>({toolbarGroups:moveToolbarGroup(s.toolbarGroups??TOOLBAR_GROUPS,from,to)})),
+  stepToolbarGroup:(id,direction)=>set(s=>{
+    const groups=normalizeToolbarGroups(s.toolbarGroups);
+    const at=groups.indexOf(id),next=at+direction;
+    if(at<0||next<0||next>=groups.length)return {toolbarGroups:groups};
+    [groups[at],groups[next]]=[groups[next],groups[at]];return {toolbarGroups:groups};
+  }),
   setCompactTools:compactTools=>set({compactTools}),setFloatRailSide:floatRailSide=>set({floatRailSide}),
   setVisible:(id,visible)=>set(s=>({visible:{...s.visible,[id]:visible}})),
   setSideSize:(side,value)=>set(s=>{
@@ -78,10 +101,11 @@ export const useStudioLayout=create<LayoutState>()(persist((set)=>({
   resetLayout:()=>set(defaults()),
   usePreset:preset=>set(s=>{
     const base={...defaults(),accent:s.accent,uiScale:s.uiScale,fontScale:s.fontScale,performancePreset:s.performancePreset};
+    if(preset==='organized')return {...base,compactTools:true,visible:{assets:true,explorer:true,properties:true,console:false},widths:{left:266,right:294}};
     if(preset==='classic')return {...base,compactTools:false,toolbarDock:'top',visible:{assets:true,explorer:true,properties:true,console:false}};
     if(preset==='focus')return {...base,toolbarDock:'left',visible:{assets:false,explorer:false,properties:true,console:false}};
     if(preset==='wide')return {...base,toolbarDock:'right',floatRailSide:'right' as const,visible:{assets:true,explorer:false,properties:true,console:false},widths:{left:310,right:310}};
     if(preset==='minimal')return {...base,toolbarDock:'left',visible:{assets:false,explorer:false,properties:false,console:false}};
     return base;
   })
-}),{name:'sven-studio-ui-layout-041',version:1,partialize:s=>({sides:s.sides,order:s.order,visible:s.visible,toolbarDock:s.toolbarDock,compactTools:s.compactTools,floatRailSide:s.floatRailSide,widths:s.widths,heights:s.heights,weights:s.weights,uiScale:s.uiScale,accent:s.accent,fontScale:s.fontScale,performancePreset:s.performancePreset})}));
+}),{name:'sven-studio-ui-layout-041',version:1,partialize:s=>({sides:s.sides,order:s.order,visible:s.visible,toolbarDock:s.toolbarDock,toolbarGroups:s.toolbarGroups,compactTools:s.compactTools,floatRailSide:s.floatRailSide,widths:s.widths,heights:s.heights,weights:s.weights,uiScale:s.uiScale,accent:s.accent,fontScale:s.fontScale,performancePreset:s.performancePreset})}));

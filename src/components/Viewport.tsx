@@ -1,28 +1,42 @@
 import {isWalkCrouchHeld} from '../engine/controls';
-import {requestSafeWalkFullscreen,releaseSafeWalkFullscreen} from '../engine/walkKeyboardLock';
+import {keyboardVerticalDirection} from '../engine/cameraKeyboard';
+import {canCaptureMapCamera,canMoveInCameraCapture} from '../engine/cameraCapture';
 import { Canvas,useFrame,useThree } from '@react-three/fiber';
-import { Scan, EyeOff, Eye, Grid3x3, Magnet, Sun, Focus, Undo2, Redo2, Footprints, Flashlight, Settings2, Droplets } from 'lucide-react';
+import { Scan, EyeOff, Eye, Grid3x3, Magnet, Sun, Focus, Undo2, Redo2, Flashlight, Droplets } from 'lucide-react';
 import { OrbitControls,TransformControls,GizmoHelper,GizmoViewport,Html,Line } from '@react-three/drei';
 import { createContext,memo,useCallback,useContext,useEffect,useMemo,useRef,useState } from 'react';
 import * as THREE from 'three';
 import { useEditor } from '../store';
-import { buildMeshGeometry,createPlaceableShape,gameToThree,threeToGame,toRenderQuaternion,fromRenderQuaternion,transformedVertices } from '../engine/geometry';
+import { buildMeshGeometry,brushDimensions,createSizedPlaceableShape,gameToThree,threeToGame,toRenderQuaternion,fromRenderQuaternion,transformedVertices } from '../engine/geometry';
 import type { Brush,PointEntity,TextureAsset,Vec3,PlaceableShape } from '../engine/types';
 import {uniqueBrushEdges} from '../engine/modeling';
 import {traceNpcRoute,isNpcOwner} from '../engine/npc';
+import {readCinematicScene} from '../engine/cinematic';
 import {organizeScene,routeColor} from '../engine/sceneOrganization';
 import {soundInfluence,validSoundReference} from '../engine/sound';
 import {parseLight,rgbHex,skyPreviewColor} from '../engine/environment';
 import {previewLocalLight,previewSunLight,previewDirection,previewCone} from '../engine/lightingPreview';
 import {useT} from '../i18n';
+import {studioGuide} from '../engine/studioGuide';
 import {isUvDragGesture} from '../engine/controls';
-import {ContextHitProbe,ContextMenu,OrthoQuickTools,type SceneMenu} from './ViewportExtras';
+import {ContextHitProbe,ContextMenu,OrthoQuickTools,ghostContextOnlyRaycast,type SceneMenu} from './ViewportExtras';
 import {StudioModel,loadModelByPath} from './ModelBrowser';
 import type {StudioPreview} from '../engine/mdl';
 import {useStudioLayout} from '../layout';
-import {entityColorKind} from '../engine/entityAppearance';
+import {markerKindForEntity,markerColorForEntity} from '../engine/entityAppearance';
+import {entityBehindBrushHit} from '../engine/occludedEntitySelection';
+import {entityDisplayName} from '../engine/entityNaming';
+import {spawnYaw,spawnFloorZ,spawnModelFootHeight} from '../engine/spawnPresentation';
+import {MapEntityLabelOverlay,type MapLabelAnchor} from './MapEntityLabelOverlay';
+import {MapPerformanceMonitor} from './MapPerformanceMonitor';
+import {rotateObjectsForPlacement,placementPoints} from '../engine/smartPlacement';
+import {snappedFacing,surfacePlacementAnchor} from '../engine/smartPlacementMath';
+import type {DrawPlane} from '../engine/smartPlacementMath';
+import {preferredTextureAssets} from '../engine/textureWadSelection';
 import type { OrbitControls as OrbitControlsImpl,TransformControls as TransformControlsImpl } from 'three-stdlib';
-import {anchorPosition,anchoredPose,expandPicker,GRID_STEPS,SCALE_ANCHORS,snapBrushScaleFactors} from '../engine/transformUX';
+import {faceLocalBounds,resizeFromFace,type FaceAxis,type FaceSign} from '../engine/faceScale';
+import {unitsPerScreenPixel,FACE_GIZMO_TIP_PIXELS,FACE_GIZMO_HIT_PIXELS,preciseFaceDistance} from '../engine/gizmoScale';
+import {anchorPosition,anchoredPose,expandPicker,GRID_STEPS,snapBrushScaleFactors} from '../engine/transformUX';
 import {hitTransformPicker} from '../engine/gizmoPointer';
 import {modifierKeys,EMPTY_MODIFIERS,transformGesture,snapIncrement,type ModifierKeys} from '../engine/transformModifiers';
 import {readSavedCamera,writeSavedCamera} from '../engine/cameraRecovery';
@@ -31,12 +45,15 @@ import {useMapDoctorState} from '../mapDoctorState';
 import {HudWidget} from './HudWidget';
 import {HudCustomizer} from './HudCustomizer';
 import {QuickToolRail} from './QuickToolRail';
+import {ShapePalette} from './ShapePalette';
+import {TextureStudioPanel,TextureUVHandles} from './TextureStudio';
+import {GameplaySession} from '../engine/gameplayTest';
 import {WALK,chooseWalkStart,walkCollider,walkStep,type WalkCollider,type WalkPose} from '../engine/playerWalk';
 import {goldSrcMaterial,noclipDisplacement,readPreviewSettings,savePreviewSettings,normalizeWalkPreview,normalizeGoldSrcPreview,DEFAULT_WALK_PREVIEW,DEFAULT_GOLDSRC_PREVIEW,type WalkPreviewSettings,type GoldSrcPreviewSettings} from '../engine/previewEnhancements';
 
 type WalkStats={position:[number,number,number];speed:number;grounded:boolean;crouched:boolean;noclip:boolean};
-type PreviewContextState={walk:WalkPreviewSettings;goldsrc:GoldSrcPreviewSettings;updateWalk:(patch:Partial<WalkPreviewSettings>)=>void;updateGoldSrc:(patch:Partial<GoldSrcPreviewSettings>)=>void;reportWalk:(stats:WalkStats)=>void};
-const PreviewContext=createContext<PreviewContextState>({walk:DEFAULT_WALK_PREVIEW,goldsrc:DEFAULT_GOLDSRC_PREVIEW,updateWalk:()=>{},updateGoldSrc:()=>{},reportWalk:()=>{}});
+type PreviewContextState={hideRecoveryNull:boolean;walk:WalkPreviewSettings;goldsrc:GoldSrcPreviewSettings;gameplaySession:{current:GameplaySession|null};reportGameplay:(text:string)=>void;updateWalk:(patch:Partial<WalkPreviewSettings>)=>void;updateGoldSrc:(patch:Partial<GoldSrcPreviewSettings>)=>void;reportWalk:(stats:WalkStats)=>void};
+const PreviewContext=createContext<PreviewContextState>({hideRecoveryNull:true,walk:DEFAULT_WALK_PREVIEW,goldsrc:DEFAULT_GOLDSRC_PREVIEW,gameplaySession:{current:null},reportGameplay:()=>{},updateWalk:()=>{},updateGoldSrc:()=>{},reportWalk:()=>{}});
 const waterPreviewTextures=new Set<THREE.Texture>();
 function GoldSrcPreviewAnimator(){
  const {gl}=useThree();
@@ -61,15 +78,67 @@ function WalkFlashlight(){
 }
 const textureCache=new Map<string,THREE.Texture>();
 const sharedMaterials=new Map<string,THREE.MeshStandardMaterial>();
-const entityMarkerGeometry={box:new THREE.BoxGeometry(18,18,18),light:new THREE.OctahedronGeometry(10),spawn:new THREE.CapsuleGeometry(10,20,4,8)};
-const entityMarkerMaterials=new Map<string,THREE.MeshStandardMaterial>();
-function markerMaterial(color:string,selected:boolean){
-  const key=`${color}:${selected}`;
+const entityMarkerGeometry={
+  box:new THREE.BoxGeometry(14,14,14),bubble:new THREE.SphereGeometry(8,14,10),
+  capsule:new THREE.CapsuleGeometry(6,9,5,10),diamond:new THREE.OctahedronGeometry(10),
+  cone:new THREE.ConeGeometry(8,17,12),light:new THREE.SphereGeometry(9,16,10),
+  door:new THREE.BoxGeometry(4,22,14),button:new THREE.CylinderGeometry(8,8,4,16),
+  speaker:new THREE.ConeGeometry(8,16,16),relay:new THREE.DodecahedronGeometry(9),
+  trigger:new THREE.BoxGeometry(17,15,17),item:new THREE.TetrahedronGeometry(11)
+};
+// Shared per-color materials: X-ray needs no per-frame extra geometry or raycasts.
+const entityMarkerMaterials=new Map<string,THREE.Material>();
+function markerMaterial(color:string,selected:boolean,xray=false){
+  const key=`${color}:${selected}:${xray}`;
   let material=entityMarkerMaterials.get(key);
-  if(!material){material=new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:selected?.8:.4});entityMarkerMaterials.set(key,material)}
+  if(!material){
+    material=xray
+      ? new THREE.MeshBasicMaterial({color,transparent:true,opacity:selected?.90:.62,depthTest:false,depthWrite:false,toneMapped:false})
+      : new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:selected?.8:.4});
+    entityMarkerMaterials.set(key,material);
+  }
   return material;
 }
-const textureAssetIndex=new WeakMap<TextureAsset[],Map<string,TextureAsset>>();
+/** A brush often sits in front of a point entity, intercepting R3F pointerdown.
+ * R3F already provides all mesh intersections, including markers behind the wall.
+ * Prioritize only actual marker shapes, not entire models, when X-ray or Alt is used.
+ */
+function selectOccludedEntity(
+  intersections:readonly {object:{userData:Record<string,unknown>}}[],
+  additive:boolean
+):boolean{
+  const state=useEditor.getState();
+  const id=entityBehindBrushHit(intersections,candidate=>state.project.objects.some(obj=>obj.kind==='entity'&&obj.id===candidate&&!obj.hidden&&!obj.locked));
+  if(!id)return false;
+  state.selectObject(id,additive);
+  return true;
+}
+const textureAssetIndex=new WeakMap<TextureAsset[],{key:string;index:Map<string,TextureAsset>}>();
+const textureSizeCache=new WeakMap<TextureAsset[],{key:string;sizes:ReadonlyMap<string,{width:number;height:number}>}>();
+function compilerWadPriority(){
+  const state=useEditor.getState();
+  const paths=state.settings.wadPaths.split(/[\r\n]+/).map(s=>s.trim()).filter(Boolean);
+  return {key:paths.join(';')+'|'+state.project.wadNames.join(';'),paths,projectWads:state.project.wadNames};
+}
+function textureAssetLookup(assets:TextureAsset[]):Map<string,TextureAsset>{
+  const priority=compilerWadPriority();
+  let cached=textureAssetIndex.get(assets);
+  if(!cached||cached.key!==priority.key){
+    cached={key:priority.key,index:preferredTextureAssets(assets,priority.paths,priority.projectWads)};
+    textureAssetIndex.set(assets,cached);
+  }
+  return cached.index;
+}
+function textureSizeLookup(assets:TextureAsset[]):ReadonlyMap<string,{width:number;height:number}>{
+  const priority=compilerWadPriority();
+  let cached=textureSizeCache.get(assets);
+  if(!cached||cached.key!==priority.key){
+    const preferred=textureAssetLookup(assets);
+    cached={key:priority.key,sizes:new Map([...preferred].map(([name,asset])=>[name.toUpperCase(),{width:asset.width,height:asset.height}]))};
+    textureSizeCache.set(assets,cached);
+  }
+  return cached.sizes;
+}
 const starterTextures=new Set(["SV_BRICK01", "SV_CONCRET", "SV_TILE01", "SV_METAL01", "SV_GRID01"]);
 // Public starter textures are available on the very first render, even while
 // asynchronous WAD decoding is still running. This does not change map data.
@@ -79,6 +148,7 @@ const visualGroups=new Map<string,THREE.Group>();
 // One native TransformControls picker owns handle gestures. Mesh-selection
 // callbacks consult it before changing any selection (also without Measure).
 let selectedGizmoPointerHit:((x:number,y:number)=>boolean)|null=null;
+let faceScaleOrbitToggle:((enabled:boolean)=>void)|null=null;
 function pointerOnSelectedGizmo(event:{clientX:number;clientY:number}){
   return selectedGizmoPointerHit?.(event.clientX,event.clientY)===true;
 }
@@ -90,9 +160,7 @@ function useVisualGroup(id:string,hidden:boolean,ref:React.RefObject<THREE.Group
   },[id,hidden,ref]);
 }
 function materialTexture(texture:string,assets:TextureAsset[]) {
-  let index=textureAssetIndex.get(assets);
-  if(!index){index=new Map(assets.map(asset=>[asset.name.toLowerCase(),asset]));textureAssetIndex.set(assets,index)}
-  const a=index.get(texture.toLowerCase());
+  const a=textureAssetLookup(assets).get(texture.toLowerCase());
   const starter=starterTextures.has(texture.toUpperCase());
   if(!a&&!starter)return undefined;
   const key=a?`${a.wad}:${a.name}:${a.sourceId||'legacy'}`:`starter:${texture.toUpperCase()}`;
@@ -105,9 +173,20 @@ function materialTexture(texture:string,assets:TextureAsset[]) {
   t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;textureCache.set(key,t);return t;
 }
 function useMaterials(b:Brush,assets:TextureAsset[],wireframe:boolean,entity?:PointEntity){
-  const {goldsrc}=useContext(PreviewContext);
-  const solidShading=useEditor(s=>s.solidShading);
+  const wadPriority=useEditor(s=>s.settings.wadPaths+'|'+s.project.wadNames.join(';'));
+  const {goldsrc,hideRecoveryNull}=useContext(PreviewContext);
+  const walking=useEditor(s=>s.walkMode);
+  const isBspRecovered=useEditor(s=>/_recovered(?:\.map)?$/i.test(s.project.name)||/(?:^|[;\\/])[^;\\/]+_recovered\.wad(?:;|$)/i.test(s.project.world.wad||''));
+  const solidShading=useEditor(s=>s.solidShading)&&!walking;
   return useMemo(()=>b.faces.map((f,i)=>{
+    // Decompiled MAPs may expose NULL tool faces not present in the compiled BSP.
+    // Preview-only: do not paint them or modify MAP/brush data.
+    if(isBspRecovered&&hideRecoveryNull&&!solidShading&&!wireframe&&f.texture.toUpperCase()==='NULL'){
+      const key='bsp-recovery-hidden-null';
+      let hidden=sharedMaterials.get(key);
+      if(!hidden){hidden=new THREE.MeshStandardMaterial({color:'#ffffff',transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide});sharedMaterials.set(key,hidden)}
+      return hidden;
+    }
     const image=solidShading?undefined:materialTexture(f.texture,assets);
     const palette=['#a9b1ba','#9da6b2','#b8a8a0','#a19a90','#8fa3ad','#99a098'];
     const color=solidShading?'#acb5c1':image?'#ffffff':palette[i%palette.length];
@@ -125,7 +204,7 @@ function useMaterials(b:Brush,assets:TextureAsset[],wireframe:boolean,entity?:Po
     }
     if(image&&info.kind==='water')waterPreviewTextures.add(image);
     return material;
-  }),[b.faces,assets,wireframe,entity,solidShading,goldsrc.enabled,goldsrc.transparency]);
+  }),[b.faces,assets,wadPriority,wireframe,entity,solidShading,goldsrc.enabled,goldsrc.transparency,isBspRecovered,hideRecoveryNull]);
 }
 /**
  * Screen-space nameplate for Svengine point entities and tied brush entities.
@@ -154,13 +233,16 @@ function EntityNameLabel({classname,targetname,position,selected=false,color,isS
 
 /** Transparent editor-only geometry; never written to the .map or selected by raycast. */
 function GhostBrush({object}:{object:Brush}){
-  const geometry=useMemo(()=>buildMeshGeometry(object),[object.vertices,object.faces,object.position,object.rotation,object.scale]);
+  const assets=useEditor(s=>s.textureAssets);
+  const wadPriority=useEditor(s=>s.settings.wadPaths+'|'+s.project.wadNames.join(';'));
+  const assetSizes=useMemo(()=>textureSizeLookup(assets),[assets,wadPriority]);
+  const geometry=useMemo(()=>buildMeshGeometry(object,assetSizes),[object.vertices,object.faces,object.position,object.rotation,object.scale,assetSizes,wadPriority]);
   const edges=useMemo(()=>new THREE.EdgesGeometry(geometry,28),[geometry]);
   useEffect(()=>()=>{geometry.dispose();edges.dispose()},[geometry,edges]);
   const pos=gameToThree(object.position),quat=toRenderQuaternion(object.rotation);
   const scale:[number,number,number]=[object.scale[0],object.scale[2],object.scale[1]];
   return <group position={pos} quaternion={quat} scale={scale}>
-    <mesh geometry={geometry} raycast={()=>null}>
+    <mesh geometry={geometry} userData={{hiddenBrushId:object.id}} raycast={ghostContextOnlyRaycast}>
       <meshBasicMaterial color="#62c2f7" transparent opacity={0.12} depthWrite={false} side={THREE.DoubleSide}/>
     </mesh>
     <lineSegments geometry={edges} raycast={()=>null}>
@@ -168,11 +250,12 @@ function GhostBrush({object}:{object:Brush}){
     </lineSegments>
   </group>;
 }
-function BrushVisual({object}:{object:Brush}){
+function BrushVisual({object,optimizedLabels=false}:{object:Brush;optimizedLabels?:boolean}){
   const selected=useEditor(s=>s.selectedIds.includes(object.id));
   const lastSelected=useEditor(s=>s.selected===object.id);
   const multiCount=useEditor(s=>s.selectedIds.length);
   const selectedFace=useEditor(s=>s.selectedFace);
+  const textureSelectedFaces=useEditor(s=>s.textureFaceSelection);
   const faceMode=useEditor(s=>s.faceMode);
   const drawMode=useEditor(s=>s.drawMode);
   const geometryMode=useEditor(s=>s.geometryMode);
@@ -180,6 +263,7 @@ function BrushVisual({object}:{object:Brush}){
   const showNames=useEditor(s=>s.showEntityNames);
   const appearance=useEditor(s=>s.entityAppearance);
   const placementShape=useEditor(s=>s.placementShape);
+  const terrainPlacement=useEditor(s=>s.terrainPlacement);
   const architecturePlacement=useEditor(s=>s.architecturePlacement);
   const hoverActive=useEditor(s=>s.architectureHoverTarget===object.id);
   const setHoverTarget=useEditor(s=>s.setArchitectureHoverTarget);
@@ -207,6 +291,10 @@ function BrushVisual({object}:{object:Brush}){
   const associatedEntity=useEditor(s=>object.entityId?s.project.objects.find(o=>o.id===object.entityId&&o.kind==='entity') as PointEntity|undefined:undefined);
   const modal=useEditor(s=>s.modalTransform);
   const selectObject=useEditor(s=>s.selectObject);
+  const selectTextureStudioFace=useEditor(s=>s.selectTextureStudioFace);
+  const setTextureStudioOpen=useEditor(s=>s.setTextureStudioOpen);
+  const texturePickerActive=useEditor(s=>s.texturePickerActive);
+  const sampleTextureStudioFace=useEditor(s=>s.sampleTextureStudioFace);
   const update=useEditor(s=>s.updateObject);
   const beginTextureDrag=useEditor(s=>s.beginTextureDrag);
   const updateTextureDrag=useEditor(s=>s.updateTextureDrag);
@@ -220,14 +308,23 @@ function BrushVisual({object}:{object:Brush}){
   };
   const uiScale=useStudioLayout(s=>s.uiScale);
   const assets=useEditor(s=>s.textureAssets);
+  const wadPriority=useEditor(s=>s.settings.wadPaths+'|'+s.project.wadNames.join(';'));
   const wireframe=useEditor(s=>s.wireframe);
   const walkMode=useEditor(s=>s.walkMode);
-  const geometry=useMemo(()=>buildMeshGeometry(object),[object.vertices,object.faces,object.position,object.rotation,object.scale]);
+  const {gameplaySession}=useContext(PreviewContext);
+  const assetSizes=useMemo(()=>textureSizeLookup(assets),[assets,wadPriority]);
+  const geometry=useMemo(()=>buildMeshGeometry(object,assetSizes),[object.vertices,object.faces,object.position,object.rotation,object.scale,assetSizes,wadPriority]);
   const edges=useMemo(()=>selected?new THREE.EdgesGeometry(geometry,24):null,[geometry,selected]);
   const materials=useMaterials(object,assets,wireframe,associatedEntity);
   const shadows=useEditor(s=>s.environmentPreview&&s.previewShadows);
   const groupRef=useRef<THREE.Group>(null!);
   useVisualGroup(object.id,!!object.hidden,groupRef);
+  useFrame(()=>{
+    if(!groupRef.current||!walkMode||!object.entityId)return;
+    const offset=gameplaySession.current?.doorOffset(object.entityId)||[0,0,0];
+    const base=gameToThree(object.position);
+    groupRef.current.position.set(base.x+offset[0],base.y+offset[2],base.z-offset[1]);
+  });
   useEffect(()=>()=>{geometry.dispose();edges?.dispose()},[geometry,edges]);
   useEffect(()=>{
     if(!architecturePlacement){setArchitectureHover(null);setArchitecturePreviewSize(null);architectureDrag.current=null;}
@@ -235,14 +332,23 @@ function BrushVisual({object}:{object:Brush}){
   // Shared materials are intentionally not disposed per brush; hundreds of
   // brushes can safely reuse one WebGL material for the same texture.
   if(object.hidden&&!walkMode)return null;
+  // Trigger volumes are editor-only guides, not visible solid walls in Sven Co-op.
+  if(walkMode&&associatedEntity?.classname.startsWith('trigger_'))return null;
   const pos=gameToThree(object.position),quat=toRenderQuaternion(object.rotation);
   const scale=new THREE.Vector3(object.scale[0],object.scale[2],object.scale[1]);
   const node=(<group ref={groupRef} position={pos} quaternion={quat} scale={scale}>
     <mesh geometry={geometry} material={materials} castShadow={shadows} receiveShadow={shadows} userData={{brushId:object.id}} onPointerDown={e=>{
-      if(walkMode||e.button!==0||drawMode||placementShape||audioPlacement||environmentPlacement)return;
+      if(walkMode||e.button!==0||drawMode||placementShape||useEditor.getState().placementPrefabId||audioPlacement||environmentPlacement)return;
       // Unlike Measure mode, ordinary selection used to steal native gizmo
       // pointerdowns when a ring/plane overlapped the selected brush.
-      if(pointerOnSelectedGizmo(e)){e.stopPropagation();return;}
+      if(pointerOnSelectedGizmo(e))return;
+      // In object mode, a visible X-ray marker takes priority over the wall.
+      // Alt+click temporarily enables the same behavior in normal-depth mode.
+      if(!architecturePlacement&&!measureMode&&!faceMode&&geometryMode==='object'&&!texturePickerActive
+        &&(appearance.markerOcclusion==='xray'||e.altKey)
+        &&selectOccludedEntity(e.intersections,e.shiftKey||e.ctrlKey||e.metaKey)){
+        e.stopPropagation();return;
+      }
       if(architecturePlacement){
         if(!eligibleWall)return; // Let the raycaster reach the wall behind decorations.
         e.stopPropagation();e.nativeEvent.preventDefault();
@@ -257,12 +363,13 @@ function BrushVisual({object}:{object:Brush}){
       e.stopPropagation();if(object.locked)return;
       const triIndex=e.faceIndex??0;
       const faceIndex=geometry.userData.trianglesToFaces?.[triIndex]??null;
+      if(texturePickerActive&&faceIndex!==null){sampleTextureStudioFace(object.id,faceIndex);return;}
       // Alt+drag on a face moves U/V texture offsets with a live preview.
       // The whole gesture becomes ONE undo step when the pointer is released.
       if(isUvDragGesture(e,faceMode)&&faceIndex!==null){
         e.nativeEvent.preventDefault();
         setOrbitEnabled(false);
-        selectObject(object.id,false,faceIndex);
+        selectTextureStudioFace(object.id,faceIndex,false);
         beginTextureDrag(object.id,faceIndex);
         textureDrag.current={x:e.clientX,y:e.clientY,face:faceIndex,mode:e.shiftKey?'rotate':e.ctrlKey?'scale':'offset'};
         (e.target as {setPointerCapture?:(id:number)=>void}|null)?.setPointerCapture?.(e.pointerId);
@@ -271,7 +378,14 @@ function BrushVisual({object}:{object:Brush}){
       // A click on a selected brush must not collapse a multi-selection
       // while the user is grabbing a transform gizmo overlapping that brush.
       if(selected&&multiCount>1&&!e.shiftKey&&!e.ctrlKey&&!e.metaKey)return;
-      selectObject(object.id,e.shiftKey||e.ctrlKey||e.metaKey,faceMode?faceIndex:null);
+      if(faceMode&&faceIndex!==null)selectTextureStudioFace(object.id,faceIndex,e.shiftKey||e.ctrlKey||e.metaKey);
+      else selectObject(object.id,e.shiftKey||e.ctrlKey||e.metaKey,null);
+    }} onDoubleClick={e=>{
+      if(walkMode||object.locked||object.hidden||architecturePlacement||drawMode||useEditor.getState().placementPrefabId)return;
+      const faceIndex=geometry.userData.trianglesToFaces?.[e.faceIndex??0];if(faceIndex===undefined)return;
+      e.stopPropagation();useEditor.getState().setGeometryMode('face');
+      selectTextureStudioFace(object.id,faceIndex,false);setTextureStudioOpen(true);
+      document.dispatchEvent(new CustomEvent('svenstudio:texture-open',{detail:{x:e.clientX,y:e.clientY}}));
     }} onPointerMove={e=>{
       if(architecturePlacement){
         if(!eligibleWall)return;
@@ -344,9 +458,22 @@ function BrushVisual({object}:{object:Brush}){
         <meshBasicMaterial color="#63dcff" transparent opacity={.25} depthTest depthWrite={false}/>
       </mesh>;
     })()}
-    {!walkMode&&showNames&&associatedEntity&&<EntityNameLabel classname={associatedEntity.classname} targetname={associatedEntity.props.targetname} position={[0,46,0]} selected={selected} color={appearance.colors[entityColorKind(associatedEntity.classname)]}/>}
+    {!walkMode&&associatedEntity&&appearance.markerMode==='automatic'&&(selected||['func_door','func_button','func_door_rotating','func_rot_button'].includes(associatedEntity.classname))&&<mesh
+      geometry={entityMarkerGeometry[markerKindForEntity(associatedEntity.classname,appearance)]}
+      position={[0,Math.max(8,...object.vertices.map(v=>v[2]))+11,0]} scale={appearance.markerSize*.6}
+      renderOrder={appearance.markerOcclusion==='xray'?250:0}
+      userData={{entityPickerId:associatedEntity.id}}
+      onPointerDown={e=>{
+        if(e.button!==0||object.locked||associatedEntity.locked||drawMode||faceMode||geometryMode!=='object'||architecturePlacement||placementShape||audioPlacement||environmentPlacement)return;
+        if(pointerOnSelectedGizmo(e))return;
+        e.stopPropagation();selectObject(associatedEntity.id,e.shiftKey||e.ctrlKey||e.metaKey);
+      }}>
+      <meshBasicMaterial color={markerColorForEntity(associatedEntity.classname,appearance)} transparent
+        opacity={selected?.80:.58} depthTest={appearance.markerOcclusion!=='xray'} depthWrite={false} wireframe/>
+    </mesh>}
+    {!optimizedLabels&&!walkMode&&showNames&&associatedEntity&&<EntityNameLabel classname={(() => {const name=entityDisplayName(associatedEntity,[associatedEntity,object]);return name===associatedEntity.classname?name:name+' · '+associatedEntity.classname})()} targetname={associatedEntity.props.targetname} position={[0,46,0]} selected={selected} color={markerColorForEntity(associatedEntity.classname,appearance)}/>}
     {!walkMode&&selected&&edges&&<lineSegments geometry={edges}><lineBasicMaterial color="#5db8fa" depthTest={false} transparent opacity={1}/></lineSegments>}
-    {!walkMode&&lastSelected&&faceMode&&selectedFace!==null&&<FaceHighlight brush={object} face={selectedFace}/>}
+    {!walkMode&&faceMode&&textureSelectedFaces.length>0?textureSelectedFaces.filter(r=>r.id===object.id).slice(0,48).map(r=><FaceHighlight key={`${r.id}:${r.face}`} brush={object} face={r.face}/>):!walkMode&&lastSelected&&faceMode&&selectedFace!==null&&<FaceHighlight brush={object} face={selectedFace}/>}
   </group>);
   // The selection gizmo is rendered once by SelectionTransformControls.
   // Separate gizmos on individual objects previously competed for pointer hits.
@@ -419,7 +546,19 @@ function FaceHighlight({brush,face}:{brush:Brush,face:number}){
 /** Optional real studio geometry, while the entity marker remains selectable.
  * Unsupported model variants leave the original marker visible, without
  * manufacturing false game keyvalues or pretending to animate NPCs. */
-function EntityStudioPreview({modelPath,gameDir,skin=0,body=0}:{modelPath:string;gameDir:string;skin?:number;body?:number}){
+function SpawnFallbackFigure({floorRelative}:{floorRelative:number}){
+  const ref=useRef<THREE.Group>(null);
+  useFrame(({clock})=>{if(ref.current)ref.current.scale.y=1+Math.sin(clock.elapsedTime*1.7)*.005});
+  return <group ref={ref} position={[0,floorRelative,0]} raycast={()=>null}>
+    <mesh position={[0,53,0]}><capsuleGeometry args={[9,22,5,9]}/><meshStandardMaterial color="#d4a76e"/></mesh>
+    <mesh position={[0,79,0]}><sphereGeometry args={[10,12,9]}/><meshStandardMaterial color="#e0c29a"/></mesh>
+    {[-1,1].map(side=><group key={side}>
+      <mesh position={[side*8,20,0]}><capsuleGeometry args={[4,30,5,9]}/><meshStandardMaterial color="#546d83"/></mesh>
+      <mesh position={[side*15,51,0]} rotation={[0,0,side*.1]}><capsuleGeometry args={[4,24,5,9]}/><meshStandardMaterial color="#8198a9"/></mesh>
+    </group>)}
+  </group>;
+}
+function EntityStudioPreview({modelPath,gameDir,skin=0,body=0,animate=false,spawnFloorOffset}:{modelPath:string;gameDir:string;skin?:number;body?:number;animate?:boolean;spawnFloorOffset?:number}){
   const [data,setData]=useState<StudioPreview|null>(null);
   useEffect(()=>{
     let active=true;setData(null);
@@ -427,8 +566,14 @@ function EntityStudioPreview({modelPath,gameDir,skin=0,body=0}:{modelPath:string
     loadModelByPath(gameDir,modelPath).then(result=>{if(active)setData(result)}).catch(()=>{});
     return()=>{active=false};
   },[gameDir,modelPath]);
+  const bottom=useMemo(()=>data?spawnModelFootHeight(data,body):0,[data,body]);
+  if(!data&&spawnFloorOffset!==undefined)return <SpawnFallbackFigure floorRelative={spawnFloorOffset}/>;
+  if(!data&&animate)return <mesh position={[0,30,0]} raycast={()=>null}>
+    <capsuleGeometry args={[12,36,6,10]}/>
+    <meshStandardMaterial color="#7095b5" transparent opacity={.42} wireframe/>
+  </mesh>;
   if(!data)return null;
-  return <group><StudioModel data={data} skin={skin} body={body}/></group>;
+  return <group position={[0,spawnFloorOffset===undefined?0:spawnFloorOffset-bottom,0]}><StudioModel data={data} skin={skin} body={body} animate={animate}/></group>;
 }
 /** Three.js/GoldSrc light directions are in different coordinate systems.
  * The target is parented to the same entity group as the light; otherwise a
@@ -468,18 +613,21 @@ function SunLightPreview({entity,tint,brightness,shadows=false}:{entity:PointEnt
    <hemisphereLight args={[rgbHex(diffuse.rgb),'#303a49',strength.diffuseIntensity]}/>
  </>;
 }
-function EntityVisual({object,routeText,routeTint,hideLabel=false,activeLight=true,activeModel=true,showMarker=true}:{object:PointEntity;routeText?:string;routeTint?:string;hideLabel?:boolean;activeLight?:boolean;activeModel?:boolean;showMarker?:boolean}){
+function EntityVisual({object,routeText,routeTint,hideLabel=false,activeLight=true,activeModel=true,showMarker=true,optimizedLabels=false,spawnGround}:{object:PointEntity;routeText?:string;routeTint?:string;hideLabel?:boolean;activeLight?:boolean;activeModel?:boolean;showMarker?:boolean;optimizedLabels?:boolean;spawnGround?:number}){
   const showNames=useEditor(s=>s.showEntityNames);
+  const walking=useEditor(s=>s.walkMode);
+  const {walk}=useContext(PreviewContext);
   const gameDir=useEditor(s=>s.settings.gameDir);
   const fgdClasses=useEditor(s=>s.fgdClasses);
   const fgdStudio=useMemo(()=>fgdClasses.find(c=>c.name===object.classname)?.studio,[fgdClasses,object.classname]);
-  const modelPath=object.props.model?.startsWith('models/')?object.props.model:fgdStudio;
+  const modelPath=object.props.model?.startsWith('models/')?object.props.model:fgdStudio|| (object.classname==='info_player_start'?'models/player/gordon/gordon.mdl':undefined);
   const appearance=useEditor(s=>s.entityAppearance);
   const placementShape=useEditor(s=>s.placementShape);
   const audioPlacement=useEditor(s=>s.audioPlacement);
   const modal=useEditor(s=>s.modalTransform);
   const environmentPlacement=useEditor(s=>s.environmentPlacement);
-  const environmentPreview=useEditor(s=>s.environmentPreview);
+  const editorLighting=useEditor(s=>s.environmentPreview);
+  const environmentPreview=walking?walk.rendered:editorLighting;
   const shadows=useEditor(s=>s.previewShadows&&s.environmentPreview);
   const ranges=useEditor(s=>s.showLightRanges&&s.environmentPreview);
   const selected=useEditor(s=>s.selectedIds.includes(object.id));
@@ -492,21 +640,32 @@ function EntityVisual({object,routeText,routeTint,hideLabel=false,activeLight=tr
   const isAudio=['ambient_generic','ambient_music','env_sound'].includes(object.classname);
   const isLight=object.classname.startsWith('light');
   const isSpawn=object.classname==='info_player_start';
+  const groundOffset=isSpawn?(spawnGround??object.position[2]-36)-object.position[2]:0;
+  const yaw=spawnYaw(object.props);
   const parsedLight=parseLight(object.props._light);
   const lightTint=rgbHex(parsedLight.rgb);
   const localLight=previewLocalLight(parsedLight.brightness);
-  const color=routeTint||appearance.colors[entityColorKind(object.classname)];
+  const color=appearance.colorMode==='uniform'?appearance.uniformColor:(routeTint||markerColorForEntity(object.classname,appearance));
   const content=<group ref={groupRef} position={gameToThree(object.position)} userData={{entityId:object.id}}>
-    {showMarker&&<mesh geometry={isLight?entityMarkerGeometry.light:isSpawn?entityMarkerGeometry.spawn:entityMarkerGeometry.box}
-      material={markerMaterial(color,selected)} userData={{entityId:object.id}} scale={appearance.markerSize}
-      onPointerDown={e=>{if(e.button!==0||drawMode||placementShape||audioPlacement||environmentPlacement||useEditor.getState().architecturePlacement)return;if(pointerOnSelectedGizmo(e)){e.stopPropagation();return;}e.stopPropagation();if(!object.locked){
+    {showMarker&&<mesh position={isSpawn?[0,groundOffset+4,0]:undefined} geometry={entityMarkerGeometry[markerKindForEntity(object.classname,appearance)]}
+      material={markerMaterial(color,selected,appearance.markerOcclusion==='xray')}
+      userData={{entityId:object.id,entityPickerId:object.id}} renderOrder={appearance.markerOcclusion==='xray'?250:0}
+      scale={isSpawn?appearance.markerSize*.55:appearance.markerSize}
+      onPointerDown={e=>{if(e.button!==0||drawMode||placementShape||audioPlacement||environmentPlacement||useEditor.getState().architecturePlacement)return;if(pointerOnSelectedGizmo(e))return;e.stopPropagation();if(!object.locked){
         if(selected&&multiCount>1&&!e.shiftKey&&!e.ctrlKey&&!e.metaKey)return;
         selectObject(object.id,e.shiftKey||e.ctrlKey||e.metaKey);
       }}}/>}
 
-    {showMarker&&isAudio&&<group><mesh rotation={[Math.PI/2,0,0]}><torusGeometry args={[17,3.5,8,24]}/><meshBasicMaterial color={selected?'#fff0aa':'#67dfee'} toneMapped={false}/></mesh><mesh><sphereGeometry args={[6,8,8]}/><meshBasicMaterial color="#7ee6e8"/></mesh></group>}
-    {showMarker&&activeModel&&modelPath&&gameDir&&!isLight&&<group onPointerDown={e=>{if(e.button!==0||object.locked||drawMode||placementShape||audioPlacement||useEditor.getState().architecturePlacement)return;if(pointerOnSelectedGizmo(e)){e.stopPropagation();return;}e.stopPropagation();selectObject(object.id,e.shiftKey||e.ctrlKey||e.metaKey)}} rotation={[0,THREE.MathUtils.degToRad(Number(object.props.angles?.split(' ')[1])||0),0]}><EntityStudioPreview modelPath={modelPath} gameDir={gameDir} skin={Number(object.props.skin)||0} body={Number(object.props.body)||0}/></group>}
-    {showMarker&&selected&&<mesh><sphereGeometry args={[16,12,8]}/><meshBasicMaterial color="#65befa" wireframe transparent opacity={.35}/></mesh>}
+    {showMarker&&isSpawn&&<group position={[0,groundOffset+.5,0]} rotation={[0,THREE.MathUtils.degToRad(yaw),0]} raycast={()=>null}>
+      <mesh rotation={[-Math.PI/2,0,0]}><torusGeometry args={[16,1.3,6,30]}/><meshBasicMaterial color={selected?'#c4ff7b':'#4bedad'} transparent opacity={.8}/></mesh>
+      <mesh position={[21,0,0]} rotation={[0,0,-Math.PI/2]}><coneGeometry args={[5,12,9]}/><meshBasicMaterial color="#a5ffda"/></mesh>
+    </group>}
+    {showMarker&&isAudio&&<group scale={appearance.markerSize}><mesh rotation={[Math.PI/2,0,0]}><torusGeometry args={[12,2.7,8,24]}/><meshBasicMaterial color={selected?'#fff0aa':'#67dfee'} toneMapped={false} depthTest={appearance.markerOcclusion!=='xray'} depthWrite={false}/></mesh><mesh><sphereGeometry args={[6,8,8]}/><meshBasicMaterial color="#7ee6e8" depthTest={appearance.markerOcclusion!=='xray'} depthWrite={false}/></mesh></group>}
+    {(showMarker||walking&&walk.showModels)&&activeModel&&modelPath&&!isLight&&<group onPointerDown={e=>{if(e.button!==0||object.locked||drawMode||placementShape||audioPlacement||useEditor.getState().architecturePlacement)return;if(pointerOnSelectedGizmo(e))return;e.stopPropagation();selectObject(object.id,e.shiftKey||e.ctrlKey||e.metaKey)}} rotation={[0,THREE.MathUtils.degToRad(isSpawn?yaw:Number(object.props.angles?.split(' ')[1])||0),0]}><EntityStudioPreview modelPath={modelPath} gameDir={gameDir} skin={Number(object.props.skin)||0} body={Number(object.props.body)||0} animate={isSpawn||walking&&object.classname.startsWith('monster_')} spawnFloorOffset={isSpawn?groundOffset:undefined}/></group>}
+    {walking&&walk.showModels&&object.classname.startsWith('monster_')&&(!modelPath||!gameDir)&&<mesh position={[0,30,0]} raycast={()=>null}>
+      <capsuleGeometry args={[12,36,6,10]}/><meshStandardMaterial color="#7095b5" transparent opacity={.42} wireframe/>
+    </mesh>}
+    {showMarker&&selected&&!isSpawn&&<mesh scale={appearance.markerSize} raycast={()=>null} renderOrder={appearance.markerOcclusion==='xray'?251:0}><sphereGeometry args={[11,12,8]}/><meshBasicMaterial color="#65befa" wireframe transparent opacity={.35} depthTest={appearance.markerOcclusion!=='xray'} depthWrite={false}/></mesh>}
     {isLight&&showMarker&&object.classname==='light'&&ranges&&<mesh raycast={()=>null} scale={Math.min(2500,Math.max(280,parsedLight.brightness*2.2))}><sphereGeometry args={[1,16,12]}/><meshBasicMaterial color={lightTint} transparent wireframe opacity={.13} depthWrite={false} depthTest={false}/></mesh>}
     {isLight&&activeLight&&object.classname==='light'&&environmentPreview&&<pointLight color={lightTint} intensity={localLight.intensity} distance={localLight.distance} decay={localLight.decay} castShadow={shadows&&selected} shadow-mapSize={[512,512]} shadow-bias={-.0003}/>}
     {isLight&&activeLight&&object.classname==='light_spot'&&environmentPreview&&<SpotLightPreview entity={object} tint={lightTint} brightness={parsedLight.brightness} selected={selected&&showMarker} shadows={shadows&&selected}/>}
@@ -517,7 +676,7 @@ function EntityVisual({object,routeText,routeTint,hideLabel=false,activeLight=tr
   // of the transformed marker. This also fixes the missing player-spawn name.
   const showLabel=showMarker&&(showNames||isSpawn&&appearance.alwaysShowSpawn)&&(!hideLabel||selected);
   const worldLabel=gameToThree([object.position[0],object.position[1],object.position[2]+(isSpawn?64:45)]);
-  return <>{content}{showLabel&&<EntityNameLabel classname={routeText||object.classname||object.name} targetname={object.props.targetname}
+  return <>{content}{!optimizedLabels&&showLabel&&<EntityNameLabel classname={routeText||(object.name&&object.name!==object.classname?object.name+' · '+object.classname:object.classname)} targetname={object.props.targetname}
     position={[worldLabel.x,worldLabel.y,worldLabel.z]} selected={selected} color={color} isSpawn={isSpawn}/>}</>;
 }
 /** Blender navigation: MMB orbit, Shift+MMB pan, Ctrl+MMB dolly.
@@ -528,14 +687,24 @@ function CameraController(){
   const walkSettingsRef=useRef(preview.walk);walkSettingsRef.current=preview.walk;
   const reportRef=useRef(preview.reportWalk);reportRef.current=preview.reportWalk;
   const lastWalkReport=useRef(0);
+  const lastGameplayMessage=useRef('');
   const controls=useRef<OrbitControlsImpl>(null);
   const keys=useRef<Set<string>>(new Set());
-  const {camera,set,size,gl}=useThree();
+  // Roblox Studio style: RMB held to look, release RMB to recover the cursor.
+  // This is independent of Gameplay Test and Fly pointer lock.
+  const rightMouseLook=useRef(false);
+
+  const {camera,set,size,gl,scene:getThreeScene}=useThree();
   const initialPerspective=useRef(camera as THREE.PerspectiveCamera);
   const ortho=useMemo(()=>new THREE.OrthographicCamera(-600,600,450,-450,.5,280000),[]);
   const lastTarget=useRef(new THREE.Vector3(0,100,0));
   const command=useEditor(s=>s.cameraCommand),controlsConfig=useEditor(s=>s.controls);
   const doctorFocus=useMapDoctorState(s=>s.focus),doctorFocusSerial=useMapDoctorState(s=>s.focusSerial);
+  useEffect(()=>{
+    const toggle=(enabled:boolean)=>{if(controls.current)controls.current.enabled=enabled};
+    faceScaleOrbitToggle=toggle;
+    return()=>{if(faceScaleOrbitToggle===toggle)faceScaleOrbitToggle=null};
+  },[]);
   const modal=useEditor(s=>s.modalTransform);
   const uvDragging=useEditor(s=>s.textureDragSnapshot!==null);
   const setCameraLabel=useEditor(s=>s.setCameraLabel);
@@ -543,13 +712,13 @@ function CameraController(){
   const mapObjects=useEditor(s=>s.project.objects);
   const walkColliders=useMemo(()=>{
     const classById=new Map(mapObjects.filter((o):o is PointEntity=>o.kind==='entity').map(e=>[e.id,e.classname]));
-    const result:WalkCollider[]=[];
+    const result:Array<WalkCollider&{entityId?:string}>=[];
     for(const object of mapObjects){
       if(object.kind!=='brush')continue;
       const classname=classById.get(object.entityId||'')||'';
       if(classname==='func_illusionary'||classname==='func_water'||classname.startsWith('trigger_'))continue;
       const collider=walkCollider(transformedVertices(object).map(v=>[v[0],v[2],-v[1]] as [number,number,number]));
-      if(collider)result.push(collider);
+      if(collider)result.push({...collider,entityId:object.entityId});
     }
     return result;
   },[mapObjects]);
@@ -602,6 +771,9 @@ function CameraController(){
       const entityYaw=Number.isFinite(angles[1])?angles[1]:0;
       walkLook.current={yaw:Math.PI/2-THREE.MathUtils.degToRad(entityYaw),pitch:0};
       previousJump.current=false;
+      lastGameplayMessage.current='';
+      preview.gameplaySession.current=new GameplaySession(mapObjects);
+      preview.reportGameplay('');
       keys.current.clear();
       const perspective=initialPerspective.current;
       perspective.up.set(0,1,0);
@@ -609,7 +781,7 @@ function CameraController(){
       perspective.lookAt(perspective.position.clone().add(walkDirection()));
       if(camera!==perspective)set({camera:perspective});
       orbit.enabled=false;
-      setCameraLabel('Player Walk');
+      setCameraLabel('Gameplay Test');
     }else if(!walkMode&&walkSnapshot.current){
       const snapshot=walkSnapshot.current;walkSnapshot.current=null;
       const restored=snapshot.camera;
@@ -619,6 +791,7 @@ function CameraController(){
       orbit.enabled=true;orbit.update();
       setCameraLabel(snapshot.label);
       walkPose.current=null;keys.current.clear();previousJump.current=false;
+      preview.gameplaySession.current=null;preview.reportGameplay('');
     }
   },[walkMode,camera,mapObjects,walkColliders,set,setCameraLabel]);
   const saveCamera=()=>{
@@ -695,18 +868,96 @@ function CameraController(){
     };
   },[gl,blender]);
   useEffect(()=>{
+    const canvas=gl.domElement;
+    const allowed=()=>{
+      const state=useEditor.getState();
+      return canCaptureMapCamera({...state,hudEditing:useHudLayout.getState().editing,
+        dialogOpen:!!document.querySelector('.modal-backdrop')}) && !state.placementPrefabId;
+    };
+    const down=(event:PointerEvent)=>{
+      if(event.button!==2||!allowed())return;
+      rightMouseLook.current=true;
+      // Prevent OrbitControls from interpreting RMB as an orbit around an
+      // object. Instead rotate the camera around its own position.
+      if(controls.current)controls.current.enabled=false;
+      if(document.pointerLockElement&&! (document.pointerLockElement===canvas))return;
+      if(document.pointerLockElement===canvas)return;
+      try{
+        // A right-button press is a user gesture, so pointer lock can be
+        // requested synchronously. A rejected request leaves drag-look as
+        // a normal pointermove fallback.
+        void Promise.resolve(canvas.requestPointerLock?.()).catch(()=>{});
+      }catch{/* Browser denied lock: normal RMB drag still works. */}
+    };
+    const up=(event:PointerEvent)=>{
+      if(event.button!==2||!rightMouseLook.current)return;
+      rightMouseLook.current=false;
+      if(document.pointerLockElement===canvas)document.exitPointerLock?.();
+      if(controls.current)controls.current.enabled=!useEditor.getState().modalTransform&&!useEditor.getState().drawMode&&!useEditor.getState().textureDragSnapshot;
+      saveCamera();
+    };
+    const cancel=()=>{
+      rightMouseLook.current=false;
+      if(document.pointerLockElement===canvas)document.exitPointerLock?.();
+      if(controls.current)controls.current.enabled=!useEditor.getState().walkMode&&!useEditor.getState().modalTransform&&!useEditor.getState().drawMode&&!useEditor.getState().textureDragSnapshot;
+    };
+    const lockChange=()=>{
+      if(document.pointerLockElement!==canvas&&rightMouseLook.current){
+        // Esc cancels pointer lock, not the entire editor session.
+        rightMouseLook.current=false;
+        if(controls.current)controls.current.enabled=true;
+      }
+    };
+    canvas.addEventListener('pointerdown',down,true);
+    document.addEventListener('pointerup',up,true);
+    document.addEventListener('pointercancel',cancel,true);
+    window.addEventListener('blur',cancel);
+    document.addEventListener('pointerlockchange',lockChange);
+    return()=>{
+      canvas.removeEventListener('pointerdown',down,true);
+      document.removeEventListener('pointerup',up,true);
+      document.removeEventListener('pointercancel',cancel,true);
+      window.removeEventListener('blur',cancel);
+      document.removeEventListener('pointerlockchange',lockChange);
+      if(rightMouseLook.current&&document.pointerLockElement===canvas)document.exitPointerLock?.();
+      rightMouseLook.current=false;
+    };
+  },[gl]);
+  useEffect(()=>{
+    // Pointer-lock denial fallback: keep turning while RMB is held over the
+    // canvas (the main path uses document mousemove while locked).
+    const canvas=gl.domElement;
+    const move=(event:PointerEvent)=>{
+      if(!rightMouseLook.current||document.pointerLockElement===canvas||!controls.current||
+         useEditor.getState().walkMode||useEditor.getState().flyMode||
+         useEditor.getState().textureDragSnapshot)return;
+      if(!event.movementX&&!event.movementY)return;
+      const direction=new THREE.Vector3();camera.getWorldDirection(direction);
+      const sensitivity=.0022*controlsConfig.orbitSensitivity*controlsConfig.flyLookSensitivity*(controlsConfig.invertOrbit?-1:1);
+      const yaw=Math.atan2(direction.x,-direction.z)+event.movementX*sensitivity;
+      const pitch=THREE.MathUtils.clamp(Math.asin(THREE.MathUtils.clamp(direction.y,-1,1))-event.movementY*sensitivity,-1.46,1.46);
+      direction.set(Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch));
+      const distance=Math.max(100,controls.current.target.distanceTo(camera.position));
+      controls.current.target.copy(camera.position).addScaledVector(direction,distance);
+      lastTarget.current.copy(controls.current.target);controls.current.update();saveCamera();
+    };
+    canvas.addEventListener('pointermove',move,true);
+    return()=>canvas.removeEventListener('pointermove',move,true);
+  },[camera,gl,controlsConfig.orbitSensitivity,controlsConfig.flyLookSensitivity,controlsConfig.invertOrbit]);
+  useEffect(()=>{
     if(!flyMode&&!walkMode){
-      if(document.pointerLockElement===gl.domElement)document.exitPointerLock?.();
-      return;
-    }
+      if(!rightMouseLook.current&&document.pointerLockElement===gl.domElement)document.exitPointerLock?.();
+    }else rightMouseLook.current=false;
     const onPointerLockChange=()=>{
       if(document.pointerLockElement!==gl.domElement){
+        rightMouseLook.current=false;
         if(useEditor.getState().walkMode)useEditor.getState().setWalk(false);
         if(useEditor.getState().flyMode)useEditor.getState().setFly(false);
       }
     };
     const onMouseMove=(e:MouseEvent)=>{
       if(document.pointerLockElement!==gl.domElement||!controls.current||useEditor.getState().textureDragSnapshot)return;
+      if(!useEditor.getState().walkMode&&!useEditor.getState().flyMode&&!rightMouseLook.current)return;
       const sensitivity=.0022*controlsConfig.orbitSensitivity*controlsConfig.flyLookSensitivity*(controlsConfig.invertOrbit?-1:1);
       if(useEditor.getState().walkMode){
         walkLook.current.yaw+=e.movementX*sensitivity;
@@ -721,6 +972,7 @@ function CameraController(){
       controls.current.target.copy(camera.position).addScaledVector(dir,600);
       lastTarget.current.copy(controls.current.target);
       controls.current.update();
+      saveCamera();
     };
     document.addEventListener('pointerlockchange',onPointerLockChange);
     document.addEventListener('mousemove',onMouseMove);
@@ -736,18 +988,30 @@ function CameraController(){
       if(useHudLayout.getState().editing||(e.target as HTMLElement)?.closest('input,textarea,select,[contenteditable]')||document.querySelector('.modal-backdrop'))return;
       keys.current.add(e.key.toLowerCase());keys.current.add(e.code);
       if(useEditor.getState().walkMode){
-        if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','F5','KeyF','KeyH','KeyN','KeyC'].includes(e.code))e.preventDefault();
+        if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','F5','KeyF','KeyH','KeyN','KeyC','KeyE'].includes(e.code))e.preventDefault();
         if(e.repeat||e.altKey||e.ctrlKey||e.metaKey)return;
         if(e.code==='KeyF')preview.updateWalk({flashlight:!walkSettingsRef.current.flashlight});
         if(e.code==='KeyH')preview.updateWalk({showHud:!walkSettingsRef.current.showHud});
         if(e.code==='KeyN')preview.updateWalk({noclip:!walkSettingsRef.current.noclip});
+        if(e.code==='KeyE'&&walkSettingsRef.current.interactions){
+          const session=preview.gameplaySession.current;
+          if(!session)return;
+          const ray=new THREE.Raycaster();ray.set(camera.position,walkDirection());ray.far=124;
+          // First visible solid blocks interaction; never activate a button through a wall.
+          const hits=ray.intersectObjects(getThreeScene.children,true).filter(hit=>hit.object instanceof THREE.Mesh && !!hit.object.userData.brushId);
+          const nearest=hits[0];
+          if(!nearest){preview.reportGameplay('No interactive entity in range.');return;}
+          const action=session.getAction(String(nearest.object.userData.brushId));
+          const feedback=action?session.activate(action.entityId):null;
+          preview.reportGameplay(feedback?.message||'No interactive entity in range.');
+        }
       }
     };
     const keyup=(e:KeyboardEvent)=>{keys.current.delete(e.key.toLowerCase());keys.current.delete(e.code)};
     const onblur=()=>keys.current.clear();
     window.addEventListener('keydown',keydown);window.addEventListener('keyup',keyup);window.addEventListener('blur',onblur);
     return()=>{window.removeEventListener('keydown',keydown);window.removeEventListener('keyup',keyup);window.removeEventListener('blur',onblur)};
-  },[preview.updateWalk]);
+  },[preview.updateWalk,preview.reportGameplay,preview.gameplaySession,camera,getThreeScene]);
   useFrame((_state,delta)=>{
     if(useHudLayout.getState().editing||modal||uvDragging||!controls.current)return;
     const active=keys.current;
@@ -757,7 +1021,7 @@ function CameraController(){
       previousJump.current=active.has('Space');
       // One broadphase pass per frame keeps the walk preview usable on large maps.
       const p=walkPose.current.position;
-      const near=walkColliders.filter(b=>p[0]>=b.min[0]-80&&p[0]<=b.max[0]+80&&p[2]>=b.min[2]-80&&p[2]<=b.max[2]+80);
+      const near=walkColliders.filter(b=>!preview.gameplaySession.current?.isDoorOpen(b.entityId)&&p[0]>=b.min[0]-80&&p[0]<=b.max[0]+80&&p[2]>=b.min[2]-80&&p[2]<=b.max[2]+80);
       const config=walkSettingsRef.current;
       const forward=Number(active.has('KeyW'))-Number(active.has('KeyS'));
       const strafe=Number(active.has('KeyD'))-Number(active.has('KeyA'));
@@ -772,6 +1036,14 @@ function CameraController(){
         speed:config.walkSpeed,runMultiplier:config.runMultiplier,crouchMultiplier:config.crouchMultiplier
       },near,delta);
       const pose=walkPose.current;
+      if(walkSettingsRef.current.interactions){
+        const session=preview.gameplaySession.current;
+        if(session){session.step(delta);session.enterVolumes([pose.position[0],-pose.position[2],pose.position[1]]);
+          if(session.feedback&&session.feedback.message!==lastGameplayMessage.current){
+            lastGameplayMessage.current=session.feedback.message;preview.reportGameplay(session.feedback.message);
+          }
+        }
+      }
       const eye=pose.crouched?WALK.crouchEye:WALK.standEye;
       camera.position.set(pose.position[0],pose.position[1]+eye,pose.position[2]);
       camera.lookAt(camera.position.clone().add(walkDirection()));
@@ -781,13 +1053,22 @@ function CameraController(){
       }
       return;
     }
-    if(!flyMode&&blender)return;
+    const editState=useEditor.getState();
+    const faceExtrudeActive=!flyMode&&editState.geometryMode==='face'&&editState.selectedFace!==null;
+    const vertical=keyboardVerticalDirection(active,faceExtrudeActive);
+    // Roblox Studio-style navigation: WASD/Q/E are available in MAP view
+    // regardless of the old Blender/classic orbit preset.
     const forward=new THREE.Vector3(),right=new THREE.Vector3();camera.getWorldDirection(forward);
     forward.y=0;forward.normalize();right.crossVectors(forward,new THREE.Vector3(0,1,0)).normalize();
     const move=new THREE.Vector3();
-    if(active.has('w'))move.add(forward);if(active.has('s'))move.sub(forward);
-    if(active.has('d'))move.add(right);if(active.has('a'))move.sub(right);
-    if(active.has('e'))move.y+=1;if(active.has('q'))move.y-=1;
+    if(true){
+      const safeMovement=canMoveInCameraCapture(active);
+      if(safeMovement){
+        if(active.has('w'))move.add(forward);if(active.has('s'))move.sub(forward);
+        if(active.has('d'))move.add(right);if(active.has('a'))move.sub(right);
+      }
+    }
+    if(vertical)move.y+=vertical;
     if(move.lengthSq()){
       const speed=controlsConfig.flySpeed*(active.has('shift')?controlsConfig.flyBoostMultiplier:active.has('control')?controlsConfig.flySlowMultiplier:1);
       move.normalize().multiplyScalar(Math.min(delta,.05)*speed);
@@ -881,7 +1162,8 @@ function CameraController(){
       return;
     }
     if(action==='frame'||action==='frameAll'){
-      const objects=useEditor.getState().project.objects.filter(o=>!o.hidden&&(action==='frame'?useEditor.getState().selectedIds.includes(o.id):true));
+      const snapshot=useEditor.getState();
+      const objects=snapshot.project.objects.filter(o=>(!o.hidden||(action==='frame'&&o.id===snapshot.focusHiddenId))&&(action==='frame'?snapshot.selectedIds.includes(o.id):true));
       if(!objects.length)return;
       const bounds=new THREE.Box3();
       for(const o of objects){
@@ -928,8 +1210,8 @@ function CameraController(){
     rotateSpeed={(controlsConfig.invertOrbit?-1:1)*controlsConfig.orbitSensitivity}
     panSpeed={controlsConfig.panSensitivity} zoomSpeed={controlsConfig.zoomSensitivity}
     mouseButtons={blender?
-      {LEFT:-1 as THREE.MOUSE,MIDDLE:THREE.MOUSE.ROTATE,RIGHT:flyMode?THREE.MOUSE.ROTATE:-1 as THREE.MOUSE}:
-      {LEFT:THREE.MOUSE.PAN,MIDDLE:THREE.MOUSE.DOLLY,RIGHT:THREE.MOUSE.ROTATE}}/>;
+      {LEFT:-1 as THREE.MOUSE,MIDDLE:THREE.MOUSE.ROTATE,RIGHT:-1 as THREE.MOUSE}:
+      {LEFT:THREE.MOUSE.PAN,MIDDLE:THREE.MOUSE.DOLLY,RIGHT:-1 as THREE.MOUSE}}/>;
 }
 function Ground(){
   const show=useEditor(s=>s.showGrid),snap=useEditor(s=>s.snap);
@@ -953,6 +1235,113 @@ function Ground(){
  * A single mouseUp commits exactly one undo entry; object meshes are only
  * previewed during the drag. Gizmo handles are larger in hit-testing space.
  */
+/** Six individually draggable face arrows. Unlike the stock scale gizmo,
+ * the opposite face remains fixed. Dragging changes only the local brush
+ * scale and world position, with one Undo/Redo entry at pointer release. */
+function FaceScaleGizmo({brush,snap,snapping}:{brush:Brush;snap:number;snapping:boolean}){
+  const {camera,gl}=useThree();
+  const transformSelection=useEditor(s=>s.transformSelection);
+  const groups=useRef<Record<string,THREE.Group|null>>({});
+  const drag=useRef<{pointerId:number;x:number;y:number;px:number;py:number;distance:number;axis:FaceAxis;sign:FaceSign;original:Brush;last:{position:Vec3;scale:Vec3}|null}|null>(null);
+  const {mins,maxs}=useMemo(()=>faceLocalBounds(brush),[brush]);
+  const origin=gameToThree(brush.position),rotation=toRenderQuaternion(brush.rotation);
+  const directions:[FaceAxis,FaceSign][]=[[0,-1],[0,1],[1,-1],[1,1],[2,-1],[2,1]];
+  const gameBasis=[new THREE.Vector3(1,0,0),new THREE.Vector3(0,0,-1),new THREE.Vector3(0,1,0)];
+  const handles=directions.map(([axis,sign])=>{
+    const local:[number,number,number]=[(mins[0]+maxs[0])/2,(mins[1]+maxs[1])/2,(mins[2]+maxs[2])/2];
+    local[axis]=sign===1?maxs[axis]:mins[axis];
+    const position=origin.clone().add(gameToThree(local.map((v,i)=>v*brush.scale[i]) as Vec3).applyQuaternion(rotation));
+    const direction=gameBasis[axis].clone().applyQuaternion(rotation).multiplyScalar(sign);
+    return {axis,sign,position,direction,key:`${axis}:${sign}`};
+  });
+  // A single screen-space scale guarantees usable hit areas on small buttons
+  // without making the arrow gigantic on a 1000-unit wall.
+  const pixelWorld=(position:THREE.Vector3)=>{
+    const cameraDepth=-position.clone().applyMatrix4(camera.matrixWorldInverse).z;
+    return unitsPerScreenPixel({orthographic:camera instanceof THREE.OrthographicCamera,
+      cameraDepth,zoom:camera instanceof THREE.OrthographicCamera||camera instanceof THREE.PerspectiveCamera?camera.zoom:1,viewportHeight:gl.domElement.getBoundingClientRect().height,
+      fovDegrees:camera instanceof THREE.PerspectiveCamera?camera.fov:50,
+      orthoHeight:camera instanceof THREE.OrthographicCamera?camera.top-camera.bottom:1});
+  };
+  useFrame(()=>{
+    for(const h of handles){const group=groups.current[h.key];if(group){
+      const size=pixelWorld(h.position);if(Number.isFinite(size))group.scale.setScalar(size);
+    }}
+  });
+  const projectedTip=(h:typeof handles[number])=>{
+    const position=h.position.clone().addScaledVector(h.direction,FACE_GIZMO_TIP_PIXELS*pixelWorld(h.position));
+    return position.project(camera);
+  };
+  useEffect(()=>{
+    const hit=(x:number,y:number)=>{
+      const rect=gl.domElement.getBoundingClientRect();
+      return handles.some(h=>{
+        const projected=projectedTip(h);
+        if(projected.z<-1||projected.z>1)return false;
+        const px=rect.left+(projected.x+1)*rect.width/2;
+        const py=rect.top+(1-projected.y)*rect.height/2;
+        return (x-px)**2+(y-py)**2<(FACE_GIZMO_HIT_PIXELS+3)**2;
+      });
+    };
+    selectedGizmoPointerHit=hit;
+    return()=>{if(selectedGizmoPointerHit===hit)selectedGizmoPointerHit=null};
+  },[brush,camera,gl]);
+  const start=(e:import('@react-three/fiber').ThreeEvent<PointerEvent>,h:typeof handles[number])=>{
+    if(e.button!==0)return;
+    e.stopPropagation();e.nativeEvent.preventDefault();
+    const rect=gl.domElement.getBoundingClientRect();
+    const distance=80*pixelWorld(h.position);
+    const a=h.position.clone().project(camera),b=h.position.clone().addScaledVector(h.direction,distance).project(camera);
+    const px=(b.x-a.x)*rect.width/2,py=-(b.y-a.y)*rect.height/2;
+    if(px*px+py*py<1)return;
+    (e.target as unknown as {setPointerCapture:(id:number)=>void}).setPointerCapture(e.pointerId);
+    drag.current={pointerId:e.pointerId,x:e.clientX,y:e.clientY,px,py,distance,
+      axis:h.axis,sign:h.sign,original:structuredClone(brush),last:null};
+    faceScaleOrbitToggle?.(false);
+  };
+  const move=(e:import('@react-three/fiber').ThreeEvent<PointerEvent>)=>{
+    const session=drag.current;if(!session||session.pointerId!==e.pointerId)return;
+    e.stopPropagation();
+    const traveled=((e.clientX-session.x)*session.px+(e.clientY-session.y)*session.py)/(session.px**2+session.py**2)*session.distance;
+    const distance=preciseFaceDistance(traveled,snap,snapping,e.shiftKey);
+    const next=resizeFromFace(session.original,session.axis,session.sign,distance);
+    session.last=next;
+    const visual=visualGroups.get(brush.id);
+    if(visual){visual.position.copy(gameToThree(next.position));visual.scale.set(next.scale[0],next.scale[2],next.scale[1]);}
+  };
+  const finish=(e:import('@react-three/fiber').ThreeEvent<PointerEvent>,commit:boolean)=>{
+    const session=drag.current;if(!session||session.pointerId!==e.pointerId)return;
+    e.stopPropagation();drag.current=null;faceScaleOrbitToggle?.(true);
+    const visual=visualGroups.get(brush.id);
+    if(visual){visual.position.copy(gameToThree(session.original.position));visual.scale.set(session.original.scale[0],session.original.scale[2],session.original.scale[1]);}
+    try{(e.target as unknown as {releasePointerCapture:(id:number)=>void}).releasePointerCapture(e.pointerId)}catch{/* already released */}
+    const next=session.last;
+    if(commit&&next&&(next.position.some((v,i)=>Math.abs(v-session.original.position[i])>.001)||next.scale.some((v,i)=>Math.abs(v-session.original.scale[i])>.001)))
+      transformSelection({[brush.id]:next});
+  };
+  useEffect(()=>()=>{const session=drag.current;if(!session)return;
+    const visual=visualGroups.get(brush.id);
+    if(visual){visual.position.copy(gameToThree(session.original.position));visual.scale.set(session.original.scale[0],session.original.scale[2],session.original.scale[1]);}
+    drag.current=null;faceScaleOrbitToggle?.(true);
+  },[brush.id]);
+  return <group>{handles.map(h=>{
+    const quaternion=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),h.direction);
+    const color=h.axis===0?'#fb6576':h.axis===1?'#60c983':'#5faaff';
+    const handler={onPointerDown:(e:import('@react-three/fiber').ThreeEvent<PointerEvent>)=>start(e,h),
+      onPointerMove:move,onPointerUp:(e:import('@react-three/fiber').ThreeEvent<PointerEvent>)=>finish(e,true),
+      onPointerCancel:(e:import('@react-three/fiber').ThreeEvent<PointerEvent>)=>finish(e,false)};
+    return <group key={h.key} position={h.position} quaternion={quaternion} ref={node=>{groups.current[h.key]=node}}>
+      <mesh position={[0,15,0]} raycast={()=>null}><cylinderGeometry args={[1.5,1.5,19,8]}/><meshBasicMaterial color={color} depthTest={false}/></mesh>
+      <mesh position={[0,FACE_GIZMO_TIP_PIXELS,0]} {...handler}>
+        <coneGeometry args={[6.5,12,10]}/><meshBasicMaterial color={color} depthTest={false}/>
+      </mesh>
+      <mesh position={[0,FACE_GIZMO_TIP_PIXELS,0]} {...handler}>
+        <sphereGeometry args={[FACE_GIZMO_HIT_PIXELS,12,8]}/><meshBasicMaterial transparent opacity={0} depthWrite={false} depthTest={false}/>
+      </mesh>
+    </group>;
+  })}</group>;
+}
+
 function SelectionTransformControls(){
   const ids=useEditor(s=>s.selectedIds),mode=useEditor(s=>s.mode);
   const modal=useEditor(s=>s.modalTransform);
@@ -960,9 +1349,10 @@ function SelectionTransformControls(){
   const geometryMode=useEditor(s=>s.geometryMode),drawMode=useEditor(s=>s.drawMode);
   const architecturePlacement=useEditor(s=>s.architecturePlacement);
   const snapping=useEditor(s=>s.snapping),snap=useEditor(s=>s.snap),settings=useEditor(s=>s.controls);
-  const anchor=useEditor(s=>s.scaleAnchor),transformSelection=useEditor(s=>s.transformSelection);
+  const anchorSetting=useEditor(s=>s.scaleAnchor),transformSelection=useEditor(s=>s.transformSelection);
   const members=objects.filter(o=>ids.includes(o.id)&&!o.locked&&!o.hidden);
-  const active=members.length>0&&ids.length>0&&gizmoVisible&&!modal&&geometryMode==='object'&&!drawMode&&!architecturePlacement;
+  const anchor=members.length>1?'center':anchorSetting;
+  const active=mode!=='select'&&members.length>0&&ids.length>0&&gizmoVisible&&!modal&&geometryMode==='object'&&!drawMode&&!architecturePlacement;
   const transformMode=mode==='select'?'translate':mode;
   const single=members.length===1?members[0]:null;
   const pivot=useRef<THREE.Group>(null!);
@@ -971,12 +1361,12 @@ function SelectionTransformControls(){
   // Test the actual invisible native picker, not a guessed radius or the
   // visible colored arrows. This protects rotate rings and plane handles.
   useEffect(()=>{
-    if(!active)return;
+    if(!active||(transformMode==='scale'&&single?.kind==='brush'))return;
     const hit=(x:number,y:number)=>hitTransformPicker(controls.current,camera,
       gl.domElement.getBoundingClientRect(),x,y);
     selectedGizmoPointerHit=hit;
     return()=>{if(selectedGizmoPointerHit===hit)selectedGizmoPointerHit=null;};
-  },[active,camera,gl,transformMode]);
+  },[active,camera,gl,transformMode,single?.id,single?.kind]);
   type Pose={position:THREE.Vector3;quaternion:THREE.Quaternion;scale:THREE.Vector3;kind:'brush'|'entity'};
   const drag=useRef<{start:THREE.Vector3;quat:THREE.Quaternion;poses:Map<string,Pose>;mode:'translate'|'rotate'|'scale';singleBrush:boolean}|null>(null);
   const gizmoKeys=useRef<ModifierKeys>(EMPTY_MODIFIERS);
@@ -1024,6 +1414,7 @@ function SelectionTransformControls(){
       window.removeEventListener('keydown',key,true);window.removeEventListener('keyup',key,true);window.removeEventListener('blur',reset)};
   },[active,gl,transformMode,settings,snapping,snap]);
   if(!active)return null;
+  if(transformMode==='scale'&&single?.kind==='brush')return <FaceScaleGizmo brush={single} snap={snap} snapping={snapping}/>;
   const begin=()=>{
     if(!pivot.current)return;
     drag.current={start:pivot.current.position.clone(),quat:pivot.current.quaternion.clone(),mode:transformMode,
@@ -1337,101 +1728,237 @@ function BlenderModalTransform(){
   return null;
 }
 
+/** Draw brushes on the XY, XZ or YZ construction plane; X/Y/Z switch planes. */
 function DrawBrushPlane(){
-  const enabled=useEditor(s=>s.drawMode),height=useEditor(s=>s.drawHeight);
+  const enabled=useEditor(s=>s.drawMode),height=useEditor(s=>s.drawHeight),plane=useEditor(s=>s.drawPlane),sign=useEditor(s=>s.drawSign);
   const add=useEditor(s=>s.addDrawnBox),snapping=useEditor(s=>s.snapping),snap=useEditor(s=>s.snap);
   const dragStart=useRef<Vec3|null>(null);
   const [end,setEnd]=useState<Vec3|null>(null);
+  const {camera,scene,gl}=useThree();
+  const lastCursor=useRef<{x:number;y:number}|null>(null);
+  const [planeOffset,setPlaneOffset]=useState(0);
+  useEffect(()=>{
+    if(!enabled)return;
+    const onKey=(event:KeyboardEvent)=>{
+      if(event.ctrlKey||event.altKey||event.metaKey||event.target instanceof HTMLInputElement||event.target instanceof HTMLTextAreaElement)return;
+      if(['KeyX','KeyY','KeyZ'].includes(event.code)){
+        event.preventDefault();event.stopImmediatePropagation();
+        useEditor.getState().setDrawPlane(event.code==='KeyX'?'yz':event.code==='KeyY'?'xz':'xy');
+        setPlaneOffset(0);dragStart.current=null;setEnd(null);
+      }else if(event.code==='KeyF'&&lastCursor.current){
+        const rect=gl.domElement.getBoundingClientRect(),cursor=lastCursor.current;
+        const ray=new THREE.Raycaster();
+        ray.setFromCamera(new THREE.Vector2((cursor.x-rect.left)/rect.width*2-1,-(cursor.y-rect.top)/rect.height*2+1),camera);
+        const hit=ray.intersectObjects(scene.children,true).find(v=>v.object.userData.brushId);
+        if(hit){
+          const normal=hit.face?.normal?.clone().transformDirection(hit.object.matrixWorld).normalize()||new THREE.Vector3(0,1,0);
+          const n=threeToGame(normal),point=threeToGame(hit.point);
+          const axis=Math.abs(n[0])>Math.max(Math.abs(n[1]),Math.abs(n[2]))?0:Math.abs(n[1])>Math.abs(n[2])?1:2;
+          useEditor.getState().setDrawPlane(axis===0?'yz':axis===1?'xz':'xy');
+          useEditor.getState().setDrawSign(n[axis]>=0?1:-1);
+          setPlaneOffset(point[axis]+n[axis]*.5);
+          dragStart.current=null;setEnd(null);
+          event.preventDefault();event.stopImmediatePropagation();
+        }
+      }
+    };
+    window.addEventListener('keydown',onKey,true);
+    return()=>window.removeEventListener('keydown',onKey,true);
+  },[enabled,camera,scene,gl]);
   const floorPoint=(v:THREE.Vector3):Vec3=>{
-    const game=threeToGame(v);
-    const step=snapping?snap:1;
-    return [Math.round(game[0]/step)*step,Math.round(game[1]/step)*step,0];
+    const game=threeToGame(v),step=snapping?snap:1;
+    const result=game.map(n=>Math.round(n/step)*step) as Vec3;
+    result[plane==='xy'?2:plane==='xz'?1:0]=planeOffset;
+    return result;
   };
   const from=dragStart.current;
-  const dx=from&&end?Math.abs(end[0]-from[0]):0;
-  const dy=from&&end?Math.abs(end[1]-from[1]):0;
-  return enabled?<>
-    <mesh rotation={[-Math.PI/2,0,0]} position={[0,1,0]}
+  const previewPose=from&&end?(()=>{
+    const snapped=(value:number)=>Math.round(value/(snapping?snap:1))*(snapping?snap:1);
+    const a=from.map(snapped),b=end.map(snapped),orth=plane==='xy'?2:plane==='xz'?1:0;
+    const center=a.map((v,i)=>(v+b[i])/2) as Vec3;
+    const size=a.map((v,i)=>Math.max(snapping?snap:1,Math.abs(b[i]-v))) as Vec3;
+    center[orth]=planeOffset+height/2*sign;size[orth]=height;
+    return {center,size};
+  })():null;
+  return enabled? <>
+    <mesh key={plane} rotation={plane==='xy'?[-Math.PI/2,0,0]:plane==='xz'?[0,0,0]:[0,Math.PI/2,0]}
+      position={gameToThree(plane==='xy'?[0,0,planeOffset]:plane==='xz'?[0,planeOffset,0]:[planeOffset,0,0])}
       onPointerDown={e=>{if(e.button!==0)return;e.stopPropagation();dragStart.current=floorPoint(e.point);setEnd(dragStart.current);(e.target as unknown as Element | null)?.setPointerCapture?.(e.pointerId)}}
-      onPointerMove={e=>{if(!dragStart.current)return;e.stopPropagation();setEnd(floorPoint(e.point))}}
-      onPointerUp={e=>{if(!dragStart.current)return;e.stopPropagation();const final=floorPoint(e.point);const start=dragStart.current;dragStart.current=null;setEnd(null);try{add(start,final)}catch(err){useEditor.getState().appendLogs([`Draw block: ${String(err)}`])}(e.target as unknown as Element | null)?.releasePointerCapture?.(e.pointerId)}}
+      onPointerMove={e=>{lastCursor.current={x:e.clientX,y:e.clientY};if(!dragStart.current)return;e.stopPropagation();setEnd(floorPoint(e.point))}}
+      onPointerUp={e=>{if(!dragStart.current)return;e.stopPropagation();const final=floorPoint(e.point);const begin=dragStart.current;dragStart.current=null;setEnd(null);try{add(begin,final)}catch(err){useEditor.getState().appendLogs([`Draw block: ${String(err)}`])}(e.target as unknown as Element | null)?.releasePointerCapture?.(e.pointerId)}}
       onPointerCancel={()=>{dragStart.current=null;setEnd(null)}}>
-      <planeGeometry args={[30000,30000]}/><meshBasicMaterial transparent opacity={0.03} color="#6fbbff" side={THREE.DoubleSide} depthWrite={false}/>
+      <planeGeometry args={[30000,30000]}/><meshBasicMaterial transparent opacity={.035} color="#6fbbff" side={THREE.DoubleSide} depthWrite={false}/>
     </mesh>
-    {from&&end&&<mesh position={gameToThree([(from[0]+end[0])/2,(from[1]+end[1])/2,height/2])}>
-      <boxGeometry args={[Math.max(snapping?snap:1,dx),height,Math.max(snapping?snap:1,dy)]}/>
+    {previewPose&&<mesh position={gameToThree(previewPose.center)}>
+      <boxGeometry args={[previewPose.size[0],previewPose.size[2],previewPose.size[1]]}/>
       <meshBasicMaterial color="#74c6ff" transparent opacity={.24} depthTest={false} depthWrite={false}/>
     </mesh>}
   </>:null;
 }
 
-/** Click-to-place with a ground/brush surface snap and transparent 3D preview.
- * Intercepts the canvas pointer events only while a primitive tool is armed. */
+type PlacementHit={position:Vec3;normal:Vec3;autoYaw:number};
+/** Shared raycast and surface anchoring for shapes and prefabs. Ghosts do not receive raycasts. */
+function surfaceHit(e:PointerEvent,camera:THREE.Camera,scene:THREE.Scene,canvas:HTMLCanvasElement,align:boolean):PlacementHit|null{
+  const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return null;
+  const ndc=new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);
+  const ray=new THREE.Raycaster();ray.setFromCamera(ndc,camera);
+  const hit=ray.intersectObjects(scene.children,true).find(v=>v.object.userData.brushId);
+  const cameraDirection=threeToGame(camera.getWorldDirection(new THREE.Vector3()).normalize());
+  const cameraYaw=align?snappedFacing(cameraDirection):0;
+  if(hit){
+    const normal=hit.face?.normal?.clone()||new THREE.Vector3(0,1,0);
+    normal.transformDirection(hit.object.matrixWorld).normalize();
+    const n=threeToGame(normal);
+    const yaw=align?(Math.abs(n[2])>=.5?cameraYaw:snappedFacing(n)):0;
+    return {position:threeToGame(hit.point),normal:n,autoYaw:yaw};
+  }
+  const p=ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0,1,0),0),new THREE.Vector3());
+  return p?{position:threeToGame(p),normal:[0,0,1],autoYaw:cameraYaw}:null;
+}
+function snapPosition(point:Vec3):Vec3{
+  const state=useEditor.getState(),step=state.snapping?state.snap:1;
+  return point.map(v=>Math.round(v/step)*step) as Vec3;
+}
+/** Determine the placed anchor using the *same* rotated geometry as the ghost. */
+function placementAt(e:PointerEvent,camera:THREE.Camera,scene:THREE.Scene,canvas:HTMLCanvasElement,
+  localObjects:Brush[]|import('../engine/types').MapObject[],rotationAxis:import('../engine/smartPlacementMath').PlacementAxis,
+  angle:number,align:boolean,origin:Vec3):{anchor:Vec3;autoYaw:number}|null{
+  // First raycast to determine orientation, then compute actual rotated bounds.
+  const hit=surfaceHit(e,camera,scene,canvas,align);if(!hit)return null;
+  const rotated=rotateObjectsForPlacement(localObjects,origin,rotationAxis,angle,hit.autoYaw);
+  const anchor=surfacePlacementAnchor(hit.position,hit.normal,placementPoints(rotated,origin));
+  return {anchor:snapPosition(anchor),autoYaw:hit.autoYaw};
+}
+
+/** Smart Placement: match the ghost and the saved brush exactly, including UV axes. */
 function PrimitivePlacement(){
   const shape=useEditor(s=>s.placementShape);
+  const shapeSize=useEditor(s=>s.shapeSize),currentTexture=useEditor(s=>s.currentTexture);
+  const axis=useEditor(s=>s.placementAxis),angle=useEditor(s=>s.placementAngle),align=useEditor(s=>s.placementAutoAlign);
   const {camera,scene,gl}=useThree();
-  const group=useRef<THREE.Group>(null);
-  const preview=useMemo(()=>shape?createPlaceableShape(shape,[0,0,0]):[],[shape]);
-  const geometries=useMemo(()=>preview.map(buildMeshGeometry),[preview]);
+  const group=useRef<THREE.Group>(null),lastMouse=useRef<{clientX:number;clientY:number}|null>(null);
+  const assets=useEditor(s=>s.textureAssets);
+  const priority=useEditor(s=>s.settings.wadPaths+'|'+s.project.wadNames.join(';'));
+  const sizes=useMemo(()=>textureSizeLookup(assets),[assets,priority]);
+  const initial=useMemo(()=>shape?createSizedPlaceableShape(shape,[0,0,0],shapeSize,currentTexture):[],[shape,shapeSize,currentTexture]);
+  const geometries=useMemo(()=>initial.map(b=>buildMeshGeometry(b,sizes)),[initial,sizes]);
   useEffect(()=>()=>geometries.forEach(g=>g.dispose()),[geometries]);
+  // Surface autoYaw is per-hover: update the view from the last pointer position.
+  const [hoverYaw,setHoverYaw]=useState(0);
+  const preview=useMemo(()=>rotateObjectsForPlacement(initial,[0,0,0],axis,angle,hoverYaw),[initial,axis,angle,hoverYaw]);
   useEffect(()=>{
     if(!shape)return;
     const target=gl.domElement;
-    const floor=new THREE.Plane(new THREE.Vector3(0,1,0),0);
-    const pointAt=(event:PointerEvent):Vec3|null=>{
-      const bounds=target.getBoundingClientRect();
-      if(bounds.width===0||bounds.height===0)return null;
-      const screen=new THREE.Vector2((event.clientX-bounds.left)/bounds.width*2-1,-(event.clientY-bounds.top)/bounds.height*2+1);
-      const ray=new THREE.Raycaster();ray.setFromCamera(screen,camera);
-      const hit=ray.intersectObjects(scene.children,true).find(item=>item.object.userData.brushId);
-      const normal=hit?.face?.normal?.clone();
-      if(hit&&normal){
-        normal.transformDirection(hit.object.matrixWorld).normalize();
-        const p=hit.point.clone();
-        const game=threeToGame(p);
-        const gameNormal=threeToGame(normal);
-        // Place on the face, just outside it. At a vertical wall, align the
-        // center to the clicked height, because shapes anchor at their bottom.
-        const isWall=Math.abs(gameNormal[2])<.5;
-        const extent=64;
-        return [game[0]+gameNormal[0]*(isWall?extent:1),
-          game[1]+gameNormal[1]*(isWall?extent:1),
-          game[2]+gameNormal[2]*(gameNormal[2]<-.5?128:1)-(isWall?64:0)];
-      }
-      const p=new THREE.Vector3();
-      return ray.ray.intersectPlane(floor,p)?threeToGame(p):null;
-    };
+    const location=(e:PointerEvent)=>placementAt(e,camera,scene,target,initial,axis,angle,align,[0,0,0]);
     const move=(event:PointerEvent)=>{
-      if(!group.current)return;
-      const p=pointAt(event);
-      group.current.visible=!!p;
-      if(!p)return;
-      const state=useEditor.getState();const step=state.snapping?state.snap:1;
-      const snapped=p.map(v=>Math.round(v/step)*step) as Vec3;
-      group.current.position.copy(gameToThree(snapped));
+      lastMouse.current={clientX:event.clientX,clientY:event.clientY};
+      const result=location(event);if(!group.current)return;
+      group.current.visible=!!result;
+      if(!result)return;
+      if(result.autoYaw!==hoverYaw)setHoverYaw(result.autoYaw);
+      group.current.position.copy(gameToThree(result.anchor));
     };
     const down=(event:PointerEvent)=>{
       if(event.button!==0)return;
-      const p=pointAt(event);
-      if(!p)return;
+      const result=location(event);if(!result)return;
       event.preventDefault();event.stopImmediatePropagation();
-      useEditor.getState().placeShapeAt(p);
+      useEditor.getState().placeShapeAt(result.anchor,result.autoYaw);
     };
     const leave=()=>{if(group.current)group.current.visible=false};
-    const key=(event:KeyboardEvent)=>{if(event.key==='Escape'){
-      event.preventDefault();event.stopImmediatePropagation();useEditor.getState().setPlacementShape(null);
-    }};
-    target.addEventListener('pointermove',move);
-    target.addEventListener('pointerdown',down,true);
-    target.addEventListener('pointerleave',leave);
-    window.addEventListener('keydown',key,true);
+    const key=(event:KeyboardEvent)=>{
+      if((event.target as HTMLElement)?.closest('input,textarea,select,[contenteditable]')||event.altKey||event.ctrlKey||event.metaKey)return;
+      const editor=useEditor.getState();
+      if(event.code==='Escape')editor.setPlacementShape(null);
+      else if(event.code==='KeyR'&&!event.repeat)editor.stepPlacementAngle(event.shiftKey?15:90);
+      else if(['KeyX','KeyY','KeyZ'].includes(event.code))editor.setPlacementAxis(event.code.slice(-1).toLowerCase() as 'x'|'y'|'z');
+      else if(event.code==='KeyF')editor.togglePlacementAutoAlign();
+      else if(event.code==='Digit0')editor.resetPlacementAngle();
+      else if(event.code==='KeyP')editor.togglePlacementRepeat();
+      else return;
+      event.preventDefault();event.stopImmediatePropagation();
+    };
+    target.addEventListener('pointermove',move);target.addEventListener('pointerdown',down,true);
+    target.addEventListener('pointerleave',leave);window.addEventListener('keydown',key,true);
+    if(lastMouse.current)move(lastMouse.current as PointerEvent);
     return()=>{target.removeEventListener('pointermove',move);target.removeEventListener('pointerdown',down,true);target.removeEventListener('pointerleave',leave);window.removeEventListener('keydown',key,true)};
-  },[shape,camera,scene,gl]);
+  },[shape,initial,axis,angle,align,hoverYaw,camera,scene,gl]);
   if(!shape)return null;
-  return <group ref={group} visible={false}>{preview.map((brush,i)=>
-    <mesh key={`${shape}-${i}`} geometry={geometries[i]} position={gameToThree(brush.position)}>
-      <meshBasicMaterial color="#63e7ff" transparent opacity={.35} side={THREE.DoubleSide} depthWrite={false}/>
-    </mesh>)}</group>;
+  return <group ref={group} visible={false}>{preview.map((brush,i)=><mesh key={`${shape}-${i}`}
+    geometry={geometries[i]} position={gameToThree(brush.position)} quaternion={toRenderQuaternion(brush.rotation)}
+    scale={[brush.scale[0],brush.scale[2],brush.scale[1]]} raycast={()=>null}>
+    <meshBasicMaterial color="#63e7ff" transparent opacity={.35} side={THREE.DoubleSide} depthWrite={false}/>
+  </mesh>)}</group>;
+}
+
+/** Prefabs share rotation and surface anchoring with individual shapes. */
+function PrefabClickPlacement(){
+  const prefabId=useEditor(s=>s.placementPrefabId),prefabs=useEditor(s=>s.prefabs);
+  const prefab=prefabs.find(p=>p.id===prefabId);
+  const axis=useEditor(s=>s.placementAxis),angle=useEditor(s=>s.placementAngle),align=useEditor(s=>s.placementAutoAlign);
+  const {camera,scene,gl}=useThree();
+  const group=useRef<THREE.Group>(null),lastMouse=useRef<{clientX:number;clientY:number}|null>(null);
+  const brushes=useMemo(()=>prefab?.objects.filter((o):o is Brush=>o.kind==='brush')||[],[prefab]);
+  const assets=useEditor(s=>s.textureAssets),priority=useEditor(s=>s.settings.wadPaths+'|'+s.project.wadNames.join(';'));
+  const sizes=useMemo(()=>textureSizeLookup(assets),[assets,priority]);
+  const geometries=useMemo(()=>brushes.map(b=>buildMeshGeometry(b,sizes)),[brushes,sizes]);
+  useEffect(()=>()=>geometries.forEach(g=>g.dispose()),[geometries]);
+  const ghostMaterial=useMemo(()=>new THREE.MeshBasicMaterial({color:'#77d8ff',transparent:true,opacity:.30,depthWrite:false,side:THREE.DoubleSide}),[]);
+  useEffect(()=>()=>ghostMaterial.dispose(),[ghostMaterial]);
+  const [hoverYaw,setHoverYaw]=useState(0);
+  const initial=prefab?.objects||[];const origin:Vec3=prefab?.origin||[0,0,0];
+  const preview=useMemo(()=>prefab?rotateObjectsForPlacement(prefab.objects,prefab.origin,axis,angle,hoverYaw):[],[prefab,axis,angle,hoverYaw]);
+  useEffect(()=>{
+    if(!prefabId||!prefab)return;
+    const canvas=gl.domElement;
+    const location=(event:PointerEvent)=>placementAt(event,camera,scene,canvas,prefab.objects,axis,angle,align,prefab.origin);
+    const move=(event:PointerEvent)=>{
+      lastMouse.current={clientX:event.clientX,clientY:event.clientY};
+      const result=location(event);if(!group.current)return;
+      group.current.visible=!!result;
+      if(!result)return;
+      if(result.autoYaw!==hoverYaw)setHoverYaw(result.autoYaw);
+      group.current.position.copy(gameToThree(result.anchor));
+    };
+    const down=(event:PointerEvent)=>{
+      if(event.button!==0)return;
+      const result=location(event);if(!result)return;
+      event.preventDefault();event.stopImmediatePropagation();
+      try{useEditor.getState().placePrefabAt(result.anchor,result.autoYaw)}catch(error){useEditor.getState().appendLogs([`Prefab placement: ${String(error)}`]);window.alert(String(error))}
+    };
+    const leave=()=>{if(group.current)group.current.visible=false};
+    const key=(event:KeyboardEvent)=>{
+      if((event.target as HTMLElement)?.closest('input,textarea,select,[contenteditable]')||event.altKey||event.ctrlKey||event.metaKey)return;
+      const editor=useEditor.getState();
+      if(event.code==='Escape')editor.setPlacementPrefab(null);
+      else if(event.code==='KeyR'&&!event.repeat)editor.stepPlacementAngle(event.shiftKey?15:90);
+      else if(['KeyX','KeyY','KeyZ'].includes(event.code))editor.setPlacementAxis(event.code.slice(-1).toLowerCase() as 'x'|'y'|'z');
+      else if(event.code==='KeyF')editor.togglePlacementAutoAlign();
+      else if(event.code==='Digit0')editor.resetPlacementAngle();
+      else if(event.code==='KeyP')editor.togglePlacementRepeat();
+      else return;
+      event.preventDefault();event.stopImmediatePropagation();
+    };
+    canvas.addEventListener('pointermove',move);canvas.addEventListener('pointerdown',down,true);
+    canvas.addEventListener('pointerleave',leave);window.addEventListener('keydown',key,true);
+    if(lastMouse.current)move(lastMouse.current as PointerEvent);
+    return()=>{canvas.removeEventListener('pointermove',move);canvas.removeEventListener('pointerdown',down,true);canvas.removeEventListener('pointerleave',leave);window.removeEventListener('keydown',key,true)};
+  },[prefabId,prefab,camera,scene,gl,axis,angle,align,hoverYaw]);
+  if(!prefab)return null;
+  const byId=new Map(preview.map(o=>[o.id,o]));
+  return <group ref={group} visible={false}>
+    {brushes.map((brush,index)=>{
+      const rotated=byId.get(brush.id) as Brush;
+      return <mesh key={brush.id} raycast={()=>null} geometry={geometries[index]} material={ghostMaterial}
+        position={gameToThree(rotated.position.map((v,i)=>v-origin[i]) as Vec3)}
+        quaternion={toRenderQuaternion(rotated.rotation)} scale={[rotated.scale[0],rotated.scale[2],rotated.scale[1]]}/>;
+    })}
+    {initial.filter(o=>o.kind==='entity').map(o=>{
+      const rotated=byId.get(o.id)!;
+      return <mesh key={o.id} raycast={()=>null} position={gameToThree(rotated.position.map((v,i)=>v-origin[i]) as Vec3)}>
+        <sphereGeometry args={[12,8,6]}/><meshBasicMaterial color="#aaffbb" transparent opacity={.6}/>
+      </mesh>;
+    })}
+  </group>;
 }
 
 /** Native Svengine light/fog placement, intercepting the editor canvas only while armed. */
@@ -1556,6 +2083,55 @@ function TextureDropHandler(){
   },[camera,scene,gl]);
   return null;
 }
+/** Single-click placement of a terrain or rock cluster. The project is only
+ * changed by placePendingTerrain after a surface hit, not when the tool is armed.
+ * Uses the same Svengine coordinate conversions as the other 3D placements. */
+function TerrainClickPlacement(){
+  const {camera,scene,gl}=useThree();
+  const request=useEditor(s=>s.terrainPlacement);
+  const marker=useRef<THREE.Group>(null);
+  useEffect(()=>{
+    if(!request)return;
+    const target=gl.domElement;
+    const locate=(e:PointerEvent):Vec3|null=>{
+      const rect=target.getBoundingClientRect();if(!rect.width||!rect.height)return null;
+      const ray=new THREE.Raycaster();
+      ray.setFromCamera(new THREE.Vector2(2*(e.clientX-rect.left)/rect.width-1,1-2*(e.clientY-rect.top)/rect.height),camera);
+      const hit=ray.intersectObjects(scene.children,true).find(result=>{
+        let node:THREE.Object3D|null=result.object;
+        while(node){if(node.userData.brushId)return true;node=node.parent;}return false;
+      });
+      const ground=new THREE.Vector3(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
+      const p=hit?.point||ray.ray.intersectPlane(plane,ground);
+      if(!p)return null;
+      const state=useEditor.getState(),snap=state.snapping?state.snap:1;
+      return threeToGame(p).map(x=>Math.round(x/snap)*snap) as Vec3;
+    };
+    const move=(e:PointerEvent)=>{if(!marker.current)return;const point=locate(e);
+      marker.current.visible=!!point;if(point)marker.current.position.copy(gameToThree(point));};
+    const down=(e:PointerEvent)=>{
+      if(e.button!==0)return;
+      const point=locate(e);if(!point)return;
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+      const state=useEditor.getState();
+      try{state.placePendingTerrain(point);state.appendLogs([`Terrain Studio: ${request.kind} placed at ${point.join(' ')}.`]);}
+      catch(error){state.appendLogs([`Terrain placement rejected: ${String(error)}`]);window.alert(String(error));}
+    };
+    const leave=()=>{if(marker.current)marker.current.visible=false};
+    const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();useEditor.getState().startTerrainPlacement(null);}};
+    target.addEventListener('pointermove',move);target.addEventListener('pointerleave',leave);
+    target.addEventListener('pointerdown',down,true);window.addEventListener('keydown',key,true);
+    return()=>{target.removeEventListener('pointermove',move);target.removeEventListener('pointerleave',leave);
+      target.removeEventListener('pointerdown',down,true);window.removeEventListener('keydown',key,true)};
+  },[camera,scene,gl,request]);
+  return request?<group ref={marker} visible={false} raycast={()=>null}>
+    <mesh rotation={[-Math.PI/2,0,0]} position={[0,1,0]} raycast={()=>null}>
+      <planeGeometry args={[request.kind==='terrain'?request.draft.width:request.rocks?.radius?request.rocks.radius*2:128,
+        request.kind==='terrain'?request.draft.depth:request.rocks?.radius?request.rocks.radius*2:128]}/>
+      <meshBasicMaterial color="#48dbfc" wireframe transparent opacity={.9} depthTest={false} depthWrite={false}/>
+    </mesh><mesh raycast={()=>null}><sphereGeometry args={[6,8,6]}/><meshBasicMaterial color="#fff37a" depthTest={false}/></mesh>
+  </group>:null;
+}
 /** NPC tools capture the next left click on the scene, then release it.
  * This is distinct from the Blender transform mode and ordinary selection.
  */
@@ -1626,6 +2202,58 @@ function AudioClickPlacement(){
     return()=>{target.removeEventListener('pointerdown',onDown,true);window.removeEventListener('keydown',onKey,true)};
   },[camera,scene,gl,active]);return null;
 }
+/** Dedicated placement mode for GoldSrc path_corner; unlike the NPC path_waypoint tool. */
+function CinematicClickPlacement(){
+  const {camera,scene,gl}=useThree();
+  const active=useEditor(s=>s.cinematicPlacementFor);
+  useEffect(()=>{
+    if(!active)return;
+    const target=gl.domElement;
+    const onDown=(e:PointerEvent)=>{
+      if(e.button!==0||!useEditor.getState().cinematicPlacementFor)return;
+      const rect=target.getBoundingClientRect();
+      const ndc=new THREE.Vector2(2*(e.clientX-rect.left)/rect.width-1,1-2*(e.clientY-rect.top)/rect.height);
+      const ray=new THREE.Raycaster();ray.setFromCamera(ndc,camera);
+      const hit=ray.intersectObjects(scene.children,true).find(h=>{
+        let node:THREE.Object3D|null=h.object;
+        while(node){if(node.userData.brushId)return true;node=node.parent;}return false;
+      });
+      const ground=new THREE.Vector3(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
+      const point=hit?.point||ray.ray.intersectPlane(plane,ground);
+      if(!point)return;
+      const state=useEditor.getState(),step=state.snapping?state.snap:1;
+      const position=threeToGame(point).map(n=>Math.round(n/step)*step) as Vec3;
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+      try{state.placeCinematicPoint(position);state.appendLogs([`Cinematic path_corner added at ${position.join(' ')}.`]);}
+      catch(error){state.appendLogs([`Cinematic waypoint rejected: ${String(error)}`]);}
+    };
+    const onKey=(e:KeyboardEvent)=>{if(e.key==='Escape'){
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+      useEditor.getState().startCinematicPlacement(null);
+    }};
+    target.addEventListener('pointerdown',onDown,true);window.addEventListener('keydown',onKey,true);
+    return()=>{target.removeEventListener('pointerdown',onDown,true);window.removeEventListener('keydown',onKey,true)};
+  },[camera,scene,gl,active]);
+  return null;
+}
+function CinematicRouteLines(){
+  const objects=useEditor(s=>s.project.objects),selected=useEditor(s=>s.selected),placing=useEditor(s=>s.cinematicPlacementFor);
+  const cameras=objects.filter((o):o is PointEntity=>o.kind==='entity'&&o.classname==='trigger_camera');
+  const current=cameras.find(cam=>cam.id===(placing||selected))||cameras.find(cam=>{
+    if(!cam.group||!selected)return false;
+    return objects.some(o=>o.id===selected&&o.group===cam.group);
+  });
+  if(!current)return null;
+  const scene=readCinematicScene(objects,current.id);
+  if(!scene)return null;
+  const points=scene.route.length?scene.route.map(o=>o.position):[scene.camera.position];
+  const look=scene.lookTarget?.position;
+  return <group>{points.slice(1).map((p,i)=><Line key={scene.route[i+1].id} points={[gameToThree(points[i]),gameToThree(p)]} color="#67d4f6" lineWidth={3} dashed dashSize={9} gapSize={5} depthTest={false}/>)}
+    {look&&<Line points={[gameToThree(points[0]),gameToThree(look)]} color="#d5a8ff" lineWidth={2} dashed dashSize={5} gapSize={8} depthTest={false}/>}
+    {points.map((p,i)=><mesh key={`${current.id}-${i}`} position={gameToThree(p)} raycast={()=>null}>
+      <sphereGeometry args={[5,8,6]}/><meshBasicMaterial color="#6dd9f8" depthTest={false}/></mesh>)}
+  </group>;
+}
 /** Editor-only indication; full game sound propagation requires the engine. */
 function AudioRadiusGuides(){
   const selected=useEditor(s=>s.selected),objects=useEditor(s=>s.project.objects);
@@ -1689,7 +2317,7 @@ function LeakTrace3D(){
   </group>;
 }
 function Scene({onContextMenu}:{onContextMenu:(menu:SceneMenu)=>void}){
-  const {goldsrc}=useContext(PreviewContext);
+  const {goldsrc,walk}=useContext(PreviewContext);
   const objects=useEditor(s=>s.project.objects),setSelected=useEditor(s=>s.setSelected);
   const {camera:sceneCamera,gl:sceneGl,size:sceneSize}=useThree();
   const axes=useHudLayout(s=>s.items.axes);
@@ -1707,15 +2335,25 @@ function Scene({onContextMenu}:{onContextMenu:(menu:SceneMenu)=>void}){
     });
   },[axes.opacity,axesGlobalOpacity,axes.visible]);
   const showLights=useEditor(s=>s.showLights);
-  const environmentPreview=useEditor(s=>s.environmentPreview),fogPreview=useEditor(s=>s.fogPreview);
+  const walkMode=useEditor(s=>s.walkMode);
+  const editorLighting=useEditor(s=>s.environmentPreview);
+  const environmentPreview=walkMode?walk.rendered:editorLighting;
+  const fogPreview=useEditor(s=>s.fogPreview);
   const skyname=useEditor(s=>s.project.world.skyname||'desert');
   const ghostHidden=useEditor(s=>s.ghostHidden);
-  const walkMode=useEditor(s=>s.walkMode);
+  const focusHiddenId=useEditor(s=>s.focusHiddenId);
   const fogEntity=objects.find((o):o is PointEntity=>o.kind==='entity'&&o.classname==='env_fog'&&!o.hidden&&!(Number(o.props.spawnflags||0)&1));
   const fogStart=Number(fogEntity?.props.iuser2)||256,fogEnd=Number(fogEntity?.props.iuser3)||2048;
   const fogColor=fogEntity?rgbHex((fogEntity.props.rendercolor||'115 141 176').split(/\s+/).map(Number)):'#0b1325';
   const routeSolo=useEditor(s=>s.routeSolo);
   const selectedId=useEditor(s=>s.selected);
+  const selectedIds=useEditor(s=>s.selectedIds);
+  const showEntityNames=useEditor(s=>s.showEntityNames);
+  const appearance=useEditor(s=>s.entityAppearance);
+  const mapLabelSettings=useEditor(s=>s.mapLabelSettings);
+  const fpsHudVisible=useHudLayout(s=>s.items.fps.visible);
+  const optimizedLabels=mapLabelSettings.mode==='optimized';
+  const cinematicPlacementFor=useEditor(s=>s.cinematicPlacementFor);
   const organization=useMemo(()=>organizeScene(objects),[objects]);
   const preset=useStudioLayout(s=>s.performancePreset||'balanced');
   const [visibleLabels,setVisibleLabels]=useState<Set<string>>(()=>new Set());
@@ -1724,6 +2362,7 @@ function Scene({onContextMenu}:{onContextMenu:(menu:SceneMenu)=>void}){
   const lastCull=useRef(-1);
   const lastCullCamera=useRef(new THREE.Vector3(Infinity,Infinity,Infinity));
   const entities=useMemo(()=>objects.filter((o):o is PointEntity=>o.kind==='entity'&&!o.hidden),[objects]);
+  const spawnGrounds=useMemo(()=>new Map(entities.filter(e=>e.classname==='info_player_start').map(e=>[e.id,spawnFloorZ(e.position,objects)])),[entities,objects]);
   // Cache editor-to-Three coordinate conversions when project data changes.
   // With thousands of entities this avoids allocating vectors on each cull tick.
   const cullCandidates=useMemo(()=>entities.map(entity=>({entity,point:gameToThree(entity.position)})),[entities]);
@@ -1736,6 +2375,52 @@ function Scene({onContextMenu}:{onContextMenu:(menu:SceneMenu)=>void}){
     }
     return lookup;
   },[organization]);
+  // Labels for point entities AND tied-brush entities use one virtualized DOM layer.
+  // Keep the map, geometry, markers, FGD keyvalues and object ordering unchanged.
+  // This memo changes only when map/selection/label settings change, not each frame.
+  const mapLabelAnchors=useMemo<MapLabelAnchor[]>(()=>{
+    if(!optimizedLabels||walkMode)return [];
+    const anchors:MapLabelAnchor[]=[];
+    const byEntity=new Map(objects.filter((o):o is PointEntity=>o.kind==='entity').map(o=>[o.id,o]));
+    const selectedSet=new Set(selectedIds);
+    for(const obj of objects){
+      if(obj.hidden)continue;
+      if(obj.kind==='brush'){
+        if(!showEntityNames||!obj.entityId)continue;
+        const linked=byEntity.get(obj.entityId);
+        if(!linked)continue;
+        const display=entityDisplayName(linked,[linked,obj]);
+        const main=appearance.showClassname?(display===linked.classname?linked.classname:display+' · '+linked.classname):'';
+        const targetname=appearance.showTargetname?linked.props.targetname:undefined;
+        if(!main&&!targetname)continue;
+        // BrushVisual originally places its Html at [0,46,0] inside the
+        // brush's rotated/scaled group. Reproduce that world anchor precisely.
+        const rotation=toRenderQuaternion(obj.rotation);
+        const offset=new THREE.Vector3(0,46*obj.scale[2],0).applyQuaternion(rotation);
+        anchors.push({id:`brush:${obj.id}`,position:gameToThree(obj.position).add(offset),classname:linked.classname,
+          main,targetname,color:markerColorForEntity(linked.classname,appearance),selected:selectedSet.has(obj.id),spawn:false});
+        continue;
+      }
+      if(routeSolo&&obj.classname==='path_waypoint'&&!(routeLookup.get(obj.id)||[]).some(r=>r.key===routeSolo))continue;
+      const showMarker=showLights||obj.classname==='info_player_start'||['ambient_generic','ambient_music','env_sound'].includes(obj.classname)
+        ||!!(obj.group?.startsWith('Cinematic:')&&(obj.id===selectedId||cinematicPlacementFor));
+      if(!showMarker)continue;
+      const spawn=obj.classname==='info_player_start',selected=selectedSet.has(obj.id);
+      if(!showEntityNames&&!(spawn&&appearance.alwaysShowSpawn))continue;
+      if(obj.classname==='path_waypoint'&&!routeSolo&&!selected)continue;
+      const routes=routeLookup.get(obj.id)||[],first=routes[0];
+      const number=first?first.nodes.findIndex(n=>n.id===obj.id)+1:0;
+      const classname=obj.classname==='path_waypoint'?(first?`WP ${number} · ${first.name}${routes.length>1?' (shared)':''}`:'WP · unassigned'):(obj.classname||obj.name);
+      const alias=obj.name?.trim()&&obj.name.trim()!==obj.classname&&obj.classname!=='path_waypoint'?obj.name.trim()+' · '+classname:classname;
+      const main=(appearance.showClassname||spawn&&appearance.alwaysShowSpawn)?alias:'';
+      const targetname=appearance.showTargetname?obj.props.targetname:undefined;
+      if(!main&&!targetname)continue;
+      const offset=spawn?64:45;
+      anchors.push({id:obj.id,position:gameToThree([obj.position[0],obj.position[1],obj.position[2]+offset]),
+        classname,main,targetname,color:appearance.colorMode==='uniform'?appearance.uniformColor:first?routeColor(first.name):markerColorForEntity(obj.classname,appearance),selected,spawn});
+    }
+    return anchors;
+  },[optimizedLabels,walkMode,objects,selectedIds,selectedId,showEntityNames,appearance,routeSolo,routeLookup,showLights,cinematicPlacementFor]);
   // Throttled camera-distance budgets. HTML overlays, loaded studio models and
   // realtime lights are by far the most expensive items on very large maps.
   // The map itself is NEVER culled or modified; only editor previews are.
@@ -1752,7 +2437,7 @@ function Scene({onContextMenu}:{onContextMenu:(menu:SceneMenu)=>void}){
     lastCullInputs.current={candidates:cullCandidates,preset};
     const near=cullCandidates.map(({entity,point})=>({entity,dist:point.distanceToSquared(origin)})).sort((a,b)=>a.dist-b.dist);
     const budgets=preset==='quality'?[240,26,45]:preset==='large'?[32,4,3]:[95,10,14];
-    const labels=new Set(near.slice(0,budgets[0]).map(item=>item.entity.id));
+    const labels=optimizedLabels?new Set<string>():new Set(near.slice(0,budgets[0]).map(item=>item.entity.id));
     const lights=new Set(near.filter(item=>item.entity.classname.startsWith('light')).slice(0,budgets[1]).map(item=>item.entity.id));
     const models=new Set(near.filter(item=>item.entity.props.model?.startsWith('models/')||item.entity.classname.startsWith('monster_')).slice(0,budgets[2]).map(item=>item.entity.id));
     const equal=(a:Set<string>,b:Set<string>)=>a.size===b.size&&[...a].every(id=>b.has(id));
@@ -1767,9 +2452,9 @@ function Scene({onContextMenu}:{onContextMenu:(menu:SceneMenu)=>void}){
     <directionalLight position={[600,1100,550]} intensity={environmentPreview?.04:2.2}/>
     <GoldSrcPreviewAnimator/><WalkFlashlight/>
     {!walkMode&&<Ground/>}
-    {!walkMode&&<><DrawBrushPlane/><PrimitivePlacement/><EnvironmentPlacement/><NpcClickPlacement/><AudioClickPlacement/><TextureDropHandler/><ContextHitProbe open={onContextMenu}/></>}
+    {!walkMode&&<><DrawBrushPlane/><PrimitivePlacement/><PrefabClickPlacement/><EnvironmentPlacement/><NpcClickPlacement/><AudioClickPlacement/><CinematicClickPlacement/><TerrainClickPlacement/><TextureDropHandler/><ContextHitProbe open={onContextMenu}/></>}
     {!walkMode&&<mesh rotation={[-Math.PI/2,0,0]} position={[0,-.5,0]} onPointerDown={e=>{
-      if(pointerOnSelectedGizmo(e)){e.stopPropagation();return;}
+      if(pointerOnSelectedGizmo(e))return;
       const state=useEditor.getState();
       if(state.measureMode){e.stopPropagation();state.measurePoint(threeToGame(e.point));return}
       if(state.showTransformGizmo&&state.selectedIds.length){
@@ -1781,40 +2466,85 @@ function Scene({onContextMenu}:{onContextMenu:(menu:SceneMenu)=>void}){
         // A missed handle near the gizmo should never deselect the brush.
         if(dx*dx+dy*dy<100*100){e.stopPropagation();return}
       }
+      if(!state.faceMode&&state.geometryMode==='object'&&(state.entityAppearance.markerOcclusion==='xray'||e.altKey)
+        &&selectOccludedEntity(e.intersections,e.shiftKey||e.ctrlKey||e.metaKey)){
+        e.stopPropagation();return;
+      }
       setSelected(null);
     }}><planeGeometry args={[20000,20000]}/><meshBasicMaterial visible={false}/></mesh>}
-    {!walkMode&&ghostHidden&&objects.filter((obj):obj is Brush=>obj.kind==='brush'&&!!obj.hidden).map(obj=><GhostBrush key={`ghost-${obj.id}`} object={obj}/>)}
-    {objects.map(obj=>{if(obj.kind==='brush')return <MemoBrushVisual key={obj.id} object={obj}/>;
+    {!walkMode&&objects.filter((obj):obj is Brush=>obj.kind==='brush'&&!!obj.hidden&&(ghostHidden||obj.id===focusHiddenId)).map(obj=><GhostBrush key={`ghost-${obj.id}`} object={obj}/>)}
+    {!walkMode&&fpsHudVisible&&mapLabelSettings.diagnostics&&<MapPerformanceMonitor labelsEnabled={showEntityNames} mode={mapLabelSettings.mode}/>}
+    {optimizedLabels&&!walkMode&&<MapEntityLabelOverlay anchors={mapLabelAnchors} appearance={appearance} settings={mapLabelSettings}/>}
+    {objects.map(obj=>{if(obj.kind==='brush')return <MemoBrushVisual key={obj.id} object={obj} optimizedLabels={optimizedLabels}/>;
       const routes=routeLookup.get(obj.id)||[];
       if(routeSolo&&obj.classname==='path_waypoint'&&!routes.some(r=>r.key===routeSolo))return null;
       const isLightSource=obj.classname==='light'||obj.classname==='light_spot'||obj.classname==='light_environment';
-      const showMarker=!walkMode&&(showLights||obj.classname==='info_player_start'||['ambient_generic','ambient_music','env_sound'].includes(obj.classname));
+      const showMarker=!walkMode&&(showLights||obj.classname==='info_player_start'||['ambient_generic','ambient_music','env_sound'].includes(obj.classname)||(obj.group?.startsWith('Cinematic:')&&(obj.id===selectedId||!!useEditor.getState().cinematicPlacementFor)));
       const lightActive=activeLights.has(obj.id)||obj.id===selectedId||obj.classname==='light_environment';
-      if(!showMarker&&!(environmentPreview&&isLightSource&&lightActive))return null;
+      const modelCandidate=walkMode&&walk.showModels&&(obj.classname.startsWith('monster_')||obj.props.model?.startsWith('models/')||!!useEditor.getState().fgdClasses.find(c=>c.name===obj.classname)?.studio);
+      if(!showMarker&&!modelCandidate&&!(environmentPreview&&isLightSource&&lightActive))return null;
       const first=routes[0];const number=first?first.nodes.findIndex(n=>n.id===obj.id)+1:0;
       const routeText=obj.classname==='path_waypoint'?(first?`WP ${number} · ${first.name}${routes.length>1?' (shared)':''}`:'WP · unassigned'):undefined;
-      return <MemoEntityVisual key={obj.id} object={obj} routeText={routeText} routeTint={first?routeColor(first.name):undefined} hideLabel={!visibleLabels.has(obj.id)||(obj.classname==='path_waypoint'&&!routeSolo&&obj.id!==selectedId)} activeLight={lightActive} activeModel={activeModels.has(obj.id)||obj.id===selectedId} showMarker={showMarker}/>;
+      return <MemoEntityVisual key={obj.id} object={obj} routeText={routeText} routeTint={first?routeColor(first.name):undefined} hideLabel={optimizedLabels||!visibleLabels.has(obj.id)||(obj.classname==='path_waypoint'&&!routeSolo&&obj.id!==selectedId)} activeLight={lightActive} activeModel={obj.classname==='info_player_start'||activeModels.has(obj.id)||obj.id===selectedId} showMarker={showMarker} optimizedLabels={optimizedLabels} spawnGround={spawnGrounds.get(obj.id)}/>;
     })}
     <LeakTrace3D/>
-    {!walkMode&&<><MeasurementOverlay/><EntityConnections/><NpcRouteLines/><AudioRadiusGuides/><SelectionTransformControls/><BlenderModalTransform/></>}
+    {!walkMode&&<><MeasurementOverlay/><EntityConnections/><NpcRouteLines/><CinematicRouteLines/><AudioRadiusGuides/><SelectionTransformControls/><BlenderModalTransform/></>}
+    <TextureUVHandles/>
     <CameraController/>
     {!walkMode&&axes.visible&&<GizmoHelper alignment="top-left" margin={[sceneSize.width*axes.x/100,sceneSize.height*axes.y/100]}>
       <group ref={axesRef} scale={axes.scale}><GizmoViewport axisColors={['#f46e78','#84d899','#73b8ff']} labelColor="white"/></group>
     </GizmoHelper>}
   </>;
 }
+/** Dimension fields are independent from gizmo hit testing, so a 4u brush
+ * can always be resized precisely without accidentally dragging another face. */
+function PreciseScalePanel(){
+  const t=useT();
+  const mode=useEditor(s=>s.mode),ids=useEditor(s=>s.selectedIds),objects=useEditor(s=>s.project.objects);
+  const resize=useEditor(s=>s.changeDimensions);
+  const brush=mode==='scale'&&ids.length===1?objects.find((obj):obj is Brush=>obj.id===ids[0]&&obj.kind==='brush'&&!obj.locked&&!obj.hidden):undefined;
+  if(!brush)return null;
+  const size=brushDimensions(brush);
+  const change=(i:number,value:number)=>{
+    if(!Number.isFinite(value)||value<1||value>131072)return;
+    const next=[...size] as Vec3;next[i]=value;
+    try{resize(brush.id,next)}catch(error){window.alert(String(error))}
+  };
+  return <div className="precise-scale-panel" onPointerDown={e=>e.stopPropagation()} onKeyDown={e=>e.stopPropagation()}>
+    <div className="precise-scale-title">{t('Precise brush dimensions')}<span>{t('GoldSrc units')}</span></div>
+    <div className="precise-scale-fields">{(['Shape width','Shape depth','Shape height'] as const).map((label,i)=><label key={`${brush.id}:${i}`}>
+      {t(label)}<input type="number" min="1" max="131072" step="1" key={`${brush.id}:${i}:${size[i]}`}
+        defaultValue={Number(size[i].toFixed(3))} aria-label={t(label)}
+        onBlur={e=>{const n=Number(e.target.value);if(Number.isFinite(n)&&Math.abs(n-size[i])>.0001)change(i,n)}}
+        onKeyDown={e=>{if(e.key==='Enter')e.currentTarget.blur()}}/>
+    </label>)}</div>
+    <div className="precise-scale-hint">{t('Face arrows stay readable at any zoom. Hold Shift to scale finely without snapping.')}</div>
+  </div>;
+}
+
 export function Viewport(){
   const t=useT();
+  const locale=useEditor(s=>s.locale);const guide=studioGuide(locale);
+  const cinematicPlacementFor=useEditor(s=>s.cinematicPlacementFor);
   const doctorTrace=useMapDoctorState(s=>s.trace),doctorTraceVisible=useMapDoctorState(s=>s.traceVisible),setDoctorTraceVisible=useMapDoctorState(s=>s.setTraceVisible);
   const [walkSettings,setWalkSettings]=useState(()=>readPreviewSettings('walk-preview-2',normalizeWalkPreview));
   const [goldsrcSettings,setGoldsrcSettings]=useState(()=>readPreviewSettings('goldsrc-preview-2',normalizeGoldSrcPreview));
+  // Hide NULL tool materials in a recovered MAP preview without altering brushes.
+  const [hideRecoveryNull,setHideRecoveryNull]=useState(true);
+  const gameplaySession=useRef<GameplaySession|null>(null);
+  const [gameplayMessage,setGameplayMessage]=useState('');
   const [walkStats,setWalkStats]=useState<WalkStats>({position:[0,0,0],speed:0,grounded:false,crouched:false,noclip:false});
   const [showPreviewOptions,setShowPreviewOptions]=useState(false);
   const updateWalk=useCallback((patch:Partial<WalkPreviewSettings>)=>setWalkSettings(s=>normalizeWalkPreview({...s,...patch})),[]);
   const updateGoldSrc=useCallback((patch:Partial<GoldSrcPreviewSettings>)=>setGoldsrcSettings(s=>normalizeGoldSrcPreview({...s,...patch})),[]);
+  useEffect(()=>{
+    const onToggle=()=>{if(!useEditor.getState().walkMode)setShowPreviewOptions(v=>!v)};
+    document.addEventListener('svenstudio:toggle-gameplay-settings',onToggle);
+    return ()=>document.removeEventListener('svenstudio:toggle-gameplay-settings',onToggle);
+  },[]);
   useEffect(()=>savePreviewSettings('walk-preview-2',walkSettings),[walkSettings]);
   useEffect(()=>savePreviewSettings('goldsrc-preview-2',goldsrcSettings),[goldsrcSettings]);
-  const previewContext=useMemo(()=>({walk:walkSettings,goldsrc:goldsrcSettings,updateWalk,updateGoldSrc,reportWalk:setWalkStats}),[walkSettings,goldsrcSettings,updateWalk,updateGoldSrc]);
+  const previewContext=useMemo(()=>({hideRecoveryNull,walk:walkSettings,goldsrc:goldsrcSettings,gameplaySession,reportGameplay:setGameplayMessage,updateWalk,updateGoldSrc,reportWalk:setWalkStats}),[hideRecoveryNull,walkSettings,goldsrcSettings,updateWalk,updateGoldSrc]);
 
   // The WebGL layer compensates the workspace zoom; subscribe in this component
   // rather than borrowing the uiScale local used inside BrushVisual.
@@ -1829,9 +2559,13 @@ export function Viewport(){
   const projection=useEditor(s=>s.issueCameraCommand);
   const count=useEditor(s=>s.project.objects.length);
   const [contextMenu,setContextMenu]=useState<SceneMenu|null>(null);
+  const cancelRightClick=useRef(false);
   const [walkCaptured,setWalkCaptured]=useState(false);
   useEffect(()=>{
-    const sync=()=>setWalkCaptured(document.pointerLockElement===document.querySelector('.viewport-frame canvas'));
+    const sync=()=>{
+      const captured=document.pointerLockElement===document.querySelector('.viewport-frame canvas');
+      setWalkCaptured(captured);
+    };
     document.addEventListener('pointerlockchange',sync);sync();
     return()=>document.removeEventListener('pointerlockchange',sync);
   },[]);
@@ -1844,6 +2578,11 @@ export function Viewport(){
     return()=>document.removeEventListener('svenstudio:explorer-context',onExplorer);
   },[]);
   const placementShape=useEditor(s=>s.placementShape);
+  const placementPrefabId=useEditor(s=>s.placementPrefabId);
+  const placementPrefabName=useEditor(s=>s.prefabs.find(p=>p.id===s.placementPrefabId)?.name||'');
+  const placementAxis=useEditor(s=>s.placementAxis),placementAngle=useEditor(s=>s.placementAngle);
+  const placementAutoAlign=useEditor(s=>s.placementAutoAlign),placementRepeat=useEditor(s=>s.placementRepeat);
+  const terrainPlacement=useEditor(s=>s.terrainPlacement);
   const architecturePlacement=useEditor(s=>s.architecturePlacement);
   const environmentPlacement=useEditor(s=>s.environmentPlacement);
   const environmentPreview=useEditor(s=>s.environmentPreview),setEnvironmentPreview=useEditor(s=>s.setEnvironmentPreview);
@@ -1856,12 +2595,15 @@ export function Viewport(){
   const snapping=useEditor(s=>s.snapping),toggleSnap=useEditor(s=>s.toggleSnap);
   const showGrid=useEditor(s=>s.showGrid),setFlag=useEditor(s=>s.setFlag);
   const showEntityNames=useEditor(s=>s.showEntityNames);
+  const textureStudioOpen=useEditor(s=>s.textureStudioOpen);
+  const mapFpsEnabled=useEditor(s=>s.mapLabelSettings.diagnostics);
+  const isBspRecovered=useEditor(s=>/_recovered(?:\.map)?$/i.test(s.project.name)||/(?:^|[;\\/])[^;\\/]+_recovered\.wad(?:;|$)/i.test(s.project.world.wad||''));
   const undo=useEditor(s=>s.undo),redo=useEditor(s=>s.redo);
   const historyCount=useEditor(s=>s.history.length),futureCount=useEditor(s=>s.future.length);
-  const scaleAnchor=useEditor(s=>s.scaleAnchor),setScaleAnchor=useEditor(s=>s.setScaleAnchor);
-  const drawMode=useEditor(s=>s.drawMode),drawHeight=useEditor(s=>s.drawHeight),selectedCount=useEditor(s=>s.selectedIds.length);
+  const drawMode=useEditor(s=>s.drawMode),drawHeight=useEditor(s=>s.drawHeight),drawPlane=useEditor(s=>s.drawPlane),selectedCount=useEditor(s=>s.selectedIds.length);
   return <PreviewContext.Provider value={previewContext}><div className="viewport-frame">
     {!walkMode&&<HudCustomizer/>}
+    {!walkMode&&!hudEditing&&<TextureStudioPanel/>}
     {hudEditing&&<div className="hud-edit-shield" aria-hidden="true"/>}
     {!walkMode&&<HudWidget id="alerts">
       <div className="hud-alert-group">
@@ -1869,46 +2611,40 @@ export function Viewport(){
         {audioPlacement&&<div className="primitive-placement-hud"><strong>{t('Place in 3D')}: {audioPlacement.classname}</strong><span>{t('Click a surface to place')} · Esc {t('Cancel')}</span></div>}
         {(pendingNpcClass||routePlacementFor)&&<div className="primitive-placement-hud"><strong>{routePlacementFor?`path_waypoint · ${t('NPC Route')}`:`${t('Place NPC')}: ${pendingNpcClass}`}</strong><span>{t('Click a surface to place')} · Esc {t('Cancel')}</span></div>}
         {architecturePlacement&&<div className="primitive-placement-hud"><strong>{t('Point and place in 3D')}</strong><span>{t('Hover over an axis-aligned Box wall, click to position the opening. Change Width/Height before activating. Esc cancels.')}</span></div>}
-        {placementShape&&<div className="primitive-placement-hud"><strong>{t('Place')}: {t(placementShape[0].toUpperCase()+placementShape.slice(1))}</strong><span>{t('Click a surface to place')} · Esc {t('Cancel')}</span></div>}
+        {terrainPlacement&&<div className="primitive-placement-hud"><strong>{t('Place in 3D')}: {terrainPlacement.kind==='terrain'?t('Sculpt Terrain'):t('Rock & Cliff Generator')}</strong><span>{t('Click a surface to place')} · Esc {t('Cancel')}</span></div>}
+        {placementPrefabId&&<div className="primitive-placement-hud"><strong>{t('Place prefab with mouse')}: {placementPrefabName}</strong><span>R 90° · Shift+R 15° · X/Y/Z · F · 0 · P · Esc</span></div>}
+        {placementShape&&<div className="primitive-placement-hud"><strong>{t('Place')}: {t(placementShape[0].toUpperCase()+placementShape.slice(1))}</strong><span>R 90° · Shift+R 15° · X/Y/Z · F · 0 · P · Esc</span></div>}
+        {(placementShape||placementPrefabId)&&<div className="smart-placement-controls" onPointerDown={e=>e.stopPropagation()}>
+          <span>{placementAxis.toUpperCase()} {placementAngle}°</span>
+          <button title={t('Rotate 90 degrees')} onClick={()=>useEditor.getState().stepPlacementAngle(90)}>↻ 90°</button>
+          {(['x','y','z'] as const).map(axis=><button key={axis} className={placementAxis===axis?'active':''} onClick={()=>useEditor.getState().setPlacementAxis(axis)} title={`${t('Axis')} ${axis.toUpperCase()}`}>{axis.toUpperCase()}</button>)}
+          <button className={placementAutoAlign?'active':''} onClick={()=>useEditor.getState().togglePlacementAutoAlign()} title={t('Align to surface')}>F · {t('Surface')}</button>
+          <button className={placementRepeat?'active':''} onClick={()=>useEditor.getState().togglePlacementRepeat()} title={t('Repeat placement')}>P · {t('Repeat')}</button>
+        </div>}
         {routeSolo&&<div className="viewport-route-focus"><span style={{background:routeColor(routeSolo)}}/>{t('Isolated AI route')}: <b>{routeSolo}</b><button onClick={()=>setRouteSolo(null)}>{t('Show all')}</button></div>}
         {measureMode&&<div className="measure-mode-hud"><strong>{t('Measure distance')}</strong><span>{measurement.a&&!measurement.b?t('Click second point'):t('Click first point')} · Esc</span></div>}
-        {hudEditing&&!environmentPlacement&&!audioPlacement&&!pendingNpcClass&&!routePlacementFor&&!architecturePlacement&&!placementShape&&!routeSolo&&!measureMode&&<span className="hud-empty-slot">{t('Editor messages')}</span>}
+        {hudEditing&&!environmentPlacement&&!audioPlacement&&!pendingNpcClass&&!routePlacementFor&&!architecturePlacement&&!placementShape&&!placementPrefabId&&!routeSolo&&!measureMode&&<span className="hud-empty-slot">{t('Editor messages')}</span>}
       </div>
     </HudWidget>}
     {!walkMode&&<HudWidget id="status">
-      <div className="viewport-label"><span className="viewport-bullet"/> {t(cameraLabel)} <span className="viewport-sep">/</span> {drawMode?`${t('Draw')} (${drawHeight}u)` :t('Textured')} <span className="viewport-sep">/</span> {t(faceMode?'Face':'Object')} {t('selection')}</div>
+      <div className="viewport-label"><span className="viewport-bullet"/> {t(cameraLabel)} <span className="viewport-sep">/</span> {drawMode?`${t('Draw')} ${drawPlane.toUpperCase()} (${drawHeight}u) · X/Y/Z: ${t('Plane')} · F: ${t('Surface')}` :t('Textured')} <span className="viewport-sep">/</span> {t(faceMode?'Face':'Object')} {t('selection')}</div>
     </HudWidget>}
-    <HudWidget id="view"><div className="viewport-controls-row">
-      <button type="button" className={`player-walk-toggle ${walkMode?'active':''}`} title={t('Player Walk Mode')} aria-label={t('Player Walk Mode')} aria-pressed={walkMode} onClick={()=>{
-        const entering=!useEditor.getState().walkMode;
-        if(entering)requestSafeWalkFullscreen(walkSettings.safeFullscreen,message=>useEditor.getState().appendLogs([message]));
-        useEditor.getState().setWalk(entering);
-        if(entering&&!walkSettings.safeFullscreen){const canvas=document.querySelector('.viewport-frame canvas') as HTMLCanvasElement|null;canvas?.requestPointerLock?.().catch(()=>{});}
-        else{releaseSafeWalkFullscreen();if(document.pointerLockElement)document.exitPointerLock?.();}
-      }}><Footprints size={16}/><span className="walk-toggle-label">{t('Walk')}</span></button>
-      {!walkMode&&<button type="button" title={t('Walk and renderer settings')} aria-label={t('Walk and renderer settings')} onClick={()=>setShowPreviewOptions(v=>!v)}><Settings2 size={16}/></button>}
-      {!walkMode&&<>
+    {!walkMode&&<HudWidget id="view"><div className="viewport-controls-row">
       <button type="button" className="projection-toggle" onClick={()=>projection('projection')} title={t('Switch orthographic / perspective')} aria-label={t('Switch orthographic / perspective')}><Scan size={16}/><span className="hud-projection-label">{t(cameraLabel.includes('Ortho')||cameraLabel==='Orthographic'?'Orthographic':'Perspective')}</span></button>
       <button type="button" className={`lighting-viewport-toggle ${environmentPreview?'active':''}`} onClick={()=>setEnvironmentPreview(!environmentPreview)} title={t('Approximate lighting preview')} aria-label={t('Lighting Preview')} aria-pressed={environmentPreview}><Sun size={16}/></button>
       <button type="button" className={`grid-visibility ${showGrid?'active':''}`} aria-label={t('Grid visibility')} aria-pressed={showGrid} title={t('Grid visibility')} onClick={()=>setFlag('showGrid',!showGrid)}><Grid3x3 size={16}/></button>
       <label className="viewport-grid-select" title={t('Grid size')}><Grid3x3 size={13}/><select aria-label={t('Grid size')} value={snap} onChange={e=>setSnap(Number(e.target.value))}>{GRID_STEPS.map(step=><option key={step} value={step}>{step}u</option>)}</select></label>
       <button type="button" className={`grid-snap ${snapping?'active':''}`} aria-pressed={snapping} aria-label={t('Snap to grid')} title={t('Snap to grid')} onClick={toggleSnap}><Magnet size={16}/></button>
       <div className="hud-tools-separator"/>
+      {isBspRecovered&&<button type="button" className={hideRecoveryNull?'hud-pressed':''} title={t(hideRecoveryNull?'Show NULL faces':'Hide NULL faces')} aria-label={t('Hide NULL faces')} aria-pressed={hideRecoveryNull} onClick={()=>setHideRecoveryNull(v=>!v)}>{hideRecoveryNull?<EyeOff size={16}/>:<Eye size={16}/>}</button>}
       <button type="button" title={t('Frame all')} aria-label={t('Frame all')} onClick={()=>projection('frameAll')}><Focus size={16}/></button>
       <button type="button" className={showEntityNames?'hud-pressed':''} aria-pressed={showEntityNames} title={t('Show entity names')} aria-label={t('Show entity names')} onClick={()=>setFlag('showEntityNames',!showEntityNames)}>{showEntityNames?<Eye size={16}/>:<EyeOff size={16}/>}</button>
+      <button type="button" className={textureStudioOpen?'hud-pressed':''} aria-label="Texture Studio" title="Texture Studio · UV" onClick={()=>{const editor=useEditor.getState();editor.setTextureStudioOpen(!editor.textureStudioOpen);if(editor.geometryMode!=='face')editor.setGeometryMode('face')}}>UV</button>
       <button type="button" title={t('Undo')} aria-label={t('Undo')} disabled={!historyCount} onClick={undo}><Undo2 size={16}/></button>
       <button type="button" title={t('Redo')} aria-label={t('Redo')} disabled={!futureCount} onClick={redo}><Redo2 size={16}/></button>
-      </>}
-    </div></HudWidget>
-    {(mode==='scale'||modal?.mode==='scale'||hudEditing)&&<HudWidget id="pivot"><div className="viewport-scale-controls">
-      <label title={t('Scale pivot description')}>{t('Scale pivot')}
-        <select aria-label={t('Scale pivot')} value={scaleAnchor} onChange={e=>setScaleAnchor(e.target.value as typeof scaleAnchor)}>
-          {SCALE_ANCHORS.map((anchor)=><option key={anchor} value={anchor}>{t(({center:'Scale from center',xmin:'Keep left (X-)',xmax:'Keep right (X+)',ymin:'Keep back (Y-)',ymax:'Keep front (Y+)',zmin:'Keep bottom (Z-)',zmax:'Keep top (Z+)'} as const)[anchor])}</option>)}
-        </select>
-      </label><small title={t('Scaling keeps the selected face in place. Choose Center for symmetric scaling.')}><Focus size={14}/></small>
     </div></HudWidget>}
     {!walkMode&&showPreviewOptions&&<div className="walk-render-panel" onPointerDown={e=>e.stopPropagation()}>
-      <div className="walk-render-panel-header"><strong>{t('Player Walk 2.0 & GoldSrc Renderer')}</strong><button type="button" onClick={()=>setShowPreviewOptions(false)}>×</button></div>
+      <div className="walk-render-panel-header"><strong>{t('Gameplay Test settings')}</strong><button type="button" onClick={()=>setShowPreviewOptions(false)}>×</button></div>
       <label>{t('Starting position')}<select value={walkSettings.spawn} onChange={e=>updateWalk({spawn:e.target.value as WalkPreviewSettings['spawn']})}><option value="entity">info_player_start</option><option value="camera">{t('Current camera position')}</option></select></label>
       <label>{t('Walk speed')}: {walkSettings.walkSpeed} u/s<input type="range" min="60" max="600" step="10" value={walkSettings.walkSpeed} onChange={e=>updateWalk({walkSpeed:Number(e.target.value)})}/></label>
       <label>{t('Run multiplier')}: {walkSettings.runMultiplier.toFixed(2)}×<input type="range" min="1" max="4" step="0.1" value={walkSettings.runMultiplier} onChange={e=>updateWalk({runMultiplier:Number(e.target.value)})}/></label>
@@ -1920,6 +2656,10 @@ export function Viewport(){
       <label>{t('Flashlight power')}: {Math.round(walkSettings.flashlightPower/1000)}k<input type="range" min="10000" max="120000" step="5000" value={walkSettings.flashlightPower} onChange={e=>updateWalk({flashlightPower:Number(e.target.value)})}/></label>
       <label className="walk-render-checkbox"><input type="checkbox" checked={walkSettings.noclip} onChange={e=>updateWalk({noclip:e.target.checked})}/>{t('Noclip preview')}</label>
       <div className="walk-render-divider"/>
+      <label className="walk-render-checkbox"><input type="checkbox" checked={walkSettings.rendered} onChange={e=>updateWalk({rendered:e.target.checked})}/>{t('Rendered lighting in test')}</label>
+      <label className="walk-render-checkbox"><input type="checkbox" checked={walkSettings.showModels} onChange={e=>updateWalk({showModels:e.target.checked})}/>{t('Show NPC and MDL models')}</label>
+      <label className="walk-render-checkbox"><input type="checkbox" checked={walkSettings.interactions} onChange={e=>updateWalk({interactions:e.target.checked})}/>{t('Simulate buttons, doors and triggers')}</label>
+      <div className="walk-render-divider"/>
       <label className="walk-render-checkbox"><input type="checkbox" checked={goldsrcSettings.enabled} onChange={e=>updateGoldSrc({enabled:e.target.checked})}/><strong>{t('GoldSrc material preview')}</strong></label>
       <label className="walk-render-checkbox"><input type="checkbox" checked={goldsrcSettings.transparency} onChange={e=>updateGoldSrc({transparency:e.target.checked})}/>{t('Water and glass transparency')}</label>
       <label className="walk-render-checkbox"><input type="checkbox" checked={goldsrcSettings.waterAnimation} onChange={e=>updateGoldSrc({waterAnimation:e.target.checked})}/>{t('Water texture animation')}</label>
@@ -1930,10 +2670,15 @@ export function Viewport(){
     {!walkMode&&doctorTrace.length>1&&<button type="button" className="viewport-leak-toggle" onClick={()=>setDoctorTraceVisible(!doctorTraceVisible)}>{doctorTraceVisible?t('Hide leak route'):t('Show leak route')} · {doctorTrace.length}</button>}
     {/* R3F measures physical pixels. The editor shell uses CSS zoom for UI scale,
         so the WebGL layer must undo that zoom to avoid a double-scaled canvas. */}
-    <div onContextMenu={e=>e.preventDefault()} className="viewport-canvas" style={{zoom:1/uiScale}}><Canvas shadows={shadowEnabled} dpr={[1,perfPreset==='quality'?1.75:perfPreset==='large'?1:1.35]} camera={{position:[660,530,690],fov:58,near:.5,far:280000}} gl={{antialias:true,powerPreference:'high-performance'}}>
+    <div onPointerDownCapture={e=>{if(e.button!==2){cancelRightClick.current=false;return;}const s=useEditor.getState();if(!s.drawMode&&!s.placementShape)return;cancelRightClick.current=true;e.preventDefault();e.stopPropagation();if(s.drawMode)s.setDrawMode(false);if(s.placementShape)s.setPlacementShape(null);}}
+      onContextMenuCapture={e=>{if(cancelRightClick.current){e.preventDefault();e.stopPropagation();cancelRightClick.current=false;}}}
+      onContextMenu={e=>{e.preventDefault();const s=useEditor.getState();if(s.drawMode)s.setDrawMode(false);if(s.placementShape)s.setPlacementShape(null)}} className="viewport-canvas" style={{zoom:1/uiScale}}><Canvas shadows={shadowEnabled} dpr={[1,perfPreset==='quality'?1.75:perfPreset==='large'?1:1.35]} camera={{position:[660,530,690],fov:58,near:.5,far:280000}} gl={{antialias:true,powerPreference:'high-performance'}}>
       <Scene onContextMenu={openMenu}/>
     </Canvas></div>
-    {walkMode&&<div className="player-walk-overlay" role="status" aria-label={t('Player Walk Mode')}>
+    {!walkMode&&<HudWidget id="shapes"><ShapePalette/></HudWidget>}
+    {!walkMode&&!hudEditing&&<PreciseScalePanel/>}
+    {!walkMode&&cinematicPlacementFor&&<div className="cine-placement-overlay" role="status">{t('Cinematic route: click a map surface to add a path_corner. Esc to finish.')}</div>}
+    {walkMode&&<div className="player-walk-overlay" role="status" aria-label={t('Gameplay Test')}>
       <span className="player-walk-crosshair" aria-hidden="true"/>
       {walkSettings.showHud&&<div className="player-walk-info" aria-label={t('Player HUD')}>
         <strong>{t('Player HUD')}</strong>
@@ -1942,9 +2687,11 @@ export function Viewport(){
         <span>{walkStats.noclip?'NOCLIP':walkStats.crouched?t('Crouched'):walkStats.grounded?t('Grounded'):t('Airborne')}</span>
         <span className={walkSettings.flashlight?'walk-lamp-on':'walk-lamp-off'}><Flashlight size={13}/> {t('Flashlight')}: {walkSettings.flashlight?'ON':'OFF'}</span>
       </div>}
-      <div className="player-walk-guide"><strong>{t('Player Walk Mode')}</strong>
+      <div className="player-walk-guide"><strong>{t('Gameplay Test')}</strong>
         {!walkCaptured&&<span>{t('Click viewport to capture mouse')}</span>}
-        <span>{t('Walk 2 controls hint')}</span>
+        <span>{t('Gameplay Test controls hint')}</span>
+        {walkSettings.interactions&&<span>{t('Interaction is an approximation; verify in Sven Co-op.')}</span>}
+        {gameplayMessage&&<span className="player-walk-mode-status">{gameplayMessage}</span>}
         <span className="player-walk-safety-hint">{t('Use C to crouch while moving. Ctrl+W may close the browser.')}</span>
         <span className="player-walk-mode-status">F: {t('Flashlight')} <b>{walkSettings.flashlight?'ON':'OFF'}</b> · H: HUD <b>{walkSettings.showHud?'ON':'OFF'}</b></span>
       </div>
@@ -1953,7 +2700,8 @@ export function Viewport(){
     {!walkMode&&compactTools&&<HudWidget id="tools"><QuickToolRail/></HudWidget>}
     {!walkMode&&(!modal||hudEditing)&&<HudWidget id="orthographic">{hudEditing?<span className="hud-empty-slot">{t('Orthographic tools')}</span>:<OrthoQuickTools/>}</HudWidget>}
     {!walkMode&&(modal||hudEditing)&&<HudWidget id="transform"><div className="modal-transform-hud"><span className="modal-command">{modal?.mode==='translate'?'G':modal?.mode==='rotate'?'R':'S'}</span><span><strong>{t(modal?.mode==='translate'?'Move':modal?.mode==='rotate'?'Rotate':'Scale')} · Blender</strong><small>{t('Shift + mouse: fine · Ctrl + mouse: snap · Alt + mouse: alternate · X/Y/Z: axis · Enter/click: confirm · Esc: cancel')}</small><em id="studio-modal-modifiers">{t('Normal drag')}</em></span><b id="studio-modal-readout">0</b></div></HudWidget>}
-    {!walkMode&&<HudWidget id="help"><div className="viewport-hotkeys">{t(placementShape?'Click a surface to place · Esc cancel':drawMode?'Left drag · Draw box | Esc · Exit draw mode':controls.cameraPreset==='blender'?'MMB · Orbit | Shift+MMB · Pan | Ctrl+MMB · Zoom':'RMB · Orbit | LMB · Pan | MMB · Zoom')} <span> | </span> {t(flyMode?'Fly/Walk ON · WASD / Q,E · Esc exit':'Wheel · Zoom')}</div></HudWidget>}
+    {!walkMode&&(mapFpsEnabled||hudEditing)&&<HudWidget id="fps"><div className="map-fps-mount" data-map-fps-mount>{!mapFpsEnabled?'— FPS':null}</div></HudWidget>}
+    {!walkMode&&<HudWidget id="help"><div className="viewport-hotkeys">{t(placementShape||placementPrefabId?'Click a surface to place · Esc cancel':drawMode?'Arrastrar · Dibujar | X: plano YZ · Y: plano XZ · Z: plano XY · Esc cancelar':controls.cameraPreset==='blender'?'RMB · Mirar | MMB · Orbit | Shift+MMB · Pan':'RMB arrastrar · Mirar | LMB · Pan | MMB · Zoom')} <span> | </span> {t(flyMode?'Fly/Walk ON · WASD · Q/E down/up · Esc exit':'RMB · Mirar · WASD mover · Q/E bajar/subir · rueda zoom')}</div></HudWidget>}
     {!walkMode&&(!modal||hudEditing)?<HudWidget id="stats"><div className="viewport-stats"><span>{count} {t('objects')}</span>{selectedCount>1&&<span>{selectedCount} {t('selected')} · {t('TRANSFORM')} {mode==='select'?t('Ready'):t(mode)}</span>}<span>{mode.toUpperCase()}</span><span>Grid {snap}</span></div></HudWidget>:null}
     {!walkMode&&hudEditing&&<HudWidget id="axes" editPlaceholder><div/></HudWidget>}
 

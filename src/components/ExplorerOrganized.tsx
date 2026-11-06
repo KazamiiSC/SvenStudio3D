@@ -5,6 +5,7 @@ import {organizeScene,routeColor,type SceneGroup} from '../engine/sceneOrganizat
 import type {MapObject} from '../engine/types';
 import {useT} from '../i18n';
 import {consumeRouteFocus} from '../engine/uiNavigation';
+import {connectionSearchText} from '../engine/entityNaming';
 
 const icons:Record<string,typeof Box>={geometry:Box,npc:Skull,spawners:Users,audio:AudioLines,lighting:Sun,triggers:Target,brushentities:DoorOpen,items:Package,other:Box};
 export function ExplorerOrganized(){
@@ -27,8 +28,8 @@ export function ExplorerOrganized(){
     focusRoutes();
     return()=>document.removeEventListener('svenstudio:focus-routes',focusRoutes);
   },[]);
-  const [query,setQuery]=useState(''),[limits,setLimits]=useState<Record<string,number>>({}),[collapsed,setCollapsed]=useState<Record<string,boolean>>({geometry:false,npc:false,spawners:false,'routes':false,audio:false,lighting:false,triggers:false,brushentities:false,items:false,other:true,orphan:true});
-  const test=(o:MapObject)=>[o.name,o.kind==='entity'?o.classname:'',o.kind==='entity'?o.props.targetname:'',o.layer||''].some(s=>s.toLowerCase().includes(query.toLowerCase()));
+  const [query,setQuery]=useState(''),[limits,setLimits]=useState<Record<string,number>>({}),[collapsed,setCollapsed]=useState<Record<string,boolean>>({geometry:true,npc:false,spawners:false,'routes':false,audio:false,lighting:false,triggers:false,brushentities:false,items:false,other:true,orphan:true});
+  const test=(o:MapObject)=>[o.name,o.kind==='entity'?connectionSearchText(o,objects):'',o.layer||''].some(s=>s.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
   const open=(key:string)=>query.trim()?true:!collapsed[key];
   const flip=(key:string)=>setCollapsed(v=>({...v,[key]:!v[key]}));
   const jump=(id:string,event?:MouseEvent)=>{select(id,!!(event?.ctrlKey||event?.shiftKey||event?.metaKey));};
@@ -44,7 +45,7 @@ export function ExplorerOrganized(){
     <button className="tree-folder scene-hierarchy-heading" onClick={()=>flip(key)}>{open(key)?<ChevronDown size={13}/>:<ChevronRight size={13}/>}<Icon size={15}/><span>{t(label)}</span><small>{count}</small></button>
     {open(key)&&children}
   </section>;
-  const groupNode=(g:SceneGroup)=>{const filtered=g.items.filter(o=>o.kind==='entity'&&test(o));if(!filtered.length)return null;const Icon=icons[g.id]||Box;const limit=limits[g.id]||120;return folder(g.id,g.name,filtered.length,Icon,<>{filtered.slice(0,limit).map(o=>item(o))}{filtered.length>limit&&<button className="explorer-load-more" onClick={()=>setLimits(v=>({...v,[g.id]:limit+120}))}>{t('Show more entities')} ({filtered.length-limit})</button>}</>)};
+  const groupNode=(g:SceneGroup)=>{const filtered=g.items.filter(test);if(!filtered.length)return null;const Icon=icons[g.id]||Box;const limit=limits[g.id]||120;return folder(g.id,g.name,filtered.length,Icon,<>{filtered.slice(0,limit).map(o=>item(o))}{filtered.length>limit&&<button className="explorer-load-more" onClick={()=>setLimits(v=>({...v,[g.id]:limit+120}))}>{t('Show more entities')} ({filtered.length-limit})</button>}</>)};
   const includedRoutes=tree.routes.filter(r=>!query||r.name.toLowerCase().includes(query.toLowerCase())||r.nodes.some(test)||r.owners.some(test));
   return <div className="explorer scene-hierarchy">
     <div className="panel-header"><span><FolderTree size={15}/> {t('Explorer')} · {t('Scene')}</span><span className="counter">{objects.filter(o=>o.kind==='entity').length}</span></div>
@@ -67,7 +68,7 @@ export function ExplorerOrganized(){
         </section>)}
         {tree.orphanWaypoints.length>0&&folder('orphan',t('Unassigned waypoints'),tree.orphanWaypoints.length,AlertTriangle,<>{tree.orphanWaypoints.filter(o=>!query||test(o)).map(o=>item(o,2,t('No NPC route references this waypoint')))}</>)}
       </>)}
-      {tree.groups.filter(g=>g.id!=='geometry').map(groupNode)}
+      {tree.groups.map(groupNode)}
     </div>
   </div>;
 }

@@ -1,11 +1,11 @@
 /** UI strings only. Never translate game classnames, keys, WAD texture names or FGD data. */
 import {useCallback} from 'react';
 import {useEditor} from './store';
-export type Locale = 'es'|'en'|'ru'|'ko';
+export type Locale = 'es'|'en'|'ru'|'ko'|'zh'|'pt';
 export type LocalePreference = Locale|'auto';
 
 const STORAGE_KEY = 'svenstudio-locale';
-const supported = new Set<string>(['es','en','ru','ko']);
+const supported = new Set<string>(['es','en','ru','ko','zh','pt']);
 
 /** Honor the browser/OS language priority; unsupported languages fall back to English. */
 export function detectSystemLocale(languages:readonly string[]):Locale {
@@ -47,7 +47,7 @@ export function saveLocalePreference(selected:LocalePreference):void {
 
 
 export const LANGUAGES:{id:Locale;label:string}[]=[
-  {id:'es',label:'Español'},{id:'en',label:'English'},{id:'ru',label:'Русский'},{id:'ko',label:'한국어'}
+  {id:'es',label:'Español'},{id:'en',label:'English'},{id:'ru',label:'Русский'},{id:'ko',label:'한국어'},{id:'zh',label:'简体中文'},{id:'pt',label:'Português (Brasil)'}
 ];
 const es:Record<string,string>={
  'Move floating tools with Edit HUD. Toolbar docking applies to Classic ribbon only.':'Mové las herramientas flotantes con Editar HUD. La ubicación en los bordes solo se aplica a la barra clásica.',
@@ -270,7 +270,9 @@ Object.assign(ko,{
 });
 
 const en:Record<string,string>={};
-const dictionaries:Record<Locale,Record<string,string>>={en,es,ru,ko};
+const zh:Record<string,string>={};
+const pt:Record<string,string>={};
+const dictionaries:Record<Locale,Record<string,string>>={en,es,ru,ko,zh,pt};
 export function translate(locale:Locale,key:string):string{return dictionaries[locale]?.[key]??key}
 // Keep the translator stable while the language is unchanged. Effects depending
 // on useT() must not fire after every local state update (e.g. model scans).
@@ -2032,4 +2034,1143 @@ Object.assign(ko,{
  'Shading pie menu':'음영 파이 메뉴','Shading':'음영',
  'Wireframe':'와이어프레임','Solid':'솔리드','Material Preview':'재질 미리보기','Rendered':'렌더링',
  'Hold Z · move mouse · release to select':'Z 누르기 · 마우스 이동 · 놓아서 선택'
+});
+
+// Cinematic Camera Studio: editor UI translations only. GoldSrc classnames and keyvalues stay in English.
+Object.assign(es,{
+  'Cinematic Camera Studio':'Estudio de cámaras cinematográficas','Native Sven Co-op entities':'Entidades nativas de Sven Co-op',
+  'Camera scenes':'Escenas de cámara','Create new scene':'Crear escena nueva','Every scene uses native map entities; no custom engine plugins are required.':'Cada escena usa entidades nativas; no requiere plugins del motor.',
+  'path points':'puntos de ruta','Approximate preview — not actual Svengine playback':'Vista previa aproximada — no es la ejecución real de Svengine',
+  'Camera path':'Ruta de cámara','Add point in 3D':'Añadir punto en 3D','Camera position':'Posición de cámara','Look target':'Objetivo de mirada',
+  'Choose a point to close the studio and move it with the existing gizmo. Add points by clicking map surfaces; Esc ends placement.':'Seleccioná un punto para moverlo con el gizmo existente. Añadí puntos haciendo clic en el mapa; Esc termina la colocación.',
+  'New cinematic scene':'Nueva escena cinematográfica','Create a camera and target. For motion, add path points afterward using the 3D viewport.':'Creá una cámara y su objetivo. Para moverla, añadí puntos desde el visor 3D.',
+  'Create camera':'Crear cámara','Place route':'Colocar ruta','Connect trigger':'Conectar activador','Compile and test':'Compilar y probar',
+  'Position near current selection':'Colocar cerca de la selección','Camera position (GoldSrc X/Y/Z)':'Posición de cámara (GoldSrc X/Y/Z)',
+  'Look target (GoldSrc X/Y/Z)':'Objetivo de mirada (GoldSrc X/Y/Z)','Camera properties':'Propiedades de cámara',
+  'Scene name':'Nombre de escena','Created by Cinematic Camera Studio':'Creada con Cinematic Camera Studio',
+  'Existing camera — inspect only':'Cámara existente — solo inspección','Hold time (seconds)':'Duración (segundos)',
+  'Initial speed (units/sec)':'Velocidad inicial (unidades/s)','Freeze player':'Inmovilizar al jugador',
+  'All players':'Todos los jugadores','Player invulnerable':'Jugador invulnerable','Moving camera (path)':'Cámara móvil (ruta)',
+  'Trigger / button to activate (optional)':'Activador o botón (opcional)','Connect later in Gameplay Studio':'Conectar después en Gameplay Studio',
+  'This activator already has a target and will not be overwritten.':'Este activador ya tiene un destino; no se sobrescribirá.',
+  'Save camera properties':'Guardar propiedades de cámara','Select camera in 3D':'Seleccionar cámara en 3D',
+  'Scene validation':'Validación de escena','No scene reference errors found.':'No se detectaron errores de referencias.',
+  'Preview is approximate: GoldSrc uses its own camera acceleration, smoothing, targets and event timing. Verify the BSP in Sven Co-op.':'La vista previa es aproximada: GoldSrc controla aceleración, suavizado, objetivos y eventos. Probá el BSP en Sven Co-op.',
+  'Preview limited to 250 brushes for performance; exported map remains complete.':'Vista previa limitada a 250 brushes por rendimiento; el mapa exportado conserva todo.',
+  'Native entities only. Existing brushes, WAD/FGD, lightmaps, gizmos and BSP compiler are unchanged.':'Solo entidades nativas. No se modifican brushes, WAD/FGD, lightmaps, gizmos ni compiladores BSP.',
+  'Camera created. Link a trigger or add route points.':'Cámara creada. Conectá un activador o añadí puntos de ruta.',
+  'Preview time':'Tiempo de vista previa','Pause':'Pausar','Play':'Reproducir'
+});
+Object.assign(ru,{
+  'Cinematic Camera Studio':'Студия кинематографических камер','Native Sven Co-op entities':'Стандартные сущности Sven Co-op',
+  'Camera scenes':'Сцены камер','Create new scene':'Создать сцену','Every scene uses native map entities; no custom engine plugins are required.':'Сцена использует стандартные сущности карты, без плагинов движка.',
+  'path points':'точек пути','Approximate preview — not actual Svengine playback':'Приблизительный просмотр — не воспроизведение Svengine',
+  'Camera path':'Путь камеры','Add point in 3D':'Добавить точку в 3D','Camera position':'Положение камеры','Look target':'Цель взгляда',
+  'Choose a point to close the studio and move it with the existing gizmo. Add points by clicking map surfaces; Esc ends placement.':'Выберите точку, чтобы переместить её обычным манипулятором. Щёлкайте по карте для новых точек; Esc завершает.',
+  'New cinematic scene':'Новая кинематографическая сцена','Create a camera and target. For motion, add path points afterward using the 3D viewport.':'Создайте камеру и цель. Для движения затем добавьте точки пути в 3D.',
+  'Create camera':'Создать камеру','Place route':'Задать путь','Connect trigger':'Связать триггер','Compile and test':'Скомпилировать и проверить',
+  'Position near current selection':'Рядом с выделением','Camera position (GoldSrc X/Y/Z)':'Камера (GoldSrc X/Y/Z)',
+  'Look target (GoldSrc X/Y/Z)':'Цель (GoldSrc X/Y/Z)','Camera properties':'Параметры камеры',
+  'Scene name':'Имя сцены','Created by Cinematic Camera Studio':'Создана студией камер',
+  'Existing camera — inspect only':'Существующая камера — только просмотр','Hold time (seconds)':'Длительность (секунды)',
+  'Initial speed (units/sec)':'Начальная скорость (ед./с)','Freeze player':'Обездвижить игрока',
+  'All players':'Все игроки','Player invulnerable':'Неуязвимость игрока','Moving camera (path)':'Движущаяся камера (путь)',
+  'Trigger / button to activate (optional)':'Триггер / кнопка (необязательно)','Connect later in Gameplay Studio':'Связать позже в Gameplay Studio',
+  'This activator already has a target and will not be overwritten.':'У триггера уже есть цель: она не будет перезаписана.',
+  'Save camera properties':'Сохранить параметры','Select camera in 3D':'Выделить камеру в 3D',
+  'Scene validation':'Проверка сцены','No scene reference errors found.':'Ошибок ссылок не найдено.',
+  'Preview is approximate: GoldSrc uses its own camera acceleration, smoothing, targets and event timing. Verify the BSP in Sven Co-op.':'Просмотр приблизительный: GoldSrc по-своему управляет ускорением, плавностью, целями и событиями. Проверьте BSP в Sven Co-op.',
+  'Preview limited to 250 brushes for performance; exported map remains complete.':'Просмотр ограничен 250 брашами; экспорт карты полный.',
+  'Native entities only. Existing brushes, WAD/FGD, lightmaps, gizmos and BSP compiler are unchanged.':'Только стандартные сущности. Браши, WAD/FGD, освещение, манипуляторы и компилятор BSP не изменены.',
+  'Camera created. Link a trigger or add route points.':'Камера создана. Свяжите триггер или добавьте точки пути.',
+  'Preview time':'Время просмотра','Pause':'Пауза','Play':'Пуск'
+});
+Object.assign(ko,{
+  'Cinematic Camera Studio':'시네마틱 카메라 스튜디오','Native Sven Co-op entities':'Sven Co-op 기본 엔티티',
+  'Camera scenes':'카메라 장면','Create new scene':'새 장면 만들기','Every scene uses native map entities; no custom engine plugins are required.':'장면은 기본 맵 엔티티만 사용하며 엔진 플러그인이 필요 없습니다.',
+  'path points':'경로 지점','Approximate preview — not actual Svengine playback':'근사 미리보기 — 실제 Svengine 재생과 다름',
+  'Camera path':'카메라 경로','Add point in 3D':'3D에서 지점 추가','Camera position':'카메라 위치','Look target':'시선 대상',
+  'Choose a point to close the studio and move it with the existing gizmo. Add points by clicking map surfaces; Esc ends placement.':'지점을 선택하면 창이 닫히고 기존 기즈모로 이동할 수 있습니다. 표면을 클릭해 지점을 추가하고 Esc로 종료하세요.',
+  'New cinematic scene':'새 시네마틱 장면','Create a camera and target. For motion, add path points afterward using the 3D viewport.':'카메라와 대상을 만든 다음 3D 뷰포트에서 경로 지점을 추가하세요.',
+  'Create camera':'카메라 만들기','Place route':'경로 배치','Connect trigger':'트리거 연결','Compile and test':'컴파일 및 테스트',
+  'Position near current selection':'선택 항목 근처로 이동','Camera position (GoldSrc X/Y/Z)':'카메라 위치 (GoldSrc X/Y/Z)',
+  'Look target (GoldSrc X/Y/Z)':'시선 대상 (GoldSrc X/Y/Z)','Camera properties':'카메라 속성',
+  'Scene name':'장면 이름','Created by Cinematic Camera Studio':'시네마틱 스튜디오에서 생성됨',
+  'Existing camera — inspect only':'기존 카메라 — 보기만 가능','Hold time (seconds)':'지속 시간 (초)',
+  'Initial speed (units/sec)':'초기 속도 (단위/초)','Freeze player':'플레이어 이동 제한',
+  'All players':'모든 플레이어','Player invulnerable':'플레이어 무적','Moving camera (path)':'이동 카메라 (경로)',
+  'Trigger / button to activate (optional)':'작동 트리거 / 버튼 (선택)','Connect later in Gameplay Studio':'나중에 Gameplay Studio에서 연결',
+  'This activator already has a target and will not be overwritten.':'이 트리거에는 이미 대상이 있어 덮어쓰지 않습니다.',
+  'Save camera properties':'카메라 속성 저장','Select camera in 3D':'3D에서 카메라 선택',
+  'Scene validation':'장면 검사','No scene reference errors found.':'참조 오류 없음.',
+  'Preview is approximate: GoldSrc uses its own camera acceleration, smoothing, targets and event timing. Verify the BSP in Sven Co-op.':'미리보기는 근사치입니다. GoldSrc의 가속, 부드러움, 대상, 이벤트 타이밍은 다를 수 있으니 Sven Co-op에서 BSP를 시험하세요.',
+  'Preview limited to 250 brushes for performance; exported map remains complete.':'성능상 250개 브러시만 미리 보이지만 맵은 모두 내보냅니다.',
+  'Native entities only. Existing brushes, WAD/FGD, lightmaps, gizmos and BSP compiler are unchanged.':'기본 엔티티만 사용합니다. 기존 브러시, WAD/FGD, 라이트맵, 기즈모 및 BSP 컴파일러는 변경되지 않습니다.',
+  'Camera created. Link a trigger or add route points.':'카메라를 만들었습니다. 트리거를 연결하거나 경로를 추가하세요.',
+  'Preview time':'미리보기 시간','Pause':'일시정지','Play':'재생'
+});
+
+Object.assign(es,{'Cinematic route: click a map surface to add a path_corner. Esc to finish.':'Ruta cinematográfica: hacé clic sobre el mapa para añadir un path_corner. Esc para terminar.'});
+Object.assign(ru,{'Cinematic route: click a map surface to add a path_corner. Esc to finish.':'Путь камеры: нажмите на поверхность карты, чтобы добавить path_corner. Esc завершает.'});
+Object.assign(ko,{'Cinematic route: click a map surface to add a path_corner. Esc to finish.':'시네마틱 경로: 맵 표면을 클릭하여 path_corner를 추가하세요. Esc로 종료합니다.'});
+
+// Cinematic Camera Studio preview fixes: keep native entity strings unchanged.
+Object.assign(es,{'Camera view':'Vista de cámara','Inspect scene':'Inspeccionar escena',
+ 'Mouse: orbit / zoom / pan — no map changes':'Mouse: orbitar / zoom / desplazar — sin cambiar el mapa',
+ 'Camera is inside a solid brush:':'La cámara está dentro de un brush sólido:',
+ 'Move the camera or path point with the 3D gizmo.':'Mové la cámara o el punto de ruta con el gizmo 3D.'});
+Object.assign(ru,{'Camera view':'Вид камеры','Inspect scene':'Осмотр сцены',
+ 'Mouse: orbit / zoom / pan — no map changes':'Мышь: вращение / масштаб / панорама — карта не меняется',
+ 'Camera is inside a solid brush:':'Камера находится внутри сплошного браша:',
+ 'Move the camera or path point with the 3D gizmo.':'Переместите камеру или точку пути с помощью 3D-манипулятора.'});
+Object.assign(ko,{'Camera view':'카메라 뷰','Inspect scene':'장면 살펴보기',
+ 'Mouse: orbit / zoom / pan — no map changes':'마우스: 회전 / 확대 / 이동 — 지도 변경 없음',
+ 'Camera is inside a solid brush:':'카메라가 솔리드 브러시 내부에 있습니다:',
+ 'Move the camera or path point with the 3D gizmo.':'3D 기즈모로 카메라 또는 경로 지점을 이동하세요.'});
+
+// Preview 3: cinematic-only interface text; native GoldSrc classnames/keyvalues stay in English.
+Object.assign(es,{
+ 'Fullscreen preview':'Vista previa ampliada','Preview shading':'Sombreado de vista previa','Preview playback speed':'Velocidad de reproducción',
+ 'Jump to point':'Ir al punto','To remove a route point, only the last point can be removed safely.':'Para evitar romper conexiones, solo se puede eliminar el último punto.',
+ 'Remove last point':'Eliminar último punto','Segment speeds — simulation only':'Velocidad por tramos — solo simulación',
+ 'These speeds are saved only in .svenstudio.json. GoldSrc path_corner.speed controls trains, not documented camera segment speeds; the BSP uses the camera initial speed and acceleration.':'Estas velocidades se guardan solo en .svenstudio.json. path_corner.speed controla trenes; no se ha documentado que cambie la velocidad de la cámara. El BSP utiliza la velocidad inicial y aceleración de trigger_camera.',
+ 'Preview-only speed (units/sec)':'Velocidad solo de simulación (unidades/s)','Use global speed':'Usar velocidad general',
+ 'Estimated preview travel':'Recorrido estimado','Hold time':'Duración',
+ 'Advanced native camera options':'Opciones nativas avanzadas','Acceleration (units/s²)':'Aceleración (unidades/s²)',
+ 'Stop deceleration (units/s²)':'Desaceleración final (unidades/s²)','Rotation speed (degrees/s)':'Velocidad de giro (grados/s)',
+ 'Start at Player':'Comenzar desde el jugador','Follow Player':'Seguir al jugador','Force View':'Forzar cámara',
+ 'No Instant Turn (engine flag 32)':'No Instant Turn (flag 32 del motor)','Instant Move':'Movimiento instantáneo',
+ 'Hide health HUD':'Ocultar salud y armadura','Hide flashlight HUD':'Ocultar indicador de linterna','Hide weapons HUD':'Ocultar HUD de armas',
+ 'Svengine note: deceleration and rotation speed may not behave as expected. Start at Player and Follow Player cannot be reproduced accurately in the offline preview.':'Nota Svengine: la desaceleración y el giro pueden comportarse distinto a lo esperado. Comenzar/seguir al jugador no puede reproducirse fielmente en la simulación.'
+});
+Object.assign(ru,{
+ 'Fullscreen preview':'Полноэкранный просмотр','Preview shading':'Режим отображения','Preview playback speed':'Скорость воспроизведения',
+ 'Jump to point':'Перейти к точке','To remove a route point, only the last point can be removed safely.':'Для сохранения связей можно удалить только последнюю точку.',
+ 'Remove last point':'Удалить последнюю точку','Segment speeds — simulation only':'Скорости участков — только симуляция',
+ 'These speeds are saved only in .svenstudio.json. GoldSrc path_corner.speed controls trains, not documented camera segment speeds; the BSP uses the camera initial speed and acceleration.':'Эти скорости сохраняются только в .svenstudio.json. path_corner.speed управляет поездами; изменение скорости камеры не подтверждено. BSP использует начальную скорость и ускорение камеры.',
+ 'Preview-only speed (units/sec)':'Скорость симуляции (ед./с)','Use global speed':'Общая скорость',
+ 'Estimated preview travel':'Расчётное время','Hold time':'Время камеры',
+ 'Advanced native camera options':'Расширенные параметры камеры','Acceleration (units/s²)':'Ускорение (ед./с²)',
+ 'Stop deceleration (units/s²)':'Замедление (ед./с²)','Rotation speed (degrees/s)':'Скорость поворота (град./с)',
+ 'Start at Player':'Начать у игрока','Follow Player':'Следить за игроком','Force View':'Принудительная камера',
+ 'No Instant Turn (engine flag 32)':'No Instant Turn (флаг 32)','Instant Move':'Мгновенное движение',
+ 'Hide health HUD':'Скрыть здоровье','Hide flashlight HUD':'Скрыть фонарик','Hide weapons HUD':'Скрыть оружие',
+ 'Svengine note: deceleration and rotation speed may not behave as expected. Start at Player and Follow Player cannot be reproduced accurately in the offline preview.':'Svengine: замедление и скорость поворота могут работать иначе. Начало у игрока и слежение за ним не воспроизводятся точно в предварительном просмотре.'
+});
+Object.assign(ko,{
+ 'Fullscreen preview':'전체 화면 미리보기','Preview shading':'미리보기 음영','Preview playback speed':'재생 속도',
+ 'Jump to point':'지점으로 이동','To remove a route point, only the last point can be removed safely.':'연결을 보호하기 위해 마지막 지점만 안전하게 삭제할 수 있습니다.',
+ 'Remove last point':'마지막 지점 삭제','Segment speeds — simulation only':'구간별 속도 — 시뮬레이션 전용',
+ 'These speeds are saved only in .svenstudio.json. GoldSrc path_corner.speed controls trains, not documented camera segment speeds; the BSP uses the camera initial speed and acceleration.':'이 속도는 .svenstudio.json에만 저장됩니다. path_corner.speed는 열차용이며 카메라 구간 속도로 보장되지 않습니다. BSP는 카메라 초기 속도와 가속도를 사용합니다.',
+ 'Preview-only speed (units/sec)':'미리보기 전용 속도 (단위/초)','Use global speed':'전체 속도 사용',
+ 'Estimated preview travel':'예상 이동 시간','Hold time':'유지 시간',
+ 'Advanced native camera options':'고급 기본 카메라 옵션','Acceleration (units/s²)':'가속도 (단위/초²)',
+ 'Stop deceleration (units/s²)':'감속도 (단위/초²)','Rotation speed (degrees/s)':'회전 속도 (도/초)',
+ 'Start at Player':'플레이어 위치에서 시작','Follow Player':'플레이어 추적','Force View':'강제 카메라',
+ 'No Instant Turn (engine flag 32)':'No Instant Turn (엔진 플래그 32)','Instant Move':'즉시 이동',
+ 'Hide health HUD':'체력 HUD 숨기기','Hide flashlight HUD':'손전등 HUD 숨기기','Hide weapons HUD':'무기 HUD 숨기기',
+ 'Svengine note: deceleration and rotation speed may not behave as expected. Start at Player and Follow Player cannot be reproduced accurately in the offline preview.':'Svengine: 감속 및 회전 속도는 예상과 다를 수 있습니다. 플레이어 위치에서 시작하거나 추적하는 기능은 미리보기에서 정확히 재현되지 않습니다.'
+});
+
+// Preview 4 — Gameplay Studio navigation and graph-only references (FGD keys remain original).
+Object.assign(es,{"Auto arrange all nodes":"Organizar nodos automáticamente","Restore previous layout":"Restaurar distribución anterior","Fit visible nodes":"Encajar nodos visibles","Center selected node":"Centrar nodo seleccionado","Toggle minimap":"Mostrar u ocultar minimapa","Search classname, name, target or layer":"Buscar classname, nombre, target o capa","Search entities":"Buscar entidades","Clear search":"Limpiar búsqueda","Entity category":"Categoría de entidades","All entities":"Todas las entidades","Triggers and logic":"Triggers y lógica","Brush entities":"Entidades brush","NPCs and paths":"NPC y rutas","Camera entities":"Entidades de cámara","Audio entities":"Entidades de audio","Other entities":"Otras entidades","visible entities":"entidades visibles","visible connections":"referencias visibles","Selected entity and neighbors":"Seleccionada y relacionadas","Wheel: zoom · drag empty space or middle mouse: pan · F: selected · A: fit graph":"Rueda: zoom · arrastrar fondo o botón central: desplazar · F: centrar · A: encajar","Minimap":"Minimapa","Click minimap to navigate":"Hacé clic en el minimapa para navegar","No entities match the current filters.":"No hay entidades que coincidan con los filtros.","Clear filters":"Limpiar filtros","Locate node":"Localizar nodo","Not every target is an activation: cameras, routes, and other entities use target differently.":"No todo target es una activación: cámaras, rutas y otras entidades lo usan de forma diferente.","This target has a special meaning for this entity. Change it anyway?":"Este target tiene un significado especial para esta entidad. ¿Cambiarlo igualmente?","Several entities share this targetname. The link may affect all of them. Continue?":"Varias entidades comparten este targetname. La conexión podría afectarlas a todas. ¿Continuar?","This target is the next path point.":"Este target apunta al siguiente punto de ruta.","This target is the camera look-at reference.":"Este target indica hacia dónde mira la cámara.","A target may represent different behavior depending on classname.":"Un target puede tener distintos comportamientos según el classname.","Graph layout and filters do not change GoldSrc entities or MAP export.":"La organización y los filtros no modifican entidades GoldSrc ni la exportación MAP.","Export and compile normally with SC-CSG / BSP / VIS / RAD":"Exportá y compilá normalmente con SC-CSG / BSP / VIS / RAD"});
+Object.assign(ru,{"Auto arrange all nodes":"Автоматически расположить узлы","Restore previous layout":"Восстановить предыдущее расположение","Fit visible nodes":"Показать все видимые узлы","Center selected node":"Центрировать выбранный узел","Toggle minimap":"Показать или скрыть миникарту","Search classname, name, target or layer":"Поиск класса, имени, цели или слоя","Search entities":"Поиск сущностей","Clear search":"Очистить поиск","Entity category":"Категория сущностей","All entities":"Все сущности","Triggers and logic":"Триггеры и логика","Brush entities":"Браш-сущности","NPCs and paths":"NPC и маршруты","Camera entities":"Сущности камер","Audio entities":"Звуковые сущности","Other entities":"Другие сущности","visible entities":"видимых сущностей","visible connections":"видимых связей","Selected entity and neighbors":"Выбранная и связанные","Wheel: zoom · drag empty space or middle mouse: pan · F: selected · A: fit graph":"Колесо: масштаб · пустое место / средняя кнопка: панорама · F: центр · A: весь граф","Minimap":"Миникарта","Click minimap to navigate":"Нажмите на миникарту для навигации","No entities match the current filters.":"Нет сущностей, подходящих под фильтры.","Clear filters":"Сбросить фильтры","Locate node":"Найти узел","Not every target is an activation: cameras, routes, and other entities use target differently.":"Не каждый target активирует сущность: камеры, маршруты и другие сущности используют его по-разному.","This target has a special meaning for this entity. Change it anyway?":"Этот target имеет особое значение для сущности. Всё равно изменить?","Several entities share this targetname. The link may affect all of them. Continue?":"Несколько сущностей имеют одинаковый targetname. Связь может затронуть все. Продолжить?","This target is the next path point.":"Этот target указывает на следующую точку пути.","This target is the camera look-at reference.":"Этот target задаёт направление взгляда камеры.","A target may represent different behavior depending on classname.":"Значение target зависит от classname сущности.","Graph layout and filters do not change GoldSrc entities or MAP export.":"Расположение и фильтры не меняют сущности GoldSrc или экспорт MAP.","Export and compile normally with SC-CSG / BSP / VIS / RAD":"Экспорт и компиляция обычным способом с SC-CSG / BSP / VIS / RAD"});
+Object.assign(ko,{"Auto arrange all nodes":"노드 자동 정렬","Restore previous layout":"이전 배치 복원","Fit visible nodes":"보이는 노드 맞춤","Center selected node":"선택 노드 가운데 맞춤","Toggle minimap":"미니맵 표시 전환","Search classname, name, target or layer":"클래스명, 이름, 대상, 레이어 검색","Search entities":"엔티티 검색","Clear search":"검색 지우기","Entity category":"엔티티 범주","All entities":"모든 엔티티","Triggers and logic":"트리거 및 로직","Brush entities":"브러시 엔티티","NPCs and paths":"NPC 및 경로","Camera entities":"카메라 엔티티","Audio entities":"오디오 엔티티","Other entities":"기타 엔티티","visible entities":"표시된 엔티티","visible connections":"표시된 연결","Selected entity and neighbors":"선택 항목 및 연결된 노드","Wheel: zoom · drag empty space or middle mouse: pan · F: selected · A: fit graph":"휠: 확대/축소 · 빈 곳 드래그 또는 가운데 버튼: 이동 · F: 선택 · A: 전체 맞춤","Minimap":"미니맵","Click minimap to navigate":"미니맵을 클릭하여 이동","No entities match the current filters.":"현재 필터에 맞는 엔티티가 없습니다.","Clear filters":"필터 초기화","Locate node":"노드 찾기","Not every target is an activation: cameras, routes, and other entities use target differently.":"모든 target이 활성화용은 아닙니다. 카메라, 경로 및 다른 엔티티는 다르게 사용합니다.","This target has a special meaning for this entity. Change it anyway?":"이 엔티티의 target에는 특별한 의미가 있습니다. 그래도 변경할까요?","Several entities share this targetname. The link may affect all of them. Continue?":"여러 엔티티가 같은 targetname을 사용합니다. 연결이 모두에 영향을 줄 수 있습니다. 계속할까요?","This target is the next path point.":"이 target은 다음 경로 지점을 가리킵니다.","This target is the camera look-at reference.":"이 target은 카메라가 바라볼 대상을 지정합니다.","A target may represent different behavior depending on classname.":"target의 의미는 classname에 따라 다를 수 있습니다.","Graph layout and filters do not change GoldSrc entities or MAP export.":"그래프 배치와 필터는 GoldSrc 엔티티나 MAP 내보내기를 변경하지 않습니다.","Export and compile normally with SC-CSG / BSP / VIS / RAD":"SC-CSG / BSP / VIS / RAD로 정상적으로 내보내고 컴파일하세요"});
+
+// Preview 5 — Custom NPC Importer. GoldSrc/AngelScript classnames and paths are not translated.
+Object.assign(es,{
+ 'Custom NPC Importer':'Importador de NPC personalizados','Import Custom NPC (AngelScript)':'Importar NPC personalizado (AngelScript)',
+ 'AngelScript custom entities — read-only import, no execution':'Entidades AngelScript — importación sin ejecutar código',
+ 'Imported NPC definitions':'NPC personalizados importados','No custom NPCs registered in this project yet.':'Todavía no hay NPC personalizados registrados en el proyecto.',
+ 'Remove definition':'Quitar definición','Removing a definition does not delete entities already placed in the map.':'Quitar la definición no elimina las entidades ya colocadas.',
+ 'Import existing AngelScript sources':'Importar scripts AngelScript existentes','Select .as files':'Seleccionar archivos .as','Select NPC folder':'Seleccionar carpeta de NPC',
+ 'Select all related .as files, including relative #include dependencies. No code is run by the editor.':'Seleccioná todos los .as relacionados, incluidos los #include. El editor no ejecuta los scripts.',
+ 'detected classnames':'clases detectadas','Entity classname':'Classname de la entidad','NPC description':'Descripción del NPC','Main .as script':'Script .as principal',
+ 'Registration function (if no MapInit)':'Función de registro (si no tiene MapInit)','Model path':'Ruta del modelo','Suggested registration functions':'Funciones de registro sugeridas',
+ 'Optional custom .FGD':'FGD personalizado opcional','Register in this project':'Registrar en este proyecto','Prepare game package':'Preparar paquete del juego',
+ 'Export an additive ZIP containing the .as scripts, selected assets, and an installation guide for svencoop_addon.':'Exporta un ZIP con scripts .as, recursos seleccionados y una guía de instalación en svencoop_addon.',
+ 'Target map':'Mapa de destino','Add resource files':'Agregar carpeta de recursos','assets selected':'recursos seleccionados',
+ 'Use paths beginning with models/, sound/, sprites/, gfx/ or events/.':'Usá rutas dentro de models/, sound/, sprites/, gfx/ o events/.',
+ 'Download install ZIP':'Descargar ZIP instalable','The bundle NEVER overwrites an existing map CFG; add the map_script line manually. A static validator cannot prove AngelScript runtime compatibility.':'El paquete NUNCA sobrescribe un CFG existente; agregá la línea map_script manualmente. La validación estática no garantiza compatibilidad con AngelScript.',
+ 'No changes to BSP compiler, brush geometry, FGD parser or installed game files.':'No modifica compiladores BSP, brushes, parser FGD ni archivos instalados del juego.',
+ 'saved':'guardado','Scripts are only read and packaged; never executed in the editor.':'Los scripts solo se leen y empaquetan; nunca se ejecutan en el editor.'
+});
+Object.assign(ru,{
+ 'Custom NPC Importer':'Импорт пользовательских NPC','Import Custom NPC (AngelScript)':'Импорт NPC (AngelScript)',
+ 'AngelScript custom entities — read-only import, no execution':'Сущности AngelScript — импорт без выполнения кода',
+ 'Imported NPC definitions':'Импортированные NPC','No custom NPCs registered in this project yet.':'В проекте пока нет пользовательских NPC.',
+ 'Remove definition':'Удалить определение','Removing a definition does not delete entities already placed in the map.':'Удаление определения не удаляет сущности с карты.',
+ 'Import existing AngelScript sources':'Импорт исходников AngelScript','Select .as files':'Выбрать файлы .as','Select NPC folder':'Выбрать папку NPC',
+ 'Select all related .as files, including relative #include dependencies. No code is run by the editor.':'Выберите все связанные .as, включая зависимости #include. Код не выполняется.',
+ 'detected classnames':'найденных классов','Entity classname':'Имя класса сущности','NPC description':'Описание NPC','Main .as script':'Основной скрипт .as',
+ 'Registration function (if no MapInit)':'Функция регистрации (без MapInit)','Model path':'Путь к модели','Suggested registration functions':'Возможные функции регистрации',
+ 'Optional custom .FGD':'Дополнительный FGD','Register in this project':'Зарегистрировать в проекте','Prepare game package':'Подготовить игровой пакет',
+ 'Export an additive ZIP containing the .as scripts, selected assets, and an installation guide for svencoop_addon.':'ZIP со скриптами, ресурсами и инструкцией установки в svencoop_addon.',
+ 'Target map':'Целевая карта','Add resource files':'Добавить ресурсы','assets selected':'выбрано ресурсов',
+ 'Use paths beginning with models/, sound/, sprites/, gfx/ or events/.':'Используйте папки models/, sound/, sprites/, gfx/ или events/.',
+ 'Download install ZIP':'Скачать ZIP-пакет','The bundle NEVER overwrites an existing map CFG; add the map_script line manually. A static validator cannot prove AngelScript runtime compatibility.':'Пакет не перезаписывает CFG карты. Добавьте строку map_script вручную. Совместимость с AngelScript проверяется в игре.',
+ 'No changes to BSP compiler, brush geometry, FGD parser or installed game files.':'Компилятор BSP, геометрия, FGD и файлы игры не изменяются.',
+ 'saved':'сохранено','Scripts are only read and packaged; never executed in the editor.':'Скрипты только читаются и упаковываются, но не выполняются.'
+});
+Object.assign(ko,{
+ 'Custom NPC Importer':'커스텀 NPC 가져오기','Import Custom NPC (AngelScript)':'커스텀 NPC 가져오기 (AngelScript)',
+ 'AngelScript custom entities — read-only import, no execution':'AngelScript 엔티티 — 실행 없이 가져오기',
+ 'Imported NPC definitions':'가져온 커스텀 NPC','No custom NPCs registered in this project yet.':'프로젝트에 커스텀 NPC가 없습니다.',
+ 'Remove definition':'정의 제거','Removing a definition does not delete entities already placed in the map.':'정의를 제거해도 맵에 배치한 엔티티는 삭제되지 않습니다.',
+ 'Import existing AngelScript sources':'기존 AngelScript 소스 가져오기','Select .as files':'.as 파일 선택','Select NPC folder':'NPC 폴더 선택',
+ 'Select all related .as files, including relative #include dependencies. No code is run by the editor.':'#include 종속성을 포함한 .as 파일을 선택하세요. 코드는 실행되지 않습니다.',
+ 'detected classnames':'감지된 클래스','Entity classname':'엔티티 클래스명','NPC description':'NPC 설명','Main .as script':'메인 .as 스크립트',
+ 'Registration function (if no MapInit)':'등록 함수 (MapInit 없을 때)','Model path':'모델 경로','Suggested registration functions':'추천 등록 함수',
+ 'Optional custom .FGD':'선택적 커스텀 FGD','Register in this project':'프로젝트에 등록','Prepare game package':'게임 패키지 준비',
+ 'Export an additive ZIP containing the .as scripts, selected assets, and an installation guide for svencoop_addon.':'스크립트, 리소스, 설치 안내를 포함한 svencoop_addon용 ZIP.',
+ 'Target map':'대상 맵','Add resource files':'리소스 추가','assets selected':'선택한 리소스',
+ 'Use paths beginning with models/, sound/, sprites/, gfx/ or events/.':'models/, sound/, sprites/, gfx/, events/ 경로를 사용하세요.',
+ 'Download install ZIP':'설치 ZIP 다운로드','The bundle NEVER overwrites an existing map CFG; add the map_script line manually. A static validator cannot prove AngelScript runtime compatibility.':'기존 맵 CFG를 덮어쓰지 않습니다. map_script는 직접 추가하세요. 실제 호환성은 게임에서 확인해야 합니다.',
+ 'No changes to BSP compiler, brush geometry, FGD parser or installed game files.':'BSP 컴파일러, 브러시, FGD, 설치된 게임 파일은 변경하지 않습니다.',
+ 'saved':'저장됨','Scripts are only read and packaged; never executed in the editor.':'스크립트를 읽고 패키징만 하며 편집기에서 실행하지 않습니다.'
+});
+
+// Preview 1.1.0 — Map Packager Studio translations (es).
+Object.assign(es,{
+  'Map Packager Studio':'Estudio de empaquetado de mapas',
+  'Review local map dependencies · Sven Co-op / Svengine':'Revisar dependencias locales · Sven Co-op / Svengine',
+  'Package settings':'Configuración del paquete',
+  'Compiled map':'Mapa compilado',
+  'Game folder':'Carpeta del juego',
+  'Not configured':'Sin configurar',
+  'Uses the compiled BSP in your configured maps folder. Compile your latest changes before scanning.':'Usa el BSP compilado en la carpeta maps configurada. Compilá los últimos cambios antes de analizar.',
+  'Include registered Custom NPC scripts':'Incluir scripts de NPC personalizados registrados',
+  'Scripts are packaged as source, never executed. Existing CFG files are not changed.':'Los scripts se empaquetan sin ejecutarse. No se modifican los CFG existentes.',
+  'Additional game-relative paths (one per line)':'Rutas adicionales relativas al juego (una por línea)',
+  'Analyze resources':'Analizar recursos',
+  'Working...':'Procesando...',
+  'Paths must be relative to the Sven Co-op game folder. No files are modified.':'Las rutas deben ser relativas a Sven Co-op. No se modifica ningún archivo.',
+  'Dependency Inspector':'Inspector de dependencias',
+  'resources':'recursos',
+  'Missing':'Faltantes',
+  'Game built-in':'Del juego base',
+  'BSP entities':'Entidades BSP',
+  'All':'Todos',
+  'Analyze a compiled BSP to inspect resources before creating an archive.':'Analizá un BSP compilado para revisar los recursos antes de crear el ZIP.',
+  'Package review':'Revisión del paquete',
+  'ZIP contents are placed at the root: maps/, models/, sound/, sprites/, gfx/ and scripts/maps/. Extract into svencoop_addon/.':'El ZIP contiene carpetas maps/, models/, sound/, sprites/, gfx/ y scripts/maps/ en la raíz. Extraelo en svencoop_addon/.',
+  'Warnings':'Advertencias',
+  'Custom NPC setup':'Configuración de NPC personalizados',
+  'If not already present, add these lines to your existing map CFG manually:':'Si no están agregadas, incorporá estas líneas manualmente al CFG existente:',
+  'I understand the package is incomplete and want to create it anyway.':'Entiendo que faltan recursos y quiero generar el ZIP igualmente.',
+  'Generate ZIP':'Generar ZIP',
+  'Read-only scan. Does not alter CFG, scripts, brushes, compiler settings or installed assets.':'Análisis de solo lectura. No modifica CFG, scripts, brushes, compiladores ni archivos del juego.',
+  'AngelScript dynamic dependencies and third-party redistribution rights require manual verification.':'Las dependencias dinámicas AngelScript y las licencias de terceros necesitan revisión manual.',
+  'Select Analyze resources to begin.':'Seleccioná Analizar recursos para comenzar.',
+  'Conflicting Custom NPC scripts':'Scripts de NPC incompatibles',
+  'ready resources':'recursos listos',
+  'missing resources':'recursos faltantes',
+  'Package created':'ZIP generado',
+  'Review ZIP before sharing':'Revisá el ZIP antes de compartirlo',
+});
+
+// Preview 1.1.0 — Map Packager Studio translations (ru).
+Object.assign(ru,{
+  'Map Packager Studio':'Студия упаковки карт',
+  'Review local map dependencies · Sven Co-op / Svengine':'Проверка локальных ресурсов · Sven Co-op / Svengine',
+  'Package settings':'Настройки пакета',
+  'Compiled map':'Скомпилированная карта',
+  'Game folder':'Папка игры',
+  'Not configured':'Не настроено',
+  'Uses the compiled BSP in your configured maps folder. Compile your latest changes before scanning.':'Используется BSP из папки maps. Перед проверкой соберите карту.',
+  'Include registered Custom NPC scripts':'Включить скрипты пользовательских NPC',
+  'Scripts are packaged as source, never executed. Existing CFG files are not changed.':'Скрипты только упаковываются. CFG не изменяются.',
+  'Additional game-relative paths (one per line)':'Дополнительные пути в игре (по одному в строке)',
+  'Analyze resources':'Проверить ресурсы',
+  'Working...':'Выполняется...',
+  'Paths must be relative to the Sven Co-op game folder. No files are modified.':'Пути должны быть относительно папки игры. Файлы не изменяются.',
+  'Dependency Inspector':'Инспектор зависимостей',
+  'resources':'ресурсов',
+  'Missing':'Отсутствуют',
+  'Game built-in':'Из основной игры',
+  'BSP entities':'Сущностей BSP',
+  'All':'Все',
+  'Analyze a compiled BSP to inspect resources before creating an archive.':'Проверьте BSP перед созданием архива.',
+  'Package review':'Проверка пакета',
+  'ZIP contents are placed at the root: maps/, models/, sound/, sprites/, gfx/ and scripts/maps/. Extract into svencoop_addon/.':'В ZIP папки находятся в корне. Извлекайте в svencoop_addon/.',
+  'Warnings':'Предупреждения',
+  'Custom NPC setup':'Настройка пользовательских NPC',
+  'If not already present, add these lines to your existing map CFG manually:':'Если этих строк нет, вручную добавьте их в CFG карты:',
+  'I understand the package is incomplete and want to create it anyway.':'Я понимаю, что ресурсы отсутствуют, и хочу создать ZIP.',
+  'Generate ZIP':'Создать ZIP',
+  'Read-only scan. Does not alter CFG, scripts, brushes, compiler settings or installed assets.':'Сканирование без изменений CFG, скриптов, геометрии и файлов игры.',
+  'AngelScript dynamic dependencies and third-party redistribution rights require manual verification.':'Динамические зависимости AngelScript и лицензии нужно проверить вручную.',
+  'Select Analyze resources to begin.':'Нажмите Проверить ресурсы.',
+  'Conflicting Custom NPC scripts':'Конфликт скриптов NPC',
+  'ready resources':'готовых ресурсов',
+  'missing resources':'отсутствующих ресурсов',
+  'Package created':'Пакет создан',
+  'Review ZIP before sharing':'Проверьте ZIP перед публикацией',
+});
+
+// Preview 1.1.0 — Map Packager Studio translations (ko).
+Object.assign(ko,{
+  'Map Packager Studio':'맵 패키징 스튜디오',
+  'Review local map dependencies · Sven Co-op / Svengine':'로컬 맵 리소스 검사 · Sven Co-op / Svengine',
+  'Package settings':'패키지 설정',
+  'Compiled map':'컴파일된 맵',
+  'Game folder':'게임 폴더',
+  'Not configured':'설정되지 않음',
+  'Uses the compiled BSP in your configured maps folder. Compile your latest changes before scanning.':'설정된 maps 폴더의 BSP를 사용합니다. 검사 전에 최신 변경 사항을 컴파일하세요.',
+  'Include registered Custom NPC scripts':'등록한 커스텀 NPC 스크립트 포함',
+  'Scripts are packaged as source, never executed. Existing CFG files are not changed.':'스크립트는 실행 없이 포함됩니다. 기존 CFG는 수정하지 않습니다.',
+  'Additional game-relative paths (one per line)':'추가 게임 상대 경로 (줄당 하나)',
+  'Analyze resources':'리소스 검사',
+  'Working...':'처리 중...',
+  'Paths must be relative to the Sven Co-op game folder. No files are modified.':'경로는 게임 폴더 기준이어야 합니다. 파일은 수정되지 않습니다.',
+  'Dependency Inspector':'종속성 검사기',
+  'resources':'리소스',
+  'Missing':'누락',
+  'Game built-in':'기본 게임',
+  'BSP entities':'BSP 엔티티',
+  'All':'전체',
+  'Analyze a compiled BSP to inspect resources before creating an archive.':'ZIP 생성 전 컴파일된 BSP를 검사하세요.',
+  'Package review':'패키지 검토',
+  'ZIP contents are placed at the root: maps/, models/, sound/, sprites/, gfx/ and scripts/maps/. Extract into svencoop_addon/.':'ZIP 루트에 폴더가 들어갑니다. svencoop_addon/에 압축을 푸세요.',
+  'Warnings':'경고',
+  'Custom NPC setup':'커스텀 NPC 설정',
+  'If not already present, add these lines to your existing map CFG manually:':'없다면 기존 맵 CFG에 다음 줄을 직접 추가하세요:',
+  'I understand the package is incomplete and want to create it anyway.':'리소스 누락을 이해하고 ZIP을 생성하겠습니다.',
+  'Generate ZIP':'ZIP 생성',
+  'Read-only scan. Does not alter CFG, scripts, brushes, compiler settings or installed assets.':'CFG, 스크립트, 브러시, 컴파일러, 게임 파일을 수정하지 않습니다.',
+  'AngelScript dynamic dependencies and third-party redistribution rights require manual verification.':'AngelScript 동적 종속성과 제3자 재배포 권한은 수동으로 확인해야 합니다.',
+  'Select Analyze resources to begin.':'리소스 검사를 눌러 시작하세요.',
+  'Conflicting Custom NPC scripts':'커스텀 NPC 스크립트 충돌',
+  'ready resources':'준비된 리소스',
+  'missing resources':'누락 리소스',
+  'Package created':'패키지 생성됨',
+  'Review ZIP before sharing':'공유 전 ZIP을 확인하세요',
+});
+
+
+// v1.2.0: Terrain & Shape Studio. Classnames, geometry keys and game assets remain untranslated.
+Object.assign(es,{
+  'Terrain & Shape Studio':'Estudio de terrenos y formas',
+  'Convex brush geometry · Sven Co-op / Svengine':'Geometría de brushes convexos · Sven Co-op / Svengine',
+  'Sculpt Terrain':'Esculpir terreno','Rock & Cliff Generator':'Generador de rocas y acantilados',
+  'Terrain group':'Grupo de terreno','New terrain':'Nuevo terreno','Width':'Ancho','Depth':'Profundidad',
+  'Grid resolution':'Resolución de cuadrícula','Raise':'Elevar','Lower':'Bajar','Smooth':'Suavizar',
+  'Flatten':'Aplanar','Noise':'Ruido','Brush radius':'Radio del pincel','Brush strength':'Intensidad del pincel',
+  'Flatten entire preview':'Aplanar toda la vista previa','Rocks':'Rocas','Cluster radius':'Radio del conjunto',
+  'Rock height':'Altura de las rocas','Random seed':'Semilla aleatoria',
+  'Convex rock brushes with a reproducible seed. No models or Source displacements.':'Rocas con brushes convexos y semilla repetible. Sin modelos ni displacements de Source.',
+  'GoldSrc texture':'Textura GoldSrc','Use selected WAD texture':'Usar textura WAD seleccionada',
+  'Placement center (X / Y / Z)':'Centro de colocación (X / Y / Z)',
+  'Use selected object position':'Usar posición del objeto seleccionado',
+  'Select an object in the map first.':'Seleccioná antes un objeto del mapa.',
+  'Placement position copied from selection.':'Posición de colocación tomada de la selección.',
+  'Interactive preview':'Vista previa interactiva','Sculpt with mouse':'Esculpir con mouse','Orbit / inspect':'Orbitar / inspeccionar',
+  'rocks':'rocas','Drag the left mouse button on the terrain to sculpt. Switch to Orbit to inspect.':'Arrastrá el botón izquierdo sobre el terreno para esculpir. Usá Orbitar para inspeccionar.',
+  'Drag to orbit; use the wheel to zoom. Switch to Sculpt to edit.':'Arrastrá para orbitar y usá la rueda para acercar. Elegí Esculpir para editar.',
+  'Drag to orbit; wheel to zoom. Rocks are previewed before placement.':'Arrastrá para orbitar y usá la rueda para acercar. Las rocas se ven antes de colocarlas.',
+  'Exports only convex planar Valve 220 brushes. The preview does not compile BSP or seal leaks.':'Exporta únicamente brushes planos y convexos Valve 220. La vista previa no compila BSP ni sella fugas.',
+  'No changes to the map until Apply. Undo/Redo supported.':'El mapa no cambia hasta aplicar. Compatible con Deshacer/Rehacer.',
+  'Add terrain to map':'Agregar terreno al mapa','Update terrain safely':'Actualizar terreno de forma segura','Add rocks to map':'Agregar rocas al mapa',
+  'convex brushes added or safely updated. Use Undo to revert.':'brushes convexos agregados o actualizados. Usá Deshacer para revertir.',
+  'convex rocks added. Use Undo to revert.':'rocas convexas agregadas. Usá Deshacer para revertir.',
+  'Loaded terrain for editing. Existing geometry will be checked before replacement.':'Terreno cargado para editar. Se verificará la geometría antes de reemplazarla.'
+});
+Object.assign(ru,{
+  'Terrain & Shape Studio':'Студия ландшафта и форм','Sculpt Terrain':'Лепка ландшафта','Rock & Cliff Generator':'Генератор скал',
+  'Terrain group':'Группа ландшафта','New terrain':'Новый ландшафт','Width':'Ширина','Depth':'Глубина',
+  'Grid resolution':'Разрешение сетки','Raise':'Поднять','Lower':'Опустить','Smooth':'Сгладить','Flatten':'Выровнять','Noise':'Шум',
+  'Brush radius':'Радиус кисти','Brush strength':'Сила кисти','Flatten entire preview':'Сбросить высоты',
+  'Rocks':'Скалы','Cluster radius':'Радиус группы','Rock height':'Высота скал','Random seed':'Случайное зерно',
+  'GoldSrc texture':'Текстура GoldSrc','Use selected WAD texture':'Выбрать текущую WAD-текстуру',
+  'Placement center (X / Y / Z)':'Центр размещения (X / Y / Z)','Use selected object position':'Взять позицию выделенного объекта',
+  'Interactive preview':'Интерактивный просмотр','Sculpt with mouse':'Лепить мышью','Orbit / inspect':'Вращение / осмотр',
+  'Add terrain to map':'Добавить ландшафт','Update terrain safely':'Безопасно обновить ландшафт','Add rocks to map':'Добавить скалы',
+  'No changes to the map until Apply. Undo/Redo supported.':'Карта не меняется до применения. Поддерживаются отмена и повтор.',
+  'Exports only convex planar Valve 220 brushes. The preview does not compile BSP or seal leaks.':'Экспортируются только выпуклые плоские браши Valve 220. Просмотр не компилирует BSP и не закрывает утечки.',
+  'Convex brush geometry · Sven Co-op / Svengine':'Выпуклая геометрия · Sven Co-op / Svengine',
+  'Drag the left mouse button on the terrain to sculpt. Switch to Orbit to inspect.':'Тяните левой кнопкой для лепки. Включите вращение для осмотра.',
+  'Drag to orbit; use the wheel to zoom. Switch to Sculpt to edit.':'Тяните для вращения, колесо для масштаба. Для правки включите лепку.',
+  'Drag to orbit; wheel to zoom. Rocks are previewed before placement.':'Тяните для вращения, колесо для масштаба. Скалы видны до размещения.'
+});
+Object.assign(ko,{
+  'Terrain & Shape Studio':'지형 및 형태 스튜디오','Sculpt Terrain':'지형 조각','Rock & Cliff Generator':'바위 및 절벽 생성',
+  'Terrain group':'지형 그룹','New terrain':'새 지형','Width':'너비','Depth':'깊이',
+  'Grid resolution':'격자 해상도','Raise':'올리기','Lower':'내리기','Smooth':'부드럽게','Flatten':'평탄화','Noise':'노이즈',
+  'Brush radius':'브러시 반경','Brush strength':'브러시 강도','Flatten entire preview':'전체 평탄화',
+  'Rocks':'바위','Cluster radius':'군집 반경','Rock height':'바위 높이','Random seed':'무작위 시드',
+  'GoldSrc texture':'GoldSrc 텍스처','Use selected WAD texture':'선택한 WAD 텍스처 사용',
+  'Placement center (X / Y / Z)':'배치 중심 (X / Y / Z)','Use selected object position':'선택 개체 위치 사용',
+  'Interactive preview':'대화형 미리보기','Sculpt with mouse':'마우스로 조각','Orbit / inspect':'회전 / 검사',
+  'Add terrain to map':'맵에 지형 추가','Update terrain safely':'지형 안전하게 갱신','Add rocks to map':'맵에 바위 추가',
+  'No changes to the map until Apply. Undo/Redo supported.':'적용 전까지 맵은 변경되지 않습니다. 실행 취소/다시 실행 지원.',
+  'Exports only convex planar Valve 220 brushes. The preview does not compile BSP or seal leaks.':'볼록한 평면 Valve 220 브러시만 내보냅니다. 미리보기는 BSP 컴파일이나 누수를 막지 않습니다.',
+  'Convex brush geometry · Sven Co-op / Svengine':'볼록 브러시 지오메트리 · Sven Co-op / Svengine',
+  'Drag the left mouse button on the terrain to sculpt. Switch to Orbit to inspect.':'마우스 왼쪽 버튼을 드래그해 조각하세요. 회전 모드에서 확인하세요.',
+  'Drag to orbit; use the wheel to zoom. Switch to Sculpt to edit.':'드래그하여 회전하고 휠로 확대하세요. 조각 모드에서 편집하세요.',
+  'Drag to orbit; wheel to zoom. Rocks are previewed before placement.':'드래그하여 회전하고 휠로 확대하세요. 배치 전에 바위를 확인하세요.'
+});
+
+Object.assign(es,{'High brush count: start with 4×4 or 8×8 for performance. More segments increase BSP compile cost.': 'Muchos brushes: comenzá con 4×4 u 8×8 para evitar problemas de rendimiento. Más segmentos aumentan el costo de compilación BSP.'});
+
+Object.assign(ru,{'High brush count: start with 4×4 or 8×8 for performance. More segments increase BSP compile cost.': 'Слишком много брашей: начните с 4×4 или 8×8. Больше сегментов увеличивают стоимость компиляции BSP.'});
+
+Object.assign(ko,{'High brush count: start with 4×4 or 8×8 for performance. More segments increase BSP compile cost.': '브러시 수가 많습니다. 성능을 위해 4×4 또는 8×8부터 시작하세요. 분할 수가 늘면 BSP 컴파일 부담이 커집니다.'});
+
+
+// Preview 2: terrain click placement and WAD texture selection (UI only).
+Object.assign(es,{
+  'Place by clicking map':'Colocar con clic en el mapa',
+  'Apply at X/Y/Z':'Aplicar en X/Y/Z',
+  'Filter WAD':'Filtrar WAD','No matching textures.':'No hay texturas que coincidan.',
+  'Import WAD file':'Importar archivo WAD','Importing WAD...':'Importando WAD...',
+  'WAD import error':'Error al importar WAD',
+  'WAD files imported into texture browser.':'WAD importados al navegador de texturas.',
+  'Texture preview unavailable. Import the matching WAD.':'Vista previa no disponible. Importá el WAD correspondiente.'
+});
+Object.assign(ru,{
+  'Place by clicking map':'Разместить щелчком на карте',
+  'Apply at X/Y/Z':'Применить в X/Y/Z',
+  'Filter WAD':'Фильтр WAD','No matching textures.':'Текстуры не найдены.',
+  'Import WAD file':'Импортировать WAD','Importing WAD...':'Импорт WAD...',
+  'WAD import error':'Ошибка импорта WAD',
+  'WAD files imported into texture browser.':'WAD добавлены в браузер текстур.',
+  'Texture preview unavailable. Import the matching WAD.':'Нет предпросмотра. Импортируйте нужный WAD.'
+});
+Object.assign(ko,{
+  'Place by clicking map':'맵을 클릭해서 배치',
+  'Apply at X/Y/Z':'X/Y/Z 좌표에 적용',
+  'Filter WAD':'WAD 필터','No matching textures.':'일치하는 텍스처가 없습니다.',
+  'Import WAD file':'WAD 파일 가져오기','Importing WAD...':'WAD 가져오는 중...',
+  'WAD import error':'WAD 가져오기 오류',
+  'WAD files imported into texture browser.':'WAD가 텍스처 브라우저에 추가되었습니다.',
+  'Texture preview unavailable. Import the matching WAD.':'미리보기가 없습니다. 해당 WAD를 가져오세요.'
+});
+
+// Preview 3: solid terrain preview matches generated triangular prisms and configurable base.
+Object.assign(es,{
+  'Base depth (units)':'Profundidad de la base (unidades)',
+  'Base extends below the terrain. Deep valleys require an extra 64 units of clearance.':'La base se extiende hacia abajo. Los valles profundos necesitan 64 unidades adicionales de margen.',
+  'Solid terrain (base visible)':'Terreno sólido (base visible)',
+  'Top surface only':'Solo superficie superior',
+  'Base bottom relative to placement Z':'Fondo de la base respecto de Z',
+  'Terrain is a solid volume, not a hollow shell.':'El terreno es un volumen sólido, no una capa hueca.'
+});
+Object.assign(ru,{
+  'Base depth (units)':'Глубина основания (ед.)',
+  'Base extends below the terrain. Deep valleys require an extra 64 units of clearance.':'Основание уходит вниз; для глубоких долин сохраняется запас 64 единицы.',
+  'Solid terrain (base visible)':'Цельный ландшафт (основание)',
+  'Top surface only':'Только верхняя поверхность',
+  'Base bottom relative to placement Z':'Низ основания относительно Z',
+  'Terrain is a solid volume, not a hollow shell.':'Ландшафт — объёмное тело, а не пустая оболочка.'
+});
+Object.assign(ko,{
+  'Base depth (units)':'기반 깊이 (단위)',
+  'Base extends below the terrain. Deep valleys require an extra 64 units of clearance.':'바닥은 지형 아래로 연장되며 깊은 골짜기에는 64단위 여유를 둡니다.',
+  'Solid terrain (base visible)':'솔리드 지형 (바닥 표시)',
+  'Top surface only':'윗면만 표시',
+  'Base bottom relative to placement Z':'배치 Z 기준 바닥 위치',
+  'Terrain is a solid volume, not a hollow shell.':'지형은 빈 껍질이 아닌 솔리드 볼륨입니다.'
+});
+
+// v1.2.0 Preview 4 — visibility, viewport forms and face scaling.
+Object.assign(es,{
+ 'Hidden and previously hidden objects remain listed. Focus shows hidden brushes as ghosts without unhiding them.':'Los objetos ocultos y anteriormente ocultos permanecen en la lista. Enfocar muestra el brush oculto como fantasma sin reactivarlo.',
+ 'Shape Studio':'Estudio de formas','Shape width':'Ancho','Shape depth':'Profundidad','Shape height':'Altura',
+ 'Choose a shape and size it before placing it with the mouse.':'Elegí una forma y sus dimensiones antes de colocarla con el mouse.',
+ 'Right click or Esc to cancel drawing.':'Clic derecho o Esc para cancelar el dibujo.',
+ 'Scale by dragging one of the six face arrows.':'Escalá arrastrando cualquiera de las seis flechas de las caras.'
+});
+
+// Preview 5 — concise professional labels in every language. GoldSrc
+// classname, keyvalues, textures, compiler messages and filenames stay original.
+Object.assign(es,{
+  'Map Packager Studio':'Empaquetador de mapas','Gameplay Studio':'Lógica de juego',
+  'Cinematic Camera Studio':'Cámaras cinematográficas','NPC & AI Studio':'NPC y rutas',
+  'Terrain & Shape Studio':'Terrenos y geometría','Lighting & Environment Studio':'Iluminación y entorno',
+  'Audio Studio':'Editor de audio','Sound Studio':'Editor de audio',
+  'Shape Studio':'Formas y geometría','Shapes':'Formas','Ghost mode':'Ver ocultos',
+  'Show entity names':'Mostrar etiquetas de entidades','Labels':'Etiquetas',
+  'Entity visuals':'Apariencia de entidades','Visibility manager':'Visibilidad de objetos',
+  'Map Doctor':'Diagnóstico del mapa','Studios':'Estudios','brushes':'brushes',
+  'Basic shapes':'Primitivas','Architecture shapes':'Estructuras',
+  'Draw a box':'Dibujar bloque','Stop drawing':'Salir de dibujo','Drag in the 3D viewport':'Arrastrar para definir',
+  'Wall openings':'Aberturas en paredes','Door opening':'Abertura de puerta','Window opening':'Abertura de ventana',
+  'Door and window openings cut a selected worldspawn box wall. They do not add a second wall.':'Las aberturas modifican una pared rectangular de worldspawn, sin superponer otra pared.',
+  'Drawing height':'Altura de dibujo','Left drag to draw; right click or Esc to cancel.':'Arrastrá con clic izquierdo para dibujar. Clic derecho o Esc para salir.',
+  'Select a wall and click where the opening should go.':'Elegí una pared y hacé clic en el lugar de la abertura.',
+  'Wall':'Pared','Slab':'Losa','Beam':'Viga','Column':'Columna','Ramp':'Rampa',
+  'Frame':'Marco','Room':'Habitación','Roof':'Techo','Corner':'Esquina',
+  'Platform':'Plataforma','Bridge':'Puente','Barrier':'Barrera','Steps':'Peldaños',
+  'Stairs':'Escalera','Vault':'Bóveda','Cone':'Cono','Pyramid':'Pirámide','Icosphere':'Esfera poligonal','Pipe':'Tubería',
+  'Shape width':'Ancho','Shape height':'Altura','Shape depth':'Profundidad',
+  'Doorframe':'Marco de puerta','Windowframe':'Marco de ventana',
+  'Show hidden':'Mostrar objetos ocultos','Focus ghost':'Localizar oculto',
+});
+Object.assign(ru,{
+  'Map Packager Studio':'Упаковка карты','Gameplay Studio':'Логика карты',
+  'Cinematic Camera Studio':'Кинематографические камеры','NPC & AI Studio':'NPC и маршруты',
+  'Terrain & Shape Studio':'Рельеф и геометрия','Shape Studio':'Геометрия',
+  'Ghost mode':'Показать скрытые','Labels':'Метки сущностей',
+  'Basic shapes':'Примитивы','Architecture shapes':'Конструкции','Draw a box':'Нарисовать блок',
+  'Stop drawing':'Выйти из рисования','Drag in the 3D viewport':'Тяните в окне 3D',
+  'Wall openings':'Проёмы в стене','Door opening':'Дверной проём','Window opening':'Оконный проём',
+  'Door and window openings cut a selected worldspawn box wall. They do not add a second wall.':'Вырезает проём в прямоугольной стене worldspawn, не добавляя вторую стену.',
+  'Drawing height':'Высота рисования','Left drag to draw; right click or Esc to cancel.':'Тяните ЛКМ для рисования. ПКМ или Esc — выход.',
+  'Select a wall and click where the opening should go.':'Выберите стену и укажите место проёма.',
+  'Doorframe':'Дверная рама','Windowframe':'Оконная рама',
+  'Wall':'Стена','Slab':'Плита','Beam':'Балка','Column':'Колонна','Ramp':'Пандус',
+  'Frame':'Рама','Room':'Комната','Roof':'Крыша','Corner':'Угол',
+  'Platform':'Платформа','Bridge':'Мост','Barrier':'Барьер','Steps':'Ступени'
+});
+Object.assign(ko,{
+  'Map Packager Studio':'맵 패키저','Gameplay Studio':'맵 로직',
+  'Cinematic Camera Studio':'시네마틱 카메라','NPC & AI Studio':'NPC 및 경로',
+  'Terrain & Shape Studio':'지형과 지오메트리','Shape Studio':'도형 및 지오메트리',
+  'Ghost mode':'숨긴 개체 보기','Labels':'엔티티 레이블',
+  'Basic shapes':'기본 도형','Architecture shapes':'건축 구조물','Draw a box':'블록 그리기',
+  'Stop drawing':'그리기 종료','Drag in the 3D viewport':'3D 뷰에서 드래그',
+  'Wall openings':'벽 개구부','Door opening':'문 개구부','Window opening':'창문 개구부',
+  'Door and window openings cut a selected worldspawn box wall. They do not add a second wall.':'선택한 worldspawn 사각 벽에 구멍을 만듭니다. 벽을 중복 생성하지 않습니다.',
+  'Drawing height':'그리기 높이','Left drag to draw; right click or Esc to cancel.':'왼쪽 드래그로 그리기, 오른쪽 클릭/Esc로 취소',
+  'Select a wall and click where the opening should go.':'벽을 선택하고 개구부 위치를 클릭하세요.',
+  'Doorframe':'문틀','Windowframe':'창틀',
+  'Wall':'벽','Slab':'슬래브','Beam':'보','Column':'기둥','Ramp':'경사로',
+  'Frame':'프레임','Room':'방','Roof':'지붕','Corner':'모서리',
+  'Platform':'플랫폼','Bridge':'다리','Barrier':'장벽','Steps':'계단 단차'
+});
+// English fallback is intentional for the specialized tools not translated yet.
+// These core interface dictionaries cover the navigation and new workflow.
+Object.assign(zh,{
+  'File':'文件','Help':'帮助','New project':'新建项目','Open project':'打开项目','Import .MAP':'导入 .MAP',
+  'Save project':'保存项目','Save':'保存','Export Svengine .MAP':'导出 Svengine .MAP',
+  'Compile Map':'编译地图','Stop Build':'停止编译','Build configuration':'编译设置',
+  'Map name':'地图名称','Compiler folder':'编译器目录','Game directory':'游戏目录','Save settings':'保存设置',
+  'Camera & Gizmo Controls':'相机与操纵轴设置','Camera navigation':'相机导航',
+  'Language':'语言','Interface language':'界面语言','Automatic (system language)':'自动（系统语言）',
+  'Move':'移动','Rotate':'旋转','Scale':'缩放','Draw':'绘制','Cancel':'取消','Close':'关闭',
+  'Undo':'撤销','Redo':'重做','Clone':'复制','Delete':'删除','Properties':'属性',
+  'TRANSFORM':'变换','VIEW':'视图','EDIT':'编辑','CREATE':'创建','SELECT':'选择',
+  'Studios':'工具','MAP Editor':'MAP 编辑器','BSP Viewer':'BSP 查看器',
+  'Map Packager Studio':'地图打包','Gameplay Studio':'地图逻辑','Cinematic Camera Studio':'电影镜头',
+  'NPC & AI Studio':'NPC 与路径','Terrain & Shape Studio':'地形与几何','Lighting & Environment Studio':'灯光与环境',
+  'Audio Studio':'音频编辑','Map Doctor':'地图诊断','Shape Studio':'形状与几何','Shapes':'形状',
+  'Basic shapes':'基本形状','Architecture shapes':'建筑构件','Draw a box':'绘制方块','Stop drawing':'退出绘制',
+  'Drag in the 3D viewport':'在 3D 视图中拖动','Wall openings':'墙体开口','Door opening':'门洞','Window opening':'窗洞',
+  'Door and window openings cut a selected worldspawn box wall. They do not add a second wall.':'在所选 worldspawn 方形墙体上切割开口，不会叠加第二面墙。',
+  'Drawing height':'绘制高度','Left drag to draw; right click or Esc to cancel.':'左键拖动绘制；右键或 Esc 取消。',
+  'Select a wall and click where the opening should go.':'选择墙体并单击开口位置。',
+  'Shape width':'宽度','Shape height':'高度','Shape depth':'深度',
+  'Choose a shape and size it before placing it with the mouse.':'选择形状和尺寸，再使用鼠标放置。',
+  'Click a surface to place':'单击表面放置','Right click or Esc to cancel drawing.':'右键或 Esc 取消绘制。',
+  'Doorframe':'门框','Windowframe':'窗框',
+  'Wall':'墙','Slab':'楼板','Beam':'梁','Column':'柱','Ramp':'坡道','Frame':'框架',
+  'Room':'房间','Roof':'屋顶','Corner':'转角','Platform':'平台','Bridge':'桥','Barrier':'护栏','Steps':'台阶',
+  'Box':'方块','Wedge':'楔形','Cylinder':'圆柱','Arch':'拱','Vault':'拱顶','Cone':'圆锥',
+  'Pyramid':'金字塔','Icosphere':'多面球','Stairs':'楼梯','Pipe':'管道',
+  'Texture Browser':'纹理浏览器','Entity Browser':'实体浏览器','Explorer':'资源管理器',
+  'World Properties':'世界属性','Visibility manager':'可见性管理','Ghost mode':'显示隐藏物体',
+  'Show entity names':'显示实体标签','Labels':'实体标签','Gizmo':'操纵轴','Grid':'网格',
+  'Wire':'线框','Snap':'吸附','Height':'高度','Ready':'就绪','Name':'名称','Position':'位置',
+  'Rotation':'旋转','Dimensions (units)':'尺寸（单位）','Layer':'图层','Entities':'实体',
+  'Geometry':'几何','Perspective':'透视','Textured':'纹理','Object':'对象','Face':'面',
+  'Vertex':'顶点','Edge':'边','Output':'输出','Workspace':'工作区','Load Sven Co-op FGD':'加载 Sven Co-op FGD',
+  'Frame selection':'聚焦选中对象','Frame all':'显示全部',
+});
+Object.assign(pt,{
+  'File':'Arquivo','Help':'Ajuda','New project':'Novo projeto','Open project':'Abrir projeto','Import .MAP':'Importar .MAP',
+  'Save project':'Salvar projeto','Save':'Salvar','Export Svengine .MAP':'Exportar .MAP Svengine',
+  'Compile Map':'Compilar mapa','Stop Build':'Parar compilação','Build configuration':'Configuração de compilação',
+  'Map name':'Nome do mapa','Compiler folder':'Pasta dos compiladores','Game directory':'Pasta do jogo','Save settings':'Salvar configurações',
+  'Camera & Gizmo Controls':'Controles de câmera e gizmo','Camera navigation':'Navegação de câmera',
+  'Language':'Idioma','Interface language':'Idioma da interface','Automatic (system language)':'Automático (sistema)',
+  'Move':'Mover','Rotate':'Girar','Scale':'Redimensionar','Draw':'Desenhar','Cancel':'Cancelar','Close':'Fechar',
+  'Undo':'Desfazer','Redo':'Refazer','Clone':'Duplicar','Delete':'Excluir','Properties':'Propriedades',
+  'TRANSFORM':'TRANSFORMAR','VIEW':'VISUALIZAÇÃO','EDIT':'EDITAR','CREATE':'CRIAR','SELECT':'SELECIONAR',
+  'Studios':'Ferramentas','MAP Editor':'Editor MAP','BSP Viewer':'Visualizador BSP',
+  'Map Packager Studio':'Empacotador de mapas','Gameplay Studio':'Lógica do mapa',
+  'Cinematic Camera Studio':'Câmeras cinematográficas','NPC & AI Studio':'NPCs e rotas',
+  'Terrain & Shape Studio':'Terrenos e geometria','Lighting & Environment Studio':'Iluminação e ambiente',
+  'Audio Studio':'Editor de áudio','Map Doctor':'Diagnóstico do mapa','Shape Studio':'Formas e geometria',
+  'Shapes':'Formas','Basic shapes':'Formas básicas','Architecture shapes':'Estruturas',
+  'Draw a box':'Desenhar bloco','Stop drawing':'Sair do desenho','Drag in the 3D viewport':'Arraste na vista 3D',
+  'Wall openings':'Aberturas na parede','Door opening':'Abertura de porta','Window opening':'Abertura de janela',
+  'Door and window openings cut a selected worldspawn box wall. They do not add a second wall.':'As aberturas recortam a parede retangular de worldspawn sem duplicar a parede.',
+  'Drawing height':'Altura do desenho','Left drag to draw; right click or Esc to cancel.':'Arraste com o botão esquerdo; botão direito ou Esc para sair.',
+  'Select a wall and click where the opening should go.':'Selecione a parede e clique onde deseja a abertura.',
+  'Shape width':'Largura','Shape height':'Altura','Shape depth':'Profundidade',
+  'Choose a shape and size it before placing it with the mouse.':'Escolha uma forma e suas dimensões antes de posicionar.',
+  'Click a surface to place':'Clique na superfície para posicionar',
+  'Right click or Esc to cancel drawing.':'Botão direito ou Esc para cancelar.',
+  'Doorframe':'Batente de porta','Windowframe':'Moldura de janela',
+  'Wall':'Parede','Slab':'Laje','Beam':'Viga','Column':'Coluna','Ramp':'Rampa','Frame':'Moldura',
+  'Room':'Sala','Roof':'Telhado','Corner':'Canto','Platform':'Plataforma','Bridge':'Ponte','Barrier':'Barreira','Steps':'Degraus',
+  'Box':'Bloco','Wedge':'Cunha','Cylinder':'Cilindro','Arch':'Arco','Vault':'Abóbada','Cone':'Cone',
+  'Pyramid':'Pirâmide','Icosphere':'Esfera poligonal','Stairs':'Escadas','Pipe':'Tubo',
+  'Texture Browser':'Explorador de texturas','Entity Browser':'Explorador de entidades','Explorer':'Explorador',
+  'World Properties':'Propriedades do mundo','Visibility manager':'Gerenciador de visibilidade',
+  'Ghost mode':'Exibir ocultos','Show entity names':'Exibir rótulos das entidades','Labels':'Rótulos',
+  'Gizmo':'Gizmo','Grid':'Grade','Wire':'Aramado','Snap':'Ajustar','Height':'Altura','Ready':'Pronto',
+  'Name':'Nome','Position':'Posição','Rotation':'Rotação','Dimensions (units)':'Dimensões (unidades)',
+  'Layer':'Camada','Entities':'Entidades','Geometry':'Geometria','Perspective':'Perspectiva',
+  'Textured':'Com texturas','Object':'Objeto','Face':'Face','Vertex':'Vértice','Edge':'Aresta',
+  'Output':'Saída','Workspace':'Área de trabalho','Load Sven Co-op FGD':'Carregar FGD Sven Co-op',
+  'Frame selection':'Focar seleção','Frame all':'Mostrar tudo'
+});
+
+// v1.3.0 Gameplay Test — labels only; internal walk mode and projects unchanged.
+Object.assign(es,{
+ 'Gameplay Test':'Prueba de juego','Gameplay Test settings':'Ajustes de prueba de juego',
+ 'Rendered lighting in test':'Iluminación Rendered','Show NPC and MDL models':'Mostrar NPC y modelos MDL',
+ 'Simulate buttons, doors and triggers':'Simular botones, puertas y triggers',
+ 'Gameplay Test controls hint':'WASD: mover · Mouse: mirar · E: interactuar · Espacio: saltar · Shift: correr · C/Ctrl: agacharse · F: linterna · N: noclip · F5/Esc: salir',
+ 'Interaction is an approximation; verify in Sven Co-op.':'Simulación aproximada; verificá el resultado en Sven Co-op.'
+});
+Object.assign(ru,{
+ 'Gameplay Test':'Тест игры','Gameplay Test settings':'Настройки теста игры',
+ 'Rendered lighting in test':'Рендер освещения','Show NPC and MDL models':'Показывать NPC и MDL-модели',
+ 'Simulate buttons, doors and triggers':'Имитировать кнопки, двери и триггеры',
+ 'Gameplay Test controls hint':'WASD: движение · Мышь: обзор · E: использовать · Пробел: прыжок · Shift: бег · C/Ctrl: присед · F: фонарь · N: noclip · F5/Esc: выход',
+ 'Interaction is an approximation; verify in Sven Co-op.':'Приблизительная симуляция; проверяйте в Sven Co-op.'
+});
+Object.assign(ko,{
+ 'Gameplay Test':'게임플레이 테스트','Gameplay Test settings':'게임플레이 테스트 설정',
+ 'Rendered lighting in test':'렌더링 조명','Show NPC and MDL models':'NPC 및 MDL 모델 표시',
+ 'Simulate buttons, doors and triggers':'버튼, 문, 트리거 시뮬레이션',
+ 'Gameplay Test controls hint':'WASD 이동 · 마우스 보기 · E 상호작용 · Space 점프 · Shift 달리기 · C/Ctrl 숙이기 · F 손전등 · N 노클립 · F5/Esc 종료',
+ 'Interaction is an approximation; verify in Sven Co-op.':'근사 시뮬레이션입니다. Sven Co-op에서 확인하세요.'
+});
+Object.assign(zh,{
+ 'Gameplay Test':'玩法测试','Gameplay Test settings':'玩法测试设置',
+ 'Rendered lighting in test':'渲染光照预览','Show NPC and MDL models':'显示NPC与MDL模型',
+ 'Simulate buttons, doors and triggers':'模拟按钮、门与触发器',
+ 'Gameplay Test controls hint':'WASD 移动 · 鼠标视角 · E 互动 · 空格跳跃 · Shift奔跑 · C/Ctrl蹲下 · F手电筒 · N穿墙 · F5/Esc退出',
+ 'Interaction is an approximation; verify in Sven Co-op.':'仅为近似模拟，请在 Sven Co-op 中验证。'
+});
+Object.assign(pt,{
+ 'Gameplay Test':'Teste de Jogabilidade','Gameplay Test settings':'Configurações do teste',
+ 'Rendered lighting in test':'Iluminação renderizada','Show NPC and MDL models':'Mostrar NPCs e modelos MDL',
+ 'Simulate buttons, doors and triggers':'Simular botões, portas e gatilhos',
+ 'Gameplay Test controls hint':'WASD: mover · Mouse: olhar · E: interagir · Espaço: pular · Shift: correr · C/Ctrl: agachar · F: lanterna · N: noclip · F5/Esc: sair',
+ 'Interaction is an approximation; verify in Sven Co-op.':'Simulação aproximada; confirme no Sven Co-op.'
+});
+
+// BSP Recovery (Preview 1). UI-only translations. GoldSrc classnames/keyvalues are never translated.
+Object.assign(es,{
+ 'BSP Recovery':'Recuperación BSP','Native entity editing':'Edición nativa de entidades',
+ 'Native BSP entity editing — original remains untouched':'Editar entidades del BSP sin modificar el original',
+ 'BSP Recovery cannot edit this map safely':'Este BSP no se puede editar con seguridad',
+ 'This preview edits only compiled entity keyvalues. Geometry, textures, lightmaps, VIS and collision lumps are preserved byte-for-byte. Changes to baked lights or brush placement will not update compiled lighting or collisions. Always test the exported copy in Sven Co-op.':'Esta versión solo edita los keyvalues de las entidades. Conserva exactamente geometría, texturas, lightmaps, VIS y colisiones. Los cambios de luces o posición no recalculan los datos compilados. Probá la copia en Sven Co-op.',
+ 'Edit existing keyvalues. This editor never changes compiled brush-model (*n) references. Multiple occurrences of the same key are preserved.':'Editá los keyvalues. Las referencias a brushes compilados (*n) están protegidas. Se conservan las claves repetidas.',
+ 'Add keyvalue':'Añadir propiedad','Delete keyvalue':'Eliminar propiedad','Key':'Clave','Value':'Valor','Add':'Añadir',
+ 'Remove point entity':'Eliminar entidad puntual','Add point entity':'Añadir entidad puntual',
+ 'Remove selected point entity from the exported BSP? This does not modify your original file.':'¿Eliminar esta entidad puntual de la copia exportada? El BSP original seguirá intacto.',
+ 'Edited BSP copy downloaded. Open it in BSP Viewer to inspect changes. Original file untouched.':'Copia exportada. Abrila en el Visor BSP para comprobar los cambios. El original no se modificó.',
+ 'Unexported changes — original BSP not modified.':'Cambios pendientes de exportar. El BSP original está intacto.',
+ 'No edits yet. Original BSP is read-only.':'Sin modificaciones. El BSP original está protegido.',
+ 'Discard edits':'Descartar cambios','Export edited BSP copy':'Exportar copia BSP'
+});
+Object.assign(ru,{
+ 'BSP Recovery':'Восстановление BSP','Native entity editing':'Редактор сущностей BSP',
+ 'Native BSP entity editing — original remains untouched':'Редактирование сущностей BSP без изменения оригинала',
+ 'BSP Recovery cannot edit this map safely':'Невозможно безопасно редактировать этот BSP',
+ 'This preview edits only compiled entity keyvalues. Geometry, textures, lightmaps, VIS and collision lumps are preserved byte-for-byte. Changes to baked lights or brush placement will not update compiled lighting or collisions. Always test the exported copy in Sven Co-op.':'Изменяются только параметры сущностей. Геометрия, текстуры, освещение, VIS и коллизии сохраняются побайтово. Изменения освещения и положения не пересчитывают данные BSP. Проверьте копию в Sven Co-op.',
+ 'Edit existing keyvalues. This editor never changes compiled brush-model (*n) references. Multiple occurrences of the same key are preserved.':'Редактируйте параметры. Ссылки на модели кистей (*n) защищены. Повторяющиеся ключи сохраняются.',
+ 'Add keyvalue':'Добавить параметр','Delete keyvalue':'Удалить параметр','Key':'Ключ','Value':'Значение','Add':'Добавить',
+ 'Remove point entity':'Удалить точечную сущность','Add point entity':'Добавить точечную сущность',
+ 'Remove selected point entity from the exported BSP? This does not modify your original file.':'Удалить сущность из экспортируемой копии? Оригинал не изменится.',
+ 'Edited BSP copy downloaded. Open it in BSP Viewer to inspect changes. Original file untouched.':'Копия BSP экспортирована. Откройте её в просмотрщике. Оригинал сохранён.',
+ 'Unexported changes — original BSP not modified.':'Есть несохранённые изменения. Исходный BSP не изменён.',
+ 'No edits yet. Original BSP is read-only.':'Изменений нет. Исходный BSP защищён.',
+ 'Discard edits':'Отменить изменения','Export edited BSP copy':'Экспортировать копию BSP'
+});
+Object.assign(ko,{
+ 'BSP Recovery':'BSP 복구','Native entity editing':'BSP 엔티티 편집',
+ 'Native BSP entity editing — original remains untouched':'원본을 유지하면서 BSP 엔티티 편집',
+ 'BSP Recovery cannot edit this map safely':'이 BSP는 안전하게 편집할 수 없습니다',
+ 'This preview edits only compiled entity keyvalues. Geometry, textures, lightmaps, VIS and collision lumps are preserved byte-for-byte. Changes to baked lights or brush placement will not update compiled lighting or collisions. Always test the exported copy in Sven Co-op.':'엔티티 키값만 편집합니다. 지오메트리, 텍스처, 라이트맵, VIS, 충돌 데이터는 그대로 보존됩니다. 조명이나 위치 변경은 컴파일 데이터를 다시 계산하지 않습니다. Sven Co-op에서 확인하세요.',
+ 'Edit existing keyvalues. This editor never changes compiled brush-model (*n) references. Multiple occurrences of the same key are preserved.':'키값 편집. 브러시 모델 참조(*n)는 보호됩니다. 중복 키가 보존됩니다.',
+ 'Add keyvalue':'키값 추가','Delete keyvalue':'키값 삭제','Key':'키','Value':'값','Add':'추가',
+ 'Remove point entity':'포인트 엔티티 삭제','Add point entity':'포인트 엔티티 추가',
+ 'Remove selected point entity from the exported BSP? This does not modify your original file.':'내보낼 BSP 사본에서 엔티티를 삭제할까요? 원본은 유지됩니다.',
+ 'Edited BSP copy downloaded. Open it in BSP Viewer to inspect changes. Original file untouched.':'BSP 사본을 내보냈습니다. BSP 뷰어에서 확인하세요. 원본은 그대로입니다.',
+ 'Unexported changes — original BSP not modified.':'내보내지 않은 변경 사항. 원본 BSP는 그대로입니다.',
+ 'No edits yet. Original BSP is read-only.':'변경 사항 없음. 원본 BSP는 보호됩니다.',
+ 'Discard edits':'변경 취소','Export edited BSP copy':'BSP 사본 내보내기'
+});
+Object.assign(zh,{
+ 'BSP Recovery':'BSP 恢复','Native entity editing':'原生实体编辑',
+ 'Native BSP entity editing — original remains untouched':'编辑 BSP 实体，不修改原文件',
+ 'BSP Recovery cannot edit this map safely':'无法安全编辑此 BSP',
+ 'This preview edits only compiled entity keyvalues. Geometry, textures, lightmaps, VIS and collision lumps are preserved byte-for-byte. Changes to baked lights or brush placement will not update compiled lighting or collisions. Always test the exported copy in Sven Co-op.':'此预览仅编辑实体键值。几何、纹理、光照贴图、VIS 和碰撞数据逐字节保留。修改灯光或位置不会重新计算编译结果。请在 Sven Co-op 中测试导出的副本。',
+ 'Edit existing keyvalues. This editor never changes compiled brush-model (*n) references. Multiple occurrences of the same key are preserved.':'编辑实体键值。已编译笔刷模型引用（*n）受到保护，重复键会保留。',
+ 'Add keyvalue':'添加键值','Delete keyvalue':'删除键值','Key':'键','Value':'值','Add':'添加',
+ 'Remove point entity':'删除点实体','Add point entity':'添加点实体',
+ 'Remove selected point entity from the exported BSP? This does not modify your original file.':'从导出副本中删除该点实体？原 BSP 不会修改。',
+ 'Edited BSP copy downloaded. Open it in BSP Viewer to inspect changes. Original file untouched.':'BSP 副本已导出。请在 BSP 查看器中检查。原文件未修改。',
+ 'Unexported changes — original BSP not modified.':'更改尚未导出，原 BSP 未修改。',
+ 'No edits yet. Original BSP is read-only.':'没有修改。原 BSP 受到保护。',
+ 'Discard edits':'放弃更改','Export edited BSP copy':'导出 BSP 副本'
+});
+Object.assign(pt,{
+ 'BSP Recovery':'Recuperação BSP','Native entity editing':'Edição nativa de entidades',
+ 'Native BSP entity editing — original remains untouched':'Editar entidades BSP sem alterar o original',
+ 'BSP Recovery cannot edit this map safely':'Não é possível editar este BSP com segurança',
+ 'This preview edits only compiled entity keyvalues. Geometry, textures, lightmaps, VIS and collision lumps are preserved byte-for-byte. Changes to baked lights or brush placement will not update compiled lighting or collisions. Always test the exported copy in Sven Co-op.':'Esta versão edita apenas as propriedades das entidades. Geometria, texturas, lightmaps, VIS e colisões permanecem idênticos. Mudanças na iluminação ou posição não recalculam os dados compilados. Teste a cópia no Sven Co-op.',
+ 'Edit existing keyvalues. This editor never changes compiled brush-model (*n) references. Multiple occurrences of the same key are preserved.':'Edite os valores das entidades. As referências a brushes compilados (*n) são protegidas. Chaves repetidas são preservadas.',
+ 'Add keyvalue':'Adicionar propriedade','Delete keyvalue':'Excluir propriedade','Key':'Chave','Value':'Valor','Add':'Adicionar',
+ 'Remove point entity':'Remover entidade pontual','Add point entity':'Adicionar entidade pontual',
+ 'Remove selected point entity from the exported BSP? This does not modify your original file.':'Remover esta entidade da cópia exportada? O BSP original ficará intacto.',
+ 'Edited BSP copy downloaded. Open it in BSP Viewer to inspect changes. Original file untouched.':'Cópia BSP exportada. Abra no visualizador BSP para conferir. O original permanece intacto.',
+ 'Unexported changes — original BSP not modified.':'Alterações ainda não exportadas. BSP original intacto.',
+ 'No edits yet. Original BSP is read-only.':'Sem alterações. O BSP original está protegido.',
+ 'Discard edits':'Descartar alterações','Export edited BSP copy':'Exportar cópia BSP'
+});
+
+// BSP -> MAP recovery workflow (external tool is never bundled or run automatically).
+Object.assign(es,{
+ 'Convert BSP to MAP':'Convertir BSP a MAP',
+ 'Convert BSP to editable MAP':'Convertir BSP en MAP editable',
+ 'Reconstruct an editable .map with your own SurfDecomp installation. The original BSP stays unchanged. Decompilation cannot recover the exact original brushes, groups, or baked lighting.':'Reconstruí un .map editable con tu propia instalación de SurfDecomp. El BSP original no se modifica. La decompilación no recupera los brushes, grupos ni la iluminación compilada originales con exactitud.',
+ 'SurfDecomp executable path (optional)':'Ruta de surfdecomp.exe (opcional)',
+ 'Leave blank if you placed surfdecomp.exe in the tools folder of SvenStudio 3D. Only run decompilers you trust.':'Dejá este campo vacío si colocaste surfdecomp.exe en la carpeta tools de SvenStudio 3D. Ejecutá únicamente herramientas confiables.',
+ 'Decompile and validate':'Decompilar y verificar','Converting BSP...':'Convirtiendo BSP...',
+ 'Download recovered MAP':'Descargar MAP recuperado','Open recovered MAP in editor':'Abrir MAP en el editor',
+ 'MAP validation results':'Resultado de validación del MAP','MAP requires manual inspection':'El MAP requiere revisión manual',
+ 'Recovered brushes':'Brushes recuperados','Skipped brushes':'Brushes omitidos',
+ 'Importing this MAP would lose geometry. Review the report and confirm explicitly before replacing your current project.':'Al importar este MAP se perdería geometría. Revisá el informe y confirmá expresamente antes de reemplazar el proyecto actual.',
+ 'Skipped brush locations':'Ubicación de brushes omitidos',
+ 'Textures from external WADs and compiled lightmaps may not be recoverable; load the corresponding WADs if necessary.':'Las texturas de WAD externos y los lightmaps compilados podrían no recuperarse. Cargá los WAD correspondientes cuando sea necesario.',
+ 'Decompiler output':'Registro del decompilador'
+});
+Object.assign(ru,{'Convert BSP to editable MAP':'Конвертировать BSP в редактируемый MAP','SurfDecomp executable path (optional)':'Путь к surfdecomp.exe (необязательно)','Decompile and validate':'Декомпилировать и проверить','Converting BSP...':'Конвертация BSP…','Download recovered MAP':'Скачать восстановленный MAP','Open recovered MAP in editor':'Открыть MAP в редакторе','Recovered brushes':'Восстановленные браши','Skipped brushes':'Пропущенные браши','MAP validation results':'Результаты проверки MAP'});
+Object.assign(ko,{'Convert BSP to editable MAP':'BSP를 편집 가능한 MAP으로 변환','SurfDecomp executable path (optional)':'surfdecomp.exe 경로(선택)','Decompile and validate':'디컴파일 및 검사','Converting BSP...':'BSP 변환 중…','Download recovered MAP':'복원된 MAP 다운로드','Open recovered MAP in editor':'편집기에서 MAP 열기','Recovered brushes':'복원된 브러시','Skipped brushes':'누락된 브러시','MAP validation results':'MAP 검사 결과'});
+Object.assign(zh,{'Convert BSP to editable MAP':'将 BSP 转换为可编辑 MAP','SurfDecomp executable path (optional)':'surfdecomp.exe 路径（可选）','Decompile and validate':'反编译并验证','Converting BSP...':'正在转换 BSP…','Download recovered MAP':'下载恢复的 MAP','Open recovered MAP in editor':'在编辑器中打开 MAP','Recovered brushes':'恢复的笔刷','Skipped brushes':'跳过的笔刷','MAP validation results':'MAP 验证结果'});
+Object.assign(pt,{'Convert BSP to editable MAP':'Converter BSP em MAP editável','SurfDecomp executable path (optional)':'Caminho do surfdecomp.exe (opcional)','Decompile and validate':'Descompilar e validar','Converting BSP...':'Convertendo BSP…','Download recovered MAP':'Baixar MAP recuperado','Open recovered MAP in editor':'Abrir MAP no editor','Recovered brushes':'Brushes recuperados','Skipped brushes':'Brushes ignorados','MAP validation results':'Resultado da validação MAP'});
+
+Object.assign(es,{'Recovered entities':'Entidades recuperadas','Warning: the recovered MAP contains fewer entities than the original BSP. Review before importing.':'Advertencia: el MAP recuperado contiene menos entidades que el BSP original. Revisalo antes de importarlo.'});
+
+// BSP → MAP texture restoration (keep GoldSrc texture names unchanged).
+Object.assign(es,{
+ 'BSP surface textures restored':'Texturas visibles recuperadas del BSP',
+ 'NULL faces analyzed':'caras NULL analizadas',
+ 'ambiguous faces left unchanged':'caras ambiguas sin modificar',
+ 'No safe BSP surface matches found. NULL faces were kept. Inspect the source BSP and generated MAP together if textures remain missing.':'No se encontraron coincidencias seguras. Se conservaron las caras NULL. Si faltan texturas, revisá el BSP original y el MAP generado.'
+});
+Object.assign(ru,{
+ 'BSP surface textures restored':'Восстановлены текстуры видимых поверхностей BSP',
+ 'NULL faces analyzed':'проверено граней NULL',
+ 'ambiguous faces left unchanged':'неоднозначных граней не изменено',
+ 'No safe BSP surface matches found. NULL faces were kept. Inspect the source BSP and generated MAP together if textures remain missing.':'Надёжных совпадений поверхностей нет. Грани NULL сохранены. При отсутствии текстур проверьте исходный BSP и полученный MAP.'
+});
+Object.assign(ko,{
+ 'BSP surface textures restored':'BSP의 보이는 표면 텍스처 복원',
+ 'NULL faces analyzed':'NULL 면 분석',
+ 'ambiguous faces left unchanged':'모호한 면은 변경하지 않음',
+ 'No safe BSP surface matches found. NULL faces were kept. Inspect the source BSP and generated MAP together if textures remain missing.':'안전하게 일치하는 BSP 표면을 찾지 못했습니다. NULL 면을 유지했습니다. 텍스처가 없으면 원본 BSP와 생성된 MAP을 함께 확인하세요.'
+});
+Object.assign(zh,{
+ 'BSP surface textures restored':'已恢复 BSP 可见表面纹理',
+ 'NULL faces analyzed':'已分析 NULL 面',
+ 'ambiguous faces left unchanged':'未更改的歧义面',
+ 'No safe BSP surface matches found. NULL faces were kept. Inspect the source BSP and generated MAP together if textures remain missing.':'未找到可靠匹配的 BSP 表面。NULL 面保持不变。如果纹理仍然缺失，请同时检查原始 BSP 和生成的 MAP。'
+});
+Object.assign(pt,{
+ 'BSP surface textures restored':'Texturas visíveis recuperadas do BSP',
+ 'NULL faces analyzed':'faces NULL analisadas',
+ 'ambiguous faces left unchanged':'faces ambíguas mantidas',
+ 'No safe BSP surface matches found. NULL faces were kept. Inspect the source BSP and generated MAP together if textures remain missing.':'Não foram encontradas correspondências seguras. As faces NULL foram preservadas. Se ainda faltarem texturas, confira o BSP original e o MAP gerado.'
+});
+
+// BSP recovery editor-only appearance; never modifies textures or exported MAP.
+Object.assign(es,{'Hide NULL faces':'Ocultar caras NULL','Show NULL faces':'Mostrar caras NULL'});
+Object.assign(ru,{'Hide NULL faces':'Скрыть грани NULL','Show NULL faces':'Показать грани NULL'});
+Object.assign(ko,{'Hide NULL faces':'NULL 면 숨기기','Show NULL faces':'NULL 면 표시'});
+Object.assign(zh,{'Hide NULL faces':'隐藏 NULL 面','Show NULL faces':'显示 NULL 面'});
+Object.assign(pt,{'Hide NULL faces':'Ocultar faces NULL','Show NULL faces':'Mostrar faces NULL'});
+
+// Preview 3 HF4 — compiled BSP packaging safety.
+Object.assign(es,{
+ 'Only a BSP already compiled in the game folder can be packaged. An opened MAP is not automatically a compiled BSP.':'Solo se puede empaquetar un BSP ya compilado en la carpeta del juego. Abrir un MAP no genera automáticamente un BSP.',
+ 'The loaded project and the selected compiled BSP have different names. Confirm this is the file you intend to share.':'El proyecto abierto y el BSP seleccionado tienen nombres distintos. Comprobá que vas a compartir el archivo correcto.'
+});
+Object.assign(ru,{
+ 'Only a BSP already compiled in the game folder can be packaged. An opened MAP is not automatically a compiled BSP.':'Можно упаковать только уже скомпилированный BSP в папке игры. Открытие MAP не создаёт BSP автоматически.',
+ 'The loaded project and the selected compiled BSP have different names. Confirm this is the file you intend to share.':'Имя открытого проекта не совпадает с именем выбранного BSP. Проверьте файл перед упаковкой.'
+});
+Object.assign(ko,{
+ 'Only a BSP already compiled in the game folder can be packaged. An opened MAP is not automatically a compiled BSP.':'게임 폴더에서 컴파일된 BSP만 패키징할 수 있습니다. MAP을 연다고 BSP가 자동 생성되지는 않습니다.',
+ 'The loaded project and the selected compiled BSP have different names. Confirm this is the file you intend to share.':'열린 프로젝트와 선택한 BSP의 이름이 다릅니다. 배포할 파일을 확인하세요.'
+});
+Object.assign(zh,{
+ 'Only a BSP already compiled in the game folder can be packaged. An opened MAP is not automatically a compiled BSP.':'只能打包游戏目录中已编译的 BSP。打开 MAP 不会自动创建 BSP。',
+ 'The loaded project and the selected compiled BSP have different names. Confirm this is the file you intend to share.':'打开的项目与所选 BSP 名称不同，请确认打包的是正确文件。'
+});
+Object.assign(pt,{
+ 'Only a BSP already compiled in the game folder can be packaged. An opened MAP is not automatically a compiled BSP.':'Só é possível empacotar um BSP já compilado na pasta do jogo. Abrir um MAP não gera automaticamente um BSP.',
+ 'The loaded project and the selected compiled BSP have different names. Confirm this is the file you intend to share.':'O projeto aberto e o BSP selecionado têm nomes diferentes. Confira o arquivo antes de compartilhar.'
+});
+
+// HF5 — Optional SC-RAD light test. This changes compiler flags ONLY, not GoldSrc keyvalues.
+Object.assign(es,{'SC-RAD lighting diagnostic':'Prueba de iluminación SC-RAD','Normal compile — no ambient override':'Compilación normal — sin cambios','Low ambient test (0.08)':'Ambiente bajo (0,08)','Moderate ambient test (0.15)':'Ambiente medio (0,15)','Strong ambient test (0.25)':'Ambiente alto (0,25)','Diagnostic only: compiles a separate BSP with a _lightXX suffix. Does not overwrite the original BSP or restore its lightmaps. Return to Normal afterward.':'Solo para diagnóstico: genera otro BSP con sufijo _lightXX. No sobrescribe el BSP original ni recupera sus lightmaps. Después volvé a Normal.'});
+Object.assign(ru,{'SC-RAD lighting diagnostic':'Проверка освещения SC-RAD','Normal compile — no ambient override':'Обычная сборка — без изменений','Low ambient test (0.08)':'Низкий фоновый свет (0,08)','Moderate ambient test (0.15)':'Средний фоновый свет (0,15)','Strong ambient test (0.25)':'Сильный фоновый свет (0,25)','Diagnostic only: compiles a separate BSP with a _lightXX suffix. Does not overwrite the original BSP or restore its lightmaps. Return to Normal afterward.':'Только для диагностики: создаёт отдельный BSP с суффиксом _lightXX. Исходный BSP и его лайтмапы не изменяются. Затем вернитесь к обычному режиму.'});
+Object.assign(ko,{'SC-RAD lighting diagnostic':'SC-RAD 조명 진단','Normal compile — no ambient override':'일반 컴파일 — 변경 없음','Low ambient test (0.08)':'약한 주변광 (0.08)','Moderate ambient test (0.15)':'중간 주변광 (0.15)','Strong ambient test (0.25)':'강한 주변광 (0.25)','Diagnostic only: compiles a separate BSP with a _lightXX suffix. Does not overwrite the original BSP or restore its lightmaps. Return to Normal afterward.':'진단용으로 별도 _lightXX BSP를 만듭니다. 원본 BSP나 라이트맵을 덮어쓰지 않습니다. 이후 일반 모드로 되돌리세요.'});
+Object.assign(zh,{'SC-RAD lighting diagnostic':'SC-RAD 光照诊断','Normal compile — no ambient override':'正常编译 — 不修改环境光','Low ambient test (0.08)':'低环境光 (0.08)','Moderate ambient test (0.15)':'中等环境光 (0.15)','Strong ambient test (0.25)':'高环境光 (0.25)','Diagnostic only: compiles a separate BSP with a _lightXX suffix. Does not overwrite the original BSP or restore its lightmaps. Return to Normal afterward.':'仅供诊断：单独编译后缀为 _lightXX 的 BSP，不覆盖原 BSP，也不恢复原光照贴图。测试后切回正常编译。'});
+Object.assign(pt,{'SC-RAD lighting diagnostic':'Teste de iluminação SC-RAD','Normal compile — no ambient override':'Compilação normal — sem alteração','Low ambient test (0.08)':'Ambiente baixo (0,08)','Moderate ambient test (0.15)':'Ambiente médio (0,15)','Strong ambient test (0.25)':'Ambiente alto (0,25)','Diagnostic only: compiles a separate BSP with a _lightXX suffix. Does not overwrite the original BSP or restore its lightmaps. Return to Normal afterward.':'Somente diagnóstico: compila um BSP separado com sufixo _lightXX. Não sobrescreve o BSP original nem recupera seus lightmaps. Volte ao modo Normal depois.'});
+
+// v1.3.0 Preview 4 — Editor MAP label renderer. UI only; classnames are not translated.
+Object.assign(es,{
+ 'Editor MAP labels':'Etiquetas del Editor MAP','Label renderer':'Renderizador de etiquetas',
+ 'Optimized (recommended)':'Optimizado (recomendado)','Classic (legacy performance)':'Clásico (rendimiento anterior)',
+ 'Optimized mode renders only on-screen labels in one layer. Map entities and selection are never removed.':'El modo optimizado dibuja solo las etiquetas visibles en una capa. Las entidades y su selección no se eliminan.',
+ 'Maximum labels':'Máximo de etiquetas','Label distance':'Distancia de etiquetas','Avoid overlapping labels':'Evitar etiquetas superpuestas',
+ 'Show label diagnostics':'Mostrar diagnóstico de etiquetas','Reset label optimization':'Restablecer optimización de etiquetas',
+ 'Selected labels stay visible beyond limits while in front of the camera. High limits can reduce FPS.':'Las etiquetas seleccionadas ignoran los límites mientras estén frente a la cámara. Los límites altos pueden reducir los FPS.',
+ 'Label candidates':'Candidatas','In view':'En pantalla','Rendered labels':'Etiquetas dibujadas'
+});
+Object.assign(ru,{
+ 'Editor MAP labels':'Подписи редактора MAP','Label renderer':'Рендер подписей',
+ 'Optimized (recommended)':'Оптимизированный (рекомендуется)','Classic (legacy performance)':'Классический (старый режим)',
+ 'Optimized mode renders only on-screen labels in one layer. Map entities and selection are never removed.':'Оптимизированный режим отображает только видимые подписи в одном слое. Сущности и выделение сохраняются.',
+ 'Maximum labels':'Максимум подписей','Label distance':'Расстояние подписей','Avoid overlapping labels':'Избегать наложения подписей',
+ 'Show label diagnostics':'Показать диагностику подписей','Reset label optimization':'Сбросить оптимизацию подписей',
+ 'Selected labels stay visible beyond limits while in front of the camera. High limits can reduce FPS.':'Подписи выбранных объектов видны сверх лимита, если находятся перед камерой. Высокий лимит может снизить FPS.',
+ 'Label candidates':'Кандидаты','In view':'В кадре','Rendered labels':'Отображено подписей'
+});
+Object.assign(ko,{
+ 'Editor MAP labels':'MAP 편집기 엔티티 레이블','Label renderer':'레이블 렌더러',
+ 'Optimized (recommended)':'최적화 (권장)','Classic (legacy performance)':'기존 방식 (이전 성능)',
+ 'Optimized mode renders only on-screen labels in one layer. Map entities and selection are never removed.':'최적화 모드는 화면 안의 레이블만 한 레이어에 표시하며 엔티티와 선택 상태를 유지합니다.',
+ 'Maximum labels':'최대 레이블 수','Label distance':'레이블 거리','Avoid overlapping labels':'레이블 겹침 방지',
+ 'Show label diagnostics':'레이블 진단 표시','Reset label optimization':'레이블 최적화 초기화',
+ 'Selected labels stay visible beyond limits while in front of the camera. High limits can reduce FPS.':'선택한 레이블은 카메라 앞에 있는 경우 제한을 초과해도 표시됩니다. 높은 제한은 FPS를 낮출 수 있습니다.',
+ 'Label candidates':'후보','In view':'화면 안','Rendered labels':'표시된 레이블'
+});
+Object.assign(zh,{
+ 'Editor MAP labels':'MAP 编辑器标签','Label renderer':'标签渲染方式',
+ 'Optimized (recommended)':'优化模式（推荐）','Classic (legacy performance)':'经典模式（原有性能）',
+ 'Optimized mode renders only on-screen labels in one layer. Map entities and selection are never removed.':'优化模式仅在单层中绘制屏幕内的标签，不会删除实体或选择状态。',
+ 'Maximum labels':'最大标签数','Label distance':'标签距离','Avoid overlapping labels':'避免标签重叠',
+ 'Show label diagnostics':'显示标签诊断','Reset label optimization':'重置标签优化',
+ 'Selected labels stay visible beyond limits while in front of the camera. High limits can reduce FPS.':'已选标签在摄像机前方时不受数量限制。较高的上限可能降低帧率。',
+ 'Label candidates':'候选','In view':'视野内','Rendered labels':'已渲染标签'
+});
+Object.assign(pt,{
+ 'Editor MAP labels':'Etiquetas do Editor MAP','Label renderer':'Renderizador de etiquetas',
+ 'Optimized (recommended)':'Otimizado (recomendado)','Classic (legacy performance)':'Clássico (desempenho anterior)',
+ 'Optimized mode renders only on-screen labels in one layer. Map entities and selection are never removed.':'O modo otimizado mostra apenas etiquetas na tela, em uma camada. Entidades e seleção são preservadas.',
+ 'Maximum labels':'Máximo de etiquetas','Label distance':'Distância das etiquetas','Avoid overlapping labels':'Evitar etiquetas sobrepostas',
+ 'Show label diagnostics':'Mostrar diagnóstico de etiquetas','Reset label optimization':'Redefinir otimização de etiquetas',
+ 'Selected labels stay visible beyond limits while in front of the camera. High limits can reduce FPS.':'Etiquetas selecionadas ignoram os limites quando estão à frente da câmera. Limites altos podem reduzir o FPS.',
+ 'Label candidates':'Candidatas','In view':'Na tela','Rendered labels':'Etiquetas renderizadas'
+});
+
+// v1.3.0 Preview 5 — MAP performance diagnostics and lightweight label styling.
+Object.assign(es,{
+ 'Lightweight labels (faster)':'Etiquetas livianas (más rápidas)',
+ 'Show MAP performance diagnostics':'Mostrar diagnóstico de rendimiento MAP',
+ 'Draw calls':'Llamadas de dibujo','Triangles':'Triángulos','Off':'Desactivadas'
+});
+Object.assign(ru,{
+ 'Lightweight labels (faster)':'Упрощённые подписи (быстрее)',
+ 'Show MAP performance diagnostics':'Показать производительность MAP',
+ 'Draw calls':'Вызовы отрисовки','Triangles':'Треугольники','Off':'Выкл.'
+});
+Object.assign(ko,{
+ 'Lightweight labels (faster)':'가벼운 레이블 (빠름)',
+ 'Show MAP performance diagnostics':'MAP 성능 진단 표시',
+ 'Draw calls':'드로우 콜','Triangles':'삼각형','Off':'꺼짐'
+});
+Object.assign(zh,{
+ 'Lightweight labels (faster)':'轻量标签（更快）',
+ 'Show MAP performance diagnostics':'显示 MAP 性能诊断',
+ 'Draw calls':'绘制调用','Triangles':'三角形','Off':'关闭'
+});
+Object.assign(pt,{
+ 'Lightweight labels (faster)':'Etiquetas leves (mais rápidas)',
+ 'Show MAP performance diagnostics':'Mostrar diagnóstico de desempenho MAP',
+ 'Draw calls':'Chamadas de desenho','Triangles':'Triângulos','Off':'Desativadas'
+});
+
+
+// Preview 6 — accessible workspace preset and FPS-only HUD monitor.
+Object.assign(es,{'Organized':'Ordenado','Show FPS counter':'Mostrar FPS'});
+Object.assign(ru,{'Organized':'Упорядоченный','Show FPS counter':'Показывать FPS'});
+Object.assign(ko,{'Organized':'정돈된 작업 공간','Show FPS counter':'FPS 표시'});
+Object.assign(zh,{'Organized':'整洁布局','Show FPS counter':'显示 FPS'});
+Object.assign(pt,{'Organized':'Organizado','Show FPS counter':'Mostrar FPS'});
+
+// Preview 6 HF1 — MAP yaw controls: Q/E are camera turns, not translations.
+Object.assign(es,{
+ 'Fly/Walk ON · WASD · Q/E down/up · Esc exit':'Vuelo activo · WASD · Q/E bajar/subir · Esc: salir',
+ 'Wheel · Zoom · Q/E down/up':'Rueda: zoom · Q/E: bajar/subir'
+});
+Object.assign(ru,{
+ 'Fly/Walk ON · WASD · Q/E down/up · Esc exit':'Полёт · WASD · Q/E: вниз/вверх · Esc: выход',
+ 'Wheel · Zoom · Q/E down/up':'Колесо: масштаб · Q/E: вниз/вверх камеры'
+});
+Object.assign(ko,{
+ 'Fly/Walk ON · WASD · Q/E down/up · Esc exit':'비행 · WASD · Q/E: 위/아래 · Esc: 종료',
+ 'Wheel · Zoom · Q/E down/up':'휠: 확대/축소 · Q/E: 카메라 회전'
+});
+Object.assign(zh,{
+ 'Fly/Walk ON · WASD · Q/E down/up · Esc exit':'飞行 · WASD 移动 · Q/E 上下 · Esc 退出',
+ 'Wheel · Zoom · Q/E down/up':'滚轮：缩放 · Q/E：上下移动'
+});
+Object.assign(pt,{
+ 'Fly/Walk ON · WASD · Q/E down/up · Esc exit':'Voo ativo · WASD · Q/E: descer/subir · Esc: sair',
+ 'Wheel · Zoom · Q/E down/up':'Roda: zoom · Q/E: descer/subir a câmera'
+});
+
+// v1.4.0 Preview 2 — Quick construction, prefab placement and small-brush scaling.
+// Classnames, Valve 220 texture axes and .svprefab.json format remain unchanged.
+Object.assign(es,{
+ 'Reusable constructions':'Construcciones reutilizables',
+ 'Select a brush group, save it and place copies with one click.':'Seleccioná varios brushes, guardalos y colocá copias con un clic.',
+ 'Save selected construction':'Guardar selección como prefab',
+ 'Place prefab with mouse':'Colocar prefab con el mouse',
+ 'Precise brush dimensions':'Dimensiones precisas del brush',
+ 'GoldSrc units':'Unidades GoldSrc',
+ 'Face arrows stay readable at any zoom. Hold Shift to scale finely without snapping.':'Las flechas mantienen su tamaño en pantalla. Mantené Shift para escalar con precisión sin ajuste a grilla.'
+});
+Object.assign(ru,{
+ 'Reusable constructions':'Повторно используемые конструкции',
+ 'Select a brush group, save it and place copies with one click.':'Выделите группу брашей, сохраните и размещайте копии одним щелчком.',
+ 'Save selected construction':'Сохранить выделение как префаб',
+ 'Place prefab with mouse':'Разместить префаб мышью',
+ 'Precise brush dimensions':'Точные размеры браша',
+ 'GoldSrc units':'Единицы GoldSrc',
+ 'Face arrows stay readable at any zoom. Hold Shift to scale finely without snapping.':'Размер стрелок не зависит от масштаба. Shift — точная настройка без привязки к сетке.'
+});
+Object.assign(ko,{
+ 'Reusable constructions':'재사용 가능한 구조물',
+ 'Select a brush group, save it and place copies with one click.':'브러시 그룹을 선택해 저장하고 클릭 한 번으로 복제 배치합니다.',
+ 'Save selected construction':'선택 항목을 프리팹으로 저장',
+ 'Place prefab with mouse':'마우스로 프리팹 배치',
+ 'Precise brush dimensions':'브러시 정확한 크기',
+ 'GoldSrc units':'GoldSrc 단위',
+ 'Face arrows stay readable at any zoom. Hold Shift to scale finely without snapping.':'화살표 크기는 확대 비율과 무관합니다. Shift로 그리드에 맞추지 않고 미세 조정합니다.'
+});
+Object.assign(zh,{
+ 'Reusable constructions':'可重复使用的结构',
+ 'Select a brush group, save it and place copies with one click.':'选中笔刷组并保存，再单击放置副本。',
+ 'Save selected construction':'将所选内容保存为预制件',
+ 'Place prefab with mouse':'鼠标放置预制件',
+ 'Precise brush dimensions':'笔刷精确尺寸',
+ 'GoldSrc units':'GoldSrc 单位',
+ 'Face arrows stay readable at any zoom. Hold Shift to scale finely without snapping.':'箭头大小不受缩放影响。按住 Shift 可不吸附网格进行精细缩放。'
+});
+Object.assign(pt,{
+ 'Reusable constructions':'Construções reutilizáveis',
+ 'Select a brush group, save it and place copies with one click.':'Selecione um grupo de brushes, salve e coloque cópias com um clique.',
+ 'Save selected construction':'Salvar seleção como prefab',
+ 'Place prefab with mouse':'Posicionar prefab com o mouse',
+ 'Precise brush dimensions':'Dimensões precisas do brush',
+ 'GoldSrc units':'Unidades GoldSrc',
+ 'Face arrows stay readable at any zoom. Hold Shift to scale finely without snapping.':'As setas mantêm o tamanho na tela. Segure Shift para ajuste fino sem encaixe na grade.'
+});
+
+// v1.4 Preview 2 HF3 — camera navigation and hidden-brush context action.
+Object.assign(es,{'Hidden brush':'Brush oculto','Show brush':'Desocultar brush','Wheel · Zoom · Q/E down/up':'Rueda: zoom · Q/E: bajar/subir'});
+Object.assign(ru,{'Hidden brush':'Скрытый браш','Show brush':'Показать браш'});
+Object.assign(ko,{'Hidden brush':'숨겨진 브러시','Show brush':'브러시 숨김 해제'});
+Object.assign(zh,{'Hidden brush':'隐藏的笔刷','Show brush':'取消隐藏笔刷'});
+Object.assign(pt,{'Hidden brush':'Brush oculto','Show brush':'Reexibir brush'});
+
+Object.assign(es,{'Wheel · Zoom · Ctrl+mouse look · Q/E down/up':'Rueda: zoom · Ctrl+mouse: mirar · Q/E: bajar/subir'});
+Object.assign(ru,{'Wheel · Zoom · Ctrl+mouse look · Q/E down/up':'Колесо: масштаб · Ctrl+мышь: обзор · Q/E: вниз/вверх'});
+Object.assign(ko,{'Wheel · Zoom · Ctrl+mouse look · Q/E down/up':'휠: 확대/축소 · Ctrl+마우스: 시점 · Q/E: 위/아래'});
+Object.assign(zh,{'Wheel · Zoom · Ctrl+mouse look · Q/E down/up':'滚轮缩放 · Ctrl+鼠标环视 · Q/E 上下'});
+Object.assign(pt,{'Wheel · Zoom · Ctrl+mouse look · Q/E down/up':'Roda: zoom · Ctrl+mouse: olhar · Q/E: descer/subir'});
+
+// Smart Placement / immersive workspace (v1.4.0 HF3). Interface text only.
+Object.assign(es,{'Rotate 90 degrees':'Girar 90°','Axis':'Eje','Align to surface':'Alinear con superficie','Surface':'Superficie','Repeat placement':'Colocar copias consecutivas','Repeat':'Repetir','Immersive mode':'Modo inmersivo','Fullscreen keyboard lock (when available)':'Pantalla completa y bloqueo de atajos (si es compatible)','Plane':'Plano'});
+Object.assign(ru,{'Rotate 90 degrees':'Повернуть на 90°','Axis':'Ось','Align to surface':'Выровнять по поверхности','Surface':'Поверхность','Repeat placement':'Повторное размещение','Repeat':'Повтор','Immersive mode':'Полноэкранный режим','Fullscreen keyboard lock (when available)':'Полный экран и блокировка клавиш (если доступно)','Plane':'Плоскость'});
+Object.assign(ko,{'Rotate 90 degrees':'90° 회전','Axis':'축','Align to surface':'표면에 정렬','Surface':'표면','Repeat placement':'반복 배치','Repeat':'반복','Immersive mode':'몰입 모드','Fullscreen keyboard lock (when available)':'전체 화면 키보드 잠금 (지원 시)','Plane':'평면'});
+Object.assign(zh,{'Rotate 90 degrees':'旋转90°','Axis':'轴','Align to surface':'贴合表面','Surface':'表面','Repeat placement':'连续放置','Repeat':'重复','Immersive mode':'沉浸模式','Fullscreen keyboard lock (when available)':'全屏键盘锁定（如支持）','Plane':'平面'});
+Object.assign(pt,{'Rotate 90 degrees':'Girar 90°','Axis':'Eixo','Align to surface':'Alinhar à superfície','Surface':'Superfície','Repeat placement':'Colocação contínua','Repeat':'Repetir','Immersive mode':'Modo imersivo','Fullscreen keyboard lock (when available)':'Tela cheia e bloqueio de teclas (quando disponível)','Plane':'Plano'});
+
+// HF4: fullscreen control relocated beside Help in the app titlebar.
+Object.assign(es,{'Fullscreen':'Pantalla completa','Exit fullscreen':'Salir de pantalla completa'});
+Object.assign(ru,{'Fullscreen':'Полный экран','Exit fullscreen':'Выйти из полноэкранного режима'});
+Object.assign(ko,{'Fullscreen':'전체 화면','Exit fullscreen':'전체 화면 종료'});
+Object.assign(zh,{'Fullscreen':'全屏','Exit fullscreen':'退出全屏'});
+Object.assign(pt,{'Fullscreen':'Tela cheia','Exit fullscreen':'Sair da tela cheia'});
+
+// v1.4.0 HF5: generic brush-entity detachment; classname/keyvalues stay in English.
+Object.assign(es,{
+ 'Brush entity association':'Entidad asociada al brush',
+ 'Linked entity':'Entidad vinculada','Missing entity':'Entidad faltante','brushes':'brushes','linked brushes':'brushes vinculados',
+ 'Detach this brush (worldspawn)':'Desvincular este brush (worldspawn)',
+ 'Detach brush from entity (worldspawn)':'Desvincular brush de la entidad (worldspawn)',
+ 'Detach entire entity':'Desvincular entidad completa',
+ 'Detach all brushes of this entity':'Desvincular todos los brushes de esta entidad',
+ 'Convert linked brushes to worldspawn':'Convertir brushes vinculados a worldspawn',
+ 'Detach selected brushes':'Desvincular brushes seleccionados',
+ 'Detach all brushes of these entities':'Desvincular todos los brushes de estas entidades',
+ 'Detach selected brush(es) or entire linked entities while preserving the brush geometry and UVs.':'Desvinculá solo los brushes elegidos o la entidad completa, sin perder geometría ni UV.',
+ 'Brush shape, textures, dimensions, position and grouping remain unchanged.':'Se conservan forma, texturas, medidas, posición y grupos.',
+ 'Convert brushes to worldspawn?':'¿Convertir los brushes a worldspawn?',
+ 'The last brush of these entities will be detached, so their keyvalues and connections will be removed:':'Estas entidades se quedarán sin brushes, por lo que se eliminarán sus propiedades y conexiones:',
+ 'You can undo this operation with Ctrl+Z.':'Podés deshacer la operación con Ctrl+Z.'
+});
+Object.assign(ru,{
+ 'Brush entity association':'Связь браша с сущностью','Linked entity':'Связанная сущность','Missing entity':'Отсутствующая сущность','brushes':'брашей','linked brushes':'связанных брашей',
+ 'Detach this brush (worldspawn)':'Отвязать этот браш (worldspawn)','Detach brush from entity (worldspawn)':'Отвязать браш от сущности (worldspawn)',
+ 'Detach entire entity':'Отвязать всю сущность','Detach all brushes of this entity':'Отвязать все браши сущности',
+ 'Convert linked brushes to worldspawn':'Перенести связанные браши в worldspawn','Detach selected brushes':'Отвязать выделенные браши','Detach all brushes of these entities':'Отвязать все браши этих сущностей',
+ 'Detach selected brush(es) or entire linked entities while preserving the brush geometry and UVs.':'Отвязать отдельные браши или все браши сущности, сохранив геометрию и UV.',
+ 'Brush shape, textures, dimensions, position and grouping remain unchanged.':'Форма, текстуры, размеры, положение и группы сохраняются.',
+ 'Convert brushes to worldspawn?':'Перенести браши в worldspawn?',
+ 'The last brush of these entities will be detached, so their keyvalues and connections will be removed:':'У этих сущностей больше не будет брашей; их параметры и связи будут удалены:',
+ 'You can undo this operation with Ctrl+Z.':'Действие можно отменить через Ctrl+Z.'
+});
+Object.assign(ko,{
+ 'Brush entity association':'브러시 엔티티 연결','Linked entity':'연결된 엔티티','Missing entity':'없는 엔티티','brushes':'브러시','linked brushes':'연결된 브러시',
+ 'Detach this brush (worldspawn)':'이 브러시 연결 해제 (worldspawn)','Detach brush from entity (worldspawn)':'브러시 연결 해제 (worldspawn)',
+ 'Detach entire entity':'전체 엔티티 연결 해제','Detach all brushes of this entity':'이 엔티티의 모든 브러시 연결 해제',
+ 'Convert linked brushes to worldspawn':'연결된 브러시를 worldspawn으로 변환','Detach selected brushes':'선택한 브러시 연결 해제',
+ 'Detach all brushes of these entities':'이 엔티티의 모든 브러시 연결 해제',
+ 'Detach selected brush(es) or entire linked entities while preserving the brush geometry and UVs.':'지오메트리와 UV를 유지하며 선택한 브러시나 전체 엔티티 연결을 해제합니다.',
+ 'Brush shape, textures, dimensions, position and grouping remain unchanged.':'브러시 형태, 텍스처, 치수, 위치, 그룹이 유지됩니다.',
+ 'Convert brushes to worldspawn?':'브러시를 worldspawn으로 변환할까요?',
+ 'The last brush of these entities will be detached, so their keyvalues and connections will be removed:':'엔티티의 마지막 브러시가 연결 해제되어 속성과 연결이 삭제됩니다:',
+ 'You can undo this operation with Ctrl+Z.':'Ctrl+Z로 되돌릴 수 있습니다.'
+});
+Object.assign(zh,{
+ 'Brush entity association':'笔刷实体关联','Linked entity':'关联实体','Missing entity':'实体不存在','brushes':'笔刷','linked brushes':'关联笔刷',
+ 'Detach this brush (worldspawn)':'解除此笔刷关联 (worldspawn)','Detach brush from entity (worldspawn)':'解除笔刷实体关联 (worldspawn)',
+ 'Detach entire entity':'解除整个实体关联','Detach all brushes of this entity':'解除该实体所有笔刷关联',
+ 'Convert linked brushes to worldspawn':'将关联笔刷转换为 worldspawn','Detach selected brushes':'解除选中笔刷关联',
+ 'Detach all brushes of these entities':'解除这些实体的全部笔刷关联',
+ 'Detach selected brush(es) or entire linked entities while preserving the brush geometry and UVs.':'解除选中笔刷或整个实体的关联，保留几何体和 UV。',
+ 'Brush shape, textures, dimensions, position and grouping remain unchanged.':'保留形状、纹理、尺寸、位置及分组。',
+ 'Convert brushes to worldspawn?':'将笔刷转换为 worldspawn？',
+ 'The last brush of these entities will be detached, so their keyvalues and connections will be removed:':'这些实体的最后一个笔刷将解除关联，其属性和连接会被删除：',
+ 'You can undo this operation with Ctrl+Z.':'可以用 Ctrl+Z 撤销。'
+});
+Object.assign(pt,{
+ 'Brush entity association':'Associação de entidade ao brush','Linked entity':'Entidade vinculada','Missing entity':'Entidade ausente','brushes':'brushes','linked brushes':'brushes vinculados',
+ 'Detach this brush (worldspawn)':'Desvincular este brush (worldspawn)','Detach brush from entity (worldspawn)':'Desvincular brush da entidade (worldspawn)',
+ 'Detach entire entity':'Desvincular entidade inteira','Detach all brushes of this entity':'Desvincular todos os brushes da entidade',
+ 'Convert linked brushes to worldspawn':'Converter brushes vinculados para worldspawn','Detach selected brushes':'Desvincular brushes selecionados',
+ 'Detach all brushes of these entities':'Desvincular todos os brushes destas entidades',
+ 'Detach selected brush(es) or entire linked entities while preserving the brush geometry and UVs.':'Desvincule brushes selecionados ou entidades inteiras sem alterar geometria ou UV.',
+ 'Brush shape, textures, dimensions, position and grouping remain unchanged.':'Forma, texturas, dimensões, posição e grupos são preservados.',
+ 'Convert brushes to worldspawn?':'Converter brushes para worldspawn?',
+ 'The last brush of these entities will be detached, so their keyvalues and connections will be removed:':'Estas entidades ficarão sem brushes e suas propriedades e conexões serão removidas:',
+ 'You can undo this operation with Ctrl+Z.':'É possível desfazer com Ctrl+Z.'
+});
+
+// HF7: editor-only entity marker options and spawn direction controls.
+Object.assign(es,{
+ 'Marker shape':'Forma de los marcadores','Box':'Caja','Bubble / sphere':'Burbuja / esfera','Capsule':'Cápsula','Diamond':'Diamante','Cone':'Cono',
+ 'Markers are editor-only; shapes and sizes do not affect your MAP.':'Los marcadores son solo del editor; su tamaño y forma no modifican el MAP.',
+ 'Start facing direction':'Dirección inicial del jugador','Yaw (degrees)':'Giro horizontal (grados)',
+ 'Set where the player looks when spawning. The direction arrow in the viewport updates immediately.':'Elegí hacia dónde mira el jugador al aparecer. La flecha del visor se actualiza al instante.',
+ 'The start marker rests on the floor. The original spawn origin and exported coordinates remain unchanged.':'La marca de inicio se apoya en el piso. No se modifican el origen ni las coordenadas exportadas.'
+});
+Object.assign(ru,{
+ 'Marker shape':'Форма маркеров','Box':'Куб','Bubble / sphere':'Сфера','Capsule':'Капсула','Diamond':'Ромб','Cone':'Конус',
+ 'Markers are editor-only; shapes and sizes do not affect your MAP.':'Формы и размеры маркеров используются только в редакторе.',
+ 'Start facing direction':'Направление появления','Yaw (degrees)':'Поворот (градусы)',
+ 'Set where the player looks when spawning. The direction arrow in the viewport updates immediately.':'Настройте направление взгляда игрока при появлении. Стрелка показывает направление.',
+ 'The start marker rests on the floor. The original spawn origin and exported coordinates remain unchanged.':'Маркер стоит на полу; исходные координаты появления не изменяются.'
+});
+Object.assign(ko,{
+ 'Marker shape':'마커 모양','Box':'상자','Bubble / sphere':'구체','Capsule':'캡슐','Diamond':'다이아몬드','Cone':'원뿔',
+ 'Markers are editor-only; shapes and sizes do not affect your MAP.':'마커 모양과 크기는 에디터 전용이며 MAP에 영향을 주지 않습니다.',
+ 'Start facing direction':'시작 시 바라보는 방향','Yaw (degrees)':'수평 회전 (도)',
+ 'Set where the player looks when spawning. The direction arrow in the viewport updates immediately.':'플레이어의 시작 시야를 설정합니다. 화살표가 바로 갱신됩니다.',
+ 'The start marker rests on the floor. The original spawn origin and exported coordinates remain unchanged.':'시작 마커는 바닥에 있으며 원래 좌표는 변하지 않습니다.'
+});
+Object.assign(zh,{
+ 'Marker shape':'标记形状','Box':'方框','Bubble / sphere':'球体','Capsule':'胶囊','Diamond':'菱形','Cone':'圆锥',
+ 'Markers are editor-only; shapes and sizes do not affect your MAP.':'标记形状和大小只影响编辑器，不改变 MAP。',
+ 'Start facing direction':'出生时朝向','Yaw (degrees)':'水平旋转（度）',
+ 'Set where the player looks when spawning. The direction arrow in the viewport updates immediately.':'设置玩家出生时朝向，视口的箭头会立即更新。',
+ 'The start marker rests on the floor. The original spawn origin and exported coordinates remain unchanged.':'出生标记贴地显示，原始坐标与 MAP 导出不会改变。'
+});
+Object.assign(pt,{
+ 'Marker shape':'Formato dos marcadores','Box':'Caixa','Bubble / sphere':'Bolha / esfera','Capsule':'Cápsula','Diamond':'Diamante','Cone':'Cone',
+ 'Markers are editor-only; shapes and sizes do not affect your MAP.':'Os marcadores são apenas visuais e não alteram o MAP.',
+ 'Start facing direction':'Direção inicial do jogador','Yaw (degrees)':'Rotação horizontal (graus)',
+ 'Set where the player looks when spawning. The direction arrow in the viewport updates immediately.':'Escolha a direção do olhar ao nascer. A seta atualiza imediatamente.',
+ 'The start marker rests on the floor. The original spawn origin and exported coordinates remain unchanged.':'O marcador fica sobre o piso; as coordenadas originais continuam iguais.'
+});
+
+// HF8: per-entity marker shapes and searchable names for gameplay connections.
+Object.assign(es,{
+ 'Marker mode':'Modo de formas','Automatic by entity':'Automáticas según entidad','Same shape for all':'La misma forma para todas',
+ 'Global marker shape':'Forma global / alternativa','Marker colors':'Colores de marcadores',
+ 'Different colors by category':'Por categoría de entidad','One color for all':'Un solo color','Uniform marker color':'Color uniforme',
+ 'Rename in editor…':'Cambiar nombre en el editor…','Object display name':'Nombre visible del objeto',
+ 'Find entity by name…':'Buscar entidad por nombre…'
+});
+Object.assign(en,{
+ 'Marker mode':'Marker mode','Automatic by entity':'Automatic per entity','Same shape for all':'Same shape for all',
+ 'Global marker shape':'Global / fallback shape','Marker colors':'Marker colors',
+ 'Different colors by category':'Colors by category','One color for all':'One color for all','Uniform marker color':'Uniform color',
+ 'Rename in editor…':'Rename in editor…','Object display name':'Object display name','Find entity by name…':'Find entity by name…'
+});
+Object.assign(ru,{
+ 'Marker mode':'Режим маркеров','Automatic by entity':'По типу сущности','Same shape for all':'Одинаковая форма',
+ 'Global marker shape':'Общая форма','Marker colors':'Цвета маркеров',
+ 'Different colors by category':'По категориям','One color for all':'Один цвет','Uniform marker color':'Общий цвет',
+ 'Rename in editor…':'Переименовать в редакторе…','Object display name':'Название объекта','Find entity by name…':'Поиск по имени…'
+});
+Object.assign(ko,{
+ 'Marker mode':'마커 모드','Automatic by entity':'엔티티별 자동','Same shape for all':'모두 같은 모양',
+ 'Global marker shape':'기본 마커 모양','Marker colors':'마커 색상',
+ 'Different colors by category':'범주별 색상','One color for all':'동일한 색상','Uniform marker color':'공통 색상',
+ 'Rename in editor…':'에디터 이름 변경…','Object display name':'표시 이름','Find entity by name…':'이름으로 엔티티 검색…'
+});
+Object.assign(zh,{
+ 'Marker mode':'标记模式','Automatic by entity':'按实体自动显示','Same shape for all':'统一形状',
+ 'Global marker shape':'默认形状','Marker colors':'标记颜色',
+ 'Different colors by category':'按类别上色','One color for all':'统一颜色','Uniform marker color':'统一标记颜色',
+ 'Rename in editor…':'在编辑器中重命名…','Object display name':'对象显示名称','Find entity by name…':'按名称查找实体…'
+});
+Object.assign(pt,{
+ 'Marker mode':'Modo de marcadores','Automatic by entity':'Automático por entidade','Same shape for all':'Mesma forma para todas',
+ 'Global marker shape':'Forma global','Marker colors':'Cores dos marcadores',
+ 'Different colors by category':'Cores por categoria','One color for all':'Uma cor para todas','Uniform marker color':'Cor uniforme',
+ 'Rename in editor…':'Renomear no editor…','Object display name':'Nome visível do objeto','Find entity by name…':'Buscar entidade por nome…'
+});
+
+// HF10: marker visibility and picking through brushes.
+Object.assign(es,{
+  'Entities behind brushes':'Entidades detrás de brushes',
+  'Visible and selectable through brushes':'Visibles y seleccionables a través de brushes',
+  'Normal depth (hidden by brushes)':'Profundidad normal (ocultas por brushes)',
+  'X-ray prioritizes entity markers on click, without affecting brushes or the compiled MAP. In normal mode, Alt + click can pick a hidden entity.':'El modo a través de brushes prioriza las entidades al hacer clic sin modificar el MAP. En modo normal, Alt + clic permite seleccionar una entidad oculta.',
+});
+Object.assign(en,{
+  'Entities behind brushes':'Entities behind brushes',
+  'Visible and selectable through brushes':'Visible and selectable through brushes',
+  'Normal depth (hidden by brushes)':'Normal depth (hidden by brushes)',
+  'X-ray prioritizes entity markers on click, without affecting brushes or the compiled MAP. In normal mode, Alt + click can pick a hidden entity.':'X-ray prioritizes entity markers on click, without affecting brushes or the compiled MAP. In normal mode, Alt + click can pick a hidden entity.',
+});
+Object.assign(ru,{
+  'Entities behind brushes':'Сущности за брашами',
+  'Visible and selectable through brushes':'Видимые и выбираемые сквозь браши',
+  'Normal depth (hidden by brushes)':'Обычная глубина (скрыты брашами)',
+  'X-ray prioritizes entity markers on click, without affecting brushes or the compiled MAP. In normal mode, Alt + click can pick a hidden entity.':'Режим сквозного выбора позволяет выбрать сущность за брашем. В обычном режиме используйте Alt + щелчок.',
+});
+Object.assign(ko,{
+  'Entities behind brushes':'브러시 뒤 엔티티',
+  'Visible and selectable through brushes':'브러시를 통과해 표시 및 선택',
+  'Normal depth (hidden by brushes)':'일반 깊이 (브러시에 가려짐)',
+  'X-ray prioritizes entity markers on click, without affecting brushes or the compiled MAP. In normal mode, Alt + click can pick a hidden entity.':'투시 모드에서는 브러시 뒤 엔티티를 선택할 수 있습니다. 일반 모드에서는 Alt + 클릭을 사용하세요.',
+});
+Object.assign(zh,{
+  'Entities behind brushes':'画刷后方的实体',
+  'Visible and selectable through brushes':'透过画刷显示并可选择',
+  'Normal depth (hidden by brushes)':'正常遮挡（被画刷遮住）',
+  'X-ray prioritizes entity markers on click, without affecting brushes or the compiled MAP. In normal mode, Alt + click can pick a hidden entity.':'透视模式优先选择画刷后的实体；正常模式可用 Alt + 单击选择被遮挡的实体。',
+});
+Object.assign(pt,{
+  'Entities behind brushes':'Entidades atrás dos brushes',
+  'Visible and selectable through brushes':'Visíveis e selecionáveis através dos brushes',
+  'Normal depth (hidden by brushes)':'Profundidade normal (ocultas pelos brushes)',
+  'X-ray prioritizes entity markers on click, without affecting brushes or the compiled MAP. In normal mode, Alt + click can pick a hidden entity.':'O modo raio X permite selecionar entidades atrás dos brushes. No modo normal, use Alt + clique.',
 });

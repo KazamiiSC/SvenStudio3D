@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import type { Brush, Face, Primitive, Vec3, PlaceableShape } from './types';
 import { uid } from './types';
+import {lockTranslatedBrushTextures} from './textureStudio';
+import {safeTextureAlignment} from './textureAxisSafety';
+import {normalizedUvAt} from './valve220UV.ts';
 
 
 // GoldSrc: X/Y horizontal, Z up. Three.js: X/Z horizontal, Y up.
@@ -115,6 +118,44 @@ export function createPlaceableShape(kind:PlaceableShape,ground:Vec3,texture='SV
       const h=(i+1)*stepHeight;
       return createBrush('box',[cx,y,z+h/2],[length,width,h],`Stairs ${i+1}/${count}`);
     });
+  } else if(['wall','slab','beam','column','ramp','frame','room','roof','corner','platform','bridge','barrier','steps','doorframe','windowframe'].includes(kind)) {
+    // Architecture presets are groups of independently convex GoldSrc solids.
+    // They contain no fake entities, no concave brushes and no Source displacements.
+    brushes=[];
+    const box=(name:string,offset:Vec3,size:Vec3)=>brushes.push(createBrush('box',[x+offset[0],y+offset[1],z+offset[2]],size,name));
+    const wedge=(name:string,offset:Vec3,size:Vec3,angle=0)=>{
+      const brush=createBrush('wedge',[x+offset[0],y+offset[1],z+offset[2]],size,name);
+      brush.rotation=[0,0,angle];brushes.push(brush);
+    };
+    switch(kind){
+      case 'wall':box('Wall',[0,0,64],[160,16,128]);break;
+      case 'slab':box('Slab',[0,0,8],[160,160,16]);break;
+      case 'beam':box('Beam',[0,0,16],[160,24,32]);break;
+      case 'column':box('Column',[0,0,96],[32,32,192]);break;
+      case 'ramp':wedge('Ramp',[0,0,48],[192,160,96]);break;
+      case 'roof':wedge('Roof slope A',[-48,0,48],[96,192,96]);wedge('Roof slope B',[48,0,48],[96,192,96],180);break;
+      case 'doorframe':
+        box('Doorframe left',[-64,0,96],[16,24,192]);box('Doorframe right',[64,0,96],[16,24,192]);
+        box('Doorframe top',[0,0,184],[112,24,16]);break;
+      case 'windowframe':
+        box('Windowframe left',[-64,0,64],[16,24,128]);box('Windowframe right',[64,0,64],[16,24,128]);
+        box('Windowframe top',[0,0,120],[112,24,16]);box('Windowframe bottom',[0,0,8],[112,24,16]);break;
+      case 'frame':
+        box('Frame left',[-72,0,72],[16,32,144]);box('Frame right',[72,0,72],[16,32,144]);
+        box('Frame top',[0,0,136],[128,32,16]);break;
+      case 'room':
+        box('Room floor',[0,0,8],[256,256,16]);
+        box('Room left',[-120,0,144],[16,240,256]);box('Room right',[120,0,144],[16,240,256]);
+        box('Room back',[0,120,144],[224,16,256]);box('Room ceiling',[0,0,280],[256,256,16]);break;
+      case 'corner':box('Corner arm A',[-64,0,64],[16,160,128]);box('Corner arm B',[8,72,64],[128,16,128]);break;
+      case 'platform':box('Platform deck',[0,0,104],[192,160,16]);
+        for(const a of [-1,1])for(const b of [-1,1])box('Platform support',[a*76,b*60,48],[16,16,96]);break;
+      case 'bridge':box('Bridge deck',[0,0,40],[256,96,16]);
+        for(const side of [-1,1])box('Bridge rail',[0,side*42,72],[256,12,48]);break;
+      case 'barrier':box('Barrier wall',[0,0,36],[192,16,72]);
+        box('Barrier cap',[0,0,76],[208,24,8]);break;
+      case 'steps':for(let i=0;i<4;i++)box('Step '+(i+1),[i*40-60,0,(i+1)*12],[40,128,(i+1)*24]);break;
+    }
   } else if(kind==='pipe') {
     // A vertical hollow ring made from individual six-face trapezoid brushes.
     // A single concave annulus is not representable by one GoldSrc brush.
@@ -129,10 +170,37 @@ export function createPlaceableShape(kind:PlaceableShape,ground:Vec3,texture='SV
       brushes.push({id:uid(),kind:'brush',primitive:'poly',name:`Pipe ${i+1}/${count}`,vertices,faces,position:[x,y,z+height/2],rotation:[0,0,0],scale:[1,1,1],layer:'Geometry'});
     }
   } else {
-    brushes=[createBrush(kind,[x,y,z+64],[128,128,128],kind[0].toUpperCase()+kind.slice(1))];
+    brushes=[createBrush(kind as 'box'|'wedge'|'cylinder'|'cone'|'pyramid'|'icosphere',[x,y,z+64],[128,128,128],kind[0].toUpperCase()+kind.slice(1))];
   }
   brushes.forEach(b=>b.faces.forEach(f=>{f.texture=texture}));
   return brushes;
+}
+
+
+/** Resize a complete GoldSrc shape using an affine transform. This scales each
+ * convex brush and its center uniformly across the collection; no new faces
+ * or invalid nonconvex surfaces are created. X/Y are centered; Z is grounded. */
+export function shapeBounds(brushes:Brush[]){
+  const bounds=new THREE.Box3();
+  for(const brush of brushes)for(const point of transformedVertices(brush))bounds.expandByPoint(new THREE.Vector3(...point));
+  return bounds;
+}
+export function defaultShapeSize(kind:PlaceableShape):Vec3{
+  const bounds=shapeBounds(createPlaceableShape(kind,[0,0,0]));
+  const size=bounds.getSize(new THREE.Vector3());
+  return [size.x,size.y,size.z].map(value=>Math.max(1,Math.round(value))) as Vec3;
+}
+export function createSizedPlaceableShape(kind:PlaceableShape,ground:Vec3,size:Vec3,texture='SV_BRICK01'):Brush[]{
+  if(size.some(value=>!Number.isFinite(value)||value<1||value>16384))throw Error('Invalid shape dimensions');
+  const originals=createPlaceableShape(kind,[0,0,0],texture);
+  const bounds=shapeBounds(originals),old=bounds.getSize(new THREE.Vector3());
+  if([old.x,old.y,old.z].some(value=>value<.001))throw Error('Shape has a degenerate dimension');
+  const factor:Vec3=[size[0]/old.x,size[1]/old.y,size[2]/old.z];
+  const middle=bounds.getCenter(new THREE.Vector3());
+  return originals.map(brush=>({...brush,
+    position:[ground[0]+(brush.position[0]-middle.x)*factor[0],ground[1]+(brush.position[1]-middle.y)*factor[1],ground[2]+(brush.position[2]-bounds.min.z)*factor[2]] as Vec3,
+    scale:brush.scale.map((value,i)=>value*factor[i]) as Vec3
+  }));
 }
 
 export function transformedVertices(b:Brush):Vec3[]{
@@ -142,20 +210,53 @@ export function transformedVertices(b:Brush):Vec3[]{
     return add([result.x,result.y,result.z],b.position);
   });
 }
-export function buildMeshGeometry(b:Brush) {
+/** Preserve the projected Valve 220 texture coordinates while rotating a brush.
+ * The face UV basis must turn with the brush instead of being recalculated from
+ * the new world-facing normal. Bake face.rotation into explicit UV axes once.
+ * The UV shifts are adjusted for rotation around the brush pivot and translation. */
+export function rotateBrushTextureLock(before:Brush,after:{position:Vec3;rotation:Vec3;scale:Vec3}):Face[]{
+  const same=before.rotation.every((v,i)=>Math.abs(v-after.rotation[i])<1e-7);
+  // Translation-only must also lock UVs. Previously this early return caused
+  // textures to slide on the face whenever its brush moved.
+  if(same)return lockTranslatedBrushTextures(before,after.position);
+  const quat=(r:Vec3)=>new THREE.Quaternion().setFromEuler(new THREE.Euler(...r.map(v=>THREE.MathUtils.degToRad(v)) as Vec3,'XYZ'));
+  const delta=quat(after.rotation).multiply(quat(before.rotation).invert());
+  const worldBefore=transformedVertices(before);
+  const updated:Brush={...before,...after};
+  const worldAfter=transformedVertices(updated);
+  return before.faces.map(face=>{
+    const oldAxes=textureAxes(worldBefore,face);
+    const newU=new THREE.Vector3(...oldAxes.u).applyQuaternion(delta).toArray() as Vec3;
+    const newV=new THREE.Vector3(...oldAxes.v).applyQuaternion(delta).toArray() as Vec3;
+    const index=face.indices[0];
+    const uScale=face.uScale||1,vScale=face.vScale||1;
+    const uShift=(face.uShift||0)+(dot3(worldBefore[index],oldAxes.u)-dot3(worldAfter[index],newU))/uScale;
+    const vShift=(face.vShift||0)+(dot3(worldBefore[index],oldAxes.v)-dot3(worldAfter[index],newV))/vScale;
+    return {...face,uAxis:newU,vAxis:newV,rotation:0,uShift,vShift};
+  });
+}
+
+export function buildMeshGeometry(b:Brush,textureSizes?:ReadonlyMap<string,{width:number;height:number}>) {
   const positions:number[]=[];const uv:number[]=[];const indices:number[]=[];const trianglesToFaces:number[]=[];
   const worldVertices=transformedVertices(b);
   let base=0;
   b.faces.forEach((face,fi)=>{
     const faceVertices=face.indices.map(i=>gameToThree(b.vertices[i]));
     if(faceVertices.length<3)return;
-    const {u,v}=textureAxes(worldVertices,face);
+    const {u,v,uShift,vShift}=safeFaceTextureAxes(worldVertices,face);
     const uScale=face.uScale||1,vScale=face.vScale||1;
+    // Ignore an invalid optional lookup rather than crashing the entire viewport.
+    const dimensions=typeof textureSizes?.get==='function'?textureSizes?.get(face.texture.toUpperCase()):undefined;
+    const imageWidth=dimensions?.width||128,imageHeight=dimensions?.height||128;
     face.indices.forEach((vertexIndex,index)=>{
       const local=faceVertices[index],world=worldVertices[vertexIndex];
       positions.push(local.x,local.y,local.z);
-      // World-anchored Valve 220 alignment: equal offsets line up across brushes.
-      uv.push((dot3(world,u)+(face.uShift||0))/(128*uScale),(dot3(world,v)+(face.vShift||0))/(128*vScale));
+      // GoldSrc V runs downward through WAD pixels; TextureLoader's default
+      // flipY=true uses Three/WebGL UVs that run upward. Convert only the
+      // preview V coordinate, never the Valve 220 face axes, shifts or scales.
+      // This also preserves negative scales and arbitrary texel offsets.
+      const goldSrcV=normalizedUvAt(world,v,vScale,vShift,imageHeight);
+      uv.push(normalizedUvAt(world,u,uScale,uShift,imageWidth),1-goldSrcV);
     });
     for(let j=1;j<faceVertices.length-1;j++){
       indices.push(base,base+j,base+j+1);trianglesToFaces.push(fi);
@@ -202,6 +303,20 @@ export function boxFromGroundDrag(from:Vec3,to:Vec3,height:number,grid:number,te
   return brush;
 }
 
+/** Build a box on one of the three construction planes, extruding outward by depth. */
+export function boxFromPlaneDrag(from:Vec3,to:Vec3,depth:number,plane:import('./smartPlacementMath').DrawPlane,grid:number,texture:string,sign:1|-1=1):Brush{
+  if(!Number.isFinite(depth)||depth<1||depth>131072)throw Error('Invalid brush depth');
+  const snap=(n:number)=>Math.round(n/Math.max(1,grid))*Math.max(1,grid);
+  const a=from.map(snap) as Vec3,b=to.map(snap) as Vec3;
+  const center=a.map((v,i)=>(v+b[i])/2) as Vec3;
+  const size=a.map((v,i)=>Math.max(Math.max(1,grid),Math.abs(v-b[i]))) as Vec3;
+  const extrudeAxis=plane==='xy'?2:plane==='xz'?1:0;
+  center[extrudeAxis]=a[extrudeAxis]+depth/2*sign;size[extrudeAxis]=depth;
+  const brush=createBrush('box',center,size,'Drawn Block');
+  brush.faces.forEach(face=>{face.texture=texture});
+  return brush;
+}
+
 /** Valve 220 axes are in game coordinates. Keep these consistent in preview and MAP output. */
 export function textureAxes(vertices:Vec3[],face:Face):{u:Vec3;v:Vec3}{
  const [p,q,r]=face.indices.slice(0,3).map(i=>new THREE.Vector3(...vertices[i]));
@@ -218,6 +333,18 @@ export function textureAxes(vertices:Vec3[],face:Face):{u:Vec3;v:Vec3}{
    u=a.map((n,i)=>n*c-b[i]*s) as Vec3;v=a.map((n,i)=>n*s+b[i]*c) as Vec3;
  }
  return {u,v};
+}
+/** The editor and MAP exporter must resolve malformed UV axes identically.
+ * Keep project face data untouched: any repair is applied to the effective
+ * rendering/export basis and its offsets only. */
+export function safeFaceTextureAxes(vertices:Vec3[],face:Face){
+  const [a,b,c]=face.indices.slice(0,3).map(i=>vertices[i]);
+  if(!a||!b||!c)throw Error('Missing texture face vertices');
+  const e1:Vec3=[b[0]-a[0],b[1]-a[1],b[2]-a[2]];
+  const e2:Vec3=[c[0]-a[0],c[1]-a[1],c[2]-a[2]];
+  const normal:Vec3=[e1[1]*e2[2]-e1[2]*e2[1],e1[2]*e2[0]-e1[0]*e2[2],e1[0]*e2[1]-e1[1]*e2[0]];
+  const {u,v}=textureAxes(vertices,face);
+  return safeTextureAlignment(normal,a,u,v,face.uShift??0,face.vShift??0,face.uScale||1,face.vScale||1);
 }
 export const dot3=(a:Vec3,b:Vec3)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
 export const textureSettings=(f:Face):Pick<Face,'texture'|'uShift'|'vShift'|'uScale'|'vScale'|'rotation'|'uAxis'|'vAxis'>=>({texture:f.texture,uShift:f.uShift||0,vShift:f.vShift||0,uScale:f.uScale??1,vScale:f.vScale??1,rotation:f.rotation||0,...(f.uAxis?{uAxis:[...f.uAxis]}:{}),...(f.vAxis?{vAxis:[...f.vAxis]}:{})});

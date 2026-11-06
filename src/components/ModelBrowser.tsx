@@ -1,5 +1,5 @@
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
-import {Canvas,useThree} from '@react-three/fiber';
+import {Canvas,useThree,useFrame} from '@react-three/fiber';
 import {OrbitControls,Grid} from '@react-three/drei';
 import * as THREE from 'three';
 import {Box,Search,RefreshCw,Eye,Check,AlertTriangle,Layers,Package,Play,Pause,Grid2X2,List,Star,SlidersHorizontal} from 'lucide-react';
@@ -116,11 +116,25 @@ function ModelGeometry({data,skin=0,bodySelection=DEFAULT_BODIES,sequence=-1,fra
       {!material&&<meshStandardMaterial color="#b2c8e1" roughness={.95} side={THREE.DoubleSide}/>}</mesh>;
   })}</group>;
 }
-export function StudioModel({data,skin=0,body=0}:{data:StudioPreview;skin?:number;body?:number}){
-  // Svengine's body key uses each mstudio bodypart's base multiplier.
+export function StudioModel({data,skin=0,body=0,animate=false}:{data:StudioPreview;skin?:number;body?:number;animate?:boolean}){
+  // Animation is opt-in for Gameplay Test; the editor model browser remains unchanged.
   const selection=useMemo(()=>data.bodyparts.map(part=>part.base>0&&part.models.length>0?
     Math.floor(Math.max(0,body)/part.base)%part.models.length:0),[data,body]);
-  return <ModelGeometry data={data} bodySelection={selection} skin={Math.max(0,Math.min(data.skins.length-1,skin))}/>;
+  const idle=useMemo(()=>{
+    const preferred=data.sequences.findIndex(s=>s.available&&/^(idle|idle1|idle2|stand|rest)$/i.test(s.name||''));
+    return preferred>=0?preferred:data.sequences.findIndex(s=>s.available&&s.loop&&s.frames>1);
+  },[data]);
+  const [frame,setFrame]=useState(0);
+  const elapsed=useRef(0);
+  useFrame((_,delta)=>{
+    if(!animate||idle<0)return;
+    const seq=data.sequences[idle];if(!seq||seq.frames<2)return;
+    elapsed.current+=Math.min(.1,delta);
+    if(elapsed.current<.10)return;
+    const step=elapsed.current;elapsed.current=0;
+    setFrame(previous=>(previous+step*Math.max(1,seq.fps||12))%Math.max(1,seq.frames-1));
+  });
+  return <ModelGeometry data={data} bodySelection={selection} skin={Math.max(0,Math.min(data.skins.length-1,skin))} sequence={animate?idle:-1} frame={frame}/>;
 }
 function modelSize(data:StudioPreview){
   const bounds=new THREE.Box3();

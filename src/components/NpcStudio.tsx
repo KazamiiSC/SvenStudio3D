@@ -10,6 +10,8 @@ import {npcClasses,isNpcClass,isNpcOwner,traceNpcRoute,validateNpcLogic,DEFAULT_
 import {parseFgd} from '../engine/fgd';
 import {useEditor} from '../store';
 import {useT} from '../i18n';
+import {customNpcToFgd,EMPTY_CUSTOM_NPCS} from '../engine/customNpc';
+import {CustomNpcImporter} from './CustomNpcImporter';
 
 function AutoFrame({data}:{data:StudioPreview}){
   const {camera}=useThree();
@@ -49,21 +51,24 @@ export function NPCStudio({onClose}:{onClose:()=>void}){
   const setProp=useEditor(s=>s.setObjectProp),addEntity=useEditor(s=>s.addEntity),place=useEditor(s=>s.startNpcPlacement);
   const spawn=useEditor(s=>s.spawnFromNpc),waypointMode=useEditor(s=>s.startWaypointPlacement),appendLogs=useEditor(s=>s.appendLogs);
   const gameDir=useEditor(s=>s.settings.gameDir),setFgd=useEditor(s=>s.setFgd);
-  const allNpcs=useMemo(()=>npcClasses(classes),[classes]);
+  const customNpcs=useEditor(s=>s.project.customNpcs??EMPTY_CUSTOM_NPCS);
+  const allNpcs=useMemo(()=>[...npcClasses(classes).filter(c=>!customNpcs.some(n=>n.classname===c.name)),...customNpcs.map(customNpcToFgd)].sort((a,b)=>a.name.localeCompare(b.name)),[classes,customNpcs]);
+  const customNames=useMemo(()=>new Set(customNpcs.map(c=>c.classname)),[customNpcs]);
   const [query,setQuery]=useState(''),[className,setClassName]=useState<string>('monster_zombie');
+  const [importOpen,setImportOpen]=useState(false);
   const [options,setOptions]=useState<SpawnerOptions>(DEFAULT_SPAWNER);
   const [notice,setNotice]=useState('');
   const [fgdBusy,setFgdBusy]=useState(false);
   const [activeId,setActiveId]=useState<string|null>(null);
   const npcs=useMemo(()=>allNpcs.filter(c=>(c.name+' '+c.description).toLowerCase().includes(query.toLowerCase())).slice(0,500),[allNpcs,query]);
-  const activeClass=classes.find(c=>c.name===className)||allNpcs[0];
+  const activeClass=allNpcs.find(c=>c.name===className)||allNpcs[0];
   const owner=objects.find((o):o is PointEntity=>o.kind==='entity'&&o.id===(activeId||selected))||null;
-  const npcOwner=owner&&isNpcOwner(owner.classname)?owner:(
+  const npcOwner=owner&&(isNpcOwner(owner.classname)||customNames.has(owner.classname))?owner:(
     objects.find((candidate):candidate is PointEntity=>candidate.kind==='entity'&&isNpcOwner(candidate.classname)&&
       traceNpcRoute(objects,candidate.id).nodes.some(node=>node.id===(activeId||selected)))||null);
   const route=useMemo(()=>npcOwner?traceNpcRoute(objects,npcOwner.id):null,[objects,npcOwner]);
   const npcIssues=useMemo(()=>validateNpcLogic(objects),[objects]);
-  const modelPath=npcOwner?.props.model||classes.find(c=>c.name===npcOwner?.classname)?.studio||classes.find(c=>c.name===npcOwner?.props.monstertype)?.studio||activeClass?.studio;
+  const modelPath=npcOwner?.props.model||customNpcs.find(c=>c.classname===npcOwner?.classname)?.modelPath||classes.find(c=>c.name===npcOwner?.classname)?.studio||classes.find(c=>c.name===npcOwner?.props.monstertype)?.studio||activeClass?.studio;
   const run=(fn:()=>void)=>{try{fn();setNotice('')}catch(error){setNotice(error instanceof Error?error.message:String(error))}};
   const loadFgd=async()=>{
     if(!gameDir){setNotice(t('Configure the game directory in Build Settings first.'));return;}
@@ -84,18 +89,18 @@ export function NPCStudio({onClose}:{onClose:()=>void}){
     setNotice(`${activeClass.name}: ${center.join(' ')}`);
   })};
   const startRoute=()=>{
-    if(!npcOwner)return setNotice(t('Select an NPC or squadmaker first.'));
+    if(!npcOwner||!isNpcOwner(npcOwner.classname))return setNotice(t('NPC routes require a supported monster_ class or squadmaker.'));
     waypointMode(npcOwner.id);onClose();
   };
   const makeSpawner=()=>{
-    if(!npcOwner||!isNpcClass(npcOwner.classname))return setNotice(t('Select an NPC first.'));
+    if(!npcOwner||!isNpcClass(npcOwner.classname)||customNames.has(npcOwner.classname))return setNotice(t('Custom NPC spawner support requires testing in Sven Co-op.'));
     run(()=>{spawn(npcOwner.id,options);setActiveId(null);appendLogs([`NPC Studio: squadmaker created for ${npcOwner.classname}.`])});
   };
   useEffect(()=>{
-    const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){e.stopPropagation();onClose()}};
+    const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){e.stopPropagation();if(importOpen)setImportOpen(false);else onClose()}};
     window.addEventListener('keydown',key,true);return()=>window.removeEventListener('keydown',key,true);
-  },[onClose]);
-  const fgdField=(field:string)=>classes.find(c=>c.name===npcOwner?.classname)?.props[field];
+  },[onClose,importOpen]);
+  const fgdField=(field:string)=>(allNpcs.find(c=>c.name===npcOwner?.classname)||classes.find(c=>c.name===npcOwner?.classname))?.props[field];
   return <div className="modal-backdrop npc-backdrop" onMouseDown={onClose}>
     <section className="npc-shell" onMouseDown={e=>e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('NPC & AI Studio')}>
       <header className="npc-top"><span className="npc-badge"><Skull size={20}/></span><div><strong>{t('NPC & AI Studio')}</strong><small>Svengine 5.x · monster_* · squadmaker · path_waypoint</small></div><span className="npc-top-count">{allNpcs.length} NPC · {objects.filter(o=>o.kind==='entity'&&o.classname==='path_waypoint').length} waypoints</span><button onClick={onClose} aria-label={t('Close')}><X size={20}/></button></header>
@@ -105,6 +110,7 @@ export function NPCStudio({onClose}:{onClose:()=>void}){
           <label className="npc-search"><Search size={15}/><input placeholder={t('Search NPCs…')} value={query} onChange={e=>setQuery(e.target.value)}/></label>
           {!loaded&&<p className="npc-hint">{t('Starter list. Import sven-coop.fgd for full list.')}</p>}
           <button className="npc-load-fgd" onClick={loadFgd} disabled={fgdBusy}>{fgdBusy?'…':t('Load Sven Co-op FGD')}</button>
+          <button className="npc-load-fgd" onClick={()=>setImportOpen(true)}><PackagePlus size={14}/>{t('Import Custom NPC (AngelScript)')}</button>
           <div className="npc-class-list">{npcs.map(c=><button key={c.name} className={className===c.name?'active':''} onClick={()=>setClassName(c.name)} title={c.description}>
             <Skull size={15}/><span><strong>{c.name}</strong><small>{c.description}</small></span><ChevronRight size={13}/>
           </button>)}</div>
@@ -122,7 +128,7 @@ export function NPCStudio({onClose}:{onClose:()=>void}){
           </div>
           {route?.brokenTarget&&<p className="npc-warn"><AlertTriangle size={15}/> Missing waypoint: {route.brokenTarget}</p>}
           {route?.loop&&<p className="npc-hint">{t('Loop detected. New waypoints must be inserted manually.')}</p>}
-          <button className="npc-primary" disabled={!npcOwner||!!route?.brokenTarget||!!route?.loop} onClick={startRoute}><MapPin size={16}/>{t('Add waypoint in 3D')}</button>
+          <button className="npc-primary" disabled={!npcOwner||!isNpcOwner(npcOwner.classname)||!!route?.brokenTarget||!!route?.loop} onClick={startRoute}><MapPin size={16}/>{t('Add waypoint in 3D')}</button>
         </main>
         <aside className="npc-inspector">
           <h3><Shield size={16}/>{t('NPC Inspector')}</h3>
@@ -135,7 +141,7 @@ export function NPCStudio({onClose}:{onClose:()=>void}){
                   <input value={value} onChange={e=>setProp(npcOwner.id,key,e.target.value)}/>}</label>;
             })}
             <h3><Users size={15}/>{t('Squadmaker / Spawning')}</h3>
-            {isNpcClass(npcOwner.classname)?<>
+            {isNpcClass(npcOwner.classname)&&!customNames.has(npcOwner.classname)?<>
               <label className="npc-input"><span>{t('Monster count')} (-1 = ∞)</span><Numeric min={-1} max={10000} value={options.monstercount} onChange={monstercount=>setOptions(x=>({...x,monstercount}))}/></label>
               <label className="npc-input"><span>{t('Delay between spawns')} (s)</span><Numeric min={0} max={3600} step={.5} value={options.delay} onChange={delay=>setOptions(x=>({...x,delay}))}/></label>
               <label className="npc-input"><span>{t('Max live children')} (-1 = ∞)</span><Numeric min={-1} max={1024} value={options.maxLive} onChange={maxLive=>setOptions(x=>({...x,maxLive}))}/></label>
@@ -149,6 +155,7 @@ export function NPCStudio({onClose}:{onClose:()=>void}){
         </aside>
       </div>
       <footer className="npc-footer"><span><Shield size={13}/>{t('Uses supported Sven Co-op keyvalues. No simulated AI.')}</span><span aria-live="polite">{notice}</span></footer>
+      {importOpen&&<CustomNpcImporter onClose={()=>setImportOpen(false)}/>}
     </section>
   </div>;
 }

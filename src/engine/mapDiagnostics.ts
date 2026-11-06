@@ -1,6 +1,6 @@
 import type {MapObject,PointEntity,Project,TextureAsset,FgdClass} from './types';
 import {validateBrush} from './exportMap';
-import {transformedVertices} from './geometry';
+import {transformedVertices,safeFaceTextureAxes} from './geometry';
 
 export type MapIssue={severity:'error'|'warning'|'info';category:'geometry'|'entities'|'textures'|'environment';message:string;objectId?:string;code:string;template?:string;params?:Record<string,string|number>};
 export type MapReport={issues:MapIssue[];brushes:number;entities:number;faces:number;textures:number;unknownTextures:number};
@@ -34,7 +34,17 @@ export function analyzeMap(project:Project,assets:TextureAsset[]=[],fgd:FgdClass
  const entities=project.objects.filter((o):o is PointEntity=>o.kind==='entity');
  if(!brushes.length)push('error','geometry','NO_BRUSHES','Map has no world or entity brushes.');
  if(!entities.some(e=>e.classname==='info_player_start'))push('error','entities','NO_SPAWN','Map has no info_player_start.');
- brushes.forEach(b=>validateBrush(b).forEach(problem=>push('error','geometry','BRUSH_INVALID',problem,b.id)));
+ brushes.forEach(b=>{
+  validateBrush(b).forEach(problem=>push('error','geometry','BRUSH_INVALID',problem,b.id));
+  const vertices=transformedVertices(b);
+  let repaired=0;
+  for(const face of b.faces){
+    if(face.indices.length<3)continue;
+    try{if(safeFaceTextureAxes(vertices,face).repaired)repaired++;}
+    catch{push('error','textures','TEXTURE_AXIS_UNREPAIRABLE',`${b.name}: face texture axes could not be corrected.`,b.id);}
+  }
+  if(repaired)push('warning','textures','TEXTURE_AXIS_REPAIRED',`${b.name}: ${repaired} face(s) have near-perpendicular UV axes. Renderer and Valve 220 export will apply an automatic non-destructive alignment repair.`,b.id);
+ });
  // A massive solid SKY brush is not an enclosure: it occupies air and can
  // swallow the spawn/light, leaving SC-RAD with zero visible light patches.
  for(const brush of brushes){
