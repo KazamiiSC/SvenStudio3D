@@ -250,8 +250,3 @@ Agradecería ayuda para probar el editor, informar errores, aportar mejoras y am
 **Developed by KZ-Sheez with the help of ChatGPT-6 Astra.**  
 **Desarrollado por KZ-Sheez con la ayuda de ChatGPT-6 Astra.**
 
-
----
-
-**Developed by KZ-Sheez with the help of ChatGPT.**
-
