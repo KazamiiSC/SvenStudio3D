@@ -7,7 +7,7 @@ import ts from 'typescript';
 import {createRequire} from 'node:module';
 const root=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'sven-082-'));
 try{
-  for(const file of ['engine/sessionRecovery.ts','engine/projectValidation.ts','engine/cameraRecovery.ts','engine/controls.ts']){
+  for(const file of ['engine/sessionRecovery.ts','engine/customNpc.ts','engine/projectValidation.ts','engine/cameraRecovery.ts','engine/controls.ts']){
     const target=path.join(temp,file.replace('.ts','.js'));
     fs.mkdirSync(path.dirname(target),{recursive:true});
     fs.writeFileSync(target,ts.transpileModule(fs.readFileSync(path.join(root,'src',file),'utf8'),{

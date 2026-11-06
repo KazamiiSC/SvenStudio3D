@@ -13,7 +13,7 @@ try{
     'src/engine/fgd.ts','src/engine/modeling.ts','src/engine/advancedModeling.ts',
     'src/engine/architecture.ts','src/engine/smartMerge.ts','src/engine/prefabs.ts',
     'src/engine/gameplay.ts','src/engine/npc.ts','src/engine/sound.ts',
-    'src/engine/environment.ts','src/engine/skyEnclosure.ts','src/i18n.ts','src/store.ts'
+    'src/engine/environment.ts','src/engine/skyEnclosure.ts','src/i18n.ts','src/engine/cinematic.ts','src/engine/customNpc.ts','src/engine/terrain.ts','src/store.ts'
   ]){
     const source=fs.readFileSync(path.join(root,file),'utf8');
     const target=path.join(temp,file.replace(/\.ts$/,'.js'));

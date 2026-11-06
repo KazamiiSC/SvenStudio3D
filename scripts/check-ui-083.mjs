@@ -6,7 +6,7 @@ try{
   for(const file of ['src/engine/types.ts','src/engine/entityAppearance.ts','src/engine/controls.ts',
     'src/engine/geometry.ts','src/engine/exportMap.ts','src/engine/importMap.ts','src/engine/fgd.ts',
     'src/engine/modeling.ts','src/engine/advancedModeling.ts','src/engine/prefabs.ts','src/engine/architecture.ts','src/engine/smartMerge.ts','src/engine/gameplay.ts',
-    'src/engine/npc.ts','src/engine/sound.ts','src/i18n.ts','src/engine/environment.ts','src/engine/skyEnclosure.ts','src/store.ts']){
+    'src/engine/npc.ts','src/engine/sound.ts','src/i18n.ts','src/engine/environment.ts','src/engine/skyEnclosure.ts','src/engine/cinematic.ts','src/engine/customNpc.ts','src/engine/terrain.ts','src/store.ts']){
     const out=path.join(dst,file.replace(/\.ts$/,'.js'));fs.mkdirSync(path.dirname(out),{recursive:true});
     fs.writeFileSync(out,ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText);
   }

@@ -15,7 +15,7 @@ function transpile(filename){
   const text=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
   fs.writeFileSync(output,text);
 }
-for(const file of ['src/engine/types.ts','src/engine/entityAppearance.ts','src/engine/controls.ts','src/engine/geometry.ts','src/engine/exportMap.ts','src/engine/importMap.ts','src/engine/fgd.ts','src/engine/modeling.ts','src/engine/advancedModeling.ts','src/engine/prefabs.ts','src/engine/gameplay.ts','src/engine/npc.ts','src/engine/sound.ts','src/i18n.ts','src/engine/environment.ts','src/engine/skyEnclosure.ts','src/engine/architecture.ts','src/engine/smartMerge.ts','src/store.ts'])transpile(file);
+for(const file of ['src/engine/types.ts','src/engine/entityAppearance.ts','src/engine/controls.ts','src/engine/geometry.ts','src/engine/exportMap.ts','src/engine/importMap.ts','src/engine/fgd.ts','src/engine/modeling.ts','src/engine/advancedModeling.ts','src/engine/prefabs.ts','src/engine/gameplay.ts','src/engine/npc.ts','src/engine/sound.ts','src/i18n.ts','src/engine/environment.ts','src/engine/skyEnclosure.ts','src/engine/architecture.ts','src/engine/smartMerge.ts','src/engine/cinematic.ts','src/engine/customNpc.ts','src/engine/terrain.ts','src/store.ts'])transpile(file);
 fs.writeFileSync(path.join(dst,'package.json'),JSON.stringify({type:'commonjs'}));
 const require=createRequire(path.join(dst,'test.cjs'));
 const geometry=require('./src/engine/geometry.js');

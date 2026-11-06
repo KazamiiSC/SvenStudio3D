@@ -14,6 +14,9 @@ import {prepareCompileWads} from './compileWads.js';
 import {inspectBspFile} from './bspAudit.js';
 import {createHash} from 'node:crypto';
 import {readBuildLeakPointfile} from './leakPointfile.js';
+import {inspectMapPackage,createMapPackage} from './mapPackager.js';
+import {decompileBspToMap} from './surfDecompile.js';
+import {lightTestSettings,lightTestRadArgs} from './lightingTest.js';
 
 const app=express();app.use(express.json({limit:'20mb'}));
 const PORT=49177;let active=null;
@@ -37,6 +40,18 @@ app.post('/api/bsp/compiled',async(req,res)=>{
   }catch{return res.status(404).json({error:'Compiled BSP not found. Compile first or open a local .bsp file.'})}
 });
 
+// Read-only packaging of a compiled BSP and Sven Co-op addon dependencies.
+app.post('/api/packager/scan',async(req,res)=>{
+  try{return res.json(await inspectMapPackage(req.body||{}));}
+  catch(error){return res.status(400).json({error:String(error?.message||error)});}
+});
+app.post('/api/packager/download',async(req,res)=>{
+  try{
+    const {zip}=await createMapPackage(req.body||{});
+    return res.setHeader('Content-Disposition','attachment; filename="svenstudio-map-package.zip"')
+      .setHeader('Cache-Control','no-store').type('application/zip').send(zip);
+  }catch(error){return res.status(400).json({error:String(error?.message||error)});}
+});
 app.post('/api/cancel',(_req,res)=>{
   if(active){active.cancelled=true;if(active.child){
     if(process.platform==='win32')execFile('taskkill',['/PID',String(active.child.pid),'/T','/F'],()=>{});
@@ -110,9 +125,23 @@ app.post('/api/bsp/wad-textures',async(req,res)=>{
   catch(error){return res.status(400).json({error:String(error?.message||error)});}
 });
 app.post('/api/assets/converted-audio',express.raw({type:'audio/wav',limit:'39mb'}),installConvertedSound);
+// Optional external decompiler: explicit user action only. Does not modify installed maps.
+// Requires the user's own surfdecomp.exe; we do not distribute that binary.
+app.post('/api/bsp/decompile-map',express.raw({type:'application/octet-stream',limit:'256mb'}),async(req,res)=>{
+  try{
+    if(!Buffer.isBuffer(req.body))return res.status(400).json({error:'Expected binary BSP upload.'});
+    const toolPath=decodeURIComponent(String(req.headers['x-sven-decompiler']||''));
+    const result=await decompileBspToMap({bsp:req.body,toolPath});
+    res.setHeader('Cache-Control','no-store');
+    return res.json(result);
+  }catch(error){return res.status(400).json({error:String(error?.message||error)});}
+});
 app.post('/api/compile',async(req,res)=>{
   if(active)return res.status(409).json({error:'Another compile is already running.'});
-  const {mapName,mapData,compilerDir,gameDir,wadPaths,fullVis=true,extraRad=true}=req.body||{};
+  const {mapName:requestedMapName,mapData,compilerDir,gameDir,wadPaths,fullVis=true,extraRad=true,radAmbientTest='off'}=req.body||{};
+  let plan;
+  try{plan=lightTestSettings(requestedMapName,radAmbientTest);}catch(error){return res.status(400).json({error:String(error.message||error)});}
+  const {name:mapName,ambient:lightAmbient}=plan;
   if(!validMapName(mapName)||typeof mapData!=='string'||mapData.length<40||mapData.length>20_000_000)
     return res.status(400).json({error:'Invalid map name or source.'});
   if(!await isDir(compilerDir)||!await isDir(gameDir))return res.status(400).json({error:'Compiler and game directories must exist on this PC.'});
@@ -133,8 +162,11 @@ app.post('/api/compile',async(req,res)=>{
   const builtInWad=path.resolve('public','svstudio.wad');
   let source=mapData, wadPlan;
   try{
-    wadPlan=await prepareCompileWads(source,{gameDir,compilerDir,builtInWad});
+    wadPlan=await prepareCompileWads(source,{gameDir,compilerDir,builtInWad,configuredWadPaths:Array.isArray(wadPaths)?wadPaths:[]});
     source=wadPlan.map;
+    if(wadPlan.missingWads.length){
+      throw new Error(`Missing WAD files: ${wadPlan.missingWads.join(', ')}. Set full local WAD paths in Settings (WAD paths) or install the WAD files in svencoop_addon/ or svencoop/. The compiler must be able to read the WAD files. The project and its textures were not modified.`);
+    }
     // Only install the bundled WAD when it actually provides map textures.
     if(wadPlan.wadList.some(x=>path.win32.basename(x.replaceAll('\\','/')).toLowerCase()==='svstudio.wad') && existsSync(builtInWad)){
       const runtimeWad=path.join(gameDir,'svstudio.wad');
@@ -157,8 +189,9 @@ app.post('/api/compile',async(req,res)=>{
   res.setHeader('Cache-Control','no-cache');res.setHeader('X-Accel-Buffering','no');
   active={child:null,cancelled:false};const task=active;
   send(res,'info',`Working directory: ${workDir}`);
+  if(lightAmbient!==null)send(res,'warning',`SC-RAD LIGHT TEST ONLY: -ambient ${lightAmbient} ${lightAmbient} ${lightAmbient}. Output ${mapName}.bsp; base BSP ${requestedMapName}.bsp remains untouched. Lighting is diagnostic, not a restoration of original lightmaps.`);
   send(res,'info',`MAP SHA-256: ${createHash('sha256').update(source).digest('hex')}`);
-  send(res,'info',`WADs used for THIS build (in priority order): ${wadPlan.wadList.join('; ')||'(none)'}`);
+  send(res,'info',`Resolved WADs used for THIS build: ${wadPlan.resolvedWadList.join('; ')||'(none)'}`);
   for(const warning of wadPlan.warnings)send(res,'warning',`WAD/SKY: ${warning}`);
   if(Array.isArray(wadPaths))send(res,'info',`WAD search paths: ${wadPaths.join(';')}`);
   let leakSent=false;
@@ -174,6 +207,7 @@ app.post('/api/compile',async(req,res)=>{
       if(task.cancelled)throw new Error('Build cancelled by user.');
       const stage=stages[i];
       const args=[mapBase];if(stage==='VIS'&&fullVis)args.push('-full');if(stage==='RAD'&&extraRad)args.push('-extra');
+      if(stage==='RAD')args.push(...lightTestRadArgs(lightAmbient));
       send(res,'stage',`Starting SC-${stage}...`,{stage});
       let illegalBrush=false;
       await new Promise((resolve,reject)=>{

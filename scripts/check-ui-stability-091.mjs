@@ -14,11 +14,11 @@ const layout=read('src/components/DockWorkspace.tsx');
 const build=read('src/components/ArchitectureBuilder.tsx');
 const i18n=read('src/i18n.ts');
 const version=JSON.parse(read('package.json')).version;
-assert.ok(['0.9.1','0.9.2','0.9.3','0.9.4','0.9.5','1.0.0-rc.1','1.0.0'].includes(version));
-assert.ok(app.includes(version==='1.0.0-rc.1'?'v1.0.0 RC1':`v${version}`));
+assert.ok(['0.9.1','0.9.2','0.9.3','0.9.4','0.9.5','1.0.0-rc.1','1.0.0','1.0.1-preview.1','1.0.1-preview.2','1.0.1-preview.3','1.0.1-preview.4','1.0.1-preview.5','1.0.1-preview.5.1','1.1.0-preview.1','1.2.0-preview.1','1.2.0-preview.2','1.2.0-preview.3','1.2.0-preview.4','1.2.0-preview.5'].includes(version));
+assert.ok(app.includes(version==='1.0.0-rc.1'?'v1.0.0 RC1':version.startsWith('1.0.1-preview.')?'v1.0.1 Preview':version==='1.1.0-preview.1'?'v1.1.0 Preview 1':version.startsWith('1.2.0-preview.')?'v1.2.0 Preview '+version.split('.').at(-1):`v${version}`));
 assert.ok(!app.includes('v0.8.10.4'));
 for(const mode of ['translate','rotate','scale'])assert.ok(app.includes(`onClick={()=>activateGizmoMode('${mode}')}`),`classic ${mode} must match floating rail`);
-assert.ok(rail.includes('editor.activateGizmoMode(mode)'));
+assert.ok(rail.includes('editor.toggleShortcutGizmo(mode)')); // G/R/C toggle gizmos, no automatic transforms.
 assert.ok(rail.includes("editor.setGeometryMode('object');editor.setMode('select')"));
 const guard=app.indexOf("if(document.querySelector('.modal-backdrop')){");
 const ctrlDuplicate=app.indexOf("e.key.toLowerCase()==='d'");

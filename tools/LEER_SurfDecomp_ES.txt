@@ -1,0 +1,9 @@
+BSP Recovery — conversión a Valve 220 MAP
+
+Para activar la decompilación, colocá TU COPIA de surfdecomp.exe en esta carpeta
+(SvenStudio3D/tools/surfdecomp.exe) o indicá su ruta absoluta desde BSP Recovery.
+
+No se incluye SurfDecomp por no haberse verificado permiso de redistribución.
+El programa externo solo se ejecuta cuando presionás «Decompilar y verificar».
+
+Leé LEER_BSP_A_MAP_PREVIEW3_ES.md en la raíz para instrucciones completas.

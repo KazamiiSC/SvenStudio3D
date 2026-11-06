@@ -12,12 +12,12 @@ assert.equal(shadingPieChoice(10,5),null);assert.equal(shadingPieChoice(NaN,100)
 assert.equal(activeShadingMode(true,false,false),'wireframe');assert.equal(activeShadingMode(false,true,true),'solid');assert.equal(activeShadingMode(false,false,true),'rendered');assert.equal(activeShadingMode(false,false,false),'material');
 const pie=fs.readFileSync('src/components/ShadingPie.tsx','utf8');
 for(const value of ['window.addEventListener(\'keydown\',down,true)','window.addEventListener(\'keyup\',up,true)','e.code===\'KeyZ\'','state.walkMode','state.flyMode','state.modalTransform','document.pointerLockElement','.viewport-frame','input,textarea,select','uiScale'])assert.ok(pie.includes(value),`shading pie missing ${value}`);
-const store=fs.readFileSync('src/store.ts','utf8');assert.match(store,/setShadingMode:mode=>set\(/);assert.match(store,/solidShading:mode==='solid'/);
+const store=fs.readFileSync('src/engine/terrain.ts','src/store.ts','utf8');assert.match(store,/setShadingMode:mode=>set\(/);assert.match(store,/solidShading:mode==='solid'/);
 const app=fs.readFileSync('src/App.tsx','utf8');assert.match(app,/!bspMode&&<ShadingPie\/>/);assert.match(app,/toggleShortcutGizmo\('rotate'\)/);assert.match(app,/toggleShortcutGizmo\('scale'\)/);
 const renderer=fs.readFileSync('src/components/Viewport.tsx','utf8');assert.ok(renderer.includes("solidShading?undefined:materialTexture"));assert.ok(renderer.includes('cullCandidates=useMemo'));assert.ok(renderer.includes('point.distanceToSquared(origin)'));
 const lang=fs.readFileSync('src/i18n.ts','utf8');for(const locale of ['en','es','ru','ko'])assert.ok(lang.includes(`Object.assign(${locale},{\n 'Shading pie menu'`));
 assert.ok(fs.existsSync('SvenStudio3D.bat'));assert.ok(!fs.existsSync('START_WINDOWS.bat'));
 for(const name of ['public/SvenStudio3D.svg','public/favicon.ico','public/SvenStudio3D_192.png','SvenStudio3D.ico','scripts/create-shortcut.ps1','CREAR_ACCESO_DIRECTO.bat'])assert.ok(fs.statSync(name).size>100,name);
 const html=fs.readFileSync('index.html','utf8');assert.match(html,/<title>SvenStudio 3D/);assert.match(html,/SvenStudio3D.svg/);
-assert.ok(['0.9.5','1.0.0-rc.1','1.0.0'].includes(JSON.parse(fs.readFileSync('package.json','utf8')).version));
+assert.ok(['0.9.5','1.0.0-rc.1','1.0.0','1.0.1-preview.1'].includes(JSON.parse(fs.readFileSync('package.json','utf8')).version));
 console.log('PASS v0.9.5 regression of v0.9.4: pie geometry, safe input, live modes, branding, icon, launch and perf checks');

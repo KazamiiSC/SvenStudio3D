@@ -56,22 +56,35 @@ export function wadTextureNames(buffer) {
   return out;
 }
 const statSafe=async p=>{try{const s=await fs.stat(p);return s.isFile()}catch{return false}};
-const lookupWad=async(name,gameDir,compilerDir)=>{
+// Resolve bare WAD names under BOTH Sven Co-op layouts: a selected svencoop
+// overlay or the game installation root. Only use a full path in the temporary
+// compiler MAP; never overwrite the path stored in the editable project.
+const lookupWad=async(name,gameDir,compilerDir,configuredPaths=[])=>{
   const clean=normalizePath(name);
   const file=path.win32.basename(clean);
-  const candidates=[clean,path.resolve(clean),path.join(gameDir, file),path.join(gameDir,'..','svencoop',file),path.join(gameDir,'..','svencoop_addon',file),path.join(compilerDir,file)];
-  for(const candidate of candidates)if(await statSafe(candidate))return candidate;
+  const directory=path.resolve(gameDir);
+  const overlays=new Set(['svencoop','svencoop_addon','svencoop_downloads']);
+  const root=overlays.has(path.basename(directory).toLowerCase())?path.dirname(directory):directory;
+  const locations=[directory,root,...['svencoop_addon','svencoop_downloads','svencoop'].map(layer=>path.join(root,layer)),compilerDir];
+  const candidates=[clean,...locations.map(folder=>path.join(folder,file))];
+  for(const entry of configuredPaths){
+    if(typeof entry!=='string'||!entry.trim())continue;
+    const config=entry.trim();
+    if(path.win32.basename(normalizePath(config)).toLowerCase()===file.toLowerCase())candidates.unshift(config);
+    else candidates.push(path.join(config,file));
+  }
+  for(const candidate of [...new Set(candidates)])if(await statSafe(candidate))return path.resolve(candidate);
   return null;
 };
 
-export async function prepareCompileWads(source,{gameDir,compilerDir,builtInWad}) {
+export async function prepareCompileWads(source,{gameDir,compilerDir,builtInWad,configuredWadPaths=[]}) {
   const textures=referencedTextures(source),warnings=[];
   const old=readWorldWadList(source);
   let list=uniqueWads(old);
   if(list.length!==old.length)warnings.push(`Removed ${old.length-list.length} duplicate WAD reference(s) (case-insensitive basename).`);
   const available=[];
   for(const entry of list){
-    const file=await lookupWad(entry,gameDir,compilerDir);
+    const file=await lookupWad(entry,gameDir,compilerDir,configuredWadPaths);
     if(!file){warnings.push(`Cannot inspect WAD ${entry}; verify it is installed on the compiler PC.`);continue}
     try{available.push({entry,file,names:wadTextureNames(await fs.readFile(file))})}
     catch(e){warnings.push(`Cannot inspect WAD ${entry}: ${e.message}`)}
@@ -91,7 +104,7 @@ export async function prepareCompileWads(source,{gameDir,compilerDir,builtInWad}
   }
   const providerList=[];
   for(const entry of list){
-    const file=await lookupWad(entry,gameDir,compilerDir);
+    const file=await lookupWad(entry,gameDir,compilerDir,configuredWadPaths);
     if(!file)continue;
     try{providerList.push({entry,names:wadTextureNames(await fs.readFile(file))})}catch{/* warning above */}
   }
@@ -100,6 +113,14 @@ export async function prepareCompileWads(source,{gameDir,compilerDir,builtInWad}
     if(skyProviders.length>1)warnings.push(`Conflicting SKY textures in multiple WADs: ${skyProviders.join(', ')}. Use one authoritative SKY source.`);
     if(skyProviders.length===0)warnings.push('SKY is referenced but none of the inspected WADs contains a SKY miptexture. Add a valid SKY tool texture WAD.');
   }
-  const map=patchWorldWads(source,list);
-  return {map,wadList:list,warnings,skyProviders,usesSky:textures.has('SKY'),usesBundled:bundledNeeded.length>0,textureCount:textures.size};
+  const resolvedWadList=[],missingWads=[];
+  for(const entry of list){
+    const file=await lookupWad(entry,gameDir,compilerDir,configuredWadPaths);
+    if(file)resolvedWadList.push(file);
+    else missingWads.push(entry);
+  }
+  // For a successful compile, SC-CSG receives fully qualified files. It
+  // cannot reliably resolve bare filenames from an isolated temporary folder.
+  const map=patchWorldWads(source,missingWads.length?list:resolvedWadList);
+  return {map,wadList:list,resolvedWadList,missingWads,warnings,skyProviders,usesSky:textures.has('SKY'),usesBundled:bundledNeeded.length>0,textureCount:textures.size};
 }

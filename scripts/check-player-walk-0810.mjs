@@ -42,7 +42,7 @@ assert(m.walkCollider([[0,0,0],[2,0,0],[2,2,0],[0,0,3]]),'Build bounds from vert
 assert.equal(m.walkCollider([[0,0,0],[1,0,0]]),null,'Reject invalid collider');
 const view=fs.readFileSync(path.join(root,'src/components/Viewport.tsx'),'utf8');
 const app=fs.readFileSync(path.join(root,'src/App.tsx'),'utf8');
-const store=fs.readFileSync(path.join(root,'src/store.ts'),'utf8');
+const store=fs.readFileSync(path.join(root,'src/engine/terrain.ts','src/store.ts'),'utf8');
 for(const name of ['Player Walk Mode','walkColliders','chooseWalkStart','walkStep','walkMode','requestPointerLock'])assert(view.includes(name),`Missing ${name}`);
 for(const name of ['setWalk','walkMode','Escape','ShiftLeft'])assert(view.includes(name)||app.includes(name),`Missing ${name}`);
 assert(store.includes('walkMode:false')&&store.includes('toggleWalk'),'Walk state must be separate from Fly');

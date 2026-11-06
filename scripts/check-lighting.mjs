@@ -4,7 +4,7 @@ import fs from 'node:fs';import os from 'node:os';import path from 'node:path';
 import {createRequire} from 'node:module';import assert from 'node:assert/strict';
 const root=fs.mkdtempSync(path.join(os.tmpdir(),'svstudio-lighting-'));
 try {
- const files=['engine/types.ts','engine/environment.ts','engine/skyEnclosure.ts','engine/architecture.ts','engine/smartMerge.ts','engine/geometry.ts','engine/exportMap.ts','engine/importMap.ts','engine/sound.ts','engine/entityAppearance.ts','engine/controls.ts','engine/fgd.ts','engine/modeling.ts','engine/advancedModeling.ts','engine/prefabs.ts','engine/gameplay.ts','engine/npc.ts','i18n.ts','store.ts'];
+ const files=['engine/types.ts','engine/environment.ts','engine/skyEnclosure.ts','engine/architecture.ts','engine/smartMerge.ts','engine/geometry.ts','engine/exportMap.ts','engine/importMap.ts','engine/sound.ts','engine/entityAppearance.ts','engine/controls.ts','engine/fgd.ts','engine/modeling.ts','engine/advancedModeling.ts','engine/prefabs.ts','engine/gameplay.ts','engine/npc.ts','i18n.ts','engine/cinematic.ts','engine/customNpc.ts','engine/terrain.ts','store.ts'];
  for(const file of files){const out=path.join(root,file.replace('.ts','.js'));fs.mkdirSync(path.dirname(out),{recursive:true});fs.writeFileSync(out,ts.transpileModule(fs.readFileSync(path.resolve('src',file),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText)}
  fs.writeFileSync(path.join(root,'package.json'),'{'+'"type":"commonjs"'+'}');fs.symlinkSync(path.resolve('node_modules'),path.join(root,'node_modules'));
  const require=createRequire(path.join(root,'test.cjs'));

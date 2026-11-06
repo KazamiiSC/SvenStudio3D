@@ -9,7 +9,7 @@ const root=process.cwd(),tmp=fs.mkdtempSync(path.join(os.tmpdir(),'sven-integrit
 try{
   fs.mkdirSync(path.join(tmp,'engine'),{recursive:true});
   fs.symlinkSync(path.join(root,'node_modules'),path.join(tmp,'node_modules'),'dir');
-  for(const name of ['types','geometry','importMap','projectValidation','paths','sessionRecovery']){
+  for(const name of ['types','geometry','importMap','customNpc','projectValidation','paths','sessionRecovery']){
     const source=fs.readFileSync(path.join(root,'src/engine',name+'.ts'),'utf8');
     fs.writeFileSync(path.join(tmp,'engine',name+'.js'),ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText);
   }

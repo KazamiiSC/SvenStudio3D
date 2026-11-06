@@ -7,7 +7,7 @@ import {strict as assert} from 'node:assert';
 const root=process.cwd(),temp=fs.mkdtempSync(path.join(root,'.example-sound-'));
 try{
  const files=['types','entityAppearance','controls','geometry','exportMap','importMap','fgd','modeling','gameplay','npc','sound'];
- for(const f of [...files.map(f=>'src/engine/'+f+'.ts'),'src/i18n.ts','src/engine/environment.ts','src/engine/skyEnclosure.ts','src/engine/architecture.ts','src/engine/smartMerge.ts','src/store.ts']){
+ for(const f of [...files.map(f=>'src/engine/'+f+'.ts'),'src/i18n.ts','src/engine/environment.ts','src/engine/skyEnclosure.ts','src/engine/architecture.ts','src/engine/smartMerge.ts','src/engine/cinematic.ts','src/engine/customNpc.ts','src/engine/terrain.ts','src/store.ts']){
   const dest=path.join(temp,f.replace('.ts','.js'));fs.mkdirSync(path.dirname(dest),{recursive:true});
   fs.writeFileSync(dest,ts.transpileModule(fs.readFileSync(path.join(root,f),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText);
  }

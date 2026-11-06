@@ -13,7 +13,7 @@ try{
     'engine/types.ts','engine/entityAppearance.ts','engine/controls.ts','engine/geometry.ts',
     'engine/exportMap.ts','engine/importMap.ts','engine/fgd.ts','engine/modeling.ts',
     'engine/advancedModeling.ts','engine/prefabs.ts','engine/architecture.ts','engine/smartMerge.ts','engine/gameplay.ts','engine/npc.ts',
-    'engine/sound.ts','engine/environment.ts','engine/skyEnclosure.ts','engine/mapDiagnostics.ts','i18n.ts','store.ts'
+    'engine/sound.ts','engine/environment.ts','engine/skyEnclosure.ts','engine/mapDiagnostics.ts','i18n.ts','engine/cinematic.ts','engine/customNpc.ts','store.ts'
   ];
   for(const file of files){const out=path.join(dir,file.replace(/\.ts$/,'.js'));
     fs.mkdirSync(path.dirname(out),{recursive:true});

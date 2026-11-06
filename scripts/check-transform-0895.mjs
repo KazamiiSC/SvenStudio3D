@@ -14,7 +14,7 @@ try{
     'src/engine/entityAppearance.ts','src/engine/controls.ts','src/engine/exportMap.ts','src/engine/importMap.ts',
     'src/engine/fgd.ts','src/engine/modeling.ts','src/engine/advancedModeling.ts','src/engine/architecture.ts',
     'src/engine/smartMerge.ts','src/engine/prefabs.ts','src/engine/gameplay.ts','src/engine/npc.ts',
-    'src/engine/sound.ts','src/engine/environment.ts','src/engine/skyEnclosure.ts','src/i18n.ts','src/store.ts'];
+    'src/engine/sound.ts','src/engine/environment.ts','src/engine/skyEnclosure.ts','src/i18n.ts','src/engine/cinematic.ts','src/engine/customNpc.ts','src/engine/terrain.ts','src/store.ts'];
   for(const file of files){
     const output=path.join(tmp,file.replace(/\.ts$/,'.js'));
     fs.mkdirSync(path.dirname(output),{recursive:true});

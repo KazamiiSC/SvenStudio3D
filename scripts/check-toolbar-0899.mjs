@@ -13,7 +13,7 @@ const rail=fs.readFileSync('src/components/QuickToolRail.tsx','utf8');
 const widget=fs.readFileSync('src/components/HudWidget.tsx','utf8');
 const viewport=fs.readFileSync('src/components/Viewport.tsx','utf8');
 const style=fs.readFileSync('src/style.css','utf8');
-const store=fs.readFileSync('src/store.ts','utf8');
+const store=fs.readFileSync('src/engine/terrain.ts','src/store.ts','utf8');
 let checks=0;
 const check=(name,fn)=>{fn();console.log('PASS',name);checks++};
 check('gizmo and ghost live inside the one floating rail, not in separate HUD slot',()=>{

@@ -25,7 +25,7 @@ try{
   const outside=path.join(temp,'outside.wav');fs.writeFileSync(outside,'x');
   try{fs.symlinkSync(outside,path.join(d,'bad.wav'));await assert.rejects(()=>soundFile(game,'svencoop','ambience/bad.wav'));}catch(e){if(e.code!=='EPERM'&&e.code!=='EACCES')throw e}
   const runtime=path.join(temp,'transpiled');fs.mkdirSync(runtime,{recursive:true});
-  const files=['engine/types.ts','engine/geometry.ts','engine/exportMap.ts','engine/importMap.ts','engine/sound.ts','engine/entityAppearance.ts','engine/controls.ts','engine/fgd.ts','engine/modeling.ts','engine/advancedModeling.ts','engine/prefabs.ts','engine/gameplay.ts','engine/npc.ts','i18n.ts','engine/environment.ts','engine/skyEnclosure.ts','engine/architecture.ts','engine/smartMerge.ts','store.ts'];
+  const files=['engine/types.ts','engine/geometry.ts','engine/exportMap.ts','engine/importMap.ts','engine/sound.ts','engine/entityAppearance.ts','engine/controls.ts','engine/fgd.ts','engine/modeling.ts','engine/advancedModeling.ts','engine/prefabs.ts','engine/gameplay.ts','engine/npc.ts','i18n.ts','engine/environment.ts','engine/skyEnclosure.ts','engine/architecture.ts','engine/smartMerge.ts','engine/cinematic.ts','engine/customNpc.ts','engine/terrain.ts','store.ts'];
   for(const file of files){const input=path.join(process.cwd(),'src',file),target=path.join(runtime,file.replace('.ts','.js'));fs.mkdirSync(path.dirname(target),{recursive:true});
     fs.writeFileSync(target,ts.transpileModule(fs.readFileSync(input,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText);}
   fs.writeFileSync(path.join(runtime,'package.json'),'{"type":"commonjs"}');

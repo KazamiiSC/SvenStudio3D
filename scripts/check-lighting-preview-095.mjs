@@ -48,6 +48,6 @@ assert.ok(!view.includes('Math.min(2.8,lightIntensity*.34)'),'old sun strength r
 const walk=fs.readFileSync('src/components/Viewport.tsx','utf8');
 assert.ok(walk.includes('<WalkFlashlight/>'),'Walk flashlight preserved');
 assert.ok(walk.includes('const isLightSource='),'point/spot/environment lights mounted when visual markers are hidden');
-const app=fs.readFileSync('src/App.tsx','utf8');assert.ok(app.includes('v0.9.5')||app.includes('v1.0.0 RC1')||app.includes('v1.0.0')); 
-assert.ok(['0.9.5','1.0.0-rc.1','1.0.0'].includes(JSON.parse(fs.readFileSync('package.json','utf8')).version));
+const app=fs.readFileSync('src/App.tsx','utf8');assert.ok(app.includes('v0.9.5')||app.includes('v1.0.0 RC1')||app.includes('v1.0.0')||app.includes('v1.0.1 Preview')||app.includes('v1.2.0 Preview')); 
+assert.ok(['0.9.5','1.0.0-rc.1','1.0.0','1.0.1-preview.1','1.0.1-preview.2','1.0.1-preview.3','1.0.1-preview.4','1.0.1-preview.5','1.0.1-preview.5.1','1.1.0-preview.1','1.2.0-preview.1','1.2.0-preview.2','1.2.0-preview.3'].includes(JSON.parse(fs.readFileSync('package.json','utf8')).version));
 console.log('PASS v0.9.5: light energy at GoldSrc distances, spot/sun direction and cone, hidden markers and Walk compatibility');

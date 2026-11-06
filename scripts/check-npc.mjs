@@ -6,7 +6,7 @@ import path from 'node:path';
 import {createRequire} from 'node:module';
 import {strict as assert} from 'node:assert';
 const root=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'sven-npc-'));
-const files=['src/engine/types.ts','src/engine/entityAppearance.ts','src/engine/controls.ts','src/engine/geometry.ts','src/engine/exportMap.ts','src/engine/importMap.ts','src/engine/fgd.ts','src/engine/modeling.ts','src/engine/advancedModeling.ts','src/engine/prefabs.ts','src/engine/gameplay.ts','src/engine/npc.ts','src/engine/sound.ts','src/i18n.ts','src/engine/environment.ts','src/engine/skyEnclosure.ts','src/engine/architecture.ts','src/engine/smartMerge.ts','src/store.ts'];
+const files=['src/engine/types.ts','src/engine/entityAppearance.ts','src/engine/controls.ts','src/engine/geometry.ts','src/engine/exportMap.ts','src/engine/importMap.ts','src/engine/fgd.ts','src/engine/modeling.ts','src/engine/advancedModeling.ts','src/engine/prefabs.ts','src/engine/gameplay.ts','src/engine/npc.ts','src/engine/sound.ts','src/i18n.ts','src/engine/environment.ts','src/engine/skyEnclosure.ts','src/engine/architecture.ts','src/engine/smartMerge.ts','src/engine/cinematic.ts','src/engine/customNpc.ts','src/engine/terrain.ts','src/store.ts'];
 for(const file of files){const target=path.join(temp,file.replace(/\.tsx?$/,'.js'));fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText);}
 fs.writeFileSync(path.join(temp,'package.json'),'{"type":"commonjs"}');
 const require=createRequire(path.join(temp,'check.cjs'));
