@@ -1,4 +1,4 @@
-# SvenStudio 3D *Version 1.0.0 work in progress*
+# SvenStudio 3D *Version 1.4.0*
 
 **A modern 3D map editor for Sven Co-op (GoldSrc / Svengine).**
 
