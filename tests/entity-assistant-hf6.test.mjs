@@ -11,7 +11,7 @@ test('all curated entity guides have steps, purpose, category and example',()=>{
 });
 test('button and door example connects matching target and targetname',()=>{
  assert.match(guideForClass('func_button').example,/door_01/);
- assert.match(guideForClass('func_door').example,/angle = -1/);
+ assert.match(guideForClass('func_door').example,/angles = 0 -1 0/);
 });
 test('fallback covers unknown FGD classes safely without adding invented keyvalues',()=>{
  const def={name:'custom_computer',type:'point',description:'Computer custom',props:{foobar:{label:'Foobar',type:'string'},noise:{label:'Noise',type:'sound'}}};

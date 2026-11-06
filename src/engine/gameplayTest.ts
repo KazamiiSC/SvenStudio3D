@@ -5,6 +5,7 @@
  */
 import type {MapObject,Brush,PointEntity,Vec3} from './types';
 import {transformedVertices} from './geometry';
+import {doorMotionOffsetYaw} from './doorDirection.ts';
 
 const isEntity=(o:MapObject):o is PointEntity=>o.kind==='entity';
 const isBrush=(o:MapObject):o is Brush=>o.kind==='brush';
@@ -21,7 +22,7 @@ function bounds(brush:Brush){
 export function gameplayDoorOffset(entity:PointEntity,brush:Brush):Vec3{
   // This is a predictable *visual estimate*, not GoldSrc's internal movedir.
   const points=bounds(brush),dimensions=points.min.map((n,i)=>points.max[i]-n);
-  const yaw=Number(entity.props.angles?.trim().split(/\s+/)[1]??entity.props.angle??0);
+  const yaw=doorMotionOffsetYaw(entity.props);
   const angle=Number.isFinite(yaw)?yaw:0;
   const dir:Vec3=angle===-1?[0,0,1]:angle===-2?[0,0,-1]:[Math.cos(angle*Math.PI/180),Math.sin(angle*Math.PI/180),0];
   const extent=Math.abs(dir[0])*dimensions[0]+Math.abs(dir[1])*dimensions[1]+Math.abs(dir[2])*dimensions[2];

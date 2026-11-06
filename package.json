@@ -1,6 +1,6 @@
 {
   "name": "sven-studio-3d",
-  "version": "1.0.0",
+  "version": "1.4.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,6 +12,8 @@
     "modeling-check": "node scripts/check-modeling.mjs",
     "shapes-check": "node scripts/check-shapes.mjs",
     "labels-check": "node scripts/check-entity-labels.mjs",
+    "verify:labels-preview5": "node --test tests/map-entity-labels-preview4.test.mjs tests/map-entity-labels-preview5.test.mjs",
+    "verify:labels-preview4": "node --test tests/map-entity-labels-preview4.test.mjs",
     "server": "node server/index.js",
     "entity-check": "node scripts/check-entity-studio.mjs",
     "v05-check": "node scripts/check-v05.mjs",
@@ -35,7 +37,20 @@
     "architecture-check": "node scripts/check-architecture-086.mjs",
     "bsp-viewer-check": "node scripts/check-bsp-088.mjs",
     "interactive-architecture-check": "node scripts/check-interactive-087.mjs && node scripts/check-interactive-state-087.mjs",
-    "verify:stable": "node scripts/check-stable.mjs"
+    "verify:stable": "node scripts/check-stable.mjs",
+    "verify:cinematic": "node scripts/check-cinematic.mjs",
+    "verify:cinematic-preview3": "node scripts/check-cinematic-preview3.mjs",
+    "verify:gameplay-preview4": "node scripts/check-gameplay-preview4.mjs",
+    "verify:custom-npc": "node scripts/check-custom-npc.mjs && node scripts/check-custom-npc-state.mjs",
+    "verify:packager": "node --test tests/map-packager.test.mjs",
+    "verify:terrain": "node scripts/check-terrain.cjs",
+    "verify:viewport-preview4": "node scripts/check-viewport-preview4.cjs",
+    "verify:layout-preview6": "node scripts/check-layout-preview6.cjs",
+    "verify:gameplay-test": "node scripts/check-gameplay-test.cjs",
+    "verify:bsp-recovery": "node --test tests/bsp-native-edit.test.mjs && node --test tests/bsp-to-map.test.mjs && node --test tests/bsp-surface-restore.test.mjs",
+    "verify:texture-studio": "node --experimental-strip-types --test tests/texture-studio-v14.test.mjs tests/texture-ui-integration-v14.test.mjs",
+    "verify:construction-v14": "node --experimental-strip-types --test tests/construction-workflow-v14.test.mjs",
+    "verify:shape-prefab-hf2": "node --test tests/shape-prefab-viewport-hf2.test.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.0.7",

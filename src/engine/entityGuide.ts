@@ -1,4 +1,5 @@
 import type {FgdClass,MapObject,PointEntity} from './types';
+import {readDoorOrientation} from './doorDirection.ts';
 
 /** Advisory only: all editable values remain native Svengine/GoldSrc keyvalues.
  * A loaded FGD is the authority for additional classes and property choices.
@@ -13,7 +14,7 @@ export type EntityGuide = {
 };
 const known:Record<string,EntityGuide>={
  func_button:{category:'interaction',summary:'Botón que dispara su target cuando un jugador lo usa, toca o activa según sus flags.',steps:['Poné un targetname en la entidad que querés activar.','Asigná ese nombre al target del botón.','Elegí un sonido en sounds o un WAV personalizado en noise.','Usá el flag Don’t move si querés un botón fijo.'],example:'func_button.target = door_01 → func_door.targetname = door_01',keys:['target','sounds','noise','wait','speed','spawnflags'],caution:'No alcanza con que ambas entidades estén juntas: los nombres target y targetname deben coincidir.'},
- func_door:{category:'movement',summary:'Brush sólido que se desplaza en línea recta al recibir activación.',steps:['Convertí el brush en func_door y poné un targetname.','Conectá el target de un botón o trigger a ese nombre.','Elegí Subir (angle = -1), Bajar (-2) o un ángulo horizontal.','Ajustá speed, wait y lip; configurá sonidos de movimiento y parada.'],example:'func_button.target = door_01 → func_door.targetname = door_01; angle = -1',keys:['targetname','angle','speed','wait','lip','movesnd','stopsnd','noise1','noise2'],caution:'Dejá espacio libre para el recorrido de la puerta. wait = -1 la mantiene abierta.'},
+ func_door:{category:'movement',summary:'Brush sólido que se desplaza en línea recta al recibir activación.',steps:['Convertí el brush en func_door y poné un targetname.','Conectá el target de un botón o trigger a ese nombre.','Elegí Subir (angles = 0 -1 0), Bajar (0 -2 0) o un ángulo horizontal.','Ajustá speed, wait y lip; configurá sonidos de movimiento y parada.'],example:'func_button.target = door_01 → func_door.targetname = door_01; angles = 0 -1 0',keys:['targetname','angles','speed','wait','lip','movesnd','stopsnd','noise1','noise2'],caution:'Dejá espacio libre para el recorrido de la puerta. wait = -1 la mantiene abierta.'},
  func_door_rotating:{category:'movement',summary:'Puerta que gira sobre su eje; útil para hojas con bisagras.',steps:['Elegí la posición del origen/eje con cuidado.','Asigná targetname si debe responder a un botón.','Configurá el eje de giro, distance y speed según el FGD.','Elegí los sonidos de movimiento y parada disponibles.'],example:'func_button.target = puerta_giratoria → func_door_rotating.targetname = puerta_giratoria',keys:['targetname','distance','speed','wait','movesnd','stopsnd','noise1','noise2','spawnflags']},
  func_train:{category:'movement',summary:'Plataforma/objeto que recorre una secuencia de nodos path_corner.',steps:['Creá path_corner con targetname únicos.','Enlazá el target de cada nodo al siguiente.','Configurá el target inicial de func_train.','Probá la trayectoria y los tiempos en el juego.'],example:'func_train.target = parada_01 → path_corner.targetname = parada_01',keys:['target','targetname','speed','sounds','noise']},
  func_plat:{category:'movement',summary:'Plataforma elevadora que se mueve entre niveles.',steps:['Asigná altura y velocidad con las propiedades del FGD.','Comprobá el espacio de movimiento y activación.','Usá sonidos compatibles con las opciones de la entidad.'],example:'Plataforma elevadora con speed y wait configurados',keys:['height','speed','wait','sounds']},
@@ -113,7 +114,12 @@ export function entityGuideWarnings(entity:PointEntity,objects:MapObject[]):stri
  if(target&&['func_button','trigger_once','trigger_multiple','trigger_relay','multi_manager','func_breakable'].includes(entity.classname)){
   if(!objects.some(o=>o.kind==='entity'&&o.id!==entity.id&&o.props.targetname===target))warnings.push(`No existe un targetname igual a «${target}».`);
  }
- if(entity.classname==='func_door'&&entity.props.angle==='-1')warnings.push('La puerta sube: comprobá que tenga espacio libre sobre ella.');
+ if(entity.classname==='func_door'){
+  const orientation=readDoorOrientation(entity.props);
+  if(orientation.direction==='up')warnings.push('La puerta sube: comprobá que tenga espacio libre sobre ella.');
+  if(orientation.direction==='down')warnings.push('La puerta baja: comprobá que tenga espacio libre debajo.');
+  if(orientation.conflict)warnings.push('Valores angle y angles contradictorios: elegí una dirección en Movimiento de la puerta para unificarlos.');
+ }
  return warnings;
 }
 
@@ -121,7 +127,7 @@ export function entityGuideWarnings(entity:PointEntity,objects:MapObject[]):stri
 // FGD text is used verbatim when provided by the user's game SDK.
 const english:Record<string,[string,string[],string]>={
  func_button:['Activates another entity when pressed or triggered.',['Assign targetname to the destination entity.','Set this button’s target to that name.','Choose a built-in sound or a custom noise WAV.'],'Button → door, lights or relay'],
- func_door:['Solid brush that slides in a configurable direction.',['Link a button to this door’s targetname.','Use angle = -1 to move up, -2 to move down.','Set speed, wait, lip and move/stop sounds.'],'Button → sliding door'],
+ func_door:['Solid brush that slides in a configurable direction.',['Link a button to this door’s targetname.','Use angles = 0 -1 0 to move up, or 0 -2 0 to move down.','Set speed, wait, lip and move/stop sounds.'],'Button → sliding door'],
  func_door_rotating:['Door that swings around a rotation axis.',['Check the hinge/origin and rotation axis.','Link its targetname to a button or trigger.','Configure angle/distance, speed and sounds using the FGD.'],'Button → hinged door'],
  func_train:['Moving brush following path_corner nodes.',['Place path_corner nodes with unique names.','Connect each node to the next.','Set the first path in func_train.target.'],'Train → path_corner route'],
  func_plat:['Moving platform or lift.',['Check its travel distance and speed in the FGD.','Ensure clear space in the moving direction.'],'Elevator platform'],

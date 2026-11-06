@@ -1,14 +1,24 @@
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import type React from 'react';
-import {Activity,ArrowRight,Box,CheckCircle2,CircleHelp,DoorClosed,GitBranch,Layers,MousePointer2,Plus,RotateCcw,Unlink2,Variable,AlertTriangle,X,ZoomIn,ZoomOut,Focus,LayoutGrid,Map as MapIcon,Search,CornerDownRight} from 'lucide-react';
+import {createPortal} from 'react-dom';
+import {Activity,ArrowRight,BookOpen,Box,CheckCircle2,CircleHelp,DoorClosed,GitBranch,Layers,MousePointer2,Plus,RotateCcw,Unlink2,Variable,AlertTriangle,X,ZoomIn,ZoomOut,Focus,LayoutGrid,Map as MapIcon,Search,CornerDownRight,Maximize2} from 'lucide-react';
 import {useEditor} from '../store';
 import {analyzeGameplay} from '../engine/gameplay';
 import {filterGameplayNodes,gameplayGraphCategory,gameplayReferenceKind,getGameplayGraphConnections,layoutGameplayGraph,graphBounds,GRAPH_NODE_WIDTH as NW,GRAPH_NODE_HEIGHT as NH,type GraphPosition,type GraphCategory} from '../engine/gameplayGraph';
 import type {PointEntity} from '../engine/types';
-import {useT} from '../i18n';
+import {useT,type Locale} from '../i18n';
 import {EntityAssistant} from './EntityAssistant';
+import {localizedGuideForClass} from '../engine/entityGuide';
 import {entityDisplayName,connectionSearchText} from '../engine/entityNaming';
 
+const GAMEPLAY_GUIDE_TEXT:Record<Locale,{open:string,title:string,close:string,subtitle:string,tip:string}>={
+ es:{open:'Abrir guía ampliada',title:'Guía de entidad',close:'Cerrar guía',subtitle:'Opciones, ejemplos, sonidos y conexiones',tip:'Consultá la guía completa y configurá la entidad en una ventana más amplia.'},
+ en:{open:'Open full guide',title:'Entity guide',close:'Close guide',subtitle:'Options, examples, sounds and connections',tip:'Read and edit this entity in a larger, more readable window.'},
+ ru:{open:'Открыть большую справку',title:'Справка сущности',close:'Закрыть справку',subtitle:'Параметры, примеры, звуки и связи',tip:'Откройте справку и настройте сущность в большом окне.'},
+ ko:{open:'큰 가이드 열기',title:'엔티티 가이드',close:'가이드 닫기',subtitle:'설정, 예시, 소리 및 연결',tip:'큰 창에서 엔티티 설명을 읽고 설정할 수 있습니다.'},
+ zh:{open:'打开完整指南',title:'实体指南',close:'关闭指南',subtitle:'设置、示例、声音和连接',tip:'在更大的窗口中查看并编辑实体设置。'},
+ pt:{open:'Abrir guia ampliado',title:'Guia da entidade',close:'Fechar guia',subtitle:'Opções, exemplos, sons e conexões',tip:'Leia e edite a entidade em uma janela maior.'},
+};
 const MIN_ZOOM=.16,MAX_ZOOM=1.65;
 const colorOf=(e:PointEntity)=>e.classname.startsWith('func_')?'#66d8fd':e.classname.startsWith('trigger_')?'#a78dff':e.classname.startsWith('monster_')?'#fb708f':'#72dfba';
 const limit=(x:number,min:number,max:number)=>Math.max(min,Math.min(max,x));
@@ -19,6 +29,10 @@ function Editable({label,value,onCommit,type='text'}:{label:string;value:string;
 }
 export function GameplayStudio({onClose}:{onClose:()=>void}){
  const t=useT();
+ const locale=useEditor(s=>s.locale) as Locale;
+ const guideText=GAMEPLAY_GUIDE_TEXT[locale]||GAMEPLAY_GUIDE_TEXT.en;
+ const fgdClasses=useEditor(s=>s.fgdClasses);
+ const [guideOpen,setGuideOpen]=useState(false);
  const project=useEditor(s=>s.project),selected=useEditor(s=>s.selected);
  const setSelected=useEditor(s=>s.setSelected),setProp=useEditor(s=>s.setObjectProp);
  const tie=useEditor(s=>s.tieGameplayBrush),relay=useEditor(s=>s.createGameplayRelay);
@@ -49,6 +63,9 @@ export function GameplayStudio({onClose}:{onClose:()=>void}){
  const canvasHeight=useMemo(()=>Math.max(950,...Object.values(positions).map(p=>p.y+NH+175)),[positions]);
  const selectedEntity=entities.find(e=>e.id===(active||selected));
  const selectedBrush=objects.find(o=>o.id===selected&&o.kind==='brush');
+ const selectedDefinition=selectedEntity?fgdClasses.find(c=>c.name===selectedEntity.classname):undefined;
+ const selectedGuide=selectedEntity?localizedGuideForClass(selectedEntity.classname,selectedDefinition,locale):null;
+ useEffect(()=>{setGuideOpen(false)},[selectedEntity?.id]);
  const visible=useMemo(()=>filterGameplayNodes(entities,edges,{query:'',category,onlyReferenced:!showAll,neighborhood:focused?(active||selected):null}).filter(e=>!search.trim()||connectionSearchText(e,objects).includes(search.trim().toLocaleLowerCase())),[entities,edges,objects,search,category,showAll,focused,active,selected]);
  const visibleSet=useMemo(()=>new Set(visible.map(e=>e.id)),[visible]);
  const graphEdges=useMemo(()=>edges.filter(e=>visibleSet.has(e.from)&&visibleSet.has(e.to)),[edges,visibleSet]);
@@ -117,6 +134,7 @@ export function GameplayStudio({onClose}:{onClose:()=>void}){
   const onKey=(e:KeyboardEvent)=>{
    const editing=e.target instanceof HTMLInputElement||e.target instanceof HTMLTextAreaElement||e.target instanceof HTMLSelectElement||(e.target instanceof HTMLElement&&e.target.isContentEditable);
    if(e.key==='Escape'){
+    if(guideOpen){e.preventDefault();e.stopPropagation();setGuideOpen(false);return;}
     if(editing)return;
     e.preventDefault();e.stopPropagation();if(source)setSource(null);else onClose();return;
    }
@@ -125,7 +143,7 @@ export function GameplayStudio({onClose}:{onClose:()=>void}){
    if(e.key.toLowerCase()==='a'){e.preventDefault();fitNodes()}
   };
   window.addEventListener('keydown',onKey,true);return()=>window.removeEventListener('keydown',onKey,true);
- },[source,onClose,selectedEntity,centerOn,fitNodes]);
+ },[source,onClose,selectedEntity,centerOn,fitNodes,guideOpen]);
  const act=(action:()=>void)=>{try{action();setNotice('')}catch(error){setNotice(String(error instanceof Error?error.message:error))}};
  const beginSource=(id:string)=>{setSource(id);choose(id);setNotice('')};
  const endTarget=(id:string)=>{
@@ -262,7 +280,11 @@ export function GameplayStudio({onClose}:{onClose:()=>void}){
      {selectedEntity?<>
       <div className="gs-entity-title"><span className="gs-entity-dot" style={{background:colorOf(selectedEntity)}}/><strong>{selectedEntity.classname}</strong><small>{entityDisplayName(selectedEntity,objects)}</small></div>
       <div className="gs-entity-tools"><button onClick={()=>centerOn(selectedEntity.id)}><Focus size={14}/>{t('Locate node')}</button><span>{t(gameplayGraphCategory(selectedEntity)==='ai'?'NPCs and paths':gameplayGraphCategory(selectedEntity)==='brush'?'Brush entities':gameplayGraphCategory(selectedEntity)==='logic'?'Triggers and logic':gameplayGraphCategory(selectedEntity)==='camera'?'Camera entities':gameplayGraphCategory(selectedEntity)==='audio'?'Audio entities':'Other entities')}</span></div>
-      <EntityAssistant key={selectedEntity.id} entity={selectedEntity} definition={useEditor.getState().fgdClasses.find(c=>c.name===selectedEntity.classname)} compact/>
+      <section className="gs-guide-preview" aria-label={guideText.title}>
+       <div className="gs-guide-preview-title"><BookOpen size={15}/><strong>{guideText.title}</strong><small>{selectedEntity.classname}</small></div>
+       <p title={selectedGuide?.summary}>{selectedGuide?.summary||guideText.tip}</p>
+       <button type="button" className="gs-guide-expand" onClick={()=>setGuideOpen(true)} aria-haspopup="dialog" aria-label={`${guideText.open}: ${selectedEntity.classname}`}><Maximize2 size={15}/>{guideText.open}</button>
+      </section>
       <Editable label="targetname" value={selectedEntity.props.targetname||''} onCommit={v=>setProp(selectedEntity.id,'targetname',v)}/>
       <Editable label="target" value={selectedEntity.props.target||''} onCommit={v=>setProp(selectedEntity.id,'target',v)}/>
       {selectedEntity.props.target&&<p className="gs-special-note">{gameplayReferenceKind(selectedEntity)==='path'?t('This target is the next path point.'):gameplayReferenceKind(selectedEntity)==='look'?t('This target is the camera look-at reference.'):t('A target may represent different behavior depending on classname.')}</p>}
@@ -278,5 +300,19 @@ export function GameplayStudio({onClose}:{onClose:()=>void}){
    </div>
    <footer className="gs-footer"><span><CheckCircle2 size={14}/>{t('Graph layout and filters do not change GoldSrc entities or MAP export.')}</span><span>{t('Export and compile normally with SC-CSG / BSP / VIS / RAD')} <ArrowRight size={14}/></span></footer>
   </div>
+  {guideOpen&&selectedEntity&&createPortal(
+   <div className="gs-guide-overlay" onMouseDown={event=>{event.stopPropagation();if(event.target===event.currentTarget)setGuideOpen(false)}}>
+    <section className="gs-guide-dialog" role="dialog" aria-modal="true" aria-labelledby="gs-guide-heading" onMouseDown={event=>event.stopPropagation()}>
+     <header className="gs-guide-header">
+      <span className="gs-guide-header-icon"><BookOpen size={21}/></span>
+      <div><h2 id="gs-guide-heading">{guideText.title} · {selectedEntity.classname}</h2><p>{guideText.subtitle}</p></div>
+      <button type="button" onClick={()=>setGuideOpen(false)} aria-label={guideText.close} title={guideText.close}><X size={20}/></button>
+     </header>
+     <div className="gs-guide-body">
+      <EntityAssistant key={`gameplay-guide-${selectedEntity.id}`} entity={selectedEntity} definition={selectedDefinition} initiallyOpen/>
+     </div>
+     <footer className="gs-guide-footer"><span>{guideText.tip}</span><button type="button" onClick={()=>setGuideOpen(false)}>{guideText.close}</button></footer>
+    </section>
+   </div>,document.body)}
  </div>;
 }

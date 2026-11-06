@@ -15,6 +15,10 @@ import {Boxes} from 'lucide-react';
 import {npcClasses} from '../engine/npc';
 import {SoundBrowser} from './SoundStudio';
 import {EntityAssistant} from './EntityAssistant';
+import {DoorMotionControls} from './DoorMotionControls';
+import {BookOpen as BookOpenIcon} from 'lucide-react';
+import {guideKeys} from '../engine/entityGuide';
+import type {Locale} from '../i18n';
 import {spawnYaw,withSpawnYaw} from '../engine/spawnPresentation';
 import {entityConnectionLabel,connectionSearchText} from '../engine/entityNaming';
 
@@ -242,6 +246,21 @@ export function Properties(){
   const selectedIds=useEditor(s=>s.selectedIds);
   const cls=useEditor(s=>s.fgdClasses.find(c=>c.name===(object?.kind==='entity'?object.classname:'')));
   const [newKey,setNewKey]=useState(''),[newValue,setNewValue]=useState(''),[targetSearch,setTargetSearch]=useState('');
+  const locale=useEditor(s=>s.locale) as Locale;
+  const [entityMode,setEntityMode]=useState<'basic'|'advanced'>('basic');
+  const [propertyGuideOpen,setPropertyGuideOpen]=useState(false);
+  useEffect(()=>{setEntityMode('basic');setPropertyGuideOpen(false)},[object?.id]);
+  useEffect(()=>{if(!propertyGuideOpen)return;const onEsc=(e:KeyboardEvent)=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();setPropertyGuideOpen(false)}};window.addEventListener('keydown',onEsc,true);return()=>window.removeEventListener('keydown',onEsc,true)},[propertyGuideOpen]);
+  const nativeText:Record<Locale,{basic:string;advanced:string;hint:string;all:string}>={
+   es:{basic:'Básico',advanced:'Avanzado',hint:'Ajustes más utilizados, con sus nombres técnicos conservados.',all:'Todos los keyvalues FGD, sin ocultar ninguna opción.'},
+   en:{basic:'Basic',advanced:'Advanced',hint:'Most common settings, keeping the native key names.',all:'All FGD keyvalues, without hiding any options.'},
+   ru:{basic:'Основные',advanced:'Все параметры',hint:'Часто используемые настройки.',all:'Все параметры FGD.'},
+   ko:{basic:'기본',advanced:'고급',hint:'주요 설정과 기본 키 이름.',all:'모든 FGD 속성.'},
+   zh:{basic:'基础',advanced:'高级',hint:'常用设置，保留原始键名。',all:'全部 FGD 属性。'},
+   pt:{basic:'Básico',advanced:'Avançado',hint:'Configurações comuns com nomes originais.',all:'Todos os campos do FGD.'},
+  };
+  const modeText=nativeText[locale]||nativeText.en;
+  const fullGuideText=({es:'Abrir guía ampliada',en:'Open full guide',ru:'Открыть большую справку',ko:'큰 가이드 열기',zh:'打开完整指南',pt:'Abrir guia ampliado'} as Record<Locale,string>)[locale];
   const remove=useEditor(s=>s.removeSelected),duplicate=useEditor(s=>s.duplicateSelected);
   const objects=useEditor(s=>s.project.objects);
   const unlink=useEditor(s=>s.detachBrushEntities);
@@ -253,6 +272,7 @@ export function Properties(){
   const attachedBrushCount=object?.kind==='entity'?objects.filter(o=>o.kind==='brush'&&o.entityId===object.id).length:0;
   const detachCandidates=objects.filter(o=>selectedIds.includes(o.id)&&(o.kind==='brush'&&!!o.entityId||o.kind==='entity'&&objects.some(b=>b.kind==='brush'&&b.entityId===o.id)));
   const world=useEditor(s=>s.project.world),changeWorld=useEditor(s=>s.changeWorld);
+  const importantKeys=object?.kind==='entity'?new Set(guideKeys(object.classname,cls).concat(['spawnflags'])):new Set<string>();
   if(!object)return <div className="properties"><div className="panel-header"><span><Settings2 size={15}/> {t('World Properties')}</span></div><div className="property-scroll">
     <div className="property-object-header"><span className="property-avatar"><Globe2 size={19}/></span><span><strong>worldspawn</strong><small>{t('Map environment')}</small></span></div>
     <div className="property-group-title">{t('WORLD SETTINGS')}</div>
@@ -298,7 +318,15 @@ export function Properties(){
           <small>{t('The start marker rests on the floor. The original spawn origin and exported coordinates remain unchanged.')}</small>
         </section>}
 
-        <div className="entity-property-intro">{cls?.description||point.classname}</div>        <EntityAssistant key={point.id} entity={point} definition={cls}/>
+        <div className="entity-mode-switch" role="group" aria-label={modeText.advanced}>
+          <button type="button" className={entityMode==='basic'?'active':''} aria-pressed={entityMode==='basic'} onClick={()=>setEntityMode('basic')}>{modeText.basic}</button>
+          <button type="button" className={entityMode==='advanced'?'active':''} aria-pressed={entityMode==='advanced'} onClick={()=>setEntityMode('advanced')}>{modeText.advanced}</button>
+        </div>
+        <p className="entity-mode-hint">{entityMode==='basic'?modeText.hint:modeText.all}</p>
+        {point.classname==='func_door'&&<DoorMotionControls entity={point}/>}
+        <div className="entity-property-intro">{cls?.description||point.classname}</div>
+        <EntityAssistant key={point.id} entity={point} definition={cls} showDoorControls={point.classname!=='func_door'}/>
+        <button type="button" className="gs-guide-expand property-guide-open" onClick={()=>setPropertyGuideOpen(true)}><BookOpenIcon size={15}/>{fullGuideText}</button>
         <div className="entity-quick-links">
           <Field label="targetname" value={point.props.targetname||''} onChange={v=>setProp(object.id,'targetname',v)}/>
           <Field label="target" value={point.props.target||''} onChange={v=>setProp(object.id,'target',v)}/>
@@ -310,7 +338,7 @@ export function Properties(){
             </select>
           </label>
         </div>
-        {Object.entries({...cls?.props,...Object.fromEntries(Object.keys(point.props).map(k=>[k,cls?.props[k]||{type:'string',label:k}]))}).filter(([k])=>!['target','targetname'].includes(k)).map(([key,field])=>{
+        {Object.entries({...cls?.props,...Object.fromEntries(Object.keys(point.props).map(k=>[k,cls?.props[k]||{type:'string',label:k}]))}).filter(([k])=>!['target','targetname'].includes(k)&&(entityMode==='advanced'||importantKeys.has(k))&&!(point.classname==='func_door'&&entityMode==='basic'&&['angles','angle','speed','wait','lip'].includes(k))).map(([key,field])=>{
           if(point.classname==='info_player_start'&&key==='angles')return null;
           const value=point.props[key]??field.defaultValue??'';
           if(field.type==='choices'&&field.options?.length)return <label key={key} className="entity-choice">{field.label}<select value={value} onChange={e=>setProp(object.id,key,e.target.value)}>
@@ -348,6 +376,13 @@ export function Properties(){
       </>}
       <div className="property-buttons"><button onClick={duplicate}><Copy size={13}/> {t('Duplicate')}</button><button className="danger" onClick={remove}><Trash2 size={13}/> {t('Delete')}</button></div>
     </div>
+    {propertyGuideOpen&&point&&createPortal(<div className="gs-guide-overlay" onMouseDown={e=>{if(e.target===e.currentTarget)setPropertyGuideOpen(false)}}>
+      <section className="gs-guide-dialog" role="dialog" aria-modal="true" aria-labelledby="property-guide-heading" onMouseDown={e=>e.stopPropagation()}>
+       <header className="gs-guide-header"><span className="gs-guide-header-icon"><BookOpenIcon size={21}/></span><div><h2 id="property-guide-heading">{fullGuideText} · {point.classname}</h2></div><button type="button" aria-label={t('Close')} onClick={()=>setPropertyGuideOpen(false)}>×</button></header>
+       <div className="gs-guide-body"><EntityAssistant key={`properties-guide-${point.id}`} entity={point} definition={cls} initiallyOpen/></div>
+       <footer className="gs-guide-footer"><span>{point.classname}</span><button type="button" onClick={()=>setPropertyGuideOpen(false)}>{t('Close')}</button></footer>
+      </section>
+     </div>,document.body)}
   </div>;
 }
 function FaceEditor({brush,face}:{brush:BrushObject,face:number}){

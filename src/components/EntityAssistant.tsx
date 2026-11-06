@@ -1,10 +1,11 @@
 import {useEffect,useMemo,useState} from 'react';
-import {BookOpen,ChevronDown,ChevronUp,Headphones,Link2,MoveUp,Search,Volume2,AlertTriangle} from 'lucide-react';
+import {BookOpen,ChevronDown,ChevronUp,Headphones,Link2,Search,Volume2,AlertTriangle} from 'lucide-react';
 import {useEditor} from '../store';
 import {connectionSearchText,entityConnectionLabel} from '../engine/entityNaming';
 import {localizedGuideForClass,entityCapabilities,guideKeys,editableSoundKeys,entityGuideWarnings} from '../engine/entityGuide';
 import type {FgdClass,PointEntity} from '../engine/types';
 import type {Locale} from '../i18n';
+import {DoorMotionControls} from './DoorMotionControls';
 
 type TextKey='title'|'use'|'how'|'example'|'quick'|'connect'|'none'|'audio'|'browse'|'search'|'noSound'|'more'|'settings'|'up'|'down'|'still'|'custom'|'note'|'soundPath'|'listen'|'fgd'|'unknown'|'error'|'close';
 const strings:Record<Locale,Record<TextKey,string>>={
@@ -55,7 +56,7 @@ function NativeSounds({entity,definition,update,locale}:{entity:PointEntity;defi
   <small className="ea-help">{tx.soundPath}. {tx.settings}: {keys.join(', ')}</small>
  </section>;
 }
-export function EntityAssistant({entity,definition,initiallyOpen=false,compact=false}:{entity:PointEntity|null;definition?:FgdClass;initiallyOpen?:boolean;compact?:boolean}){
+export function EntityAssistant({entity,definition,initiallyOpen=false,compact=false,showDoorControls=true}:{entity:PointEntity|null;definition?:FgdClass;initiallyOpen?:boolean;compact?:boolean;showDoorControls?:boolean}){
  const locale=useEditor(s=>s.locale) as Locale,tx=strings[locale]||strings.en;
  const updateStore=useEditor(s=>s.setObjectProp),connect=useEditor(s=>s.connectGameplay),objects=useEditor(s=>s.project.objects);
  const [opened,setOpened]=useState(initiallyOpen),[showAdvanced,setShowAdvanced]=useState(false),[targetQuery,setTargetQuery]=useState('');
@@ -84,8 +85,8 @@ export function EntityAssistant({entity,definition,initiallyOpen=false,compact=f
         {matchedTargets.map(target=><option value={target.id} key={target.id}>{entityConnectionLabel(target,objects)}</option>)}
       </select><small>{matchedTargets.length}/{targets.length} · {locale==='es'?'El nombre es del editor; targetname se asigna para Svengine.':'Editor names are searchable; targetname is used by Svengine.'}</small>
     </div>}
-    {classname==='func_door'&&<div className="ea-presets"><strong><MoveUp size={13}/>angle</strong><button type="button" onClick={()=>update('angle','-1')}>{tx.up} (-1)</button><button type="button" onClick={()=>update('angle','-2')}>{tx.down} (-2)</button><button type="button" onClick={()=>update('angle','0')}>{tx.still} (0)</button></div>}
-    {keys.filter(key=>key!=='target'&&key!=='targetname'&&!editableSoundKeys(classname,definition).includes(key)&&key!=='spawnflags'&&key!=='sounds').slice(0,7).map(key=><Field key={`${entity.id}:${key}`} entity={entity} field={key} definition={definition} update={update}/>)}
+    {classname==='func_door'&&showDoorControls&&<DoorMotionControls entity={entity} compact={compact}/>}
+    {keys.filter(key=>key!=='target'&&key!=='targetname'&&!editableSoundKeys(classname,definition).includes(key)&&key!=='spawnflags'&&key!=='sounds'&&!(classname==='func_door'&&['angle','angles','speed','wait','lip'].includes(key))).slice(0,7).map(key=><Field key={`${entity.id}:${key}`} entity={entity} field={key} definition={definition} update={update}/>)}
     {definition?.props.sounds?.options?.length? <Field entity={entity} field="sounds" definition={definition} update={update}/>:null}
     <NativeSounds entity={entity} definition={definition} update={update} locale={locale}/>
    </div>}

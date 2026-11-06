@@ -50,7 +50,7 @@ export function makeBrushEntity(objects:MapObject[],brushId:string,classname:'fu
   const id=uid();
   const isDoor=classname==='func_door';
   const props:Record<string,string>=isDoor?{
-    targetname:uniqueTargetname(objects,'door'),speed:'100',wait:'3',lip:'8',angle:'0',spawnflags:'0'
+    targetname:uniqueTargetname(objects,'door'),speed:'100',wait:'3',lip:'8',angles:'0 0 0',spawnflags:'0'
   }:{targetname:uniqueTargetname(objects,'button'),speed:'5',wait:'1',angle:'0',spawnflags:'1'};
   const ent:PointEntity={id,kind:'entity',name:classname,classname,position:[...selected.position],props,layer:'Gameplay'};
   return {id,objects:[...objects.map(o=>o.id===brushId?{...selected,entityId:id}:o),ent]};
