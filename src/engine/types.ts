@@ -10,7 +10,7 @@ export type Brush = {
 };
 export type PointEntity = {
   id: string; kind: 'entity'; name: string; classname: string; position: Vec3;
-  props: Record<string, string>; hidden?: boolean; locked?: boolean; layer?: string; group?:string; editorAlias?: string;
+  props: Record<string, string>; /** Editor-only surface normal for infodecal preview; never exported as a keyvalue. */ decalNormal?:Vec3; decalBrushId?:string; hidden?: boolean; locked?: boolean; layer?: string; group?:string; editorAlias?: string;
 };
 export type MapObject = Brush | PointEntity;
 export type TextureAsset = { name: string; wad: string; width: number; height: number; dataUrl: string; sourceId?:string; thumbUrl?:string };

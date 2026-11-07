@@ -1,7 +1,6 @@
 // Standalone smoke test that does not require Rollup/Vite binaries.
 import ts from 'typescript';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import {createRequire} from 'node:module';
 import {strict as assert} from 'node:assert';
@@ -12,11 +11,19 @@ function transpile(filename){
   const output=path.join(dst,filename.replace(/\.tsx?$/,'.js'));
   fs.mkdirSync(path.dirname(output),{recursive:true});
   const source=fs.readFileSync(path.join(root,filename),'utf8');
-  const text=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+  const text=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText
+    // Node's CommonJS loader cannot follow a .ts suffix once compiled to .js.
+    .replace(/require\((['"])(\.{1,2}\/[^'"]+)\.ts\1\)/g,(_match,quote,target)=>`require(${quote}${target}.js${quote})`);
   fs.writeFileSync(output,text);
 }
-for(const file of ['src/engine/types.ts','src/engine/entityAppearance.ts','src/engine/controls.ts','src/engine/geometry.ts','src/engine/exportMap.ts','src/engine/importMap.ts','src/engine/fgd.ts','src/engine/modeling.ts','src/engine/advancedModeling.ts','src/engine/prefabs.ts','src/engine/gameplay.ts','src/engine/npc.ts','src/engine/sound.ts','src/i18n.ts','src/engine/environment.ts','src/engine/skyEnclosure.ts','src/engine/architecture.ts','src/engine/smartMerge.ts','src/engine/cinematic.ts','src/engine/customNpc.ts','src/engine/terrain.ts','src/store.ts'])transpile(file);
+// The smoke test must keep pace with engine imports added after its creation.
+// Compile every engine module, not a stale manually-maintained import list.
+for(const filename of fs.readdirSync(path.join(root,'src/engine'))){
+  if(filename.endsWith('.ts'))transpile(`src/engine/${filename}`);
+}
+for(const filename of ['src/i18n.ts','src/store.ts'])transpile(filename);
 fs.writeFileSync(path.join(dst,'package.json'),JSON.stringify({type:'commonjs'}));
+try {
 const require=createRequire(path.join(dst,'test.cjs'));
 const geometry=require('./src/engine/geometry.js');
 const exportTool=require('./src/engine/exportMap.js');
@@ -28,7 +35,6 @@ function checkBrush(b){
  const map=exportTool.exportBrush(b);
  assert(map.split('\n').filter(line=>line.startsWith('(')).length>=4);
 }
-try{
  for(const shape of ['box','wedge','cylinder'])checkBrush(geometry.createBrush(shape,[0,0,64],[128,96,64]));
  for(const arch of geometry.createArch([0,0,128]))checkBrush(arch);
  const box=geometry.boxFromGroundDrag([3,15,0],[109,71,0],96,16,'SV_BRICK01');

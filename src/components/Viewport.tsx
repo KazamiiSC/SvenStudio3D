@@ -2,7 +2,7 @@ import {isWalkCrouchHeld} from '../engine/controls';
 import {keyboardVerticalDirection} from '../engine/cameraKeyboard';
 import {canCaptureMapCamera,canMoveInCameraCapture} from '../engine/cameraCapture';
 import { Canvas,useFrame,useThree } from '@react-three/fiber';
-import { Scan, EyeOff, Eye, Grid3x3, Magnet, Sun, Focus, Undo2, Redo2, Flashlight, Droplets } from 'lucide-react';
+import { Scan, EyeOff, Eye, Grid3x3, Magnet, SlidersHorizontal, Sun, Focus, Undo2, Redo2, Flashlight, Droplets } from 'lucide-react';
 import { OrbitControls,TransformControls,GizmoHelper,GizmoViewport,Html,Line } from '@react-three/drei';
 import { createContext,memo,useCallback,useContext,useEffect,useMemo,useRef,useState } from 'react';
 import * as THREE from 'three';
@@ -17,6 +17,7 @@ import {soundInfluence,validSoundReference} from '../engine/sound';
 import {parseLight,rgbHex,skyPreviewColor} from '../engine/environment';
 import {previewLocalLight,previewSunLight,previewDirection,previewCone} from '../engine/lightingPreview';
 import {useT} from '../i18n';
+import {constrainDecalToBrush} from '../engine/decalSurface';
 import {studioGuide} from '../engine/studioGuide';
 import {isUvDragGesture} from '../engine/controls';
 import {ContextHitProbe,ContextMenu,OrthoQuickTools,ghostContextOnlyRaycast,type SceneMenu} from './ViewportExtras';
@@ -294,6 +295,7 @@ function BrushVisual({object,optimizedLabels=false}:{object:Brush;optimizedLabel
   const selectTextureStudioFace=useEditor(s=>s.selectTextureStudioFace);
   const setTextureStudioOpen=useEditor(s=>s.setTextureStudioOpen);
   const texturePickerActive=useEditor(s=>s.texturePickerActive);
+  const activeDecal=useEditor(s=>s.activeDecal);
   const sampleTextureStudioFace=useEditor(s=>s.sampleTextureStudioFace);
   const update=useEditor(s=>s.updateObject);
   const beginTextureDrag=useEditor(s=>s.beginTextureDrag);
@@ -339,6 +341,13 @@ function BrushVisual({object,optimizedLabels=false}:{object:Brush;optimizedLabel
   const node=(<group ref={groupRef} position={pos} quaternion={quat} scale={scale}>
     <mesh geometry={geometry} material={materials} castShadow={shadows} receiveShadow={shadows} userData={{brushId:object.id}} onPointerDown={e=>{
       if(walkMode||e.button!==0||drawMode||placementShape||useEditor.getState().placementPrefabId||audioPlacement||environmentPlacement)return;
+      if(activeDecal&&e.face){
+        e.stopPropagation();e.nativeEvent.preventDefault();
+        const normal=e.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(e.object.matrixWorld)).normalize();
+        const at=e.point.clone().addScaledVector(normal,0.8); // GoldSrc decal trace needs the entity on the surface.
+        useEditor.getState().placeDecal(threeToGame(at),threeToGame(normal),object.id);
+        return;
+      }
       // Unlike Measure mode, ordinary selection used to steal native gizmo
       // pointerdowns when a ring/plane overlapped the selected brush.
       if(pointerOnSelectedGizmo(e))return;
@@ -378,14 +387,17 @@ function BrushVisual({object,optimizedLabels=false}:{object:Brush;optimizedLabel
       // A click on a selected brush must not collapse a multi-selection
       // while the user is grabbing a transform gizmo overlapping that brush.
       if(selected&&multiCount>1&&!e.shiftKey&&!e.ctrlKey&&!e.metaKey)return;
-      if(faceMode&&faceIndex!==null)selectTextureStudioFace(object.id,faceIndex,e.shiftKey||e.ctrlKey||e.metaKey);
+      if(faceMode&&faceIndex!==null){
+        selectTextureStudioFace(object.id,faceIndex,e.shiftKey||e.ctrlKey||e.metaKey);
+        document.dispatchEvent(new CustomEvent('svenstudio:uv-pin',{detail:{id:object.id,face:faceIndex,x:e.clientX,y:e.clientY}}));
+      }
       else selectObject(object.id,e.shiftKey||e.ctrlKey||e.metaKey,null);
     }} onDoubleClick={e=>{
-      if(walkMode||object.locked||object.hidden||architecturePlacement||drawMode||useEditor.getState().placementPrefabId)return;
+      if(walkMode||object.locked||object.hidden||architecturePlacement||drawMode||useEditor.getState().placementPrefabId||useEditor.getState().activeDecal)return;
       const faceIndex=geometry.userData.trianglesToFaces?.[e.faceIndex??0];if(faceIndex===undefined)return;
       e.stopPropagation();useEditor.getState().setGeometryMode('face');
       selectTextureStudioFace(object.id,faceIndex,false);setTextureStudioOpen(true);
-      document.dispatchEvent(new CustomEvent('svenstudio:texture-open',{detail:{x:e.clientX,y:e.clientY}}));
+      document.dispatchEvent(new CustomEvent('svenstudio:uv-pin',{detail:{id:object.id,face:faceIndex,x:e.clientX,y:e.clientY}}));
     }} onPointerMove={e=>{
       if(architecturePlacement){
         if(!eligibleWall)return;
@@ -558,7 +570,7 @@ function SpawnFallbackFigure({floorRelative}:{floorRelative:number}){
     </group>)}
   </group>;
 }
-function EntityStudioPreview({modelPath,gameDir,skin=0,body=0,animate=false,spawnFloorOffset}:{modelPath:string;gameDir:string;skin?:number;body?:number;animate?:boolean;spawnFloorOffset?:number}){
+function EntityStudioPreview({modelPath,gameDir,skin=0,body=0,animate=false,spawnFloorOffset,animationSpeed=1}:{modelPath:string;gameDir:string;skin?:number;body?:number;animate?:boolean;spawnFloorOffset?:number;animationSpeed?:number}){
   const [data,setData]=useState<StudioPreview|null>(null);
   useEffect(()=>{
     let active=true;setData(null);
@@ -573,7 +585,7 @@ function EntityStudioPreview({modelPath,gameDir,skin=0,body=0,animate=false,spaw
     <meshStandardMaterial color="#7095b5" transparent opacity={.42} wireframe/>
   </mesh>;
   if(!data)return null;
-  return <group position={[0,spawnFloorOffset===undefined?0:spawnFloorOffset-bottom,0]}><StudioModel data={data} skin={skin} body={body} animate={animate}/></group>;
+  return <group position={[0,spawnFloorOffset===undefined?0:spawnFloorOffset-bottom,0]}><StudioModel data={data} skin={skin} body={body} animate={animate} animationSpeed={animationSpeed}/></group>;
 }
 /** Three.js/GoldSrc light directions are in different coordinate systems.
  * The target is parented to the same entity group as the light; otherwise a
@@ -613,6 +625,69 @@ function SunLightPreview({entity,tint,brightness,shadows=false}:{entity:PointEnt
    <hemisphereLight args={[rgbHex(diffuse.rgb),'#303a49',strength.diffuseIntensity]}/>
  </>;
 }
+const decalPreviewTextures=new Map<string,THREE.Texture>();
+/** Native infodecal preview uses an editor-only normal. The MAP output still
+ * contains ONLY classname, origin and texture keyvalues. */
+function DecalVisual({object}:{object:PointEntity}){
+  const assets=useEditor(s=>s.decalAssets),selected=useEditor(s=>s.selectedIds.includes(object.id));
+  const select=useEditor(s=>s.selectObject),walking=useEditor(s=>s.walkMode);
+  const brush=useEditor(s=>s.project.objects.find(b=>b.id===object.decalBrushId));
+  const move=useEditor(s=>s.moveDecalOnSurface);
+  const [preview,setPreview]=useState<Vec3|null>(null);
+  const drag=useRef<{pointerId:number;plane:THREE.Plane;offset:THREE.Vector3;latest:Vec3|null;changed:boolean}|null>(null);
+  const asset=useMemo(()=>assets.find(a=>a.name.toLowerCase()===(object.props.texture||'').toLowerCase()),[assets,object.props.texture]);
+  const normal=object.decalNormal||[0,0,1];
+  const direction=useMemo(()=>gameToThree(normal).normalize(),[normal[0],normal[1],normal[2]]);
+  const quaternion=useMemo(()=>new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),direction),[direction]);
+  const dimensions:[number,number]=[Math.min(512,asset?.width||24),Math.min(512,asset?.height||24)];
+  const texture=useMemo(()=>{
+    if(!asset)return null;
+    const key=`${asset.wad}:${asset.name}:${asset.sourceId||'decals'}`;
+    const existing=decalPreviewTextures.get(key);if(existing)return existing;
+    const tex=new THREE.TextureLoader().load(asset.dataUrl);tex.colorSpace=THREE.SRGBColorSpace;
+    tex.magFilter=THREE.NearestFilter;tex.minFilter=THREE.LinearFilter;
+    decalPreviewTextures.set(key,tex);return tex;
+  },[asset]);
+  if(object.hidden)return null;
+  const movable=!walking&&!object.locked&&brush?.kind==='brush'&&!brush.hidden&&!brush.locked&&!!object.decalNormal;
+  const begin=(e:import('@react-three/fiber').ThreeEvent<PointerEvent>)=>{
+    if(walking||e.button!==0)return;
+    e.stopPropagation();e.nativeEvent.preventDefault();
+    select(object.id,e.shiftKey||e.ctrlKey||e.metaKey);
+    if(!movable||e.shiftKey||e.ctrlKey||e.metaKey)return;
+    const origin=gameToThree(object.position),plane=new THREE.Plane().setFromNormalAndCoplanarPoint(direction,origin);
+    const hit=e.ray.intersectPlane(plane,new THREE.Vector3());if(!hit)return;
+    drag.current={pointerId:e.pointerId,plane,offset:origin.sub(hit),latest:null,changed:false};
+    (e.target as unknown as Element)?.setPointerCapture?.(e.pointerId);
+  };
+  const during=(e:import('@react-three/fiber').ThreeEvent<PointerEvent>)=>{
+    const d=drag.current;if(!d||d.pointerId!==e.pointerId||brush?.kind!=='brush'||!object.decalNormal)return;
+    e.stopPropagation();
+    const hit=e.ray.intersectPlane(d.plane,new THREE.Vector3());if(!hit)return;
+    const desired=threeToGame(hit.add(d.offset));
+    const next=constrainDecalToBrush(brush,object.decalNormal,object.position,desired);
+    if(!next)return;
+    d.latest=next;d.changed=next.some((v,i)=>Math.abs(v-object.position[i])>.005);
+    setPreview(next);
+  };
+  const finish=(e:import('@react-three/fiber').ThreeEvent<PointerEvent>,cancel=false)=>{
+    const d=drag.current;if(!d||d.pointerId!==e.pointerId)return;
+    e.stopPropagation();drag.current=null;
+    if(!cancel&&d.changed&&d.latest)move(object.id,d.latest);
+    setPreview(null);
+    (e.target as unknown as Element)?.releasePointerCapture?.(e.pointerId);
+  };
+  const handlers={onPointerDown:begin,onPointerMove:during,onPointerUp:(e:import('@react-three/fiber').ThreeEvent<PointerEvent>)=>finish(e),onPointerCancel:(e:import('@react-three/fiber').ThreeEvent<PointerEvent>)=>finish(e,true)};
+  return <group position={gameToThree(preview||object.position)} quaternion={quaternion}>
+    {asset?<mesh position={[0,0,0.6]} renderOrder={4} {...handlers}>
+      <planeGeometry args={dimensions}/><meshBasicMaterial map={texture} transparent opacity={1} alphaTest={.01} side={THREE.DoubleSide} depthWrite={false} polygonOffset polygonOffsetFactor={-3}/>
+    </mesh>:!walking&&<mesh {...handlers}>
+      <circleGeometry args={[9,20]}/><meshBasicMaterial color="#ffb548" transparent opacity={.8} depthWrite={false} side={THREE.DoubleSide}/>
+    </mesh>}
+    {!walking&&selected&&<mesh position={[0,0,1]} raycast={()=>null}><ringGeometry args={[Math.max(dimensions[0],dimensions[1])*.48,Math.max(dimensions[0],dimensions[1])*.51,32]}/><meshBasicMaterial color="#53f0b9" side={THREE.DoubleSide} transparent opacity={.9} depthWrite={false}/></mesh>}
+  </group>;
+}
+
 function EntityVisual({object,routeText,routeTint,hideLabel=false,activeLight=true,activeModel=true,showMarker=true,optimizedLabels=false,spawnGround}:{object:PointEntity;routeText?:string;routeTint?:string;hideLabel?:boolean;activeLight?:boolean;activeModel?:boolean;showMarker?:boolean;optimizedLabels?:boolean;spawnGround?:number}){
   const showNames=useEditor(s=>s.showEntityNames);
   const walking=useEditor(s=>s.walkMode);
@@ -661,7 +736,7 @@ function EntityVisual({object,routeText,routeTint,hideLabel=false,activeLight=tr
       <mesh position={[21,0,0]} rotation={[0,0,-Math.PI/2]}><coneGeometry args={[5,12,9]}/><meshBasicMaterial color="#a5ffda"/></mesh>
     </group>}
     {showMarker&&isAudio&&<group scale={appearance.markerSize}><mesh rotation={[Math.PI/2,0,0]}><torusGeometry args={[12,2.7,8,24]}/><meshBasicMaterial color={selected?'#fff0aa':'#67dfee'} toneMapped={false} depthTest={appearance.markerOcclusion!=='xray'} depthWrite={false}/></mesh><mesh><sphereGeometry args={[6,8,8]}/><meshBasicMaterial color="#7ee6e8" depthTest={appearance.markerOcclusion!=='xray'} depthWrite={false}/></mesh></group>}
-    {(showMarker||walking&&walk.showModels)&&activeModel&&modelPath&&!isLight&&<group onPointerDown={e=>{if(e.button!==0||object.locked||drawMode||placementShape||audioPlacement||useEditor.getState().architecturePlacement)return;if(pointerOnSelectedGizmo(e))return;e.stopPropagation();selectObject(object.id,e.shiftKey||e.ctrlKey||e.metaKey)}} rotation={[0,THREE.MathUtils.degToRad(isSpawn?yaw:Number(object.props.angles?.split(' ')[1])||0),0]}><EntityStudioPreview modelPath={modelPath} gameDir={gameDir} skin={Number(object.props.skin)||0} body={Number(object.props.body)||0} animate={isSpawn||walking&&object.classname.startsWith('monster_')} spawnFloorOffset={isSpawn?groundOffset:undefined}/></group>}
+    {(showMarker||walking&&walk.showModels)&&activeModel&&modelPath&&!isLight&&!(walking&&isSpawn)&&<group onPointerDown={e=>{if(e.button!==0||object.locked||drawMode||placementShape||audioPlacement||useEditor.getState().architecturePlacement)return;if(pointerOnSelectedGizmo(e))return;e.stopPropagation();selectObject(object.id,e.shiftKey||e.ctrlKey||e.metaKey)}} rotation={[0,THREE.MathUtils.degToRad(isSpawn?yaw:Number(object.props.angles?.split(' ')[1])||0),0]}><EntityStudioPreview modelPath={modelPath} gameDir={gameDir} skin={Number(object.props.skin)||0} body={Number(object.props.body)||0} animate={isSpawn||walking&&object.classname.startsWith('monster_')} animationSpeed={isSpawn?1.4:1} spawnFloorOffset={isSpawn?groundOffset:undefined}/></group>}
     {walking&&walk.showModels&&object.classname.startsWith('monster_')&&(!modelPath||!gameDir)&&<mesh position={[0,30,0]} raycast={()=>null}>
       <capsuleGeometry args={[12,36,6,10]}/><meshStandardMaterial color="#7095b5" transparent opacity={.42} wireframe/>
     </mesh>}
@@ -1214,17 +1289,20 @@ function CameraController(){
       {LEFT:THREE.MOUSE.PAN,MIDDLE:THREE.MOUSE.DOLLY,RIGHT:-1 as THREE.MOUSE}}/>;
 }
 function Ground(){
-  const show=useEditor(s=>s.showGrid),snap=useEditor(s=>s.snap);
+  const show=useEditor(s=>s.showGrid),snap=useEditor(s=>s.gridDisplayStep);
   const selected=useEditor(s=>s.selected),objects=useEditor(s=>s.project.objects);
   const target=objects.find(o=>o.id===selected);
-  const span=snap*256; // Exact grid cells, never a visual spacing different from Snap.
+  // HF15 Preview 1 overlaid a coarse helper beneath fine grid sizes to extend
+  // the visible area. That produced a darker square patch when the two helpers
+  // stacked after changing the grid size or selecting a brush.
+  // Use one larger helper instead so the visible grid stays continuous.
+  const minSpan=snap<=1?1024:snap<16?2048:0;
+  const span=Math.min(8192,Math.max(snap*256,minSpan));
+  const divisions=Math.max(16,Math.round(span/Math.max(1,snap)));
   const center=target?gameToThree(target.position):new THREE.Vector3();
   const step=snap*128;
   const x=Math.round(center.x/step)*step,z=Math.round(center.z/step)*step;
-  return show?<>
-    <gridHelper args={[span,256,'#57799a','#30445c']} position={[x,-.15,z]}/>
-    {snap<16&&<gridHelper args={[8192,128,'#38506b','#27364b']} position={[0,-.22,0]}/>}
-  </>:null;
+  return show?<gridHelper args={[span,divisions,'#57799a','#30445c']} position={[x,-.15,z]}/>:null;
 }
 /**
  * Move every selected brush/entity in real time, then commit ONE undoable change
@@ -1423,6 +1501,7 @@ function SelectionTransformControls(){
         quaternion:o.kind==='brush'?toRenderQuaternion(o.rotation):new THREE.Quaternion(),
         scale:o.kind==='brush'?new THREE.Vector3(o.scale[0],o.scale[2],o.scale[1]):new THREE.Vector3(1,1,1),kind:o.kind}]))};
   };
+  const isGridSnapping=()=>transformGesture(transformMode,gizmoKeys.current,settings,snapping,false).grid;
   const poseFor=(original:Pose)=>{
     const session=drag.current!,p=pivot.current;
     const position=original.position.clone(),quaternion=original.quaternion.clone(),scale=original.scale.clone();
@@ -1434,7 +1513,7 @@ function SelectionTransformControls(){
       quaternion.premultiply(rotation);
     }else{
       let factor=p.scale.clone();factor.set(Math.max(.05,Math.abs(factor.x)),Math.max(.05,Math.abs(factor.y)),Math.max(.05,Math.abs(factor.z)));
-      if(session.singleBrush&&single?.kind==='brush'&&anchor!=='center'&&(snapping||gizmoKeys.current.ctrl))
+      if(session.singleBrush&&single?.kind==='brush'&&anchor!=='center'&&isGridSnapping())
         factor=snapBrushScaleFactors(single,original.scale,factor,snap);
       if(session.singleBrush)position.copy(anchoredPose(original.position,original.quaternion,session.start,factor));
       else position.sub(session.start).multiply(factor).add(p.position);
@@ -1444,7 +1523,7 @@ function SelectionTransformControls(){
   };
   const preview=()=>{
     if(!drag.current||!pivot.current)return;
-    if(drag.current.mode==='translate'&&(snapping||gizmoKeys.current.ctrl)){
+    if(drag.current.mode==='translate'&&isGridSnapping()){
       // Snap the displacement relative to its drag origin, not the pivot's
       // absolute world coordinates. The gizmo and brush stay aligned.
       const displacement=threeToGame(pivot.current.position.clone().sub(drag.current.start));
@@ -1465,7 +1544,7 @@ function SelectionTransformControls(){
       const next=poseFor(original),o=members.find(item=>item.id===id);
       if(!o)continue;
       let position=threeToGame(next.position);
-      if(session.mode==='translate'&&(snapping||gizmoKeys.current.ctrl)){
+      if(session.mode==='translate'&&isGridSnapping()){
         const moved=threeToGame(pivot.current.position.clone().sub(session.start));
         position=o.position.map((v,i)=>v+Math.round(moved[i]/snap)*snap) as Vec3;
       }
@@ -2475,7 +2554,7 @@ function Scene({onContextMenu}:{onContextMenu:(menu:SceneMenu)=>void}){
     {!walkMode&&objects.filter((obj):obj is Brush=>obj.kind==='brush'&&!!obj.hidden&&(ghostHidden||obj.id===focusHiddenId)).map(obj=><GhostBrush key={`ghost-${obj.id}`} object={obj}/>)}
     {!walkMode&&fpsHudVisible&&mapLabelSettings.diagnostics&&<MapPerformanceMonitor labelsEnabled={showEntityNames} mode={mapLabelSettings.mode}/>}
     {optimizedLabels&&!walkMode&&<MapEntityLabelOverlay anchors={mapLabelAnchors} appearance={appearance} settings={mapLabelSettings}/>}
-    {objects.map(obj=>{if(obj.kind==='brush')return <MemoBrushVisual key={obj.id} object={obj} optimizedLabels={optimizedLabels}/>;
+    {objects.map(obj=>{if(obj.kind==='entity'&&obj.classname==='infodecal')return <DecalVisual key={obj.id} object={obj}/>;if(obj.kind==='brush')return <MemoBrushVisual key={obj.id} object={obj} optimizedLabels={optimizedLabels}/>;
       const routes=routeLookup.get(obj.id)||[];
       if(routeSolo&&obj.classname==='path_waypoint'&&!routes.some(r=>r.key===routeSolo))return null;
       const isLightSource=obj.classname==='light'||obj.classname==='light_spot'||obj.classname==='light_environment';
@@ -2489,7 +2568,6 @@ function Scene({onContextMenu}:{onContextMenu:(menu:SceneMenu)=>void}){
     })}
     <LeakTrace3D/>
     {!walkMode&&<><MeasurementOverlay/><EntityConnections/><NpcRouteLines/><CinematicRouteLines/><AudioRadiusGuides/><SelectionTransformControls/><BlenderModalTransform/></>}
-    <TextureUVHandles/>
     <CameraController/>
     {!walkMode&&axes.visible&&<GizmoHelper alignment="top-left" margin={[sceneSize.width*axes.x/100,sceneSize.height*axes.y/100]}>
       <group ref={axesRef} scale={axes.scale}><GizmoViewport axisColors={['#f46e78','#84d899','#73b8ff']} labelColor="white"/></group>
@@ -2526,6 +2604,7 @@ export function Viewport(){
   const t=useT();
   const locale=useEditor(s=>s.locale);const guide=studioGuide(locale);
   const cinematicPlacementFor=useEditor(s=>s.cinematicPlacementFor);
+  const activeDecalForHud=useEditor(s=>s.activeDecal);
   const doctorTrace=useMapDoctorState(s=>s.trace),doctorTraceVisible=useMapDoctorState(s=>s.traceVisible),setDoctorTraceVisible=useMapDoctorState(s=>s.setTraceVisible);
   const [walkSettings,setWalkSettings]=useState(()=>readPreviewSettings('walk-preview-2',normalizeWalkPreview));
   const [goldsrcSettings,setGoldsrcSettings]=useState(()=>readPreviewSettings('goldsrc-preview-2',normalizeGoldSrcPreview));
@@ -2592,6 +2671,14 @@ export function Viewport(){
   const routePlacementFor=useEditor(s=>s.routePlacementFor);
   const routeSolo=useEditor(s=>s.routeSolo),setRouteSolo=useEditor(s=>s.setRouteSolo);
   const snap=useEditor(s=>s.snap),setSnap=useEditor(s=>s.setSnap);
+  const gridDisplayStep=useEditor(s=>s.gridDisplayStep),setGridDisplayStep=useEditor(s=>s.setGridDisplayStep);
+  const setControls=useEditor(s=>s.setControls);
+  const [precisionOpen,setPrecisionOpen]=useState(false);
+  const [precisionLeft,setPrecisionLeft]=useState(70);
+  useEffect(()=>{if(!precisionOpen)return;
+    const close=(e:KeyboardEvent)=>{if(e.key==='Escape')setPrecisionOpen(false)};
+    window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close);
+  },[precisionOpen]);
   const snapping=useEditor(s=>s.snapping),toggleSnap=useEditor(s=>s.toggleSnap);
   const showGrid=useEditor(s=>s.showGrid),setFlag=useEditor(s=>s.setFlag);
   const showEntityNames=useEditor(s=>s.showEntityNames);
@@ -2604,9 +2691,11 @@ export function Viewport(){
   return <PreviewContext.Provider value={previewContext}><div className="viewport-frame">
     {!walkMode&&<HudCustomizer/>}
     {!walkMode&&!hudEditing&&<TextureStudioPanel/>}
+    <TextureUVHandles/>
     {hudEditing&&<div className="hud-edit-shield" aria-hidden="true"/>}
     {!walkMode&&<HudWidget id="alerts">
       <div className="hud-alert-group">
+        {activeDecalForHud&&<div className="primitive-placement-hud"><strong>Decal Studio: {activeDecalForHud}</strong><span>{locale==='es'?'Clic sobre un brush para colocar · Esc termina':'Click a brush surface to place · Esc to finish'}</span></div>}
         {environmentPlacement&&<div className="primitive-placement-hud"><strong>{t('Place in 3D')}: {environmentPlacement.kind}</strong><span>{t('Click a surface to place')} · Esc {t('Cancel')}</span></div>}
         {audioPlacement&&<div className="primitive-placement-hud"><strong>{t('Place in 3D')}: {audioPlacement.classname}</strong><span>{t('Click a surface to place')} · Esc {t('Cancel')}</span></div>}
         {(pendingNpcClass||routePlacementFor)&&<div className="primitive-placement-hud"><strong>{routePlacementFor?`path_waypoint · ${t('NPC Route')}`:`${t('Place NPC')}: ${pendingNpcClass}`}</strong><span>{t('Click a surface to place')} · Esc {t('Cancel')}</span></div>}
@@ -2629,12 +2718,27 @@ export function Viewport(){
     {!walkMode&&<HudWidget id="status">
       <div className="viewport-label"><span className="viewport-bullet"/> {t(cameraLabel)} <span className="viewport-sep">/</span> {drawMode?`${t('Draw')} ${drawPlane.toUpperCase()} (${drawHeight}u) · X/Y/Z: ${t('Plane')} · F: ${t('Surface')}` :t('Textured')} <span className="viewport-sep">/</span> {t(faceMode?'Face':'Object')} {t('selection')}</div>
     </HudWidget>}
-    {!walkMode&&<HudWidget id="view"><div className="viewport-controls-row">
+    {!walkMode&&<HudWidget id="view" className={precisionOpen?'hud-popup-open':''}><div className="viewport-grid-controls-wrap"><div className="viewport-controls-row">
       <button type="button" className="projection-toggle" onClick={()=>projection('projection')} title={t('Switch orthographic / perspective')} aria-label={t('Switch orthographic / perspective')}><Scan size={16}/><span className="hud-projection-label">{t(cameraLabel.includes('Ortho')||cameraLabel==='Orthographic'?'Orthographic':'Perspective')}</span></button>
       <button type="button" className={`lighting-viewport-toggle ${environmentPreview?'active':''}`} onClick={()=>setEnvironmentPreview(!environmentPreview)} title={t('Approximate lighting preview')} aria-label={t('Lighting Preview')} aria-pressed={environmentPreview}><Sun size={16}/></button>
       <button type="button" className={`grid-visibility ${showGrid?'active':''}`} aria-label={t('Grid visibility')} aria-pressed={showGrid} title={t('Grid visibility')} onClick={()=>setFlag('showGrid',!showGrid)}><Grid3x3 size={16}/></button>
-      <label className="viewport-grid-select" title={t('Grid size')}><Grid3x3 size={13}/><select aria-label={t('Grid size')} value={snap} onChange={e=>setSnap(Number(e.target.value))}>{GRID_STEPS.map(step=><option key={step} value={step}>{step}u</option>)}</select></label>
+      <label className="viewport-grid-select" title={t('Visual grid')}><Grid3x3 size={13}/><select aria-label={t('Visual grid')} value={gridDisplayStep} onChange={e=>setGridDisplayStep(Number(e.target.value))}>{GRID_STEPS.map(step=><option key={step} value={step}>{step}u</option>)}</select></label>
       <button type="button" className={`grid-snap ${snapping?'active':''}`} aria-pressed={snapping} aria-label={t('Snap to grid')} title={t('Snap to grid')} onClick={toggleSnap}><Magnet size={16}/></button>
+      <label className="viewport-grid-select viewport-edit-step" title={t('Move / draw step')}><span aria-hidden="true">±</span><select aria-label={t('Move / draw step')} value={snap} onChange={e=>setSnap(Number(e.target.value))}>{GRID_STEPS.map(step=><option key={step} value={step}>{step}u</option>)}</select></label>
+      <button type="button" className={precisionOpen?'hud-pressed':''} aria-expanded={precisionOpen} aria-label={t('Grid precision settings')} title={t('Grid precision settings')} onClick={e=>{
+        if(!precisionOpen){
+          const toolbar=e.currentTarget.closest('.viewport-grid-controls-wrap')?.getBoundingClientRect();
+          const viewport=e.currentTarget.closest('.viewport-frame')?.getBoundingClientRect();
+          const trigger=e.currentTarget.getBoundingClientRect();
+          if(toolbar&&viewport){
+            // Anchor below the settings button, not below the whole HUD row.
+            // Avoid the vertical tool rail and keep the popup on-screen.
+            const available=viewport.right-toolbar.left-320;
+            setPrecisionLeft(Math.max(68,Math.min(trigger.left-toolbar.left,available)));
+          }
+        }
+        setPrecisionOpen(value=>!value);
+      }}><SlidersHorizontal size={16}/></button>
       <div className="hud-tools-separator"/>
       {isBspRecovered&&<button type="button" className={hideRecoveryNull?'hud-pressed':''} title={t(hideRecoveryNull?'Show NULL faces':'Hide NULL faces')} aria-label={t('Hide NULL faces')} aria-pressed={hideRecoveryNull} onClick={()=>setHideRecoveryNull(v=>!v)}>{hideRecoveryNull?<EyeOff size={16}/>:<Eye size={16}/>}</button>}
       <button type="button" title={t('Frame all')} aria-label={t('Frame all')} onClick={()=>projection('frameAll')}><Focus size={16}/></button>
@@ -2642,6 +2746,16 @@ export function Viewport(){
       <button type="button" className={textureStudioOpen?'hud-pressed':''} aria-label="Texture Studio" title="Texture Studio · UV" onClick={()=>{const editor=useEditor.getState();editor.setTextureStudioOpen(!editor.textureStudioOpen);if(editor.geometryMode!=='face')editor.setGeometryMode('face')}}>UV</button>
       <button type="button" title={t('Undo')} aria-label={t('Undo')} disabled={!historyCount} onClick={undo}><Undo2 size={16}/></button>
       <button type="button" title={t('Redo')} aria-label={t('Redo')} disabled={!futureCount} onClick={redo}><Redo2 size={16}/></button>
+    </div>
+      {precisionOpen&&<section className="viewport-precision-panel" style={{left:precisionLeft}} role="group" aria-label={t('Grid precision settings')} onPointerDown={e=>e.stopPropagation()}>
+        <div className="viewport-precision-head"><strong>{t('Grid precision settings')}</strong><button type="button" aria-label={t('Close precision settings')} onClick={()=>setPrecisionOpen(false)}>×</button></div>
+        <label>{t('Visual grid')}<select value={gridDisplayStep} onChange={e=>setGridDisplayStep(Number(e.target.value))}>{GRID_STEPS.map(step=><option key={step} value={step}>{step}u</option>)}</select></label>
+        <label>{t('Move / draw step')}<select value={snap} onChange={e=>setSnap(Number(e.target.value))}>{GRID_STEPS.map(step=><option key={step} value={step}>{step}u</option>)}</select></label>
+        <label>{t('Rotation step')}<select value={controls.rotationSnapDegrees} onChange={e=>setControls({rotationSnapDegrees:Number(e.target.value)})}>{[0,1,5,10,15,30,45,90].map(v=><option key={v} value={v}>{v===0?t('Free rotation'):`${v}°`}</option>)}</select></label>
+        <label>{t('Scale step')}<select value={controls.scaleSnapStep} onChange={e=>setControls({scaleSnapStep:Number(e.target.value)})}>{[0,.01,.02,.05,.1,.25,.5,1].map(v=><option key={v} value={v}>{v===0?t('Free scaling'):`${v}×`}</option>)}</select></label>
+        <small>{t('The visible grid does not limit editing precision.')}</small>
+        <small>{t('Shift: temporarily free/fine move. Ctrl: temporarily use snapped steps.')}</small>
+      </section>}
     </div></HudWidget>}
     {!walkMode&&showPreviewOptions&&<div className="walk-render-panel" onPointerDown={e=>e.stopPropagation()}>
       <div className="walk-render-panel-header"><strong>{t('Gameplay Test settings')}</strong><button type="button" onClick={()=>setShowPreviewOptions(false)}>×</button></div>
@@ -2702,7 +2816,7 @@ export function Viewport(){
     {!walkMode&&(modal||hudEditing)&&<HudWidget id="transform"><div className="modal-transform-hud"><span className="modal-command">{modal?.mode==='translate'?'G':modal?.mode==='rotate'?'R':'S'}</span><span><strong>{t(modal?.mode==='translate'?'Move':modal?.mode==='rotate'?'Rotate':'Scale')} · Blender</strong><small>{t('Shift + mouse: fine · Ctrl + mouse: snap · Alt + mouse: alternate · X/Y/Z: axis · Enter/click: confirm · Esc: cancel')}</small><em id="studio-modal-modifiers">{t('Normal drag')}</em></span><b id="studio-modal-readout">0</b></div></HudWidget>}
     {!walkMode&&(mapFpsEnabled||hudEditing)&&<HudWidget id="fps"><div className="map-fps-mount" data-map-fps-mount>{!mapFpsEnabled?'— FPS':null}</div></HudWidget>}
     {!walkMode&&<HudWidget id="help"><div className="viewport-hotkeys">{t(placementShape||placementPrefabId?'Click a surface to place · Esc cancel':drawMode?'Arrastrar · Dibujar | X: plano YZ · Y: plano XZ · Z: plano XY · Esc cancelar':controls.cameraPreset==='blender'?'RMB · Mirar | MMB · Orbit | Shift+MMB · Pan':'RMB arrastrar · Mirar | LMB · Pan | MMB · Zoom')} <span> | </span> {t(flyMode?'Fly/Walk ON · WASD · Q/E down/up · Esc exit':'RMB · Mirar · WASD mover · Q/E bajar/subir · rueda zoom')}</div></HudWidget>}
-    {!walkMode&&(!modal||hudEditing)?<HudWidget id="stats"><div className="viewport-stats"><span>{count} {t('objects')}</span>{selectedCount>1&&<span>{selectedCount} {t('selected')} · {t('TRANSFORM')} {mode==='select'?t('Ready'):t(mode)}</span>}<span>{mode.toUpperCase()}</span><span>Grid {snap}</span></div></HudWidget>:null}
+    {!walkMode&&(!modal||hudEditing)?<HudWidget id="stats"><div className="viewport-stats"><span>{count} {t('objects')}</span>{selectedCount>1&&<span>{selectedCount} {t('selected')} · {t('TRANSFORM')} {mode==='select'?t('Ready'):t(mode)}</span>}<span>{mode.toUpperCase()}</span><span>{t('Visual grid')} {gridDisplayStep}u · {t('Move / draw step')} {snapping?`${snap}u`:t('Off')}</span></div></HudWidget>:null}
     {!walkMode&&hudEditing&&<HudWidget id="axes" editPlaceholder><div/></HudWidget>}
 
   </div></PreviewContext.Provider>;

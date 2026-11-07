@@ -3,6 +3,7 @@ import type { Brush,Face,PointEntity,Project,Vec3 } from './types';
 import {uid} from './types';
 import { orientFaces } from './geometry';
 import { validateBrush } from './exportMap';
+import { importedBrushEntityAnchor } from './brushEntityAnchor';
 const vec=(a:Vec3)=>new THREE.Vector3(...a);
 const rawVec=(v:THREE.Vector3):Vec3=>[v.x,v.y,v.z];
 type Plane={n:THREE.Vector3; d:number; texture:string; uShift:number;vShift:number;uScale:number;vScale:number;rotation:number;uAxis?:Vec3;vAxis?:Vec3};
@@ -104,11 +105,14 @@ export function inspectMapImport(contents:string,fileName='Imported Map'):MapImp
     const kv=Object.fromEntries([...outside.matchAll(/"([^"\n]+)"\s+"([^"\n]*)"/g)].map(m=>[m[1],m[2]]));
     const classname=kv.classname|| (index===0?'worldspawn':'info_target');
     const objId=uid();
+    let entity:PointEntity|undefined;
+    const linkedBrushes:Brush[]=[];
     if(classname==='worldspawn'){world=kv;}else{
       const origin=kv.origin?.trim().split(/\s+/).map(Number);
       const position:Vec3=origin?.length===3&&origin.every(Number.isFinite)?origin as Vec3:[0,0,0];
       const {classname:_,origin:__, ...props}=kv;
-      objects.push({id:objId,kind:'entity',name:classname,classname,position,props,layer:'Gameplay'});
+      entity={id:objId,kind:'entity',name:classname,classname,position,props,layer:'Gameplay'};
+      objects.push(entity);
     }
     for(const [brushIndex,b] of childBlocks.entries()){
       totalBrushes++;
@@ -141,6 +145,15 @@ export function inspectMapImport(contents:string,fileName='Imported Map'):MapImp
       }
       importedBrushes.push({sourceBrushIndex:totalBrushes-1,brush});
       objects.push(brush);
+      if(entity)linkedBrushes.push(brush);
+    }
+    // Brush entities exported by GoldSrc commonly do NOT carry an `origin`
+    // keyvalue. Their brushes remain in world coordinates; the editor marker
+    // must follow those brushes, rather than being placed at [0,0,0].
+    // Keep a real explicit origin untouched (origin-brush pivot, etc.).
+    if(entity && kv.origin === undefined){
+      const anchor=importedBrushEntityAnchor(linkedBrushes);
+      if(anchor)entity.position=anchor;
     }
   });
   const wadNames=(world.wad||'').split(';').filter(Boolean).map(p=>p.split(/[\\/]/).at(-1)||p);

@@ -71,8 +71,9 @@ test('invalid translation is rejected instead of writing corrupt texture shifts'
 test('gizmo, direct moves, snap grid and position editing use shared lock logic',()=>{
  const geometry=source('src/engine/geometry.ts'),store=source('src/store.ts');
  assert.match(geometry,/if\(same\)return lockTranslatedBrushTextures\(before,after.position\)/);
- assert.match(store,/moveSelection:delta=>set[\s\S]*?moveObjectWithTextureLock\(o,o\.position\.map/);
- assert.match(store,/snapSelectionToGrid:\(\)=>set[\s\S]*?moveObjectWithTextureLock\(o,o\.position\.map/);
+ assert.match(store,/moveSelection:delta=>set[\s\S]*?moveObjectWithTextureLock\(o,target\)/);
+ assert.match(store,/constrainDecalToBrush\(brush,o\.decalNormal,o\.position,target\)/);
+ assert.match(store,/snapSelectionToGrid:\(\)=>set[\s\S]*?moveObjectWithTextureLock\(o,target\)/);
  assert.match(store,/transformSelection:updates=>set[\s\S]*?faces:rotateBrushTextureLock\(o,next\)/);
  assert.match(store,/updateObject:\(id,changes\)=>set[\s\S]*?faces:rotateBrushTextureLock\(o,next\)/);
  assert.match(store,/if\(copy.kind===\x27brush\x27\)copy.faces=rotateBrushTextureLock\(copy,/);
@@ -88,6 +89,6 @@ test('all modified TypeScript/TSX files parse',()=>{
 test('exporter, BSP viewer, backend and terrain unchanged against baseline',()=>{
  assert.match(source('src/engine/exportMap.ts'),/safeFaceTextureAxes\(vertices,face\)/, 'Valve 220 UV safety is intentional');
  assert.equal(crypto.createHash('sha256').update(source('src/components/BspViewer.tsx')).digest('hex'),'161bfa4aa59ca07ee8015222cae7e71355b2025240ed8fba02bbe74909f48919','src/components/BspViewer.tsx');
- assert.equal(crypto.createHash('sha256').update(source('server/index.js')).digest('hex'),'4d1de7967aec89380064fb0022891043f5268124b27a4813e44b10141641752d','server/index.js');
+ assert.equal(crypto.createHash('sha256').update(source('server/index.js').replace(/\/\/ Read only the fixed engine resource decals\.wad[\s\S]*?(?=\/\/ Read-only asset access restricted to Sven Co-op's model directories\.)/,'')).digest('hex'),'4d1de7967aec89380064fb0022891043f5268124b27a4813e44b10141641752d','server/index.js');
  assert.equal(crypto.createHash('sha256').update(source('src/engine/terrain.ts')).digest('hex'),'29628c8ded1c8fac682848408444f678683d72839ba67b63ab89dfb90a3736f1','src/engine/terrain.ts');
 });

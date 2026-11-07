@@ -54,5 +54,5 @@ test('new UI is draggable and isolated from viewport HUD CSS',()=>{
  assert.match(styles,/\.texture-studio-panel\{/);
  assert.match(styles,/\.texture-uv-handle\{/);
  assert.match(ui,/setPointerCapture/);
- assert.match(ui,/svenstudio:texture-panel-pos/);
+ assert.match(ui,/svenstudio:texture-panel-screen-pos-v2/);
 });

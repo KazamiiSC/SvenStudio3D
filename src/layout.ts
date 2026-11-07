@@ -49,16 +49,60 @@ type LayoutState = {
 };
 const defaults = () => ({
   sides:{assets:'left',explorer:'right',properties:'right',console:'bottom'} as Record<DockPanelId,DockSide>,
-  order:['assets','explorer','properties','console'] as DockPanelId[],
-  visible:{assets:false,explorer:true,properties:true,console:false} as Record<DockPanelId,boolean>,
-  toolbarDock:'left' as DockSide,
+  order:['assets','properties','explorer','console'] as DockPanelId[],
+  visible:{assets:true,explorer:true,properties:true,console:false} as Record<DockPanelId,boolean>,
+  toolbarDock:'top' as DockSide,
   toolbarGroups:[...TOOLBAR_GROUPS],
-  compactTools:true,floatRailSide:'left' as 'left'|'right',
+  compactTools:false,floatRailSide:'left' as 'left'|'right',
   widths:{left:254,right:302},heights:{top:192,bottom:168},
   weights:{assets:1,explorer:1,properties:1,console:1},
   uiScale:1,accent:'nebula' as Accent,fontScale:1,performancePreset:'balanced' as PerformancePreset
 });
 const clamp=(n:number,min:number,max:number)=>Math.min(max,Math.max(min,n));
+const panelIds:DockPanelId[]=['assets','explorer','properties','console'];
+const dockSides:DockSide[]=['left','right','top','bottom'];
+const finiteOr=(value:unknown,fallback:number,min:number,max:number):number=>
+  typeof value==='number'&&Number.isFinite(value)?clamp(value,min,max):fallback;
+const recordOrEmpty=(value:unknown):Record<string,unknown>=>
+  value&&typeof value==='object'&&!Array.isArray(value)?value as Record<string,unknown>:{};
+
+/** Older/corrupted browser settings must never replace complete dock records or
+ * leave NaN dimensions in the workspace. Keep valid user positions/preferences. */
+export function mergeSavedLayout(saved:unknown,current:LayoutState):LayoutState{
+  const data=recordOrEmpty(saved);
+  const base=defaults();
+  const originalSides=recordOrEmpty(data.sides);
+  const originalVisible=recordOrEmpty(data.visible);
+  const originalWeights=recordOrEmpty(data.weights);
+  const originalWidths=recordOrEmpty(data.widths);
+  const originalHeights=recordOrEmpty(data.heights);
+  const sides={...base.sides};
+  const visible={...base.visible};
+  const weights={...base.weights};
+  for(const id of panelIds){
+    if(dockSides.includes(originalSides[id] as DockSide))sides[id]=originalSides[id] as DockSide;
+    if(typeof originalVisible[id]==='boolean')visible[id]=originalVisible[id] as boolean;
+    weights[id]=finiteOr(originalWeights[id],weights[id],.12,16);
+  }
+  const previousOrder=Array.isArray(data.order)?data.order:[];
+  const order=[...new Set([...previousOrder.filter((id):id is DockPanelId=>panelIds.includes(id as DockPanelId)),...base.order])];
+  const toolbarDock=dockSides.includes(data.toolbarDock as DockSide)?data.toolbarDock as DockSide:base.toolbarDock;
+  const floatRailSide=data.floatRailSide==='right'?'right':'left';
+  const accents:Accent[]=['nebula','ice','ember','mint','orchid','gold'];
+  const performancePresets:PerformancePreset[]=['quality','balanced','large'];
+  return {...current,
+    sides,visible,weights,order,toolbarDock,
+    widths:{left:finiteOr(originalWidths.left,base.widths.left,190,700),right:finiteOr(originalWidths.right,base.widths.right,190,700)},
+    heights:{top:finiteOr(originalHeights.top,base.heights.top,130,500),bottom:finiteOr(originalHeights.bottom,base.heights.bottom,130,500)},
+    compactTools:typeof data.compactTools==='boolean'?data.compactTools:base.compactTools,
+    floatRailSide,
+    toolbarGroups:normalizeToolbarGroups(data.toolbarGroups),
+    uiScale:finiteOr(data.uiScale,base.uiScale,.8,1.2),
+    fontScale:finiteOr(data.fontScale,base.fontScale,.9,1.2),
+    accent:accents.includes(data.accent as Accent)?data.accent as Accent:base.accent,
+    performancePreset:performancePresets.includes(data.performancePreset as PerformancePreset)?data.performancePreset as PerformancePreset:base.performancePreset
+  };
+}
 export const useStudioLayout=create<LayoutState>()(persist((set)=>({
   ...defaults(),
   movePanel:(id,side,before)=>set(s=>{
@@ -108,4 +152,4 @@ export const useStudioLayout=create<LayoutState>()(persist((set)=>({
     if(preset==='minimal')return {...base,toolbarDock:'left',visible:{assets:false,explorer:false,properties:false,console:false}};
     return base;
   })
-}),{name:'sven-studio-ui-layout-041',version:1,partialize:s=>({sides:s.sides,order:s.order,visible:s.visible,toolbarDock:s.toolbarDock,toolbarGroups:s.toolbarGroups,compactTools:s.compactTools,floatRailSide:s.floatRailSide,widths:s.widths,heights:s.heights,weights:s.weights,uiScale:s.uiScale,accent:s.accent,fontScale:s.fontScale,performancePreset:s.performancePreset})}));
+}),{name:'sven-studio-ui-layout-041',version:1,merge:mergeSavedLayout,partialize:s=>({sides:s.sides,order:s.order,visible:s.visible,toolbarDock:s.toolbarDock,toolbarGroups:s.toolbarGroups,compactTools:s.compactTools,floatRailSide:s.floatRailSide,widths:s.widths,heights:s.heights,weights:s.weights,uiScale:s.uiScale,accent:s.accent,fontScale:s.fontScale,performancePreset:s.performancePreset})}));

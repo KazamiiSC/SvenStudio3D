@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableExtensions DisableDelayedExpansion
 chcp 65001 >nul
-title SvenStudio 3D v1.4.0 Preview 1
+title SvenStudio 3D v1.4.0 HF15 Preview 2 HF5
 
 rem A .bat cannot contain an icon. On first start, create an icon-bearing .lnk.
 rem The shortcut uses the bundled SvenStudio3D.ico. Any failure is harmless.
@@ -16,7 +16,7 @@ pushd "%~dp0"
 if errorlevel 1 goto :bad_folder
 
 echo ==================================================
-echo SvenStudio 3D v1.4.0 Preview 1 - Windows launcher
+echo SvenStudio 3D v1.4.0 HF15 Preview 2 HF5 - Windows launcher
 echo ==================================================
 echo Folder: %CD%
 echo.

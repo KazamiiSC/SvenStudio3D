@@ -1440,7 +1440,7 @@ Object.assign(ko,{'Create func_wall':'func_wall 만들기','Create func_door':'f
 Object.assign(es,{
   'BSP Viewer':'Visor BSP','MAP Editor':'Editor MAP','Open BSP':'Abrir BSP','Open .BSP (read-only)':'Abrir .BSP (solo lectura)',
   'Open compiled BSP':'Abrir BSP compilado','Unable to open BSP':'No se pudo abrir el BSP','Compiled BSP unavailable':'BSP compilado no disponible',
-  'Compiled map':'Mapa compilado','Compiled lightmaps':'Iluminación compilada','Lightmaps':'Lightmaps','Wireframe':'Alámbrico',
+  'Compiled map':'Mapa compilado','Compiled lightmaps':'Iluminación compilada','Lightmaps':'Lightmaps','Wireframe':'Wireframe',
   'Reset camera':'Restablecer cámara','Fly WASD':'Vuelo WASD','Exit fly':'Salir de vuelo','Faces':'Caras',
   'Vertices':'Vértices','Models':'Modelos','Lightmapped faces':'Caras con lightmap','Textures':'Texturas','embedded':'incrustadas',
   'Import external WAD3':'Importar WAD3 externos','Loading WAD...':'Cargando WAD...','external textures need WAD files':'texturas externas requieren archivos WAD',
@@ -2022,7 +2022,7 @@ Object.assign(en,{
 });
 Object.assign(es,{
  'Shading pie menu':'Menú radial de sombreado','Shading':'Sombreado',
- 'Wireframe':'Alámbrico','Solid':'Sólido','Material Preview':'Vista de material','Rendered':'Renderizado',
+ 'Wireframe':'Wireframe','Solid':'Sólido','Material Preview':'Vista de material','Rendered':'Renderizado',
  'Hold Z · move mouse · release to select':'Mantené Z · mové el mouse · soltá para elegir'
 });
 Object.assign(ru,{
@@ -3173,4 +3173,111 @@ Object.assign(pt,{
   'Visible and selectable through brushes':'Visíveis e selecionáveis através dos brushes',
   'Normal depth (hidden by brushes)':'Profundidade normal (ocultas pelos brushes)',
   'X-ray prioritizes entity markers on click, without affecting brushes or the compiled MAP. In normal mode, Alt + click can pick a hidden entity.':'O modo raio X permite selecionar entidades atrás dos brushes. No modo normal, use Alt + clique.',
+});
+
+// HF15: independent visual grid and editor transform increments.
+Object.assign(es,{
+ "Visual grid":"Grilla visible",
+ "Move / draw step":"Paso mover / dibujar",
+ "Rotation step":"Paso de rotación",
+ "Scale step":"Paso de escala",
+ "Grid precision settings":"Ajustes de precisión",
+ "Close precision settings":"Cerrar ajustes de precisión",
+ "Free rotation":"Rotación libre",
+ "Free scaling":"Escala libre",
+ "The visible grid does not limit editing precision.":"La grilla visible no limita la precisión de edición.",
+ "Shift: temporarily free/fine move. Ctrl: temporarily use snapped steps.":"Shift: movimiento fino/libre temporal. Ctrl: ajuste temporal por pasos.",
+ "Off":"Desactivado"
+});
+Object.assign(en,{
+ "Visual grid":"Visible grid",
+ "Move / draw step":"Move / draw step",
+ "Rotation step":"Rotation step",
+ "Scale step":"Scale step",
+ "Grid precision settings":"Grid precision settings",
+ "Close precision settings":"Close precision settings",
+ "Free rotation":"Free rotation",
+ "Free scaling":"Free scaling",
+ "The visible grid does not limit editing precision.":"Visible grid size does not limit editing precision.",
+ "Shift: temporarily free/fine move. Ctrl: temporarily use snapped steps.":"Shift: temporary fine/free move. Ctrl: temporary snap.",
+ "Off":"Off"
+});
+Object.assign(ru,{
+ "Visual grid":"Видимая сетка",
+ "Move / draw step":"Шаг перемещения / рисования",
+ "Rotation step":"Шаг поворота",
+ "Scale step":"Шаг масштаба",
+ "Grid precision settings":"Настройки точности сетки",
+ "Close precision settings":"Закрыть настройки",
+ "Free rotation":"Свободное вращение",
+ "Free scaling":"Свободный масштаб",
+ "The visible grid does not limit editing precision.":"Видимая сетка не ограничивает точность редактирования.",
+ "Shift: temporarily free/fine move. Ctrl: temporarily use snapped steps.":"Shift: точное перемещение. Ctrl: временная привязка.",
+ "Off":"Выкл."
+});
+Object.assign(ko,{
+ "Visual grid":"표시 그리드",
+ "Move / draw step":"이동 / 그리기 간격",
+ "Rotation step":"회전 간격",
+ "Scale step":"크기 간격",
+ "Grid precision settings":"그리드 정밀도 설정",
+ "Close precision settings":"정밀도 설정 닫기",
+ "Free rotation":"자유 회전",
+ "Free scaling":"자유 크기 조절",
+ "The visible grid does not limit editing precision.":"표시 그리드와 편집 정밀도는 별개입니다.",
+ "Shift: temporarily free/fine move. Ctrl: temporarily use snapped steps.":"Shift: 임시 정밀 이동. Ctrl: 임시 스냅.",
+ "Off":"끔"
+});
+Object.assign(zh,{
+ "Visual grid":"显示网格",
+ "Move / draw step":"移动 / 绘制步长",
+ "Rotation step":"旋转步长",
+ "Scale step":"缩放步长",
+ "Grid precision settings":"网格精度设置",
+ "Close precision settings":"关闭精度设置",
+ "Free rotation":"自由旋转",
+ "Free scaling":"自由缩放",
+ "The visible grid does not limit editing precision.":"显示网格不限制编辑精度。",
+ "Shift: temporarily free/fine move. Ctrl: temporarily use snapped steps.":"Shift：临时精细移动。Ctrl：临时吸附。",
+ "Off":"关闭"
+});
+Object.assign(pt,{
+ "Visual grid":"Grade visível",
+ "Move / draw step":"Passo mover / desenhar",
+ "Rotation step":"Passo de rotação",
+ "Scale step":"Passo de escala",
+ "Grid precision settings":"Ajustes de precisão",
+ "Close precision settings":"Fechar ajustes",
+ "Free rotation":"Rotação livre",
+ "Free scaling":"Escala livre",
+ "The visible grid does not limit editing precision.":"O tamanho da grade visível não limita a precisão da edição.",
+ "Shift: temporarily free/fine move. Ctrl: temporarily use snapped steps.":"Shift: movimento preciso/livre. Ctrl: ajuste temporário.",
+ "Off":"Desligado"
+});
+
+// HF15 Preview 2 HF3: truthful compiler output guidance in the Build Configuration dialog.
+Object.assign(es,{
+  'Automatic map output':'Salida automática del mapa',
+  'When you click Compile Map, the editor generates the MAP source in a temporary build folder and runs the Sven Co-op SDK compilers. After a successful build, the BSP is automatically saved to the maps folder of the configured Sven Co-op game directory using the map name below.':'Al pulsar Compile Map, el editor genera un MAP temporal y ejecuta los compiladores del SDK de Sven Co-op. Si termina correctamente, el BSP se guarda automáticamente en la carpeta maps del juego configurado, con el nombre indicado abajo.',
+  'Building does not export a portable project file; use File → Save project (Ctrl+S) to back up your editable project. A failed build will not copy a new BSP.':'Compilar no exporta un proyecto portátil. Usá File → Guardar proyecto (Ctrl+S) para respaldar el proyecto editable. Si la compilación falla, no se copia un BSP nuevo.'
+});
+Object.assign(pt,{
+  'Automatic map output':'Saída automática do mapa',
+  'When you click Compile Map, the editor generates the MAP source in a temporary build folder and runs the Sven Co-op SDK compilers. After a successful build, the BSP is automatically saved to the maps folder of the configured Sven Co-op game directory using the map name below.':'Ao clicar em Compile Map, o editor gera um MAP temporário e executa os compiladores do SDK. Se a compilação terminar corretamente, o BSP será salvo automaticamente na pasta maps do Sven Co-op com o nome abaixo.',
+  'Building does not export a portable project file; use File → Save project (Ctrl+S) to back up your editable project. A failed build will not copy a new BSP.':'Compilar não exporta o projeto editável. Use File → Salvar projeto (Ctrl+S) para criar uma cópia. Se a compilação falhar, nenhum BSP novo será copiado.'
+});
+Object.assign(ru,{
+  'Automatic map output':'Автоматическое сохранение карты',
+  'When you click Compile Map, the editor generates the MAP source in a temporary build folder and runs the Sven Co-op SDK compilers. After a successful build, the BSP is automatically saved to the maps folder of the configured Sven Co-op game directory using the map name below.':'При нажатии Compile Map создаётся временный MAP и запускаются компиляторы SDK. После успешной сборки BSP сохраняется в папку maps выбранного Sven Co-op под указанным именем.',
+  'Building does not export a portable project file; use File → Save project (Ctrl+S) to back up your editable project. A failed build will not copy a new BSP.':'Компиляция не сохраняет редактируемый проект. Создайте резервную копию через File → Save project (Ctrl+S). При ошибке новый BSP не копируется.'
+});
+Object.assign(ko,{
+  'Automatic map output':'맵 자동 출력',
+  'When you click Compile Map, the editor generates the MAP source in a temporary build folder and runs the Sven Co-op SDK compilers. After a successful build, the BSP is automatically saved to the maps folder of the configured Sven Co-op game directory using the map name below.':'Compile Map을 누르면 임시 MAP 파일을 만들고 SDK 컴파일러를 실행합니다. 성공하면 지정된 이름의 BSP가 Sven Co-op의 maps 폴더에 자동 저장됩니다.',
+  'Building does not export a portable project file; use File → Save project (Ctrl+S) to back up your editable project. A failed build will not copy a new BSP.':'컴파일은 편집 가능한 프로젝트를 내보내지 않습니다. File → Save project (Ctrl+S)로 백업하세요. 실패 시 새 BSP를 복사하지 않습니다.'
+});
+Object.assign(zh,{
+  'Automatic map output':'自动保存地图输出',
+  'When you click Compile Map, the editor generates the MAP source in a temporary build folder and runs the Sven Co-op SDK compilers. After a successful build, the BSP is automatically saved to the maps folder of the configured Sven Co-op game directory using the map name below.':'点击 Compile Map 后，编辑器会创建临时 MAP 并执行 SDK 编译器。成功后，BSP 会以指定名称自动保存到 Sven Co-op 的 maps 文件夹。',
+  'Building does not export a portable project file; use File → Save project (Ctrl+S) to back up your editable project. A failed build will not copy a new BSP.':'编译不会导出可编辑项目。请使用 File → Save project (Ctrl+S) 备份。编译失败时不会复制新的 BSP。'
 });

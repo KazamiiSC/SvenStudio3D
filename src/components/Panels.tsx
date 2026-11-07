@@ -1,4 +1,5 @@
 import {ExplorerOrganized} from './ExplorerOrganized';
+import {DecalStudio} from './DecalStudio';
 import { useEffect,useMemo,useRef,useState,type ChangeEvent } from 'react';
 import {createPortal} from 'react-dom';
 import type React from 'react';
@@ -31,7 +32,7 @@ export function AssetPanel(){
   useEffect(()=>{setQuery('');setTexturePage(1);},[resource]);
   const wadsRef=useRef<HTMLInputElement>(null),fgdRef=useRef<HTMLInputElement>(null);
   const setTextures=useEditor(s=>s.setTextures),setFgd=useEditor(s=>s.setFgd);
-  const textures=useEditor(s=>s.textureAssets),classes=useEditor(s=>s.fgdClasses);
+  const textures=useEditor(s=>s.textureAssets),decals=useEditor(s=>s.decalAssets),classes=useEditor(s=>s.fgdClasses);
   const fgdLoaded=useEditor(s=>s.fgdLoaded);
   const placementShape=useEditor(s=>s.placementShape);
   const gameDir=useEditor(s=>s.settings.gameDir);
@@ -121,17 +122,19 @@ export function AssetPanel(){
       window.alert(`${tr('Import failed')}: ${message}`);
     }finally{e.target.value='';}
   };
-  return <aside className="asset-panel">
+  return <aside className="asset-panel" data-resource={resource}>
     <div className="asset-tabs">
       <button className={resource==='entities'?'active':''} onClick={()=>{setResource('entities');setQuery('')}} title={tr('Entities')}><UserRound size={16}/></button>
       <button className={resource==='textures'?'active':''} onClick={()=>{setResource('textures');setQuery('')}} title={tr('Texture Browser')}><Image size={16}/></button>
+      <button className={resource==='decals'?'active':''} onClick={()=>{setResource('decals');setQuery('')}} title="Decal Studio" aria-label="Decal Studio"><Paintbrush size={16}/></button>
       <button className={resource==='models'?'active':''} onClick={()=>{setResource('models');setQuery('')}} title="Model Browser (.mdl)"><Boxes size={16}/></button>
       <button className={resource==='sounds'?'active':''} onClick={()=>{setResource('sounds');setQuery('')}} title={tr('Sound Browser')}><Headphones size={16}/></button>
       <button className={resource==='npcs'?'active':''} onClick={()=>{setResource('npcs');setQuery('')}} title={tr('NPC Browser')}><Skull size={16}/></button>
       <button className={resource==='layers'?'active':''} onClick={()=>{setResource('layers');setQuery('')}} title={tr('Layers')}><Layers size={16}/></button>
     </div>
-    <div className="panel-header"><span>{tr(resource==='entities'?'Entity Browser':resource==='textures'?'Texture Browser':resource==='models'?'Model Browser':resource==='npcs'?'NPC Browser':resource==='sounds'?'Sound Browser':'Layers')}</span><span className="subtle">{resource==='entities'?classes.length:resource==='textures'?textures.length:''}</span></div>
+    <div className="panel-header"><span>{tr(resource==='entities'?'Entity Browser':resource==='textures'?'Texture Browser':resource==='decals'?'Decal Studio':resource==='models'?'Model Browser':resource==='npcs'?'NPC Browser':resource==='sounds'?'Sound Browser':'Layers')}</span><span className="subtle">{resource==='entities'?classes.length:resource==='textures'?textures.length:resource==='decals'?decals.length:''}</span></div>
     {(resource==='entities'||resource==='textures'||resource==='npcs')&&<div className="search-field"><Search size={15}/><input value={query} onChange={e=>{setQuery(e.target.value);setTexturePage(1)}} placeholder={tr(resource==='textures'?'Search textures...':resource==='npcs'?'Search NPCs…':'Search classname...')} /></div>}
+    {resource==='decals'&&<DecalStudio/>}
     {resource==='models'&&<ModelBrowser/>}
     {resource==='sounds'&&<SoundBrowser compact/>}
     {resource==='npcs'&&<div className="assets-scroll npc-asset-list">

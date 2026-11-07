@@ -116,7 +116,7 @@ function ModelGeometry({data,skin=0,bodySelection=DEFAULT_BODIES,sequence=-1,fra
       {!material&&<meshStandardMaterial color="#b2c8e1" roughness={.95} side={THREE.DoubleSide}/>}</mesh>;
   })}</group>;
 }
-export function StudioModel({data,skin=0,body=0,animate=false}:{data:StudioPreview;skin?:number;body?:number;animate?:boolean}){
+export function StudioModel({data,skin=0,body=0,animate=false,animationSpeed=1}:{data:StudioPreview;skin?:number;body?:number;animate?:boolean;animationSpeed?:number}){
   // Animation is opt-in for Gameplay Test; the editor model browser remains unchanged.
   const selection=useMemo(()=>data.bodyparts.map(part=>part.base>0&&part.models.length>0?
     Math.floor(Math.max(0,body)/part.base)%part.models.length:0),[data,body]);
@@ -130,9 +130,9 @@ export function StudioModel({data,skin=0,body=0,animate=false}:{data:StudioPrevi
     if(!animate||idle<0)return;
     const seq=data.sequences[idle];if(!seq||seq.frames<2)return;
     elapsed.current+=Math.min(.1,delta);
-    if(elapsed.current<.10)return;
+    if(elapsed.current<1/30)return;
     const step=elapsed.current;elapsed.current=0;
-    setFrame(previous=>(previous+step*Math.max(1,seq.fps||12))%Math.max(1,seq.frames-1));
+    setFrame(previous=>(previous+step*Math.max(1,seq.fps||12)*animationSpeed)%Math.max(1,seq.frames-1));
   });
   return <ModelGeometry data={data} bodySelection={selection} skin={Math.max(0,Math.min(data.skins.length-1,skin))} sequence={animate?idle:-1} frame={frame}/>;
 }

@@ -10,14 +10,18 @@ const temp=fs.mkdtempSync(path.join(os.tmpdir(),'sven-gameplay-p4-'));
 let count=0;
 const check=(name,fn)=>{fn();count++;console.log('PASS '+name)};
 try{
-  const sources=['src/engine/types.ts','src/engine/gameplay.ts','src/engine/gameplayGraph.ts','src/engine/geometry.ts','src/engine/exportMap.ts','src/engine/importMap.ts',
-    'src/engine/projectValidation.ts','src/engine/fgd.ts','src/engine/modeling.ts','src/engine/advancedModeling.ts','src/engine/prefabs.ts','src/engine/npc.ts',
-    'src/engine/sound.ts','src/engine/environment.ts','src/engine/architecture.ts','src/engine/skyEnclosure.ts','src/engine/smartMerge.ts',
-    'src/engine/controls.ts','src/engine/entityAppearance.ts','src/engine/cinematic.ts','src/i18n.ts','src/engine/customNpc.ts','src/engine/terrain.ts','src/store.ts'];
+  // Compile current engine modules rather than a hardcoded snapshot of Preview 4.
+  const sources=fs.readdirSync(path.join(root,'src/engine'))
+    .filter(name=>name.endsWith('.ts'))
+    .map(name=>`src/engine/${name}`)
+    .concat(['src/i18n.ts','src/store.ts']);
   for(const file of sources){
     const output=path.join(temp,file.replace(/\.ts$/,'.js'));
     fs.mkdirSync(path.dirname(output),{recursive:true});
-    fs.writeFileSync(output,ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText);
+    const javascript=ts.transpileModule(fs.readFileSync(path.join(root,file),'utf8'),
+      {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText
+      .replace(/require\((['"])(\.{1,2}\/[^'"]+)\.ts\1\)/g,(_match,quote,target)=>`require(${quote}${target}.js${quote})`);
+    fs.writeFileSync(output,javascript);
   }
   fs.writeFileSync(path.join(temp,'package.json'),'{"type":"commonjs"}');
   fs.symlinkSync(path.join(root,'node_modules'),path.join(temp,'node_modules'),'dir');

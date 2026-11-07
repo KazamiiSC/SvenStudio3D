@@ -7,8 +7,9 @@ import {gameToThree,toRenderQuaternion} from './geometry';
 
 export type ScaleAnchor='center'|'xmin'|'xmax'|'ymin'|'ymax'|'zmin'|'zmax';
 export const SCALE_ANCHORS:ReadonlyArray<ScaleAnchor>=['center','xmin','xmax','ymin','ymax','zmin','zmax'];
-export const GRID_STEPS:ReadonlyArray<number>=[1,2,4,8,16,32,64,128,256];
-export function validGridStep(v:number){return GRID_STEPS.includes(v)?v:16}
+import {GRID_STEPS,normalizeGridStep} from './gridPrecision';
+export {GRID_STEPS};
+export function validGridStep(v:number){return normalizeGridStep(v)}
 export function snapDelta(v:number,step:number){return Math.round(v/validGridStep(step))*validGridStep(step)}
 export function anchorPosition(brush:Brush,anchor:ScaleAnchor):THREE.Vector3{
   const origin=gameToThree(brush.position);

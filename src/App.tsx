@@ -44,6 +44,7 @@ import {requestSafeWalkFullscreen,releaseSafeWalkFullscreen} from './engine/walk
 import type {ShortcutAction} from './engine/controls';
 import {useT,LANGUAGES} from './i18n';
 import {studioGuide} from './engine/studioGuide';
+import {editorManual,EDITOR_SHORTCUT_GROUPS,actionTitlesEs,actionTitlesEn} from './engine/editorManual';
 import {lastRecoveredAt,checkpointBeforeImport} from './engine/sessionManager';
 import {readRecoveryBackup} from './engine/sessionRecovery';
 import './style.css';
@@ -110,6 +111,12 @@ function SettingsModal({onClose}:{onClose:()=>void}){
   return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal-card" onMouseDown={e=>e.stopPropagation()}>
     <div className="modal-title"><Settings2 size={20}/><span>{t('Build configuration')}</span><button onClick={onClose}>×</button></div>
     <p className="modal-subtext">{t('Point to your installed Sven Co-op SDK compiler folder and Sven Co-op game directory. Paths must be on the PC running the editor.')}</p>
+    <div className="build-autosave-notice" role="note">
+      <strong>{t('Automatic map output')}</strong>
+      <p>{t('When you click Compile Map, the editor generates the MAP source in a temporary build folder and runs the Sven Co-op SDK compilers. After a successful build, the BSP is automatically saved to the maps folder of the configured Sven Co-op game directory using the map name below.')}</p>
+      <code>{settings.gameDir ? `${settings.gameDir.replace(/[\\/]+$/,'')}\\maps\\${settings.mapName||'my_sven_map'}.bsp` : `svencoop\\maps\\${settings.mapName||'my_sven_map'}.bsp`}</code>
+      <p>{t('Building does not export a portable project file; use File → Save project (Ctrl+S) to back up your editable project. A failed build will not copy a new BSP.')}</p>
+    </div>
     <label>{t('Map name')}<input value={settings.mapName} onChange={e=>setSettings({mapName:e.target.value})} placeholder="my_sven_map"/><small>{t('Letters, numbers, underscores and hyphens only.')}</small></label>
     <label>{t('Compiler folder')}<input value={settings.compilerDir} onChange={e=>setSettings({compilerDir:e.target.value})} placeholder="C:\Program Files (x86)\Steam\steamapps\common\Sven Co-op SDK\mapping\compilers"/></label>
     <label>{t('Sven Co-op game data folder')}<input value={settings.gameDir} onChange={e=>setSettings({gameDir:e.target.value})} placeholder="C:\Program Files (x86)\Steam\steamapps\common\Sven Co-op\svencoop"/></label>
@@ -206,35 +213,55 @@ function ControlsModal({onClose}:{onClose:()=>void}){
 function AboutModal({onClose}:{onClose:()=>void}){
   const t=useT();
   const locale=useEditor(s=>s.locale);
-  const guide=studioGuide(locale);
+  const controls=useEditor(s=>s.controls);
+  const manual=editorManual(locale);
+  const shortcutGroups=[
+    {id:'transform',title:locale==='es'?'Transformación y encuadre':'Transform and framing',actions:EDITOR_SHORTCUT_GROUPS.transform},
+    {id:'views',title:locale==='es'?'Vistas y proyección':'Views and projection',actions:EDITOR_SHORTCUT_GROUPS.views},
+    {id:'orbit',title:locale==='es'?'Órbita, desplazamiento y zoom':'Orbit, pan and zoom',actions:EDITOR_SHORTCUT_GROUPS.orbit}
+  ];
+  const textList=(items:readonly string[])=><ul>{items.map((item,index)=><li key={index}>{item}</li>)}</ul>;
+  const section=(id:string,title:string,items:readonly string[])=><section id={`manual-${id}`} className="help-feature-card manual-block" key={id}><h4>{title}</h4>{textList(items)}</section>;
   return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal-card about-card help-dialog help-dialog-current" onMouseDown={e=>e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('Help')}>
-    <div className="modal-title"><Info size={20}/><span>{t('Sven Studio guide')} · v1.4.0</span><button title={t('Close')} onClick={onClose}>×</button></div>
+    <div className="modal-title"><Info size={20}/><span>{t('Sven Studio guide')} · v1.4.0 HF15 Preview 3 HF1</span><button title={t('Close')} onClick={onClose}>×</button></div>
     <div className="help-scroll" tabIndex={0}>
       <div className="help-credits" role="group" aria-label={t('Project credits')}>
-        <div className="help-credits-logos">
-          <img className="help-astra-logo-image" src="/gpt6-astra-logo.png" alt="GPT-6 Astra"/>
-          <img className="help-kz-logo" src="/kz-sheez-logo.png" alt="KZ-Sheez"/>
-        </div>
+        <div className="help-credits-logos"><img className="help-astra-logo-image" src="/gpt6-astra-logo.png" alt="GPT-6 Astra"/><img className="help-kz-logo" src="/kz-sheez-logo.png" alt="KZ-Sheez"/></div>
         <p>{t('This project was made with the help of GPT-6 Astra.')}</p>
       </div>
-      <div className="help-summary">
-        <h4>{t('Editor summary')}</h4>
-        <p>{guide.summary}</p>
+      <div className="help-summary"><h4>{t('Editor summary')}</h4><p>{manual.intro}</p></div>
+      <nav className="help-index" aria-label={locale==='es'?'Índice de la guía':'Guide navigation'}>
+        {[
+          ['start',manual.firstTitle],['camera',manual.cameraTitle],['edit',manual.editTitle],['uv',manual.uvTitle],
+          ['shapes',manual.shapesTitle],['walk',manual.walkTitle],['shortcuts',manual.shortcutsTitle],
+          ['studios',manual.studiosTitle],['workspace',manual.workspaceTitle],['technical',manual.technicalTitle],['contact',manual.noticeTitle]
+        ].map(([id,label])=><a key={id} href={`#manual-${id}`}>{label}</a>)}
+      </nav>
+      <section className="help-camera-note manual-fullscreen" role="note"><h4>{manual.fullTitle}</h4><p>{manual.full}</p></section>
+      <div className="help-feature-grid manual-guide-grid">
+        {section('start',manual.firstTitle,manual.first)}
+        {section('camera',manual.cameraTitle,manual.camera)}
+        {section('edit',manual.editTitle,manual.edit)}
+        {section('uv',manual.uvTitle,manual.uv)}
+        {section('shapes',manual.shapesTitle,manual.shapes)}
+        {section('walk',manual.walkTitle,manual.walk)}
       </div>
-      <div className="help-camera-note">
-        <h4>{t('Camera & Gizmo Controls')}</h4>
-        <p>{guide.capture}</p><p>{guide.cameraKeys}</p>
-        <p className="controls-browser-warning">{guide.browserWarning}</p>
+      <section className="help-feature-card manual-shortcuts" id="manual-shortcuts">
+        <h4>{manual.shortcutsTitle}</h4><p>{manual.shortcutsHint}</p>
+        {shortcutGroups.map(group=><div key={group.id} className="manual-shortcut-group"><h5>{group.title}</h5><div className="manual-shortcut-grid">{group.actions.map(id=>{
+          return <div className="manual-shortcut-row" key={id}><span>{locale==='es'?actionTitlesEs[id]:actionTitlesEn[id]}</span><kbd>{displayBinding(controls.shortcuts[id])||'—'}</kbd></div>;
+        })}</div></div>)}
+      </section>
+      <h3 className="help-feature-heading" id="manual-studios">{manual.studiosTitle}</h3>
+      <div className="help-feature-grid manual-guide-grid">{manual.studios.map(studio=><section className="help-feature-card manual-studio-card" key={studio.title}><h4>{studio.title}</h4><p>{studio.description}</p></section>)}</div>
+      <div className="help-feature-grid manual-guide-grid">
+        {section('workspace',manual.workspaceTitle,manual.workspace)}
+        {section('technical',manual.technicalTitle,manual.technical)}
       </div>
-      <h3 className="help-feature-heading">{guide.featureTitle}</h3>
-      <nav className="help-index" aria-label={guide.featureTitle}>{guide.groups.map(group=><a key={group.id} href={`#help-${group.id}`}>{group.title}</a>)}</nav>
-      <div className="help-feature-grid">
-        {guide.groups.map(group=><section key={group.id} className="help-section help-feature-card" id={`help-${group.id}`}>
-          <h4>{group.title}</h4>
-          <ul>{group.features.map((feature,i)=><li key={i}>{feature}</li>)}</ul>
-        </section>)}
-      </div>
-      <p className="help-intro">{t('Compiler logs remain in their original language. No proprietary Sven Co-op assets or SDK executables are distributed.')}</p>
+      <section className="help-feature-card manual-contact" id="manual-contact">
+        <h4>{manual.noticeTitle}</h4><p>{manual.notice}</p>
+        <h5>{manual.linksTitle}</h5><p>{manual.contact} · Steam: <a href="https://steamcommunity.com/id/KazamiiSC" target="_blank" rel="noreferrer noopener">steamcommunity.com/id/KazamiiSC</a></p>
+      </section>
     </div>
     <div className="modal-footer"><button className="primary-action" onClick={onClose}>{t('Close')}</button></div>
   </div></div>;
@@ -279,6 +306,7 @@ export default function App(){
   const measureMode=useEditor(s=>s.measureMode),toggleMeasure=useEditor(s=>s.toggleMeasure);
   const mode=useEditor(s=>s.mode),setMode=useEditor(s=>s.setMode),activateGizmoMode=useEditor(s=>s.activateGizmoMode);
   const snapping=useEditor(s=>s.snapping),toggleSnap=useEditor(s=>s.toggleSnap),snap=useEditor(s=>s.snap),setSnap=useEditor(s=>s.setSnap);
+  const gridDisplayStep=useEditor(s=>s.gridDisplayStep),setGridDisplayStep=useEditor(s=>s.setGridDisplayStep);
   const faceMode=useEditor(s=>s.faceMode),setFlag=useEditor(s=>s.setFlag),showGrid=useEditor(s=>s.showGrid),wireframe=useEditor(s=>s.wireframe);
   const drawMode=useEditor(s=>s.drawMode),setDrawMode=useEditor(s=>s.setDrawMode),drawHeight=useEditor(s=>s.drawHeight),setDrawHeight=useEditor(s=>s.setDrawHeight);
   const selected=useEditor(s=>s.selected),history=useEditor(s=>s.history),future=useEditor(s=>s.future);
@@ -297,7 +325,10 @@ export default function App(){
   const showTransformGizmo=useEditor(s=>s.showTransformGizmo),setShowTransformGizmo=useEditor(s=>s.setShowTransformGizmo);
   const ghostHidden=useEditor(s=>s.ghostHidden),toggleGhostHidden=useEditor(s=>s.toggleGhostHidden);
   const placementShape=useEditor(s=>s.placementShape);
-  const [dialog,setDialog]=useState<'settings'|'controls'|'about'|'layout'|'entityAppearance'|'gameplay'|'cinematic'|'npc'|'sound'|'lighting'|'doctor'|'visibility'|'output'|'packager'|'terrain'|null>(null),[fileMenu,setFileMenu]=useState(false),[studiosMenu,setStudiosMenu]=useState(false),[workspaceMenu,setWorkspaceMenu]=useState(false);
+  const [dialog,setDialog]=useState<'settings'|'controls'|'about'|'layout'|'entityAppearance'|'gameplay'|'cinematic'|'npc'|'sound'|'lighting'|'doctor'|'visibility'|'output'|'packager'|'terrain'|null>(()=>{
+    try{return localStorage.getItem('svenstudio:welcome-guide-v1')==='seen'?null:'about'}catch{return null}
+  }),[fileMenu,setFileMenu]=useState(false),[studiosMenu,setStudiosMenu]=useState(false),[workspaceMenu,setWorkspaceMenu]=useState(false);
+  const closeHelp=()=>{try{localStorage.setItem('svenstudio:welcome-guide-v1','seen')}catch{/* private browsing */}setDialog(null)};
   const projectInput=useRef<HTMLInputElement>(null),mapInput=useRef<HTMLInputElement>(null);
   const fileButton=useRef<HTMLButtonElement>(null),studiosButton=useRef<HTMLButtonElement>(null),workspaceButton=useRef<HTMLButtonElement>(null);
   const imported=async(e:React.ChangeEvent<HTMLInputElement>,type:'map'|'project')=>{
@@ -440,7 +471,7 @@ export default function App(){
           e.preventDefault();saveProject(useEditor.getState().project);return;
         }
         if(e.code==='Escape'&&['settings','about','visibility','output','doctor'].includes(dialog||'')){
-          e.preventDefault();setDialog(null);
+          e.preventDefault();if(dialog==='about')closeHelp();else setDialog(null);
         }
         return;
       }
@@ -482,6 +513,20 @@ export default function App(){
         return;
       }
       if(e.key==='Escape'&&useEditor.getState().architecturePlacement){e.preventDefault();useEditor.getState().startArchitecturePlacement(null);return;}
+      // Internal brush clipboard: copy and paste work even when selection changes.
+      // Do not intercept ordinary text-field/browser clipboard operations.
+      if((e.ctrlKey||e.metaKey)&&!e.altKey&&!e.shiftKey&&!e.repeat&&e.code==='KeyC'){
+        if(useEditor.getState().selectedIds.some(id=>useEditor.getState().project.objects.some(o=>o.id===id&&o.kind==='brush'&&!o.locked&&!o.hidden))){
+          e.preventDefault();useEditor.getState().copySelectedBrushes();
+        }
+        return;
+      }
+      if((e.ctrlKey||e.metaKey)&&!e.altKey&&!e.shiftKey&&!e.repeat&&e.code==='KeyV'){
+        if(useEditor.getState().brushClipboard.length){
+          e.preventDefault();useEditor.getState().pasteCopiedBrushes();
+        }
+        return;
+      }
       if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();if(e.shiftKey)redo();else undo();return}
       if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();redo();return}
       if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();saveProject(useEditor.getState().project);return}
@@ -496,6 +541,7 @@ export default function App(){
       if(e.key==='Delete'&&e.code!=='NumpadDecimal'){e.preventDefault();remove();return}
       if(e.key==='Escape'){
         e.preventDefault();
+        if(useEditor.getState().activeDecal){useEditor.getState().chooseDecal(null);return;}
         if(useEditor.getState().measureMode){useEditor.getState().toggleMeasure();return;}
         if(useEditor.getState().flyMode){setFly(false);if(document.pointerLockElement)document.exitPointerLock?.();}
         else if(useEditor.getState().drawMode)setDrawMode(false);
@@ -561,9 +607,12 @@ export default function App(){
       for(const file of files){
         if(cancelled)break;
         try{
-          const textures=await parseWad(file,{remember:false});
-          if(cancelled)break;
-          useEditor.getState().setTextures(textures,file.name);restored++;
+          if(file.name.toLowerCase()==='decals.wad'){
+            const {parseDecalWad}=await import('./engine/wad');
+            const decals=await parseDecalWad(file,{remember:false});
+            if(!cancelled){useEditor.getState().setDecalAssets(decals,file.name);restored++;}
+          }else{const textures=await parseWad(file,{remember:false});
+            if(cancelled)break;useEditor.getState().setTextures(textures,file.name);restored++;}
         }catch(error){useEditor.getState().appendLogs([`Saved WAD ${file.name}: ${String(error)}`]);}
       }
       if(!cancelled&&restored)useEditor.getState().appendLogs([`Restored ${restored} previously imported WAD file(s) from browser storage. Build WAD paths must still reference the real files.`]);
@@ -606,7 +655,7 @@ export default function App(){
   // WebGL viewport applies inverse zoom separately to keep R3F pixel sizing correct.
   return <div className={`app-shell accent-${accent}`} style={{zoom:uiScale,width:`${100/uiScale}vw`,height:`${100/uiScale}vh`,minHeight:0,'--ui-font-scale':fontScale} as React.CSSProperties}>
     <header className="titlebar">
-      <div className="brand"><span className="brand-logo"><Box size={20} strokeWidth={2.3}/></span><span>SVEN<span className="brand-light">STUDIO</span></span><span className="brand-tag">3D</span><span className="version-label">v1.4.0</span></div>
+      <div className="brand"><span className="brand-logo"><Box size={20} strokeWidth={2.3}/></span><span>SVEN<span className="brand-light">STUDIO</span></span><span className="brand-tag">3D</span><span className="version-label">v1.4.0 HF15 Preview 3 HF1</span></div>
       <div className="top-divider"/>
       <div className="menu-parent"><button ref={fileButton} type="button" aria-expanded={fileMenu} aria-controls="sven-file-menu" aria-haspopup="menu" className={`top-nav ${fileMenu?'chosen':''}`} onClick={()=>{setStudiosMenu(false);setWorkspaceMenu(false);setFileMenu(v=>!v)}}>{t('File')} <ChevronDown size={12}/></button>
         <TopDropdown anchor={fileButton} open={fileMenu} onClose={()=>setFileMenu(false)} id="sven-file-menu" className="file-menu" align="left" width={240}><MenuButton onClick={()=>{if(confirm(t('Start a new project? Save existing work first.')))newProject();setFileMenu(false)}}><FilePlus2 size={15}/> {t('New project')}</MenuButton>
@@ -628,16 +677,15 @@ export default function App(){
         <button className={!bspMode&&!walkMode?'active':''} aria-pressed={!bspMode&&!walkMode} onClick={()=>{exitGameplayTest();setBspMode(false)}}>{t('MAP Editor')}</button>
         <button className={bspMode?'active':''} aria-pressed={bspMode} disabled={bspLoading} onClick={()=>{exitGameplayTest();if(bspMap)setBspMode(true);else if(lastCompiled)void openCompiledBsp();else bspInput.current?.click()}}><ScanEye size={14}/>{bspLoading?'...':t('BSP Viewer')}</button>
         <button className={walkMode?'active gameplay-tab-active':''} aria-pressed={walkMode} disabled={bspLoading} title={t('Gameplay Test')} onClick={toggleGameplayTest}><Play size={14}/>{t('Gameplay Test')}</button>
-      </div><div className="studio-menu-parent"><button ref={studiosButton} type="button" aria-expanded={studiosMenu} aria-controls="sven-studios-menu" aria-haspopup="menu" className="studio-menu-button" onClick={()=>{setFileMenu(false);setWorkspaceMenu(false);setStudiosMenu(v=>!v)}}><Layers size={16}/>{t('Studios')}<ChevronDown size={12}/></button><TopDropdown anchor={studiosButton} open={studiosMenu} onClose={()=>setStudiosMenu(false)} id="sven-studios-menu" className="studio-menu-dropdown" align="right" width={242}><button role="menuitem" onClick={()=>{setDialog('gameplay');setStudiosMenu(false)}}><GitBranch size={16}/>{t('Gameplay Studio')}</button><button role="menuitem" onClick={()=>{setDialog('cinematic');setStudiosMenu(false)}}><Clapperboard size={16}/>{t('Cinematic Camera Studio')}</button><button role="menuitem" onClick={()=>{setDialog('npc');setStudiosMenu(false)}}><Skull size={16}/>{t('NPC & AI Studio')}</button><button role="menuitem" onClick={()=>{setDialog('sound');setStudiosMenu(false)}}><Headphones size={16}/>{t('Audio Studio')}</button><button role="menuitem" onClick={()=>{setDialog('lighting');setStudiosMenu(false)}}><SunMoon size={16}/>{t('Lighting & Environment Studio')}</button><button role="menuitem" onClick={()=>{setDialog('terrain');setStudiosMenu(false)}}><Mountain size={16}/>{t('Terrain & Shape Studio')}</button><button role="menuitem" onClick={()=>{setDialog('doctor');setStudiosMenu(false)}}><CheckCircle2 size={16}/>{t('Map Doctor')}</button></TopDropdown></div><label className="language-picker" title={t('Interface language')}><Globe2 size={15}/><select aria-label={t('Interface language')} value={localePreference} onChange={e=>setLocale(e.target.value as typeof localePreference)}><option value="auto">{t('Automatic (system language)')} · {LANGUAGES.find(l=>l.id===locale)?.label??'English'}</option>{LANGUAGES.map(l=><option key={l.id} value={l.id}>{l.label}</option>)}</select></label><div className="studio-menu-parent workspace-menu-parent"><button ref={workspaceButton} type="button" aria-expanded={workspaceMenu} aria-controls="sven-workspace-menu" aria-haspopup="menu" className="studio-menu-button workspace-menu-button" onClick={()=>{setFileMenu(false);setStudiosMenu(false);setWorkspaceMenu(v=>!v)}}><Settings2 size={16}/><span>{t('Workspace')}</span><ChevronDown size={12}/></button><TopDropdown anchor={workspaceButton} open={workspaceMenu} onClose={()=>setWorkspaceMenu(false)} id="sven-workspace-menu" className="studio-menu-dropdown workspace-menu-dropdown" align="right" width={266}>
+      </div><div className="studio-menu-parent"><button ref={studiosButton} type="button" aria-expanded={studiosMenu} aria-controls="sven-studios-menu" aria-haspopup="menu" className="studio-menu-button" onClick={()=>{setFileMenu(false);setWorkspaceMenu(false);setStudiosMenu(v=>!v)}}><Layers size={16}/>{t('Studios')}<ChevronDown size={12}/></button><TopDropdown anchor={studiosButton} open={studiosMenu} onClose={()=>setStudiosMenu(false)} id="sven-studios-menu" className="studio-menu-dropdown" align="right" width={242}><button role="menuitem" onClick={()=>{setDialog('gameplay');setStudiosMenu(false)}}><GitBranch size={16}/>{t('Gameplay Studio')}</button><button role="menuitem" onClick={()=>{setDialog('cinematic');setStudiosMenu(false)}}><Clapperboard size={16}/>{t('Cinematic Camera Studio')}</button><button role="menuitem" onClick={()=>{setDialog('npc');setStudiosMenu(false)}}><Skull size={16}/>{t('NPC & AI Studio')}</button><button role="menuitem" onClick={()=>{useEditor.getState().setResourceView('decals');useStudioLayout.getState().setVisible('assets',true);setStudiosMenu(false)}}><Paintbrush size={16}/>Decal Studio</button><button role="menuitem" onClick={()=>{setDialog('sound');setStudiosMenu(false)}}><Headphones size={16}/>{t('Audio Studio')}</button><button role="menuitem" onClick={()=>{setDialog('lighting');setStudiosMenu(false)}}><SunMoon size={16}/>{t('Lighting & Environment Studio')}</button><button role="menuitem" onClick={()=>{setDialog('terrain');setStudiosMenu(false)}}><Mountain size={16}/>{t('Terrain & Shape Studio')}</button><button role="menuitem" onClick={()=>{setDialog('doctor');setStudiosMenu(false)}}><CheckCircle2 size={16}/>{t('Map Doctor')}</button></TopDropdown></div><label className="language-picker" title={t('Interface language')}><Globe2 size={15}/><select aria-label={t('Interface language')} value={localePreference} onChange={e=>setLocale(e.target.value as typeof localePreference)}><option value="auto">{t('Automatic (system language)')} · {LANGUAGES.find(l=>l.id===locale)?.label??'English'}</option>{LANGUAGES.map(l=><option key={l.id} value={l.id}>{l.label}</option>)}</select></label><div className="studio-menu-parent workspace-menu-parent"><button ref={workspaceButton} type="button" aria-expanded={workspaceMenu} aria-controls="sven-workspace-menu" aria-haspopup="menu" className="studio-menu-button workspace-menu-button" onClick={()=>{setFileMenu(false);setStudiosMenu(false);setWorkspaceMenu(v=>!v)}}><Settings2 size={16}/><span>{t('Workspace')}</span><ChevronDown size={12}/></button><TopDropdown anchor={workspaceButton} open={workspaceMenu} onClose={()=>setWorkspaceMenu(false)} id="sven-workspace-menu" className="studio-menu-dropdown workspace-menu-dropdown" align="right" width={266}>
         <button role="menuitem" onClick={()=>{setDialog('layout');setWorkspaceMenu(false)}}><LayoutTemplate size={16}/>{t('Workspace layout')}</button>
         <button role="menuitem" onClick={()=>{setDialog('visibility');setWorkspaceMenu(false)}}><Eye size={16}/>{t('Visibility manager')}</button>
         <button role="menuitem" onClick={()=>{setDialog('entityAppearance');setWorkspaceMenu(false)}}><Palette size={16}/>{t('Entity visuals')}</button>
         <button role="menuitem" onClick={()=>{setDialog('controls');setWorkspaceMenu(false)}}><Keyboard size={16}/>{t('Camera & Gizmo Controls')}</button>
         <div className="menu-separator"/>
         <button role="menuitem" onClick={()=>{setDialog('output');setWorkspaceMenu(false)}}><Terminal size={16}/>{t('Output')}</button>
-        <button role="menuitem" onClick={()=>{setDialog('settings');setWorkspaceMenu(false)}}><Settings2 size={16}/>{t('Build configuration')}</button>
         <button role="menuitem" disabled={walkMode||bspMode} onClick={()=>{document.dispatchEvent(new Event('svenstudio:toggle-gameplay-settings'));setWorkspaceMenu(false)}}><Play size={16}/>{t('Gameplay Test settings')}</button>
-      </TopDropdown></div><button className="top-save" title={t('Save project')} aria-label={t('Save project')} onClick={()=>saveProject(project)}><Save size={15}/> {t('Save')}</button>{compileBusy?<button className="top-stop" onClick={cancelCompile}><StopCircle size={14}/> {t('Stop Build')}</button>:<button className="top-compile" onClick={compile}><Play size={14} fill="currentColor"/> {t('Compile Map')}</button>}</div>
+      </TopDropdown></div><button className="top-build-settings" title={t('Build configuration')} aria-label={t('Build configuration')} onClick={()=>setDialog('settings')}><Settings2 size={15}/> {t('Build configuration')}</button>{compileBusy?<button className="top-stop" onClick={cancelCompile}><StopCircle size={14}/> {t('Stop Build')}</button>:<button className="top-compile" onClick={compile}><Play size={14} fill="currentColor"/> {t('Compile Map')}</button>}</div>
       <input ref={projectInput} type="file" accept=".json,.svenstudio.json" hidden onChange={e=>imported(e,'project')}/>
       <input ref={mapInput} type="file" accept=".map" hidden onChange={e=>imported(e,'map')}/>
       <input ref={bspInput} type="file" accept=".bsp" hidden onChange={loadedBsp}/>
@@ -651,7 +699,7 @@ export default function App(){
         </ToolButton>)}
       </div><small className="ribbon-caption">{toolbarGrip('geometry')}SVENGINE · {t('Geometry editing').toUpperCase()}</small></div>
       <div className="ribbon-group" {...toolbarGroupProps('tools')}><div className="ribbon-tools"><ToolButton active={measureMode} title="Measure distance: click two surfaces (Esc to exit)" onClick={toggleMeasure}><Ruler size={20}/><small>Measure</small></ToolButton></div><small className="ribbon-caption">{toolbarGrip('tools')}TOOLS</small></div>
-      <div className="ribbon-group" {...toolbarGroupProps('grid')}><div className="ribbon-tools"><ToolButton title={t('Snap to grid')} active={snapping} onClick={toggleSnap}><Magnet size={20}/><small>{t('Snap')}</small></ToolButton><select className="snap-select" title={t('Grid size')} value={snap} onChange={e=>setSnap(Number(e.target.value))}>{[1,2,4,8,16,32,64,128].map(v=><option key={v} value={v}>{v}u</option>)}</select>{drawMode&&<label className="draw-height">{t('Height')} <input type="number" min="1" max="131072" step={snap} value={drawHeight} onChange={e=>{if(Number.isFinite(e.target.valueAsNumber))setDrawHeight(e.target.valueAsNumber)}} title={t('Height of new blocks in Svengine units')}/></label>}</div><small className="ribbon-caption">{toolbarGrip('grid')}{t('Grid').toUpperCase()}</small></div>
+      <div className="ribbon-group" {...toolbarGroupProps('grid')}><div className="ribbon-tools"><ToolButton title={t('Snap to grid')} active={snapping} onClick={toggleSnap}><Magnet size={20}/><small>{t('Snap')}</small></ToolButton><label className="snap-step-control" title={t('Visual grid')}><small>{t('Visual grid')}</small><select className="snap-select" aria-label={t('Visual grid')} value={gridDisplayStep} onChange={e=>setGridDisplayStep(Number(e.target.value))}>{[1,2,4,8,16,32,64,128,256].map(v=><option key={v} value={v}>{v}u</option>)}</select></label><label className="snap-step-control" title={t('Move / draw step')}><small>{t('Move / draw step')}</small><select className="snap-select" aria-label={t('Move / draw step')} value={snap} onChange={e=>setSnap(Number(e.target.value))}>{[1,2,4,8,16,32,64,128,256].map(v=><option key={v} value={v}>{v}u</option>)}</select></label>{drawMode&&<label className="draw-height">{t('Height')} <input type="number" min="1" max="131072" step={snap} value={drawHeight} onChange={e=>{if(Number.isFinite(e.target.valueAsNumber))setDrawHeight(e.target.valueAsNumber)}} title={t('Height of new blocks in Svengine units')}/></label>}</div><small className="ribbon-caption">{toolbarGrip('grid')}{t('Grid').toUpperCase()}</small></div>
       <div className="ribbon-group last" {...toolbarGroupProps('edit')}><div className="ribbon-tools"><ToolButton title={t('Undo')} disabled={!history.length} onClick={undo}><Undo2 size={20}/><small>{t('Undo')}</small></ToolButton><ToolButton title={t('Redo')} disabled={!future.length} onClick={redo}><Redo2 size={20}/><small>{t('Redo')}</small></ToolButton><ToolButton title={t('Clone')} disabled={!selected} onClick={duplicate}><Copy size={19}/><small>{t('Clone')}</small></ToolButton><ToolButton title={t('Delete')} disabled={!selected} onClick={remove}><Trash2 size={19}/><small>{t('Delete')}</small></ToolButton></div><small className="ribbon-caption">{toolbarGrip('edit')}{t('EDIT')}</small></div>
     <div className="ribbon-group" {...toolbarGroupProps('studios')}>
       <div className="ribbon-tools">
@@ -661,18 +709,19 @@ export default function App(){
         <ToolButton title={t('Terrain & Shape Studio')} onClick={()=>setDialog('terrain')}><Mountain size={20}/><small>{t('Terrain')}</small></ToolButton>
         <ToolButton title={t('Gameplay Studio')} onClick={()=>setDialog('gameplay')}><GitBranch size={20}/><small>{t('Gameplay')}</small></ToolButton>
         <ToolButton title={t('NPC & AI Studio')} onClick={()=>setDialog('npc')}><Skull size={20}/><small>{t('NPC')}</small></ToolButton>
+        <ToolButton title="Decal Studio" onClick={()=>{useEditor.getState().setResourceView('decals');useStudioLayout.getState().setVisible('assets',true)}}><Paintbrush size={20}/><small>Decals</small></ToolButton>
         <ToolButton title={t('Map Doctor')} onClick={()=>setDialog('doctor')}><CheckCircle2 size={20}/><small>{t('Map Doctor')}</small></ToolButton>
         <ToolButton title={t('Map Packager Studio')} onClick={()=>setDialog('packager')}><PackagePlus size={20}/><small>{t('Package')}</small></ToolButton>
       </div><small className="ribbon-caption">{toolbarGrip('studios')}{t('Studios')}</small>
     </div>
     </div>} viewport={<div className="viewport-column"><ErrorBoundary label="viewport 3D" compact><Viewport/></ErrorBoundary></div>} consolePanel={null}/>} 
-    <footer className="statusbar"><div><span className="status-ok"/>{t('Ready')} <span className="status-divider"/> Svengine · Valve 220 <span className="status-divider"/> {project.objects.filter(o=>o.kind==='brush').length} {t('brushes')} <span className="status-divider"/> {project.objects.filter(o=>o.kind==='entity').length} {t('entities')}</div><div><Keyboard size={13}/> {displayBinding(controls.shortcuts.move)} {t('Move')} · {displayBinding(controls.shortcuts.rotate)} {t('Rotate')} · {displayBinding(controls.shortcuts.scale)} {t('Scale')} · {walkMode?t('Gameplay Test'):flyMode?t('Fly ON'):'RMB look · WASD · Q/E'} <span className="status-divider"/> SvenStudio 3D v1.4.0</div></footer>
+    <footer className="statusbar"><div><span className="status-ok"/>{t('Ready')} <span className="status-divider"/> Svengine · Valve 220 <span className="status-divider"/> {project.objects.filter(o=>o.kind==='brush').length} {t('brushes')} <span className="status-divider"/> {project.objects.filter(o=>o.kind==='entity').length} {t('entities')}</div><div><Keyboard size={13}/> {displayBinding(controls.shortcuts.move)} {t('Move')} · {displayBinding(controls.shortcuts.rotate)} {t('Rotate')} · {displayBinding(controls.shortcuts.scale)} {t('Scale')} · {walkMode?t('Gameplay Test'):flyMode?t('Fly ON'):'RMB look · WASD · Q/E'} <span className="status-divider"/> SvenStudio 3D v1.4.0 HF15 Preview 3 HF1</div></footer>
     {!bspMode&&<ShadingPie/>}
     {dialog==='visibility'&&<VisibilityManager onClose={()=>setDialog(null)}/>}
     {dialog==='output'&&<BuildOutputModal onClose={()=>setDialog(null)} onCancel={cancelCompile} onDoctor={()=>setDialog('doctor')}/>}
     {dialog==='settings'&&<SettingsModal onClose={()=>setDialog(null)}/>}
     {dialog==='controls'&&<ControlsModal onClose={()=>setDialog(null)}/>}
-    {dialog==='about'&&<AboutModal onClose={()=>setDialog(null)}/>}
+    {dialog==='about'&&<AboutModal onClose={closeHelp}/>}
     {dialog==='layout'&&<LayoutModal onClose={()=>setDialog(null)}/>}
     {dialog==='entityAppearance'&&<EntityAppearanceModal onClose={()=>setDialog(null)}/>}
     {dialog==='gameplay'&&<GameplayStudio onClose={()=>setDialog(null)}/>}

@@ -50,7 +50,11 @@
     "verify:bsp-recovery": "node --test tests/bsp-native-edit.test.mjs && node --test tests/bsp-to-map.test.mjs && node --test tests/bsp-surface-restore.test.mjs",
     "verify:texture-studio": "node --experimental-strip-types --test tests/texture-studio-v14.test.mjs tests/texture-ui-integration-v14.test.mjs",
     "verify:construction-v14": "node --experimental-strip-types --test tests/construction-workflow-v14.test.mjs",
-    "verify:shape-prefab-hf2": "node --test tests/shape-prefab-viewport-hf2.test.mjs"
+    "verify:shape-prefab-hf2": "node --test tests/shape-prefab-viewport-hf2.test.mjs",
+    "verify:hf14": "node scripts/verify-hf14.mjs",
+    "verify:hf15": "node scripts/verify-hf15.mjs",
+    "verify:hf15-hf4": "node scripts/verify-hf15-p2-hf4.mjs",
+    "verify:hf15-hf5": "node scripts/verify-hf15-p2-hf5.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.0.7",

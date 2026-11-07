@@ -5,12 +5,16 @@ import type {TextureAsset} from './types';
 export function wadBasename(path:string):string{return path.trim().replace(/\\/g,'/').split('/').pop()?.toLowerCase()||'';}
 export function preferredTextureAssets(assets:TextureAsset[],paths:string[],projectWads:string[]=[]):Map<string,TextureAsset>{
   const order=(paths.length?paths:projectWads).map(wadBasename);
-  const priorities=new Map(order.map((name,index)=>[name,index]));
+  // First configured WAD wins, matching GoldSrc search precedence.
+  const priorities=new Map<string,number>();
+  order.forEach((name,index)=>{if(name&&!priorities.has(name))priorities.set(name,index)});
   const selected=new Map<string,{asset:TextureAsset;rank:number}>();
   for(const asset of assets){
-    const key=asset.name.toLowerCase(),rank=priorities.get(asset.wad.toLowerCase())??Number.MAX_SAFE_INTEGER;
+    const key=asset.name.toLowerCase(),rank=priorities.get(wadBasename(asset.wad))??Number.MAX_SAFE_INTEGER;
     const current=selected.get(key);
-    if(!current||rank<current.rank||rank===current.rank)selected.set(key,{asset,rank});
+    // Equal-priority archives use the latest import (historical browser behavior).
+    // Declared WAD priority still wins over import order.
+    if(!current||rank<=current.rank)selected.set(key,{asset,rank});
   }
   return new Map([...selected].map(([name,value])=>[name,value.asset]));
 }

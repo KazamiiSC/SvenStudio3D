@@ -23,53 +23,95 @@ function DockPane({id,side,onStart,onEnd,children}:{id:DockPanelId,side:DockSide
   const t=useT();
   const setVisible=useStudioLayout(s=>s.setVisible),move=useStudioLayout(s=>s.movePanel);
   const Icon=panelIcons[id];
-  return <section className="dock-pane" data-pane={id}>
+  return <section className="dock-pane" data-pane={id} data-dock-side={side}>
     <div className="dock-pane-titlebar"><DragHandle onStart={e=>onStart(e,id)} onEnd={onEnd}><Icon size={15}/><strong>{t(panelNames[id])}</strong></DragHandle>
       <div className="dock-pane-actions"><AttachSelect value={side} onChange={dest=>move(id,dest)} label={panelNames[id]}/><button title={t('Hide panel')} onClick={()=>setVisible(id,false)}><EyeOff size={14}/></button></div>
     </div>
     <div className="dock-pane-body">{children}</div>
   </section>;
 }
+/** Pointer drags are window-scoped so a resize still works outside its small handle.
+ * Always release the cursor and selection lock on blur/cancel/Escape. */
+function beginResizeCursor(cursor:'col-resize'|'row-resize'){
+  const previousCursor=document.body.style.cursor;
+  const previousSelection=document.body.style.userSelect;
+  document.body.style.cursor=cursor;
+  document.body.style.userSelect='none';
+  return ()=>{document.body.style.cursor=previousCursor;document.body.style.userSelect=previousSelection};
+}
 function useSizeDrag(){
   const setSideSize=useStudioLayout(s=>s.setSideSize);
   return (event:ReactPointerEvent<HTMLDivElement>,side:DockSide)=>{
+    if(event.button!==0)return;
     event.preventDefault();
-    const startCoord=side==='left'||side==='right'?event.clientX:event.clientY;
+    const pointerId=event.pointerId;
+    const vertical=side==='left'||side==='right';
+    const startCoord=vertical?event.clientX:event.clientY;
     const store=useStudioLayout.getState();
-    const size0=side==='left'||side==='right'?store.widths[side]:store.heights[side];
+    const size0=vertical?store.widths[side]:store.heights[side];
     const dir=side==='left'||side==='top'?1:-1;
-    const oldCursor=document.body.style.cursor;
-    document.body.style.cursor=side==='left'||side==='right'?'col-resize':'row-resize';
-    // Pointer coordinates are screen pixels. Dock sizes are unzoomed CSS pixels.
+    const restore=beginResizeCursor(vertical?'col-resize':'row-resize');
     const onMove=(e:globalThis.PointerEvent)=>{
+      if(e.pointerId!==pointerId)return;
       const scale=useStudioLayout.getState().uiScale;
-      setSideSize(side,size0+dir*((side==='left'||side==='right'?e.clientX:e.clientY)-startCoord)/scale);
+      setSideSize(side,size0+dir*((vertical?e.clientX:e.clientY)-startCoord)/scale);
     };
-    const onUp=()=>{window.removeEventListener('pointermove',onMove);window.removeEventListener('pointerup',onUp);window.removeEventListener('pointercancel',onUp);document.body.style.cursor=oldCursor};
-    window.addEventListener('pointermove',onMove);window.addEventListener('pointerup',onUp);window.addEventListener('pointercancel',onUp);
+    const onUp=(e:globalThis.PointerEvent)=>{if(e.pointerId===pointerId)stop()};
+    const onKey=(e:KeyboardEvent)=>{if(e.key==='Escape')stop()};
+    const stop=()=>{
+      window.removeEventListener('pointermove',onMove);
+      window.removeEventListener('pointerup',onUp);
+      window.removeEventListener('pointercancel',onUp);
+      window.removeEventListener('blur',stop);
+      window.removeEventListener('keydown',onKey);
+      restore();
+    };
+    window.addEventListener('pointermove',onMove);
+    window.addEventListener('pointerup',onUp);
+    window.addEventListener('pointercancel',onUp);
+    window.addEventListener('blur',stop);
+    window.addEventListener('keydown',onKey);
   };
 }
 function StackSplitter({a,b,horizontal}:{a:DockPanelId,b:DockPanelId,horizontal:boolean}){
   const setWeights=useStudioLayout(s=>s.setWeights);
   const begin=(event:ReactPointerEvent<HTMLDivElement>)=>{
+    if(event.button!==0)return;
     event.preventDefault();
     const parent=event.currentTarget.parentElement;
     if(!parent)return;
     const panelA=parent.querySelector(`[data-pane="${a}"]`) as HTMLElement|null;
     const panelB=parent.querySelector(`[data-pane="${b}"]`) as HTMLElement|null;
     if(!panelA||!panelB)return;
+    const pointerId=event.pointerId;
     const start=horizontal?event.clientX:event.clientY;
     const sizeA=horizontal?panelA.getBoundingClientRect().width:panelA.getBoundingClientRect().height;
     const sizeB=horizontal?panelB.getBoundingClientRect().width:panelB.getBoundingClientRect().height;
+    if(sizeA+sizeB<=0)return;
     const initial=useStudioLayout.getState().weights;
     const weightSum=initial[a]+initial[b];
+    const restore=beginResizeCursor(horizontal?'col-resize':'row-resize');
     const move=(e:globalThis.PointerEvent)=>{
+      if(e.pointerId!==pointerId)return;
       const delta=(horizontal?e.clientX:e.clientY)-start;
       const fraction=Math.max(.18,Math.min(.82,(sizeA+delta)/(sizeA+sizeB)));
       setWeights(a,fraction*weightSum,b,(1-fraction)*weightSum);
     };
-    const up=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',up)};
-    window.addEventListener('pointermove',move);window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);
+    const up=(e:globalThis.PointerEvent)=>{if(e.pointerId===pointerId)stop()};
+    const onKey=(e:KeyboardEvent)=>{if(e.key==='Escape')stop()};
+    const stop=()=>{
+      window.removeEventListener('pointermove',move);
+      window.removeEventListener('pointerup',up);
+      window.removeEventListener('pointercancel',up);
+      window.removeEventListener('blur',stop);
+      window.removeEventListener('keydown',onKey);
+      restore();
+    };
+    window.addEventListener('pointermove',move);
+    window.addEventListener('pointerup',up);
+    window.addEventListener('pointercancel',up);
+    window.addEventListener('blur',stop);
+    window.addEventListener('keydown',onKey);
   };
   return <div role="separator" aria-label="Resize dock panels" className={`dock-split ${horizontal?'split-horizontal':'split-vertical'}`} onPointerDown={begin}/>;
 }

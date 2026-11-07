@@ -29,7 +29,11 @@ test('all preview map callbacks pass only the brush, never the map index as text
   if(!call||!ts.isArrowFunction(call)||!ts.isCallExpression(call.body)||call.body.expression.getText(tree)!=='buildMeshGeometry')return;
   assert.equal(call.body.arguments.length,2);
   assert.equal(call.body.arguments[0].getText(tree),call.parameters[0].name.getText(tree));
-  assert.equal(call.body.arguments[1].getText(tree),'assetSizes');
+  const lookup=call.body.arguments[1];
+  assert.ok(ts.isIdentifier(lookup),'Texture dimensions must be passed by identifier, not an .map index');
+  const declaration=tree.statements.filter(ts.isFunctionDeclaration).find(fn=>fn.pos<=node.pos&&fn.end>=node.end);
+  assert.ok(declaration,'Preview callback must be inside a named component');
+  assert.match(declaration.getText(tree),new RegExp(`const\\s+${lookup.text}\\s*=\\s*useMemo\\(\\(\\)\\s*=>\\s*textureSizeLookup\\(`),'Texture lookup must derive from imported WAD assets');
   fixed++;
  });
  assert.equal(fixed,2,'PrimitivePlacement and PrefabClickPlacement must use explicit brush callbacks');
@@ -38,8 +42,8 @@ test('all preview map callbacks pass only the brush, never the map index as text
 test('each preview and normal brush uses WAD texture dimensions; GhostBrush has its own asset hook',()=>{
  assert.match(viewport,/function GhostBrush\([\s\S]*?const assets=useEditor\(s=>s\.textureAssets\);/);
  assert.match(viewport,/function BrushVisual\([\s\S]*?const assetSizes=useMemo\(\(\)=>textureSizeLookup\(assets\),\[assets,wadPriority\]\)/);
- assert.match(viewport,/function PrimitivePlacement\([\s\S]*?preview\.map\(brush=>buildMeshGeometry\(brush,assetSizes\)\)/);
- assert.match(viewport,/function PrefabClickPlacement\([\s\S]*?brushes\.map\(brush=>buildMeshGeometry\(brush,assetSizes\)\)/);
+ assert.match(viewport,/function PrimitivePlacement\([\s\S]*?initial\.map\(b=>buildMeshGeometry\(b,sizes\)\)/);
+ assert.match(viewport,/function PrefabClickPlacement\([\s\S]*?brushes\.map\(b=>buildMeshGeometry\(b,sizes\)\)/);
  assert.match(viewport,/new WeakMap<TextureAsset\[\],\{key:string;sizes:ReadonlyMap/);
 });
 

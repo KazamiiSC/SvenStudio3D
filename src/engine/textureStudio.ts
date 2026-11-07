@@ -1,7 +1,8 @@
 /** Texture Studio 1.4 — pure, GoldSrc/Valve 220-compatible UV operations.
  * No geometry or entity data is ever modified by these helpers. */
 import type {Brush,Face,Vec3} from './types';
-import {translateTexelShift,texelAt} from './valve220UV.ts';
+import {translateTexelShift} from './valve220UV.ts';
+import {safeTextureAlignment} from './textureAxisSafety.ts';
 export type TextureFaceRef={id:string;face:number};
 export type TextureFacePatch=Partial<Pick<Face,'texture'|'uShift'|'vShift'|'uScale'|'vScale'|'rotation'|'uAxis'|'vAxis'>>;
 export type TexturePreset={id:string;name:string;settings:TextureFacePatch};
@@ -80,8 +81,16 @@ export function faceUvBounds(brush:Brush,faceIndex:number){
 }
 export function fitFace(brush:Brush,faceIndex:number,width:number,height:number,repeatU=1,repeatV=1):TextureFacePatch{
   if(![width,height,repeatU,repeatV].every(v=>Number.isFinite(v)&&v>0))throw Error('Invalid dimensions or repeat count');
-  const b=faceUvBounds(brush,faceIndex);
-  return sanitizeTexturePatch({uScale:Math.max(.005,(b.maxU-b.minU)/(width*repeatU)),vScale:Math.max(.005,(b.maxV-b.minV)/(height*repeatV)),uShift:-b.minU/Math.max(.005,(b.maxU-b.minU)/(width*repeatU)),vShift:-b.minV/Math.max(.005,(b.maxV-b.minV)/(height*repeatV))});
+  const b=faceUvBounds(brush,faceIndex),face=brush.faces[faceIndex];
+  const rangeU=b.maxU-b.minU,rangeV=b.maxV-b.minV;
+  if(rangeU<1e-8||rangeV<1e-8)throw Error('Cannot fit a face with degenerate UV projection.');
+  // A negative scale mirrors the WAD image. Fit must not silently unmirror it.
+  // Keep the same orientation and anchor its first texel to the correct edge.
+  const uScale=Math.sign(face.uScale??1)*Math.max(.005,rangeU/(width*repeatU));
+  const vScale=Math.sign(face.vScale??1)*Math.max(.005,rangeV/(height*repeatV));
+  return sanitizeTexturePatch({uScale,vScale,
+    uShift:-(uScale<0?b.maxU:b.minU)/uScale,
+    vShift:-(vScale<0?b.maxV:b.minV)/vScale});
 }
 /** World-based alignment works across coplanar faces; around corners, reproject the axes
  * onto the destination plane and phase-match at the nearest vertex pair. */
@@ -97,17 +106,21 @@ export function alignFaceToReference(source:Brush,sourceIndex:number,destination
   const a=source.faces[sourceIndex],b=destination.faces[destinationIndex];if(!a||!b)throw Error('Face missing');
   const aPoints=brushWorldVertices(source),bPoints=brushWorldVertices(destination);
   const axesA=faceTextureAxes(aPoints,a),axesB=faceTextureAxes(bPoints,b);
-  const project=(axis:Vec3,n:Vec3)=>sub(axis,n.map(v=>v*dot(axis,n)) as Vec3);
-  const tangent=(axis:Vec3,fallback:Vec3):Vec3=>{const projected=project(axis,axesB.n);const length=Math.hypot(...projected);return length>0.1?projected.map(v=>v/length) as Vec3:fallback;};
-  const u=tangent(axesA.u,axesB.u),v=tangent(axesA.v,axesB.v);
+  // Preserve the source's full Valve 220 basis and texel phase when possible.
+  // Normalizing axes would change texture scale on imported/non-unit UV axes.
+  // Across a right-angle corner, safely rebase only the unusable directions,
+  // preserving the source pixel phase at the closest pair of face vertices.
   let closest:[Vec3,Vec3]|null=null,dist=Infinity;
-  for(const ia of a.indices)for(const ib of b.indices){const p=aPoints[ia],q=bPoints[ib];const d=dot(sub(p,q),sub(p,q));if(d<dist){dist=d;closest=[p,q];}}
+  for(const ia of a.indices)for(const ib of b.indices){
+    const p=aPoints[ia],q=bPoints[ib],d=dot(sub(p,q),sub(p,q));
+    if(d<dist){dist=d;closest=[p,q];}
+  }
   if(!closest)throw Error('No vertices');
   const anchor:Vec3=closest[0].map((v,i)=>(v+closest![1][i])/2) as Vec3;
-  const sU=a.uScale??1,sV=a.vScale??1;
-  const uShift=texelAt(anchor,axesA.u,sU,a.uShift||0)-dot(anchor,u)/sU;
-  const vShift=texelAt(anchor,axesA.v,sV,a.vShift||0)-dot(anchor,v)/sV;
-  return sanitizeTexturePatch({texture:a.texture,uAxis:u,vAxis:v,rotation:0,uScale:sU,vScale:sV,uShift,vShift});
+  const safe=safeTextureAlignment(axesB.n,anchor,axesA.u,axesA.v,
+    a.uShift??0,a.vShift??0,a.uScale??1,a.vScale??1);
+  return sanitizeTexturePatch({texture:a.texture,uAxis:safe.u,vAxis:safe.v,rotation:0,
+    uScale:a.uScale??1,vScale:a.vScale??1,uShift:safe.uShift,vShift:safe.vShift});
 }
 export function gesturePatch(face:Face,handle:UvHandle,dx:number,dy:number,keepRatio=false):TextureFacePatch{
   if(!Number.isFinite(dx)||!Number.isFinite(dy))return {};

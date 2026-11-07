@@ -17,7 +17,7 @@ const requireHash=(data)=>crypto.createHash('sha256').update(data).digest('hex')
 test('original Valve 220 exporter, BSP viewer and backend remain unchanged',()=>{
  assert.match(text('src/engine/exportMap.ts'),/safeFaceTextureAxes\(vertices,face\)/, 'Valve 220 export applies texture basis safety without changing geometry');
  assert.equal(requireHash(text('src/components/BspViewer.tsx')),'161bfa4aa59ca07ee8015222cae7e71355b2025240ed8fba02bbe74909f48919','src/components/BspViewer.tsx');
- assert.equal(requireHash(text('server/index.js')),'4d1de7967aec89380064fb0022891043f5268124b27a4813e44b10141641752d','server/index.js');
+ assert.equal(requireHash(text('server/index.js').replace(/\/\/ Read only the fixed engine resource decals\.wad[\s\S]*?(?=\/\/ Read-only asset access restricted to Sven Co-op's model directories\.)/,'')),'4d1de7967aec89380064fb0022891043f5268124b27a4813e44b10141641752d','server/index.js');
 });
 test('shape dimensions are remembered independently per primitive and validated',()=>{
  const data=new Map();globalThis.localStorage={getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)};

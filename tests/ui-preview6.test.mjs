@@ -43,9 +43,12 @@ test('No separate on-screen label diagnostic counter remains',async()=>{
 
 test('Workspace secondary actions are grouped and all settings remain reachable',async()=>{
   const app=await read('src/App.tsx');
-  for(const dialog of ['layout','visibility','entityAppearance','controls','output','settings']){
+  for(const dialog of ['layout','visibility','entityAppearance','controls','output']){
     assert.match(app,new RegExp(`setDialog\\('${dialog}'\\);setWorkspaceMenu\\(false\\)`));
   }
+  const workspaceSection=app.split('id="sven-workspace-menu"')[1].split('</TopDropdown></div>')[0];
+  assert.doesNotMatch(workspaceSection,/t\('Build configuration'\)/);
+  assert.match(app,/className="top-build-settings"/);
   assert.match(app,/svenstudio:toggle-gameplay-settings/);
   assert.match(app,/setDialog\('packager'\)/);
   assert.match(app,/saveProject\(project\)/);

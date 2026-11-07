@@ -85,6 +85,23 @@ app.post('/api/svengine/fgd',async(req,res)=>{
     return res.type('text/plain; charset=utf-8').send(await load(path.basename(file)));
   }catch(error){return res.status(500).json({error:`Cannot read Sven Co-op FGD: ${String(error)}`})}
 });
+// Read only the fixed engine resource decals.wad, never a client-provided file name.
+app.post('/api/assets/decals',async(req,res)=>{
+  const gameDir=req.body?.gameDir;
+  if(typeof gameDir!=='string'||gameDir.length>1024||!(await isDir(gameDir)))
+    return res.status(400).json({error:'Configure the local Sven Co-op game directory first.'});
+  const candidates=[path.join(gameDir,'decals.wad'),path.join(gameDir,'..','svencoop','decals.wad')];
+  try{
+    const file=candidates.find(existsSync);
+    if(!file)return res.status(404).json({error:'decals.wad not found. Import the game file manually.'});
+    const stat=await fs.stat(file);
+    if(!stat.isFile()||stat.size<12||stat.size>32*1024*1024)
+      return res.status(400).json({error:'Invalid or oversized decals.wad (maximum 32 MB).'});
+    const bytes=await fs.readFile(file);
+    if(bytes.subarray(0,4).toString('ascii')!=='WAD3')return res.status(400).json({error:'decals.wad is not WAD3.'});
+    return res.setHeader('Cache-Control','no-store').type('application/octet-stream').send(bytes);
+  }catch(error){return res.status(500).json({error:`Cannot read decals.wad: ${String(error)}`})}
+});
 // Read-only asset access restricted to Sven Co-op's model directories.
 app.post('/api/assets/models',async(req,res)=>{
   try{return res.json(await listModels(req.body?.gameDir,req.body?.query||'',req.body?.limit,{refresh:req.body?.refresh===true}));}

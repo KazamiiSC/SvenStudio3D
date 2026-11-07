@@ -28,7 +28,7 @@ test('Help lists only updated feature groups and six locales',()=>{
   const guide=src('../src/engine/studioGuide.ts');const app=src('../src/App.tsx');
   for(const id of ['geometry','architecture','textures','entities','world','models','gameplay','bsp','build'])assert.match(guide,new RegExp(`id:'${id}'`));
   for(const code of ['es','en','ru','ko','zh','pt'])assert.match(guide,new RegExp(`(?:^|\\s)${code}:\\{`));
-  assert.match(app,/guide\.groups\.map\(/);
+  assert.match(app,/manual\.studios\.map\(/);
   assert.doesNotMatch(app,/v1\.2\.0 Preview 5/);
-  assert.match(app,/guide\.cameraKeys/);
+  assert.match(app,/manual\.camera\)/);
 });

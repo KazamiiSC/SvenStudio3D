@@ -229,11 +229,11 @@
 .dock-pane-body .property-object-header{border-radius:10px;margin:10px;box-shadow:inset 0 1px #ffffff17,0 4px 14px #080d1b66;background:linear-gradient(130deg,#303a63,#202944)}
 .dock-pane-body .console-panel{border-radius:0}
 .empty-dock-drop{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;height:100%;color:#b1b9ed;font-size:11px;background:repeating-linear-gradient(-45deg,#252a4844 0,#252a4844 8px,#181e35cc 8px,#181e35cc 16px)}
-.dock-split{z-index:1;flex-shrink:0;position:relative;background:transparent}
+.dock-split{z-index:1;flex-shrink:0;position:relative;background:transparent;touch-action:none}
 .dock-split:hover:after,.dock-split:active:after{background:var(--dock-secondary);box-shadow:0 0 10px var(--dock-secondary)}
 .split-vertical{height:6px;cursor:row-resize;width:100%}.split-vertical:after{content:"";position:absolute;top:2px;left:22%;width:56%;height:2px;background:#656a9b;border-radius:8px}
 .split-horizontal{width:6px;cursor:col-resize;height:100%}.split-horizontal:after{content:"";position:absolute;left:2px;top:22%;height:56%;width:2px;background:#656a9b;border-radius:8px}
-.zone-size-handle{z-index:3;flex:0 0 7px;position:relative;background:transparent}
+.zone-size-handle{z-index:3;flex:0 0 7px;position:relative;background:transparent;touch-action:none}
 .resize-left,.resize-right{width:7px;cursor:col-resize}.resize-top,.resize-bottom{height:7px;cursor:row-resize}
 .zone-size-handle:after{content:"";position:absolute;border-radius:10px;background:#48537b;transition:background .12s,box-shadow .12s}
 .resize-left:after,.resize-right:after{width:2px;height:32%;left:3px;top:34%}
@@ -1914,3 +1914,324 @@ body>.topbar-floating-menu{box-shadow:0 16px 42px #040916bf}
 .door-motion-status strong{color:#8ce4ff}
 .door-motion-status code{font-size:10px;color:#b1cfee}
 .property-guide-open{margin:8px 0 13px}
+
+/* v1.4.0 HF13 — adaptive horizontal docks. Width is measured from the actual
+   panel container, not the browser window. A bottom/top dock can be resized or
+   share its row with other panes without stretching WAD thumbnails. */
+@container (min-width: 620px){
+  .dock-pane[data-dock-side="top"] .dock-pane-body>.asset-panel,
+  .dock-pane[data-dock-side="bottom"] .dock-pane-body>.asset-panel{
+    display:grid!important;
+    grid-template-columns:minmax(190px,1.25fr) minmax(185px,1fr) minmax(185px,1fr);
+    grid-template-rows:32px 37px minmax(0,1fr);
+    align-content:stretch;
+    min-width:0;
+    min-height:0;
+  }
+  .dock-pane[data-dock-side="top"] .asset-panel>.asset-tabs,
+  .dock-pane[data-dock-side="bottom"] .asset-panel>.asset-tabs{
+    grid-column:1;grid-row:1;
+    height:32px;flex-basis:auto;
+    justify-content:flex-start;gap:3px;padding:2px 6px;
+    overflow:hidden;
+  }
+  .dock-pane[data-dock-side="top"] .asset-tabs>button,
+  .dock-pane[data-dock-side="bottom"] .asset-tabs>button{
+    flex:0 1 52px;min-width:27px;max-width:52px;
+  }
+  .dock-pane[data-dock-side="top"] .asset-panel>.panel-header,
+  .dock-pane[data-dock-side="bottom"] .asset-panel>.panel-header{
+    grid-column:2 / -1;grid-row:1;min-height:0;height:32px;flex-basis:auto;
+    border-left:1px solid #35476c;
+  }
+  .dock-pane[data-dock-side="top"] .asset-panel>.search-field,
+  .dock-pane[data-dock-side="bottom"] .asset-panel>.search-field{
+    grid-column:1;grid-row:2;height:30px;flex-basis:auto;
+    margin:3px 6px 4px;min-width:0;
+  }
+  .dock-pane[data-dock-side="top"] .asset-panel>.import-area,
+  .dock-pane[data-dock-side="bottom"] .asset-panel>.import-area{
+    grid-column:2;grid-row:2;
+    display:flex;flex-direction:row;align-items:center;gap:5px;
+    padding:3px 6px 4px;min-width:0;overflow:hidden;border-bottom:0;
+  }
+  .dock-pane[data-dock-side="top"] .import-area>.soft-button,
+  .dock-pane[data-dock-side="bottom"] .import-area>.soft-button{
+    flex:1 1 0;min-width:0;width:auto;min-height:29px;height:29px;
+    font-size:10px;padding-inline:5px;gap:4px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .dock-pane[data-dock-side="top"] .import-area>p,
+  .dock-pane[data-dock-side="bottom"] .import-area>p{display:none}
+  .dock-pane[data-dock-side="top"] .asset-panel>.filter-wrap,
+  .dock-pane[data-dock-side="bottom"] .asset-panel>.filter-wrap,
+  .dock-pane[data-dock-side="top"] .asset-panel>.entity-category-row,
+  .dock-pane[data-dock-side="bottom"] .asset-panel>.entity-category-row{
+    grid-column:3;grid-row:2;display:flex;align-items:center;
+    min-width:0;margin:0;padding:3px 7px 4px;min-height:0;
+    border-bottom:0;background:transparent;
+  }
+  .dock-pane[data-dock-side="top"] .asset-panel>.filter-wrap select,
+  .dock-pane[data-dock-side="bottom"] .asset-panel>.filter-wrap select{min-width:0;flex:1}
+  .dock-pane[data-dock-side="top"] .asset-panel>:is(.texture-results,.entity-list,.npc-asset-list),
+  .dock-pane[data-dock-side="bottom"] .asset-panel>:is(.texture-results,.entity-list,.npc-asset-list){
+    grid-column:1 / -1;grid-row:3;min-height:0;min-width:0;
+    overflow-y:auto;overscroll-behavior:contain;
+    border-top:1px solid #35476c;
+  }
+  .dock-pane[data-dock-side="top"] .asset-panel>.empty-message,
+  .dock-pane[data-dock-side="bottom"] .asset-panel>.empty-message{
+    grid-column:1 / -1;grid-row:3;min-height:0;overflow-y:auto;
+  }
+  .dock-pane[data-dock-side="top"] .asset-panel>:is(.model-browser,.sound-browser,.assets-scroll:not(.entity-list):not(.npc-asset-list):not(.texture-results)),
+  .dock-pane[data-dock-side="bottom"] .asset-panel>:is(.model-browser,.sound-browser,.assets-scroll:not(.entity-list):not(.npc-asset-list):not(.texture-results)){
+    grid-column:1 / -1;grid-row:2 / 4;min-height:0;min-width:0;
+  }
+  .dock-pane[data-dock-side="top"] .asset-panel>.entity-list,
+  .dock-pane[data-dock-side="bottom"] .asset-panel>.entity-list,
+  .dock-pane[data-dock-side="top"] .asset-panel>.npc-asset-list,
+  .dock-pane[data-dock-side="bottom"] .asset-panel>.npc-asset-list{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));
+    grid-auto-rows:max-content;gap:2px 6px;align-content:start;padding:6px 8px;
+  }
+  .dock-pane[data-dock-side="top"] .asset-panel>.npc-asset-list>:is(.npc-hint,.npc-asset-footer),
+  .dock-pane[data-dock-side="bottom"] .asset-panel>.npc-asset-list>:is(.npc-hint,.npc-asset-footer){grid-column:1/-1}
+  .dock-pane[data-dock-side="top"] .texture-results .texture-grid,
+  .dock-pane[data-dock-side="bottom"] .texture-results .texture-grid{
+    grid-template-columns:repeat(auto-fill,minmax(104px,140px));
+    gap:8px;justify-content:start;align-content:start;padding:5px 9px 10px;
+  }
+  .dock-pane[data-dock-side="top"] .texture-tile img,
+  .dock-pane[data-dock-side="bottom"] .texture-tile img{height:64px;max-height:64px;object-fit:contain}
+  .dock-pane[data-dock-side="top"] .sound-browser-compact,
+  .dock-pane[data-dock-side="bottom"] .sound-browser-compact{
+    display:grid;grid-template-columns:minmax(180px,1fr) minmax(260px,2fr) minmax(120px,.7fr);
+    grid-template-rows:32px minmax(0,1fr);gap:4px 8px;padding:5px 8px;
+  }
+  .dock-pane[data-dock-side="top"] .sound-library-heading,
+  .dock-pane[data-dock-side="bottom"] .sound-library-heading{grid-column:1;grid-row:1;min-width:0}
+  .dock-pane[data-dock-side="top"] .sound-search,
+  .dock-pane[data-dock-side="bottom"] .sound-search{grid-column:2;grid-row:1;min-width:0}
+  .dock-pane[data-dock-side="top"] .sound-scan-status,
+  .dock-pane[data-dock-side="bottom"] .sound-scan-status{grid-column:3;grid-row:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .dock-pane[data-dock-side="top"] .sound-favorite-filter,
+  .dock-pane[data-dock-side="bottom"] .sound-favorite-filter{grid-column:1;grid-row:2;align-self:start;min-width:0}
+  .dock-pane[data-dock-side="top"] .sound-file-scroll,
+  .dock-pane[data-dock-side="bottom"] .sound-file-scroll{
+    grid-column:2 / -1;grid-row:2;min-height:0;overflow:auto;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    grid-auto-rows:max-content;align-content:start;gap:5px;
+  }
+  .dock-pane[data-dock-side="top"] .sound-browser-footer,
+  .dock-pane[data-dock-side="bottom"] .sound-browser-footer{
+    grid-column:1;grid-row:2;align-self:end;min-width:0;
+  }
+  .dock-pane[data-dock-side="top"] .sound-browser-footer audio,
+  .dock-pane[data-dock-side="bottom"] .sound-browser-footer audio{height:30px}
+  .dock-pane[data-dock-side="top"] .sound-browser-footer button,
+  .dock-pane[data-dock-side="bottom"] .sound-browser-footer button{padding:5px}
+  .dock-pane[data-dock-side="top"] .sound-browser-compact .sound-file-scroll,
+  .dock-pane[data-dock-side="bottom"] .sound-browser-compact .sound-file-scroll{min-height:0}
+
+  /* Properties become a scrollable, multi-column inspector rather than a long,
+     mostly empty vertical list when docked across a wide horizontal strip. */
+  .dock-pane[data-dock-side="top"] .property-scroll,
+  .dock-pane[data-dock-side="bottom"] .property-scroll{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    grid-auto-rows:max-content;align-content:start;align-items:start;
+    gap:5px 10px;padding:4px 10px 12px;
+    overflow-y:auto;overflow-x:hidden;min-height:0;
+  }
+  .dock-pane[data-dock-side="top"] .property-scroll>:not(.property-field):not(.vector-property):not(.entity-choice),
+  .dock-pane[data-dock-side="bottom"] .property-scroll>:not(.property-field):not(.vector-property):not(.entity-choice){
+    grid-column:1 / -1;min-width:0;
+  }
+  .dock-pane[data-dock-side="top"] .property-scroll>.property-object-header,
+  .dock-pane[data-dock-side="bottom"] .property-scroll>.property-object-header{
+    margin:3px 0;max-width:430px;padding:5px 9px;min-height:0;
+  }
+  .dock-pane[data-dock-side="top"] .property-scroll>.property-group-title,
+  .dock-pane[data-dock-side="bottom"] .property-scroll>.property-group-title{
+    margin:4px 0 1px;height:23px;min-height:23px;
+  }
+  .dock-pane[data-dock-side="top"] .property-scroll>.property-field,
+  .dock-pane[data-dock-side="bottom"] .property-scroll>.property-field,
+  .dock-pane[data-dock-side="top"] .property-scroll>.entity-choice,
+  .dock-pane[data-dock-side="bottom"] .property-scroll>.entity-choice,
+  .dock-pane[data-dock-side="top"] .property-scroll>.vector-property,
+  .dock-pane[data-dock-side="bottom"] .property-scroll>.vector-property{
+    min-width:0;width:100%;margin:0;padding:3px;
+  }
+  .dock-pane[data-dock-side="top"] .property-scroll .property-field,
+  .dock-pane[data-dock-side="bottom"] .property-scroll .property-field{
+    grid-template-columns:minmax(100px,1.15fr) minmax(90px,1fr);gap:6px;
+  }
+  .dock-pane[data-dock-side="top"] .entity-quick-links,
+  .dock-pane[data-dock-side="bottom"] .entity-quick-links{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:5px;align-items:start;
+  }
+  .dock-pane[data-dock-side="top"] .entity-quick-links .entity-link-picker,
+  .dock-pane[data-dock-side="bottom"] .entity-quick-links .entity-link-picker{min-width:0}
+  .dock-pane[data-dock-side="top"] .property-scroll>.property-buttons,
+  .dock-pane[data-dock-side="bottom"] .property-scroll>.property-buttons{max-width:520px;padding:6px 2px}
+}
+/* When horizontal docks are split into two medium-width panes, retain usable
+   search/import/filter controls instead of reverting to the tall side layout. */
+@container (min-width:430px) and (max-width:619px){
+  .dock-pane[data-dock-side="top"] .dock-pane-body>.asset-panel,
+  .dock-pane[data-dock-side="bottom"] .dock-pane-body>.asset-panel{
+    display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-template-rows:32px 34px 32px minmax(0,1fr);min-height:0;
+  }
+  .dock-pane[data-dock-side="top"] .asset-panel>.asset-tabs,
+  .dock-pane[data-dock-side="bottom"] .asset-panel>.asset-tabs{
+    grid-column:1;grid-row:1;height:32px;flex-basis:auto;padding:2px 4px;
+  }
+  .dock-pane[data-dock-side="top"] .asset-tabs>button,
+  .dock-pane[data-dock-side="bottom"] .asset-tabs>button{min-width:25px}
+  .dock-pane[data-dock-side="top"] .asset-panel>.panel-header,
+  .dock-pane[data-dock-side="bottom"] .asset-panel>.panel-header{grid-column:2;grid-row:1;height:32px;flex-basis:auto}
+  .dock-pane[data-dock-side="top"] .asset-panel>.search-field,
+  .dock-pane[data-dock-side="bottom"] .asset-panel>.search-field{grid-column:1;grid-row:2;margin:2px 4px;height:29px;flex-basis:auto}
+  .dock-pane[data-dock-side="top"] .asset-panel>.import-area,
+  .dock-pane[data-dock-side="bottom"] .asset-panel>.import-area{
+    grid-column:2;grid-row:2;display:flex;gap:3px;min-width:0;padding:2px 4px;overflow:hidden;
+  }
+  .dock-pane[data-dock-side="top"] .import-area>.soft-button,
+  .dock-pane[data-dock-side="bottom"] .import-area>.soft-button{
+    flex:1 1 0;min-width:0;width:auto;height:28px;font-size:9px;padding:3px 4px;gap:3px;
+  }
+  .dock-pane[data-dock-side="top"] .import-area>p,
+  .dock-pane[data-dock-side="bottom"] .import-area>p{display:none}
+  .dock-pane[data-dock-side="top"] .asset-panel>:is(.filter-wrap,.entity-category-row),
+  .dock-pane[data-dock-side="bottom"] .asset-panel>:is(.filter-wrap,.entity-category-row){
+    grid-column:1 / -1;grid-row:3;padding:2px 5px;min-width:0;
+  }
+  .dock-pane[data-dock-side="top"] .asset-panel>:is(.texture-results,.entity-list),
+  .dock-pane[data-dock-side="bottom"] .asset-panel>:is(.texture-results,.entity-list){
+    grid-column:1 / -1;grid-row:4;min-height:0;overflow-y:auto;
+  }
+  .dock-pane[data-dock-side="top"] .asset-panel>.npc-asset-list,
+  .dock-pane[data-dock-side="bottom"] .asset-panel>.npc-asset-list{grid-column:1/-1;grid-row:3/5;min-height:0;overflow:auto}
+  .dock-pane[data-dock-side="top"] .asset-panel>:is(.sound-browser,.model-browser,.assets-scroll:not(.entity-list):not(.npc-asset-list):not(.texture-results)),
+  .dock-pane[data-dock-side="bottom"] .asset-panel>:is(.sound-browser,.model-browser,.assets-scroll:not(.entity-list):not(.npc-asset-list):not(.texture-results)){
+    grid-column:1 / -1;grid-row:2/5;min-height:0;
+  }
+  .dock-pane[data-dock-side="top"] .asset-panel>.empty-message,
+  .dock-pane[data-dock-side="bottom"] .asset-panel>.empty-message{grid-column:1/-1;grid-row:4;min-height:0;overflow:auto}
+}
+@container (min-width:340px) and (max-width:619px){
+  .dock-pane[data-dock-side="top"] .texture-results .texture-grid,
+  .dock-pane[data-dock-side="bottom"] .texture-results .texture-grid{
+    grid-template-columns:repeat(auto-fill,minmax(104px,140px));justify-content:start;
+  }
+  .dock-pane[data-dock-side="top"] .texture-tile img,
+  .dock-pane[data-dock-side="bottom"] .texture-tile img{height:64px;object-fit:contain}
+}
+
+/* HF15 Preview 1: visible grid, edit increments and angle/scale controls are separate. */
+.viewport-frame .hud-widget .viewport-grid-controls-wrap{display:flex;flex-direction:column;align-items:flex-start;position:relative;max-width:100%}
+.viewport-frame .hud-widget .viewport-grid-controls-wrap .viewport-controls-row{max-width:min(960px,90vw)}
+.viewport-frame .hud-widget .viewport-edit-step{border-color:#508c9b;background:#1b3444e8}
+.viewport-frame .hud-widget .viewport-edit-step>span{font-size:13px;color:#9fe5db;font-weight:700}
+.viewport-frame .hud-widget .viewport-precision-panel{position:absolute;z-index:35;top:calc(100% + 8px);left:0;width:min(310px,calc(90vw - 8px));max-height:min(70vh,420px);overflow-y:auto;background:#13233a;box-shadow:0 14px 36px #000c;border:1px solid #5482a9;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:9px;color:#dceaff;font-size:11px;pointer-events:auto}
+.viewport-frame .hud-widget .viewport-precision-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:4px;border-bottom:1px solid #334c70}
+.viewport-frame .hud-widget .viewport-precision-head strong{font-size:12px;color:#f0f9ff}
+.viewport-frame .hud-widget .viewport-precision-head button{min-width:25px;min-height:25px;padding:2px 7px}
+.viewport-frame .hud-widget .viewport-precision-panel label{display:flex;justify-content:space-between;align-items:center;gap:8px;min-width:0}
+.viewport-frame .hud-widget .viewport-precision-panel select{min-width:104px;height:30px;border:1px solid #4d6b90;background:#192c46;color:#e8f6ff;border-radius:6px;padding:3px 8px}
+.viewport-frame .hud-widget .viewport-precision-panel small{font-size:10px;color:#a7c3e2;line-height:1.5}
+.snap-step-control{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:65px;color:#a8c9e0;font-size:10px;line-height:1}
+.snap-step-control .snap-select{margin-top:0;padding:5px 6px;min-width:60px}
+@media (max-width:620px){.viewport-frame .hud-widget .viewport-grid-controls-wrap .viewport-controls-row{max-width:calc(100vw - 24px)}.viewport-frame .hud-widget .viewport-grid-select select{min-width:45px}}
+
+/* HF15 Preview 2 HF1 — contextual precision popup and zoom-independent UV tools. */
+.viewport-frame .hud-widget.hud-view.hud-popup-open{z-index:66}
+.viewport-frame .hud-widget.hud-view.hud-popup-open .hud-widget-content{overflow:visible}
+.viewport-frame .hud-widget .viewport-precision-panel{max-width:min(310px,calc(100vw - 100px));box-sizing:border-box;overscroll-behavior:contain}
+/* Never draw a face-sized yellow rectangle: it grows beyond the viewport with camera zoom. */
+.texture-uv-handles{
+  width:120px!important;height:120px!important;min-width:0;min-height:0;
+  transform:translate(-50%,-50%);border:1px solid #74cbed99;
+  border-radius:13px;background:#0d2234a8;box-shadow:0 4px 18px #07172b88;
+  contain:layout style;backdrop-filter:blur(2px)
+}
+.texture-uv-polygon{display:none}
+.texture-uv-guide{position:absolute;inset:18px;border:1px dashed #8ed2e17d;border-radius:6px;pointer-events:none}
+.texture-uv-tag{position:absolute;bottom:5px;left:5px;font:700 9px Consolas,monospace;color:#d0f1ff;pointer-events:none;opacity:.85}
+.texture-uv-handle{width:16px!important;height:16px!important;min-width:16px!important;min-height:16px!important;border-radius:5px!important}
+.texture-uv-move{width:26px!important;height:26px!important;min-width:26px!important;min-height:26px!important;background:#21b6c2!important}
+.texture-uv-rotate{top:-17px;border-radius:50%!important;background:#efa754!important}
+.texture-uv-n{top:18px}.texture-uv-s{top:calc(100% - 18px)}
+.texture-uv-w{left:18px}.texture-uv-e{left:calc(100% - 18px)}
+.texture-uv-nw{left:18px;top:18px}.texture-uv-ne{left:calc(100% - 18px);top:18px}
+.texture-uv-sw{left:18px;top:calc(100% - 18px)}.texture-uv-se{left:calc(100% - 18px);top:calc(100% - 18px)}
+
+/* HF15 Preview 2 HF2 — Texture Studio is a draggable screen-level palette.
+   It must not be clipped by viewport-frame overflow:hidden, and never jumps on
+   selecting another face. Its last window position is stored independently. */
+.texture-studio-panel.texture-studio-floating{
+  position:fixed!important;
+  width:min(322px,calc(100vw - 16px))!important;
+  max-height:calc(100dvh - 20px);
+  z-index:2200!important;
+}
+.texture-studio-floating .texture-studio-head{cursor:grab}
+.texture-studio-floating .texture-studio-head:active{cursor:grabbing}
+
+/* HF15 Preview 2 HF3 — build configuration and first-run manual */
+.app-shell .titlebar-right>.top-build-settings{white-space:nowrap;border-color:#6071a3;background:linear-gradient(158deg,#2b3252,#202841);color:#e2ecff;min-height:32px}
+.build-autosave-notice{padding:12px 14px;background:#152d3f;border:1px solid #3d7790;border-radius:9px;margin:14px 0 18px;overflow-wrap:anywhere}
+.build-autosave-notice strong{font-size:13px;color:#aee6ff}
+.build-autosave-notice p{font-size:12px;color:#c9deed;line-height:1.6;margin:9px 0}
+.build-autosave-notice code{display:block;padding:9px 11px;background:#101b2b;border:1px solid #415876;border-radius:5px;color:#83eabf;font-size:11px;white-space:normal;word-break:break-all}
+.manual-fullscreen{border-color:#506e98!important}
+.manual-guide-grid{margin:12px 0 18px}
+.manual-block{scroll-margin-top:18px}
+.manual-shortcuts{margin:14px 0 20px}
+.manual-shortcuts>p,.manual-studio-card p,.manual-contact p{font-size:12px;line-height:1.65;color:#d0dfee;margin:6px 0}
+.manual-shortcut-group{border-top:1px solid #394d70;padding:12px 0 3px}
+.manual-shortcut-group h5,.manual-contact h5{color:#b5dafa;font-size:12px;margin:0 0 10px}
+.manual-shortcut-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px}
+.manual-shortcut-row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11px;color:#d0e5f5;padding:6px 8px;background:#182941;border-radius:6px}
+.manual-shortcut-row kbd{color:#e5f4ff;background:#293d5b;border:1px solid #4c6c91;border-radius:5px;padding:4px 6px;white-space:nowrap;font-family:inherit;font-size:10px}
+.manual-contact{margin:12px 0 8px;border-color:#5578a1}
+.manual-contact a{color:#8ccffe;text-decoration:underline}
+@media(max-width:760px){.manual-shortcut-grid{grid-template-columns:1fr}}
+@media(max-width:1250px){.app-shell .titlebar-right>.top-build-settings{font-size:0;min-width:34px;padding:0 9px}.app-shell .titlebar-right>.top-build-settings svg{width:17px;height:17px}}
+
+/* HF15 Preview 2 HF4 — reposition the UV palette without changing its UV data.
+   A separate drag tab keeps all existing UV handles accessible. */
+.texture-uv-drag-header{
+  position:absolute;left:0;top:calc(100% + 6px);width:120px;height:24px;
+  display:flex;align-items:center;justify-content:center;
+  box-sizing:border-box;border-radius:6px;border:1px solid #78b6d3;
+  color:#e3f8ff;background:#12314bef;font:600 10px system-ui,sans-serif;
+  cursor:grab;pointer-events:auto;touch-action:none;user-select:none;
+  box-shadow:0 3px 8px #030b1680;
+}
+.texture-uv-drag-header:active{cursor:grabbing;background:#21516d}
+
+/* HF15 Preview 2 HF5: native viewport DOM overlay, not projected R3F Html.
+   Neither Three.js camera transforms nor canvas zoom can move this widget. */
+.viewport-frame>.texture-uv-screen-overlay{position:absolute;inset:0;z-index:74;pointer-events:none;overflow:hidden;}
+.viewport-frame>.texture-uv-screen-overlay>.texture-uv-handles{position:absolute;display:block;pointer-events:none;}
+
+/* HF15 Preview 3: native GoldSrc Decal Studio. */
+.decal-studio{padding:12px;display:flex;flex-direction:column;gap:10px;min-height:0;overflow:auto}
+.decal-intro,.decal-current,.decal-note{border:1px solid #365074;border-radius:9px;background:#172641;padding:10px;color:#dbe7fc;font-size:12px}
+.decal-intro p{margin:6px 0 0;line-height:1.5;color:#a9c0d8}
+.decal-note{color:#abc0d9;line-height:1.5}
+.decal-search{display:flex;align-items:center;gap:7px;border:1px solid #345278;border-radius:7px;padding:6px;background:#0e1930}
+.decal-search input{min-width:0;flex:1;background:none;border:0;color:white;outline:0}
+.decal-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:7px}
+.decal-tile{min-width:0;padding:5px;background:#1b2b47;border:1px solid #395271;border-radius:7px;color:#d9e7fa;cursor:pointer;display:grid;gap:4px;text-align:center}
+.decal-tile.chosen,.decal-tile:hover{border-color:#67d9b1;background:#203b58}
+.decal-thumbnail{width:100%;aspect-ratio:1;display:grid;place-items:center;background:repeating-conic-gradient(#34435a 0% 25%,#24354d 0% 50%) 50%/20px 20px}
+.decal-thumbnail img{max-width:100%;max-height:100%;object-fit:contain;image-rendering:pixelated}
+.decal-tile small{overflow-wrap:anywhere;font-size:10px}
+.decal-placement-status{display:flex;gap:5px;align-items:center;color:#6de5ba;font-size:11px;flex-wrap:wrap}
+.decal-placement-status button,.decal-actions button{background:#2c456c;color:#e4f0ff;border:1px solid #4c7098;border-radius:5px;padding:6px;cursor:pointer}
+.decal-actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.decal-actions button{display:flex;align-items:center;gap:4px}
