@@ -23,7 +23,7 @@ Created by **KZ-Sheez** with the help of **ChatGPT-6 Astra**.
 
 **SvenStudio 3D** is a local, browser-based level editor designed to make map creation for **Sven Co-op / Svengine** more accessible without sacrificing the tools needed for complex GoldSrc projects. Build and texture brushes in a 3D viewport, configure entities through FGD definitions, preview gameplay logic, inspect compiled BSP maps, and launch the Sven Co-op compilation pipeline from a single workspace.
 
-The editor combines familiar workflows from traditional level editors with modern viewport navigation, visual controls, reusable structures, smart placement, and diagnostic tools. It is intended for both beginners creating their first room and experienced mappers working on larger environments. This README includes improvements introduced through **v1.4.0 HF11**.
+The editor combines familiar workflows from traditional level editors with modern viewport navigation, visual controls, reusable structures, smart placement, and diagnostic tools. It is intended for both beginners creating their first room and experienced mappers working on larger environments. This README includes improvements introduced through **HF15 Preview 3 HF1**.
 
 ### Main features
 
@@ -138,7 +138,7 @@ I would appreciate help testing, reporting issues, contributing improvements and
 
 **SvenStudio 3D** es un editor de niveles 3D que funciona localmente en el navegador y está diseñado para facilitar la creación de mapas para **Sven Co-op / Svengine**, sin renunciar a las herramientas que necesitan los proyectos avanzados de GoldSrc. Permite construir y texturizar brushes en un visor 3D, configurar entidades a partir de archivos FGD, organizar conexiones de jugabilidad, inspeccionar BSP compilados y ejecutar el proceso de compilación desde un mismo entorno.
 
-Combina herramientas clásicas de creación de mapas con controles modernos, construcción reutilizable, colocación inteligente y diagnóstico. Está pensado tanto para personas que crean su primera habitación como para mappers experimentados que trabajan en escenarios grandes. Este README incluye las mejoras incorporadas hasta **v1.4.0 HF11**.
+Combina herramientas clásicas de creación de mapas con controles modernos, construcción reutilizable, colocación inteligente y diagnóstico. Está pensado tanto para personas que crean su primera habitación como para mappers experimentados que trabajan en escenarios grandes. Este README incluye las mejoras incorporadas hasta **HF15 Preview 3 HF1**.
 
 ### Características principales
 
