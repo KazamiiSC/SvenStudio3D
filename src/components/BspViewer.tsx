@@ -13,12 +13,16 @@ import {layoutBspLabels,bspLabelPriority} from '../engine/bspLabelLayout';
 import {gameToThree} from '../engine/geometry';
 import {useT} from '../i18n';
 import {useEditor} from '../store';
-import {bspEntityLabel,bspEntitySearchText,bspFlyAxes,bspFlyMultiplier,clampBspFlySpeed,clampBspFlySensitivity} from '../engine/bspViewerTools';
+import {bspEntityLabel,bspEntitySearchText,bspFlyAxes,bspFlyMultiplier,clampBspFlySpeed,clampBspFlySensitivity,bspCameraPose,type BspCameraView} from '../engine/bspViewerTools';
 import {BspRecoveryStudio} from './BspRecoveryStudio';
 import {readNativeBsp} from '../engine/bspNativeEdit';
 import {BspSkyBackground,BspStaticModels,type BspAssetStatus} from './BspViewerAssets';
 import {bspModelPlacements,bspSpatialBatchCell} from '../engine/bspViewerAssets';
-import {BSP_LIGHTMAP_UV_CHANNEL,BSP_LIGHTMAP_DEFAULT_INTENSITY,BSP_LIGHTMAP_DEFAULT_AMBIENT,bspLightmapAtlasUv} from '../engine/bspLightmap';
+import {composeBspFaceLighting,bspLightstyleStats} from '../engine/bspLighting';
+import {inspectBspLighting} from '../engine/bspLightingDiagnostics';
+import {BSP_BAKED_LIGHT_UV_ATTRIBUTE,BSP_BAKED_VERTEX_SHADER,BSP_BAKED_FRAGMENT_SHADER} from '../engine/bspBakedShader';
+import {readBspFog,normalizeBspDisplayGamma,BSP_DISPLAY_GAMMA_DEFAULT,type BspFogSettings,type BspLightFilter} from '../engine/bspPresentation';
+import {BSP_LIGHTMAP_UV_CHANNEL,BSP_LIGHTMAP_DEFAULT_INTENSITY,BSP_LIGHTMAP_DEFAULT_AMBIENT,bspLightmapAtlasUv,bspDirectLightmapUv,bspPaddedLightmap} from '../engine/bspLightmap';
 import {goldSrcMaterial,normalizeGoldSrcPreview,readPreviewSettings,savePreviewSettings,type GoldSrcPreviewSettings} from '../engine/previewEnhancements';
 
 const ATLAS_SIZE=1024,MAX_LIGHT_PAGES=24;
@@ -47,7 +51,7 @@ const geometricNormal=(face:BspFace)=>{
   const [x,y,z]=face.normal;
   return new THREE.Vector3(x,z,-y).normalize();
 };
-function buildBspScene(map:BspMap,wadAssets:TextureAsset[],lightmaps:boolean,wireframe:boolean,preview:GoldSrcPreviewSettings):RenderChunk[]{
+function buildBspScene(map:BspMap,wadAssets:TextureAsset[],lightmaps:boolean,wireframe:boolean,preview:GoldSrcPreviewSettings,baked=false,styleFrame=0,surfaceOnly=false):RenderChunk[]{
   const allTextures:THREE.Texture[]=[];
   const byName=new Map(wadAssets.map(a=>[a.name.toLowerCase(),a]));
   const fallback=checkerTexture();allTextures.push(fallback);
@@ -69,12 +73,25 @@ function buildBspScene(map:BspMap,wadAssets:TextureAsset[],lightmaps:boolean,wir
   for(const entity of map.entities){const match=/^\*(\d+)$/.exec(entity.properties.model||'');if(match)brushEntityByModel.set(Number(match[1]),{classname:entity.classname,props:entity.properties});}
   const pages:AtlasPage[]=[];
   const placements=new Map<BspFace,AtlasPlacement>();
+  // On small scenes a separate face texture avoids atlas coordinate/packing
+  // dependencies entirely. Large maps keep the existing efficient atlases.
+  const directFaces=baked&&lightmaps&&map.faces.length<=64;
+  const directTextures=new Map<BspFace,THREE.Texture>();
   if(lightmaps){
     const page=():AtlasPage=>({rgba:new Uint8ClampedArray(ATLAS_SIZE*ATLAS_SIZE*4),x:1,y:1,rowH:0});
-    pages.push(page());
+    if(!directFaces)pages.push(page());
     for(const face of map.faces){
-      const rgb=face.lightRgb,w=face.lightWidth,h=face.lightHeight;
+      const rgb=baked?composeBspFaceLighting(face,map.entities,styleFrame):face.lightRgb,w=face.lightWidth,h=face.lightHeight;
       if(!rgb||w>ATLAS_SIZE-4||h>ATLAS_SIZE-4)continue;
+      if(directFaces){
+        const texture=canvasTexture(new ImageData(bspPaddedLightmap(rgb,w,h),w+2,h+2));
+        texture.colorSpace=THREE.LinearSRGBColorSpace;
+        texture.wrapS=texture.wrapT=THREE.ClampToEdgeWrapping;
+        texture.magFilter=texture.minFilter=THREE.LinearFilter;
+        texture.generateMipmaps=false;texture.userData.bspLightmap=true;
+        allTextures.push(texture);directTextures.set(face,texture);
+        continue;
+      }
       let p=pages[pages.length-1];
       if(p.x+w+2>ATLAS_SIZE){p.x=1;p.y+=p.rowH+1;p.rowH=0}
       if(p.y+h+2>ATLAS_SIZE){if(pages.length>=MAX_LIGHT_PAGES)continue;p=page();pages.push(p)}
@@ -94,36 +111,44 @@ function buildBspScene(map:BspMap,wadAssets:TextureAsset[],lightmaps:boolean,wir
     // Three.js r175 reads a second coordinate set from `uv1` when channel=1.
     tex.colorSpace=THREE.LinearSRGBColorSpace;tex.channel=BSP_LIGHTMAP_UV_CHANNEL;
     tex.wrapS=tex.wrapT=THREE.ClampToEdgeWrapping;tex.magFilter=THREE.LinearFilter;tex.minFilter=THREE.LinearFilter;
+    tex.generateMipmaps=false;tex.userData.bspLightmap=true;
     allTextures.push(tex);return tex;
   });
   type Part={p:number[];n:number[];uv:number[];uv1:number[]};
-  const batches=new Map<string,{part:Part;textureIndex:number;page:number;model:number}>();
-  for(const face of map.faces){
+  const batches=new Map<string,{part:Part;textureIndex:number;page:number;model:number;direct?:THREE.Texture}>();
+  for(const [index,face] of map.faces.entries()){
     if(face.points.length<3)continue;
     const tex=map.textures[face.texture],name=tex?.name||'';
     if(!visibleTexture(name))continue;
-    const placement=placements.get(face),page=placement?.page??-1;
-    const key=`${face.texture}:${page}:${face.model}:${map.faces.length>4000?bspSpatialBatchCell(face.points):'all'}`;
+    const placement=placements.get(face),direct=directTextures.get(face),page=placement?.page??-1;
+    const key=direct?`direct:${index}`:`${face.texture}:${page}:${face.model}:${map.faces.length>4000?bspSpatialBatchCell(face.points):'all'}`;
     let entry=batches.get(key);
-    if(!entry){entry={textureIndex:face.texture,page,model:face.model,part:{p:[],n:[],uv:[],uv1:[]}};batches.set(key,entry)}
+    if(!entry){entry={textureIndex:face.texture,page,model:face.model,direct,part:{p:[],n:[],uv:[],uv1:[]}};batches.set(key,entry)}
     const part=entry.part,normal=geometricNormal(face),w=Math.max(1,tex?.width||16),h=Math.max(1,tex?.height||16);
     for(let i=1;i<face.points.length-1;i++)for(const k of [0,i,i+1]){
       const point=face.points[k],uv=face.texels[k];
       part.p.push(point[0],point[2],-point[1]);part.n.push(normal.x,normal.y,normal.z);
       part.uv.push(uv[0]/w,-uv[1]/h);
-      if(placement){
+      if(direct){
+        const [lightU,lightV]=bspDirectLightmapUv(uv,face.lightMin,face.lightWidth,face.lightHeight);
+        part.uv1.push(lightU,lightV);
+      }else if(placement){
         const [lightU,lightV]=bspLightmapAtlasUv(uv,face.lightMin,placement,ATLAS_SIZE);
         part.uv1.push(lightU,lightV);
       }else part.uv1.push(0,0);
     }
   }
   const chunks:RenderChunk[]=[];
-  for(const {part,textureIndex,page,model} of batches.values()){
+  for(const {part,textureIndex,page,model,direct} of batches.values()){
     const geometry=new THREE.BufferGeometry();
     geometry.setAttribute('position',new THREE.Float32BufferAttribute(part.p,3));
     geometry.setAttribute('normal',new THREE.Float32BufferAttribute(part.n,3));
     geometry.setAttribute('uv',new THREE.Float32BufferAttribute(part.uv,2));
-    geometry.setAttribute('uv1',new THREE.Float32BufferAttribute(part.uv1,2));
+    const lightUv=new THREE.Float32BufferAttribute(part.uv1,2);
+    // The UV channel required by built-in Three.js lightmaps also has a
+    // custom GLSL attribute for ShaderMaterial, which does not imply USE_UV1.
+    geometry.setAttribute('uv1',lightUv);
+    geometry.setAttribute(BSP_BAKED_LIGHT_UV_ATTRIBUTE,lightUv);
     geometry.computeBoundingSphere();
     const tex=map.textures[textureIndex];
     const info=goldSrcMaterial(tex?.name||'',brushEntityByModel.get(model));
@@ -136,7 +161,18 @@ function buildBspScene(map:BspMap,wadAssets:TextureAsset[],lightmaps:boolean,wir
       depthWrite:!blended,blending:blended&&info.kind==='additive'?THREE.AdditiveBlending:THREE.NormalBlending,wireframe};
     // Surfaces without baked samples remain visible; transparent water/glass
     // are visual-only approximations and never change the compiled BSP.
-    const material=lightmaps&&page<0
+    // True baked mode directly multiplies the compiled RGB lightmap and WAD
+    // albedo. No Three.js point/hemisphere lights or PBR ambient term is used.
+    // Runtime renderer gamma/palette/lightstyle behavior remains engine-dependent.
+    const bakedTexture=direct||(page>=0?atlasTextures[page]:null);
+    const material=surfaceOnly?new THREE.MeshBasicMaterial(common):baked&&bakedTexture?new THREE.ShaderMaterial({
+      uniforms:{uDiffuse:{value:image},uLighting:{value:bakedTexture},uGain:{value:1},uOpacity:{value:blended?info.opacity:1},uAlphaCutoff:{value:masked?.5:0},
+        uDisplayGamma:{value:1},uFogEnabled:{value:false},uFogColor:{value:new THREE.Color('#000000')},uFogStart:{value:0},uFogEnd:{value:1}},
+      vertexShader:BSP_BAKED_VERTEX_SHADER,
+      fragmentShader:BSP_BAKED_FRAGMENT_SHADER,
+      transparent:blended,depthWrite:!blended,side:THREE.DoubleSide,wireframe,
+      blending:blended&&info.kind==='additive'?THREE.AdditiveBlending:THREE.NormalBlending,toneMapped:false
+    }):lightmaps&&!bakedTexture&&page<0
       ?new THREE.MeshBasicMaterial(common)
       :new THREE.MeshStandardMaterial({...common,lightMap:page>=0?atlasTextures[page]:null,
         lightMapIntensity:BSP_LIGHTMAP_DEFAULT_INTENSITY,color:'#ffffff',roughness:info.kind==='water'?.28:info.kind==='glass'?.2:1,metalness:info.kind==='glass'?.08:0});
@@ -147,17 +183,34 @@ function buildBspScene(map:BspMap,wadAssets:TextureAsset[],lightmaps:boolean,wir
   Object.defineProperty(chunks,'ownedTextures',{value:allTextures});
   return chunks;
 }
-function BspSurface({map,assets,lightmaps,wireframe,brightness,preview}:{map:BspMap;assets:TextureAsset[];lightmaps:boolean;wireframe:boolean;brightness:number;preview:GoldSrcPreviewSettings}){
+export function BspSurface({map,assets,lightmaps,wireframe,brightness,preview,baked=false,styleFrame=0,surfaceOnly=false,fog=null,displayGamma=BSP_DISPLAY_GAMMA_DEFAULT,lightFilter='linear'}:{map:BspMap;assets:TextureAsset[];lightmaps:boolean;wireframe:boolean;brightness:number;preview:GoldSrcPreviewSettings;baked?:boolean;styleFrame?:number;surfaceOnly?:boolean;fog?:BspFogSettings|null;displayGamma?:number;lightFilter?:BspLightFilter}){
   const {gl}=useThree();
-  const chunks=useMemo(()=>buildBspScene(map,assets,lightmaps,wireframe,preview),[map,assets,lightmaps,wireframe,preview.enabled,preview.transparency]);
+  const chunks=useMemo(()=>buildBspScene(map,assets,lightmaps,wireframe,preview,baked,styleFrame,surfaceOnly),[map,assets,lightmaps,wireframe,preview.enabled,preview.transparency,baked,styleFrame,surfaceOnly]);
   const waterMaps=useMemo(()=>[...new Set(chunks.filter(c=>c.material.userData.previewWater).map(c=>(c.material as THREE.MeshStandardMaterial).map).filter((x):x is THREE.Texture=>!!x))],[chunks]);
   useFrame(({clock})=>{for(const tex of waterMaps){tex.offset.x=preview.enabled&&preview.waterAnimation?Math.sin(clock.elapsedTime*.65)*.02:0;tex.offset.y=preview.enabled&&preview.waterAnimation?clock.elapsedTime*.014%1:0;}});
-  useEffect(()=>{gl.toneMapping=THREE.ACESFilmicToneMapping;gl.toneMappingExposure=preview.enabled?preview.exposure:1;return()=>{gl.toneMapping=THREE.NoToneMapping;gl.toneMappingExposure=1}},[gl,preview.enabled,preview.exposure]);
+  useEffect(()=>{gl.toneMapping=baked?THREE.NoToneMapping:THREE.ACESFilmicToneMapping;gl.toneMappingExposure=baked?1:preview.enabled?preview.exposure:1;return()=>{gl.toneMapping=THREE.NoToneMapping;gl.toneMappingExposure=1}},[gl,preview.enabled,preview.exposure,baked]);
   useEffect(()=>{
     for(const chunk of chunks){
       if(chunk.material instanceof THREE.MeshStandardMaterial)chunk.material.lightMapIntensity=brightness;
+      if(chunk.material instanceof THREE.ShaderMaterial){
+        const u=chunk.material.uniforms;
+        u.uGain.value=brightness;
+        u.uDisplayGamma.value=normalizeBspDisplayGamma(displayGamma);
+        u.uFogEnabled.value=!!fog;
+        u.uFogColor.value.set(fog?.hex||'#000000');
+        u.uFogStart.value=fog?.start??0;
+        u.uFogEnd.value=fog?.end??1;
+      }
     }
-  },[chunks,brightness]);
+    const textures=(chunks as RenderChunk[]&{ownedTextures?:THREE.Texture[]}).ownedTextures||[];
+    const filter=lightFilter==='nearest'?THREE.NearestFilter:THREE.LinearFilter;
+    for(const texture of textures){
+      if(!texture.userData.bspLightmap)continue;
+      if(texture.magFilter!==filter||texture.minFilter!==filter){
+        texture.magFilter=filter;texture.minFilter=filter;texture.needsUpdate=true;
+      }
+    }
+  },[chunks,brightness,displayGamma,fog,lightFilter]);
   useEffect(()=>()=>{
     chunks.forEach(c=>{c.geometry.dispose();c.material.dispose()});
     const textures=(chunks as RenderChunk[]&{ownedTextures?:THREE.Texture[]}).ownedTextures;
@@ -243,7 +296,7 @@ function BspEntities({map,onSelect,selected,labels,smartLabels,labelLimit,labelD
     </group>;
   })}</group>;
 }
-function BspNavigation({map,fly,reset,flyRef,speed,sensitivity,smooth,focus}:{map:BspMap;fly:boolean;reset:number;
+export function BspNavigation({map,fly,reset,flyRef,speed,sensitivity,smooth,focus,view='interior'}:{map:BspMap;fly:boolean;reset:number;view?:BspCameraView;
   flyRef:MutableRefObject<HTMLCanvasElement|null>;speed:number;sensitivity:number;smooth:boolean;focus:{index:number;serial:number}|null}){
   const {camera,gl}=useThree();
   const orbit=useRef<OrbitControlsImpl>(null),keys=useRef(new Set<string>());
@@ -252,13 +305,14 @@ function BspNavigation({map,fly,reset,flyRef,speed,sensitivity,smooth,focus}:{ma
   const forward=useMemo(()=>new THREE.Vector3(),[]),right=useMemo(()=>new THREE.Vector3(),[]);
   const justFlying=useRef(false);
   useEffect(()=>{
-    const min=gameToThree(map.bounds.min),max=gameToThree(map.bounds.max),center=min.clone().add(max).multiplyScalar(.5);
-    const span=Math.max(150,max.distanceTo(min));
-    camera.position.copy(center.clone().add(new THREE.Vector3(span*.8,span*.45,span*.8)));
+    const pose=bspCameraPose(map,view);
+    const position=new THREE.Vector3(...pose.position),target=new THREE.Vector3(...pose.target);
+    const span=Math.max(150,gameToThree(map.bounds.max).distanceTo(gameToThree(map.bounds.min)));
+    camera.position.copy(position);
     camera.near=.25;camera.far=Math.max(5000,span*25);camera.updateProjectionMatrix();
-    camera.lookAt(center);orbit.current?.target.copy(center);orbit.current?.update();
+    camera.lookAt(target);orbit.current?.target.copy(target);orbit.current?.update();
     velocity.current.set(0,0,0);
-  },[camera,map,reset]);
+  },[camera,map,reset,view]);
   useEffect(()=>{
     if(!focus)return;
     const entity=map.entities[focus.index];if(!entity?.origin)return;
@@ -318,10 +372,10 @@ function BspNavigation({map,fly,reset,flyRef,speed,sensitivity,smooth,focus}:{ma
   });
   return <OrbitControls ref={orbit} enabled={!fly} makeDefault enableDamping dampingFactor={.12} maxDistance={100000}/>;
 }
-export function BspViewer({map,source,onBack,onOpen,onCompiled,onOpenRecoveredMap}:{map:BspMap;source:ArrayBuffer|null;onBack:()=>void;onOpen:()=>void;onCompiled:()=>void;onOpenRecoveredMap:(source:string,name:string,textures?:TextureAsset[])=>Promise<boolean>}){
+export function BspViewer({map,source,initialBaked=false,onBack,onOpen,onCompiled,onOpenRecoveredMap}:{map:BspMap;source:ArrayBuffer|null;initialBaked?:boolean;onBack:()=>void;onOpen:()=>void;onCompiled:()=>void;onOpenRecoveredMap:(source:string,name:string,textures?:TextureAsset[])=>Promise<boolean>}){
   const editorAssets=useEditor(s=>s.textureAssets);
   const gameDir=useEditor(s=>s.settings.gameDir);
-  const t=useT(),[lightmaps,setLightmaps]=useState(true),[wireframe,setWireframe]=useState(false),[showEntities,setShowEntities]=useState(true);
+  const t=useT(),[lightmaps,setLightmaps]=useState(true),[wireframe,setWireframe]=useState(false),[showEntities,setShowEntities]=useState(true),[baked,setBaked]=useState(initialBaked),[styleFrame,setStyleFrame]=useState(0);
   const [showLabels,setShowLabels]=useState(true),[navSettings,setNavSettings]=useState(false),[recoveryOpen,setRecoveryOpen]=useState(false);
   useEffect(()=>setRecoveryOpen(false),[source]);
   const [smartLabels,setSmartLabels]=useState(true),[labelLimit,setLabelLimit]=useState(32),[labelDistance,setLabelDistance]=useState(2400);
@@ -330,13 +384,21 @@ export function BspViewer({map,source,onBack,onOpen,onCompiled,onOpenRecoveredMa
   useEffect(()=>savePreviewSettings('goldsrc-preview-2',rendererPreview),[rendererPreview]);
   const changeRenderer=(patch:Partial<GoldSrcPreviewSettings>)=>setRendererPreview(p=>normalizeGoldSrcPreview({...p,...patch}));
   const [ambientFill,setAmbientFill]=useState(BSP_LIGHTMAP_DEFAULT_AMBIENT);
+  const bspFog=useMemo(()=>readBspFog(map.entities),[map]);
+  const [fogEnabled,setFogEnabled]=useState(()=>readBspFog(map.entities)?.initiallyEnabled??false);
+  const [displayGamma,setDisplayGamma]=useState(BSP_DISPLAY_GAMMA_DEFAULT);
+  const [lightFilter,setLightFilter]=useState<BspLightFilter>('linear');
+  useEffect(()=>setFogEnabled(bspFog?.initiallyEnabled??false),[bspFog]);
+  const effectiveFog=fogEnabled?bspFog:null;
   const [showSky,setShowSky]=useState(true),[showModels,setShowModels]=useState(false);
   const [skyStatus,setSkyStatus]=useState<BspAssetStatus>('off'),[modelStatus,setModelStatus]=useState<BspAssetStatus>('off');
   const modelCount=useMemo(()=>bspModelPlacements(map.entities).length,[map]);
+  const styleStats=useMemo(()=>bspLightstyleStats(map.faces),[map]);
+  const lightingAudit=useMemo(()=>inspectBspLighting(map.faces,map.entities,styleFrame),[map,styleFrame]);
   const [speed,setSpeed]=useState(()=>{try{return clampBspFlySpeed(Number(localStorage.getItem('sven-bsp-fly-speed')||360))}catch{return 360}});
   const [sensitivity,setSensitivity]=useState(()=>{try{return clampBspFlySensitivity(Number(localStorage.getItem('sven-bsp-fly-sensitivity')||.002))}catch{return .002}});
   const [smooth,setSmooth]=useState(true),[flyError,setFlyError]=useState('');
-  const [fly,setFly]=useState(false),[reset,setReset]=useState(0),[chosen,setChosen]=useState<number|null>(null),[query,setQuery]=useState('');
+  const [fly,setFly]=useState(false),[reset,setReset]=useState(0),[cameraView,setCameraView]=useState<BspCameraView>('interior'),[chosen,setChosen]=useState<number|null>(null),[query,setQuery]=useState('');
   const [focus,setFocus]=useState<{index:number;serial:number}|null>(null);
   const [assets,setAssets]=useState<TextureAsset[]>([]),[autoAssets,setAutoAssets]=useState<TextureAsset[]>([]);
   const [autoWadStatus,setAutoWadStatus]=useState<'idle'|'searching'|'ready'|'no-game'|'error'>('idle');
@@ -374,7 +436,7 @@ export function BspViewer({map,source,onBack,onOpen,onCompiled,onOpenRecoveredMa
     })();
     return ()=>{active=false;controller.abort()};
   },[map,gameDir,missingLocalNames,autoWadRefresh]);
-  useEffect(()=>{setChosen(null);setAssets([]);setFly(false);setQuery('');setFocus(null)},[map]);
+  useEffect(()=>{setChosen(null);setAssets([]);setFly(false);setQuery('');setFocus(null);setBaked(initialBaked);if(initialBaked)setLightBrightness(1)},[map,initialBaked]);
   useEffect(()=>{try{localStorage.setItem('sven-bsp-fly-speed',String(speed));localStorage.setItem('sven-bsp-fly-sensitivity',String(sensitivity))}catch{/* Storage can be disabled. */}},[speed,sensitivity]);
   useEffect(()=>()=>{if(document.pointerLockElement===flyRef.current)document.exitPointerLock?.()},[]);
   useEffect(()=>{
@@ -405,13 +467,16 @@ export function BspViewer({map,source,onBack,onOpen,onCompiled,onOpenRecoveredMa
       <button onClick={onOpen}><FileUp size={15}/>{t('Open BSP')}</button>
       <button onClick={onCompiled} title={t('Open compiled BSP')}>{t('Compiled BSP')}</button>
       <button className="bsp-on" disabled={!source} onClick={()=>{if(!source)return;try{readNativeBsp(source);if(fly){document.exitPointerLock?.();setFly(false)}setRecoveryOpen(true)}catch(e){window.alert(`${t('BSP Recovery cannot edit this map safely')}: ${String(e)}`)}}} title={t('Native BSP entity editing — original remains untouched')}><ShieldCheck size={15}/>{t('BSP Recovery')}</button>
-      <button className={lightmaps?'bsp-on':''} onClick={()=>setLightmaps(v=>!v)} title={t('Compiled lightmaps')}><Sun size={15}/>{t('Lightmaps')}</button>
+      <button className={lightmaps?'bsp-on':''} onClick={()=>{setLightmaps(v=>!v);setBaked(false)}} title={t('Compiled lightmaps')}><Sun size={15}/>{t('Lightmaps')}</button>
+      <button className={baked?'bsp-on':''} onClick={()=>{setBaked(v=>!v);setLightmaps(true);setLightBrightness(1)}} title="Show compiled RGB lightmaps without PBR lighting">Baked RGB</button>
       <button className={wireframe?'bsp-on':''} onClick={()=>setWireframe(v=>!v)}><Grid3x3 size={15}/>{t('Wireframe')}</button>
       <button className={showSky?'bsp-on':''} onClick={()=>setShowSky(v=>!v)} title={t('Use installed sky textures')}><Cloud size={15}/>{t('Real skybox')}</button>
       <button className={showModels?'bsp-on':''} onClick={()=>setShowModels(v=>!v)} title={t('Static model previews')}><Package size={15}/>{t('MDL models')}</button>
       <button className={showEntities?'bsp-on':''} onClick={()=>setShowEntities(v=>!v)}><Layers size={15}/>{t('Entities')}</button>
       <button disabled={!showEntities} className={showEntities&&showLabels?'bsp-on':''} onClick={()=>setShowLabels(v=>!v)}><Tags size={15}/>{t('Entity labels')}</button>
       <button className={navSettings?'bsp-on':''} onClick={()=>setNavSettings(v=>!v)}><Settings2 size={15}/>{t('Fly settings')}</button>
+      <button className={cameraView==='interior'?'bsp-on':''} onClick={()=>{setCameraView('interior');setReset(v=>v+1)}} title="Position the camera inside the BSP, at info_player_start if present"><Focus size={15}/>Interior</button>
+      <button className={cameraView==='overview'?'bsp-on':''} onClick={()=>{setCameraView('overview');setReset(v=>v+1)}} title="Orbit outside the BSP to inspect the entire map"><Box size={15}/>Exterior</button>
       <button onClick={()=>setReset(v=>v+1)} title={t('Reset camera')}><RotateCcw size={15}/></button>
       <button className={fly?'bsp-on bsp-fly-button':'bsp-fly-button'} onClick={()=>{
         if(fly){document.exitPointerLock?.();setFly(false)}
@@ -424,12 +489,13 @@ export function BspViewer({map,source,onBack,onOpen,onCompiled,onOpenRecoveredMa
     <div className="bsp-content">
       <div className="bsp-canvas"><Canvas camera={{position:[480,350,550],fov:65,near:.25,far:200000}} gl={{antialias:true,powerPreference:'high-performance'}} dpr={[1,1.4]}>
         <color attach="background" args={[map.skyname?'#57748f':'#18263a']}/>
+        {effectiveFog&&!baked&&<fog attach="fog" args={[effectiveFog.hex,effectiveFog.start,effectiveFog.end]}/>}
         {showSky&&<BspSkyBackground map={map} gameDir={gameDir} onStatus={setSkyStatus}/>}
         {showModels&&<BspStaticModels map={map} gameDir={gameDir} onStatus={setModelStatus}/>} 
-        <ambientLight intensity={lightmaps?ambientFill:1.7}/><hemisphereLight args={['#dae4ef','#737e93',lightmaps?.12:1.1]}/>
-        <BspSurface map={map} assets={allAssets} lightmaps={lightmaps} wireframe={wireframe} brightness={lightBrightness} preview={rendererPreview}/>
+        {!baked&&<><ambientLight intensity={lightmaps?ambientFill:1.7}/><hemisphereLight args={['#dae4ef','#737e93',lightmaps?.12:1.1]}/></>}
+        <BspSurface map={map} assets={allAssets} lightmaps={lightmaps} wireframe={wireframe} brightness={lightBrightness} preview={rendererPreview} baked={baked} styleFrame={styleFrame} fog={effectiveFog} displayGamma={displayGamma} lightFilter={lightFilter}/>
         {showEntities&&<BspEntities map={map} onSelect={setChosen} selected={chosen} labels={showLabels} smartLabels={smartLabels} labelLimit={labelLimit} labelDistance={labelDistance}/>}
-        <BspNavigation map={map} fly={fly} reset={reset} flyRef={flyRef} speed={speed} sensitivity={sensitivity} smooth={smooth} focus={focus}/>
+        <BspNavigation map={map} fly={fly} reset={reset} flyRef={flyRef} speed={speed} sensitivity={sensitivity} smooth={smooth} focus={focus} view={cameraView}/>
       </Canvas>
         {navSettings&&<div className="bsp-fly-settings" onPointerDown={e=>e.stopPropagation()}>
           <strong>{t('Fly camera controls')}</strong>
@@ -456,15 +522,36 @@ export function BspViewer({map,source,onBack,onOpen,onCompiled,onOpenRecoveredMa
           <label className="bsp-light-control">{t('Exposure')} · {rendererPreview.exposure.toFixed(2)}×<input type="range" min="0.5" max="2" step="0.05" value={rendererPreview.exposure} onChange={e=>changeRenderer({exposure:Number(e.target.value)})}/></label>
           <small>{t('GoldSrc preview is approximate; compiled BSP lightmaps remain the reference for baked lighting.')}</small>
         </div>
+        <div className="bsp-light-settings">
+          <strong>Calibración de Svengine · vista previa</strong>
+          {bspFog?<>
+            <label className="bsp-fly-checkbox"><input type="checkbox" checked={fogEnabled} onChange={event=>setFogEnabled(event.target.checked)}/>Niebla BSP (env_fog)</label>
+            <small>RGB {bspFog.color.join(' ')} · inicio {bspFog.start}u · fin {bspFog.end}u{!bspFog.initiallyEnabled?' · Start Off en el BSP':''}. Vista estática, sin simular triggers.</small>
+          </>:<small>Este BSP no tiene un env_fog válido.</small>}
+          <label className="bsp-light-control">Gamma visual · {displayGamma.toFixed(2)}×
+            <input type="range" min="0.65" max="1.6" step="0.05" value={displayGamma} onChange={event=>setDisplayGamma(normalizeBspDisplayGamma(Number(event.target.value)))}/>
+          </label>
+          <label className="bsp-light-control">Filtro de lightmap
+            <select value={lightFilter} onChange={event=>setLightFilter(event.target.value as BspLightFilter)}><option value="linear">Suave (bilineal)</option><option value="nearest">Píxel (nearest)</option></select>
+          </label>
+          <button className="bsp-light-reset" onClick={()=>{setFogEnabled(bspFog?.initiallyEnabled??false);setDisplayGamma(1);setLightFilter('linear')}}>Restablecer calibración</button>
+          <small>Gamma es una corrección de pantalla (1.0 = neutro) solo en Baked RGB; no es el parámetro rad_gamma y no modifica la iluminación del BSP.</small>
+        </div>
         {lightmaps&&<div className="bsp-light-settings">
+          <strong>SC-RAD · RGB diagnostic</strong>
+          <small>{lightingAudit.litFaces} faces with samples · {lightingAudit.zeroFaces} completely black · {lightingAudit.missingFaces} without samples. Peak {lightingAudit.peak}/255, mean {lightingAudit.average.toFixed(1)}/255.</small>
+          {lightingAudit.status==='black'&&<div className="bsp-warning" role="alert">Compiled lightmap pixels are all zero. Baked RGB correctly shows black: check SC-RAD build output, light keys, leaks and geometry; disabling Baked RGB uses an approximate fallback.</div>}
+          {lightingAudit.status==='missing'&&<div className="bsp-warning" role="alert">This BSP contains no readable static RGB lighting. Check the RAD stage and BSP light lump.</div>}
+          {lightingAudit.status==='very-dark'&&<div className="bsp-warning" role="alert">SC-RAD samples are extremely dark. Check the compile log and light entity configuration before increasing gain.</div>}
           <label className="bsp-light-control">{t('Lightmap intensity')} · {lightBrightness.toFixed(1)}
             <input type="range" min="0.5" max="6" step="0.1" value={lightBrightness} onChange={e=>setLightBrightness(Number(e.target.value))}/>
           </label>
-          <label className="bsp-light-control">{t('Ambient fill')} · {ambientFill.toFixed(2)}
+          {baked&&styleStats.animatedFaces>0&&<label className="bsp-light-control">Lightstyle snapshot · frame {styleFrame}<input type="range" min="0" max="63" value={styleFrame} onChange={e=>setStyleFrame(Number(e.target.value))}/></label>}
+          {!baked&&<label className="bsp-light-control">{t('Ambient fill')} · {ambientFill.toFixed(2)}
             <input type="range" min="0" max="1.2" step="0.04" value={ambientFill} onChange={e=>setAmbientFill(Number(e.target.value))}/>
-          </label>
+          </label>}
           <button className="bsp-light-reset" onClick={()=>{setLightBrightness(BSP_LIGHTMAP_DEFAULT_INTENSITY);setAmbientFill(BSP_LIGHTMAP_DEFAULT_AMBIENT)}}>{t('Reset lighting')}</button>
-          <small>{t('BSP lighting preview is approximate; dynamic lightstyles are not simulated.')}</small>
+          <small>{baked?'Baked RGB uses the actual SC-RAD samples. Browser color output and lightstyle snapshots can still differ from Svengine.':t('BSP lighting preview is approximate; dynamic lightstyles are not simulated.')}</small>
         </div>}
         <dl><dt>BSP</dt><dd>v{map.version}</dd><dt>{t('Faces')}</dt><dd>{map.stats.faces.toLocaleString()}</dd><dt>{t('Vertices')}</dt><dd>{map.stats.vertices.toLocaleString()}</dd><dt>{t('Entities')}</dt><dd>{map.stats.entities.toLocaleString()}</dd><dt>{t('Models')}</dt><dd>{map.stats.models}</dd><dt>{t('Lightmapped faces')}</dt><dd>{map.stats.lightmappedFaces.toLocaleString()}</dd><dt>{t('Textures')}</dt><dd>{map.textures.length} ({map.stats.embeddedTextures} {t('embedded')})</dd><dt>skyname</dt><dd>{map.skyname||'—'}</dd><dt>{t('Real skybox')}</dt><dd>{t(showSky?skyStatus:'off')}</dd><dt>{t('MDL models')}</dt><dd>{modelCount} · {t(showModels?modelStatus:'off')}</dd></dl>
         {showSky&&skyStatus==='no-game'&&<div className="bsp-warning">{t('Configure the Sven Co-op game directory to preview installed skyboxes.')}</div>}

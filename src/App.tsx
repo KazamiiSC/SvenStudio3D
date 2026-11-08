@@ -1,13 +1,19 @@
 import {useEffect,useRef,useState} from 'react';
 import type React from 'react';
-import {Hammer,Box,Move3D,Rotate3D,Scaling,Magnet,Grid3x3,Paintbrush,Eye,Undo2,Redo2,Save,FolderOpen,FilePlus2,PackagePlus,Play,StopCircle,Settings2,ChevronDown,Layers,MonitorCog,Mountain,FileDown,FileUp,Info,Clapperboard,CheckCircle2,AlertTriangle,Terminal,SunMoon,ShieldCheck,Copy,Trash2,Keyboard,Globe2,Menu,FileCode2,LayoutTemplate,Palette,GitBranch,Skull,Headphones,Ruler,ScanEye,Ghost,EyeOff,Maximize2,Minimize2} from 'lucide-react';
+import {Hammer,Box,Move3D,Rotate3D,Scaling,Magnet,Grid3x3,Paintbrush,Eye,Undo2,Redo2,Save,FolderOpen,FilePlus2,PackagePlus,Play,StopCircle,Settings2,ChevronDown,Layers,MonitorCog,Mountain,FileDown,FileUp,Info,Clapperboard,CheckCircle2,AlertTriangle,Terminal,SunMoon,ShieldCheck,Copy,Trash2,Keyboard,Globe2,Menu,FileCode2,LayoutTemplate,Palette,GitBranch,Skull,Headphones,Ruler,Users,ScanEye,Ghost,EyeOff,Maximize2,Minimize2,HardDrive} from 'lucide-react';
 import {useEditor} from './store';
 import {DockWorkspace,LayoutModal} from './components/DockWorkspace';
 import {useStudioLayout,TOOLBAR_GROUPS,type ToolbarGroup} from './layout';
 import {useHudLayout} from './hudLayout';
 import {Viewport} from './components/Viewport';
+import {WelcomeScreen} from './components/WelcomeScreen';
+import {resolveShellScale} from './engine/shellScale';
+import {useCssElementSize} from './engine/useCssElementSize';
+import {headerDensity} from './engine/adaptiveUiGeometry';
+import {shouldBuildLightingPreview} from './engine/viewportVisualization';
 import {ShadingPie} from './components/ShadingPie';
 import {BspViewer} from './components/BspViewer';
+import {TrueLightingPreview} from './components/TrueLightingPreview';
 import {parseBsp} from './engine/bsp';
 import type {BspMap} from './engine/bsp';
 import type {TextureAsset} from './engine/types';
@@ -24,6 +30,9 @@ import {LightingStudio} from './components/LightingStudio';
 import {MapDoctor} from './components/MapDoctor';
 import {MapPackagerStudio} from './components/MapPackagerStudio';
 import {TerrainShapeStudio} from './components/TerrainShapeStudio';
+import {BuildTogetherPanel} from './components/BuildTogether';
+import {LocalFolderPicker,autoDetectInstallations,type FolderKind,type DiscoveredFolders} from './components/LocalFolderPicker';
+import {useBuildTogether} from './engine/buildTogetherClient';
 import {useMapDoctorState} from './mapDoctorState';
 import {analyzeMap} from './engine/mapDiagnostics';
 import {validateEnvironment} from './engine/environment';
@@ -94,7 +103,7 @@ function FullscreenMenuButton(){
     <span>{t(fullscreen?'Exit fullscreen':'Fullscreen')}</span>
   </button>;
 }
-async function streamCompile(payload:object,callback:(event:{type:string;message:string;output?:string})=>void){
+async function streamCompile(payload:object,callback:(event:{type:string;message:string;output?:string;previewId?:string})=>void){
   const response=await fetch('/api/compile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
   if(!response.ok){const data=await response.json().catch(()=>({}));throw new Error(data.error||`HTTP ${response.status}`)}
   if(!response.body)throw Error('Compiler service returned no output stream.');
@@ -108,7 +117,24 @@ async function streamCompile(payload:object,callback:(event:{type:string;message
 function SettingsModal({onClose}:{onClose:()=>void}){
   const t=useT();
   const settings=useEditor(s=>s.settings),setSettings=useEditor(s=>s.setSettings);
-  return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal-card" onMouseDown={e=>e.stopPropagation()}>
+  const es=useEditor(s=>s.locale)==='es';
+  const [picker,setPicker]=useState<FolderKind|null>(null);
+  const [discovery,setDiscovery]=useState<DiscoveredFolders|null>(null);
+  const [detecting,setDetecting]=useState(false),[info,setInfo]=useState('');
+  const initialDetection=useRef(false);
+  const detect=async()=>{setDetecting(true);setInfo('');try{
+    const data=await autoDetectInstallations();setDiscovery(data);
+    const updates:{compilerDir?:string;gameDir?:string}={};
+    const current=useEditor.getState().settings;
+    if(!current.gameDir&&data.gameDirs.length===1)updates.gameDir=data.gameDirs[0];
+    if(!current.compilerDir&&data.compilerDirs.length===1)updates.compilerDir=data.compilerDirs[0];
+    if(Object.keys(updates).length)setSettings(updates);
+    setInfo(data.gameDirs.length+data.compilerDirs.length===0?(es?'No se detectó una instalación Steam; usá Buscar carpeta.':'No Steam installation found; use Browse folder.'):(es?'Instalaciones detectadas. Seleccioná las carpetas correctas.':'Installations detected. Select the correct directories.'));
+  }catch(e){setInfo(String(e))}finally{setDetecting(false)}};
+  // First-time setup: fill only uniquely discovered, missing paths.
+  // Existing manual paths and multiple-install choices remain untouched.
+  useEffect(()=>{if(initialDetection.current)return;initialDetection.current=true;if(!settings.gameDir||!settings.compilerDir)void detect();},[]);
+  return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal-card build-settings-modal" onMouseDown={e=>e.stopPropagation()}>
     <div className="modal-title"><Settings2 size={20}/><span>{t('Build configuration')}</span><button onClick={onClose}>×</button></div>
     <p className="modal-subtext">{t('Point to your installed Sven Co-op SDK compiler folder and Sven Co-op game directory. Paths must be on the PC running the editor.')}</p>
     <div className="build-autosave-notice" role="note">
@@ -118,8 +144,11 @@ function SettingsModal({onClose}:{onClose:()=>void}){
       <p>{t('Building does not export a portable project file; use File → Save project (Ctrl+S) to back up your editable project. A failed build will not copy a new BSP.')}</p>
     </div>
     <label>{t('Map name')}<input value={settings.mapName} onChange={e=>setSettings({mapName:e.target.value})} placeholder="my_sven_map"/><small>{t('Letters, numbers, underscores and hyphens only.')}</small></label>
-    <label>{t('Compiler folder')}<input value={settings.compilerDir} onChange={e=>setSettings({compilerDir:e.target.value})} placeholder="C:\Program Files (x86)\Steam\steamapps\common\Sven Co-op SDK\mapping\compilers"/></label>
-    <label>{t('Sven Co-op game data folder')}<input value={settings.gameDir} onChange={e=>setSettings({gameDir:e.target.value})} placeholder="C:\Program Files (x86)\Steam\steamapps\common\Sven Co-op\svencoop"/></label>
+    <div className="build-discovery"><button className="secondary-action" disabled={detecting} type="button" onClick={()=>void detect()}><HardDrive size={16}/>{detecting?(es?'Buscando en Steam...':'Searching Steam...'):(es?'Detectar Sven Co-op y SDK automáticamente':'Automatically detect Sven Co-op and SDK')}</button><small>{es?'Busca en las bibliotecas de Steam de las unidades disponibles; no escanea todos los archivos de cada disco.':'Searches Steam libraries across available drives; does not scan every file on disk.'}</small>{info&&<p role="status">{info}</p>}</div>
+    <label>{t('Compiler folder')}<div className="build-path-row"><input value={settings.compilerDir} onChange={e=>setSettings({compilerDir:e.target.value})} placeholder="C:\Program Files (x86)\Steam\steamapps\common\Sven Co-op SDK\mapping\compilers"/><button type="button" onClick={()=>setPicker('compiler')}><FolderOpen size={15}/>{es?'Buscar':'Browse'}</button></div></label>
+    {discovery&&discovery.compilerDirs.length>0&&<div className="build-discovered">{discovery.compilerDirs.map(p=><button type="button" key={p} onClick={()=>setSettings({compilerDir:p})}>{p}</button>)}</div>}
+    <label>{t('Sven Co-op game data folder')}<div className="build-path-row"><input value={settings.gameDir} onChange={e=>setSettings({gameDir:e.target.value})} placeholder="C:\Program Files (x86)\Steam\steamapps\common\Sven Co-op\svencoop"/><button type="button" onClick={()=>setPicker('game')}><FolderOpen size={15}/>{es?'Buscar':'Browse'}</button></div></label>
+    {discovery&&discovery.gameDirs.length>0&&<div className="build-discovered">{discovery.gameDirs.map(p=><button type="button" key={p} onClick={()=>setSettings({gameDir:p})}>{p}</button>)}</div>}
     <label>{t('WAD full paths (one per line)')}<textarea rows={4} value={settings.wadPaths} onChange={e=>setSettings({wadPaths:e.target.value})} placeholder={'C:\\Steam\\steamapps\\common\\Sven Co-op\\svencoop\\halflife.wad'}/><small>{t('These file paths are written to the worldspawn wad key for the compilers. Import a matching .WAD in the Texture Browser for previews.')}</small></label>
     <label>{t('SC-RAD lighting diagnostic')}<select className="lighting-test-select" value={settings.radAmbientTest||'off'} onChange={e=>setSettings({radAmbientTest:e.target.value as typeof settings.radAmbientTest})}>
       <option value="off">{t('Normal compile — no ambient override')}</option>
@@ -128,7 +157,7 @@ function SettingsModal({onClose}:{onClose:()=>void}){
       <option value="0.25">{t('Strong ambient test (0.25)')}</option>
     </select><small>{t('Diagnostic only: compiles a separate BSP with a _lightXX suffix. Does not overwrite the original BSP or restore its lightmaps. Return to Normal afterward.')}</small></label>
     <div className="modal-footer"><button className="primary-action" onClick={onClose}><CheckCircle2 size={16}/> {t('Save settings')}</button></div>
-  </div></div>;
+  </div>{picker&&<LocalFolderPicker kind={picker} initial={picker==='compiler'?settings.compilerDir:settings.gameDir} es={es} onClose={()=>setPicker(null)} onPick={p=>setSettings(picker==='compiler'?{compilerDir:p}:{gameDir:p})}/>}</div>;
 }
 function ControlsModal({onClose}:{onClose:()=>void}){
   const t=useT();
@@ -223,10 +252,10 @@ function AboutModal({onClose}:{onClose:()=>void}){
   const textList=(items:readonly string[])=><ul>{items.map((item,index)=><li key={index}>{item}</li>)}</ul>;
   const section=(id:string,title:string,items:readonly string[])=><section id={`manual-${id}`} className="help-feature-card manual-block" key={id}><h4>{title}</h4>{textList(items)}</section>;
   return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal-card about-card help-dialog help-dialog-current" onMouseDown={e=>e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('Help')}>
-    <div className="modal-title"><Info size={20}/><span>{t('Sven Studio guide')} · v1.4.0 HF15 Preview 3 HF1</span><button title={t('Close')} onClick={onClose}>×</button></div>
+    <div className="modal-title"><Info size={20}/><span>{t('Sven Studio guide')} · v1.5.23</span><button title={t('Close')} onClick={onClose}>×</button></div>
     <div className="help-scroll" tabIndex={0}>
       <div className="help-credits" role="group" aria-label={t('Project credits')}>
-        <div className="help-credits-logos"><img className="help-astra-logo-image" src="/gpt6-astra-logo.png" alt="GPT-6 Astra"/><img className="help-kz-logo" src="/kz-sheez-logo.png" alt="KZ-Sheez"/></div>
+
         <p>{t('This project was made with the help of GPT-6 Astra.')}</p>
       </div>
       <div className="help-summary"><h4>{t('Editor summary')}</h4><p>{manual.intro}</p></div>
@@ -283,7 +312,9 @@ function BuildOutputModal({onClose,onCancel,onDoctor}:{onClose:()=>void;onCancel
 }
 export default function App(){
   const t=useT();
+  const buildTogetherStatus=useBuildTogether(s=>s.status);
   const uiScale=useStudioLayout(s=>s.uiScale),accent=useStudioLayout(s=>s.accent),fontScale=useStudioLayout(s=>s.fontScale);
+  const autoLayout=useStudioLayout(s=>s.autoLayout);
   const toolbarGroups=useStudioLayout(s=>s.toolbarGroups)??[...TOOLBAR_GROUPS];
   const reorderToolbar=useStudioLayout(s=>s.reorderToolbarGroup);
   const toolbarGroupProps=(id:ToolbarGroup)=>({
@@ -311,7 +342,13 @@ export default function App(){
   const drawMode=useEditor(s=>s.drawMode),setDrawMode=useEditor(s=>s.setDrawMode),drawHeight=useEditor(s=>s.drawHeight),setDrawHeight=useEditor(s=>s.setDrawHeight);
   const selected=useEditor(s=>s.selected),history=useEditor(s=>s.history),future=useEditor(s=>s.future);
   const project=useEditor(s=>s.project),newProject=useEditor(s=>s.newProject),loadProject=useEditor(s=>s.loadProject),setName=useEditor(s=>s.setName);
-  const [bspMap,setBspMap]=useState<BspMap|null>(null),[bspSource,setBspSource]=useState<ArrayBuffer|null>(null),[bspMode,setBspMode]=useState(false),[bspLoading,setBspLoading]=useState(false),[lastCompiled,setLastCompiled]=useState<string|null>(null);
+  const [welcomeOpen,setWelcomeOpen]=useState(true);
+  const [bspMap,setBspMap]=useState<BspMap|null>(null),[bspSource,setBspSource]=useState<ArrayBuffer|null>(null),[bspMode,setBspMode]=useState(false),[bspPreviewBaked,setBspPreviewBaked]=useState(false),[bspLoading,setBspLoading]=useState(false),[lastCompiled,setLastCompiled]=useState<string|null>(null);
+  const [truePreviewOpen,setTruePreviewOpen]=useState(false),[truePreviewMap,setTruePreviewMap]=useState<BspMap|null>(null);
+  const [truePreviewLayout,setTruePreviewLayout]=useState<'split'|'full'>('split');
+  const [truePreviewSource,setTruePreviewSource]=useState<ArrayBuffer|null>(null);
+  const [truePreviewStatus,setTruePreviewStatus]=useState(''),[truePreviewBusy,setTruePreviewBusy]=useState(false);
+  const [truePreviewSnapshot,setTruePreviewSnapshot]=useState<typeof project|null>(null);
   const bspInput=useRef<HTMLInputElement>(null);
   const [recoveryStatus,setRecoveryStatus]=useState<'waiting'|'saved'|'error'>('waiting');
   useEffect(()=>{const listener=(event:Event)=>setRecoveryStatus((event as CustomEvent<{status:'saved'|'error'}>).detail.status);window.addEventListener('svenstudio-recovery-status',listener);return()=>window.removeEventListener('svenstudio-recovery-status',listener)},[]);
@@ -325,12 +362,23 @@ export default function App(){
   const showTransformGizmo=useEditor(s=>s.showTransformGizmo),setShowTransformGizmo=useEditor(s=>s.setShowTransformGizmo);
   const ghostHidden=useEditor(s=>s.ghostHidden),toggleGhostHidden=useEditor(s=>s.toggleGhostHidden);
   const placementShape=useEditor(s=>s.placementShape);
-  const [dialog,setDialog]=useState<'settings'|'controls'|'about'|'layout'|'entityAppearance'|'gameplay'|'cinematic'|'npc'|'sound'|'lighting'|'doctor'|'visibility'|'output'|'packager'|'terrain'|null>(()=>{
-    try{return localStorage.getItem('svenstudio:welcome-guide-v1')==='seen'?null:'about'}catch{return null}
-  }),[fileMenu,setFileMenu]=useState(false),[studiosMenu,setStudiosMenu]=useState(false),[workspaceMenu,setWorkspaceMenu]=useState(false);
+  // The branded home must be the first screen on *every* launch. Defer the
+  // one-time onboarding guide until after Start, so it cannot cover home.
+  const [extraMenu,setExtraMenu]=useState(false);
+  const headerRef=useRef<HTMLElement>(null);
+  const headerSize=useCssElementSize(headerRef);
+  const headerMode=headerDensity(headerSize.width);
+  useEffect(()=>{setExtraMenu(false)},[headerMode]);
+  const [dialog,setDialog]=useState<'settings'|'controls'|'about'|'layout'|'entityAppearance'|'gameplay'|'cinematic'|'npc'|'sound'|'lighting'|'doctor'|'visibility'|'output'|'packager'|'terrain'|'buildTogether'|null>(null),[fileMenu,setFileMenu]=useState(false),[studiosMenu,setStudiosMenu]=useState(false),[workspaceMenu,setWorkspaceMenu]=useState(false);
   const closeHelp=()=>{try{localStorage.setItem('svenstudio:welcome-guide-v1','seen')}catch{/* private browsing */}setDialog(null)};
+  useEffect(()=>{
+    if(welcomeOpen)return;
+    try{
+      if(localStorage.getItem('svenstudio:welcome-guide-v1')!=='seen')setDialog(current=>current??'about');
+    }catch{/* Incognito/private mode can disable storage */}
+  },[welcomeOpen]);
   const projectInput=useRef<HTMLInputElement>(null),mapInput=useRef<HTMLInputElement>(null);
-  const fileButton=useRef<HTMLButtonElement>(null),studiosButton=useRef<HTMLButtonElement>(null),workspaceButton=useRef<HTMLButtonElement>(null);
+  const fileButton=useRef<HTMLButtonElement>(null),studiosButton=useRef<HTMLButtonElement>(null),workspaceButton=useRef<HTMLButtonElement>(null),extraButton=useRef<HTMLButtonElement>(null);
   const imported=async(e:React.ChangeEvent<HTMLInputElement>,type:'map'|'project')=>{
     const file=e.target.files?.[0];if(!file)return;
     try{
@@ -397,7 +445,7 @@ export default function App(){
     setBspLoading(true);
     try{
       const raw=await file.arrayBuffer();const parsed=parseBsp(raw,file.name);
-      setBspSource(raw);setBspMap(parsed);setBspMode(true);
+      setBspSource(raw);setBspMap(parsed);setBspPreviewBaked(false);setBspMode(true);
       appendLogs([`BSP Viewer opened ${file.name}: ${parsed.faces.length} faces, ${parsed.entities.length} entities.`]);
     }finally{setBspLoading(false)}
   };
@@ -421,7 +469,7 @@ export default function App(){
     try{const text=exportMap(project,wadPaths);downloadText(text,`${settings.mapName||'untitled'}.map`);appendLogs([`Exported ${text.length} bytes of Svengine Valve 220 .map source.`]);}
     catch(err){appendLogs([`Export error: ${String(err)}`]);alert(String(err))}
   };
-  const compile=async()=>{
+  const compile=async(mode:'game'|'preview'='game')=>{
     if(compileBusy)return;
     const gameplayIssues=[...analyzeGameplay(project.objects),...validateNpcLogic(project.objects),...validateAudio(project.objects),...validateEnvironment(project.objects)];
     const gameplayErrors=gameplayIssues.filter(x=>x.severity==='error').map(x=>x.message);
@@ -438,26 +486,53 @@ export default function App(){
     if(!settings.compilerDir||!settings.gameDir){setDialog('settings');appendLogs(['Set your SDK compiler folder and game directory before compiling.']);return;}
     if(!/^[a-z][a-z0-9_-]*$/i.test(settings.mapName)){setDialog('settings');alert('Invalid map name: use letters, numbers, _ or -.');return;}
     let buildName:string;
-    try{buildName=lightTestMapName(settings.mapName,settings.radAmbientTest||'off')}
+    try{buildName=lightTestMapName(settings.mapName,mode==='preview'?'off':settings.radAmbientTest||'off')}
     catch(error){setDialog('settings');alert(String(error));return;}
     useMapDoctorState.getState().beginBuild(buildName);
-    setDialog('output');setCompileBusy(true);appendLogs([`Starting build ${buildName}...`]);
-    if(settings.radAmbientTest!=='off'&&settings.radAmbientTest)appendLogs([`SC-RAD diagnostic -ambient ${settings.radAmbientTest} ${settings.radAmbientTest} ${settings.radAmbientTest}; original ${settings.mapName}.bsp will NOT be overwritten. Test output: ${buildName}.bsp`]);
-    let error=false,completed=false;
+    if(mode==='preview'){setTruePreviewOpen(true);setTruePreviewBusy(true);setTruePreviewStatus('Preparing SC-RAD preview…');setDialog(null)}
+    else setDialog('output');
+    setCompileBusy(true);appendLogs([`Starting ${mode==='preview'?'temporary lighting preview':'build'} ${buildName}...`]);
+    if(mode==='game'&&settings.radAmbientTest!=='off'&&settings.radAmbientTest)appendLogs([`SC-RAD diagnostic -ambient ${settings.radAmbientTest} ${settings.radAmbientTest} ${settings.radAmbientTest}; original ${settings.mapName}.bsp will NOT be overwritten. Test output: ${buildName}.bsp`]);
+    let error=false,completed=false,previewId:string|null=null;
     try{
       const mapData=exportMap(project,wadPaths);
-      await streamCompile({mapName:settings.mapName,mapData,compilerDir:settings.compilerDir,gameDir:settings.gameDir,wadPaths,radAmbientTest:settings.radAmbientTest||'off'},ev=>{
+      await streamCompile({mapName:settings.mapName,mapData,compilerDir:settings.compilerDir,gameDir:settings.gameDir,wadPaths,radAmbientTest:mode==='preview'?'off':settings.radAmbientTest||'off',previewOnly:mode==='preview'},ev=>{
         useMapDoctorState.getState().ingest(ev);
-        appendLogs([ev.message]);if(ev.type==='error')error=true;if(ev.type==='complete')completed=true;
+        appendLogs([ev.message]);if(mode==='preview'&&ev.type==='stage')setTruePreviewStatus(ev.message);if(ev.type==='error')error=true;if(ev.type==='complete'){completed=true;previewId=ev.previewId||null;}
       });
-      if(!error&&completed){setLastCompiled(buildName);appendLogs([`Build completed: ${buildName}.bsp. You can open it in BSP Viewer.`])}
-    }catch(err){appendLogs([`Build error: ${String(err)}`])}
-    finally{setCompileBusy(false)}
+      if(!error&&completed&&mode==='preview'){
+        if(!previewId)throw Error('Compiler did not issue an SC-RAD preview identifier.');
+        setTruePreviewStatus('Loading compiled BSP lightmaps…');
+        const response=await fetch('/api/lighting-preview/bsp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({previewId})});
+        if(!response.ok)throw Error((await response.json().catch(()=>({}))).error||`HTTP ${response.status}`);
+        const raw=await response.arrayBuffer();
+        const parsed=parseBsp(raw,`${buildName}_lighting_preview.bsp`);
+        if(!parsed.stats.lightmappedFaces)throw Error('SC-RAD produced no lightmapped faces. Check the compile log and SKY/brush layout.');
+        setTruePreviewSource(raw);setTruePreviewMap(parsed);setTruePreviewSnapshot(project);
+        setTruePreviewStatus(`SC-RAD baked ${parsed.stats.lightmappedFaces} faces. Preview is read-only.`);
+        appendLogs([`True Lighting Preview: ${parsed.stats.lightmappedFaces} compiled lightmapped faces; no game BSP was installed.`]);
+      }else if(!error&&completed){setLastCompiled(buildName);appendLogs([`Build completed: ${buildName}.bsp. You can open it in BSP Viewer.`])}
+      else if(mode==='preview')setTruePreviewStatus('SC-RAD preview failed. See Output for compiler details.');
+    }catch(err){appendLogs([`Build error: ${String(err)}`]);if(mode==='preview')setTruePreviewStatus(`Build error: ${String(err)}`)}
+    finally{setCompileBusy(false);if(mode==='preview')setTruePreviewBusy(false)}
+  };
+  // View modes live in the 3D viewport, not beside Compile or inside Studios.
+  // Reopening a cached bake never overwrites the game BSP or compiles needlessly.
+  const chooseVisualization=(mode:'normal'|'quick'|'baked')=>{
+    if(mode==='baked'){
+      useEditor.getState().setEnvironmentPreview(false);
+      setTruePreviewOpen(true);
+      setTruePreviewLayout('split');
+      if(shouldBuildLightingPreview(!!truePreviewMap,truePreviewBusy,compileBusy))void compile('preview');
+      return;
+    }
+    setTruePreviewOpen(false);
+    useEditor.getState().setEnvironmentPreview(mode==='quick');
   };
   const cancelCompile=async()=>{try{await fetch('/api/cancel',{method:'POST'});appendLogs(['Cancellation requested...'])}catch(err){appendLogs([String(err)])}};
   useEffect(()=>{
     const handle=(e:KeyboardEvent)=>{
-      if(bspMode)return;
+      if(bspMode||welcomeOpen)return;
       if(useHudLayout.getState().editing){
         if(e.key==='Escape'){e.preventDefault();useHudLayout.getState().setEditing(false)}
         return;
@@ -569,7 +644,7 @@ export default function App(){
       else issueCameraCommand(action);
     };
     window.addEventListener('keydown',handle);return()=>window.removeEventListener('keydown',handle);
-  },[undo,redo,duplicate,remove,setMode,setDrawMode,toggleFly,setFly,setWalk,issueCameraCommand,toggleModal,finishModal,bspMode,dialog]);
+  },[undo,redo,duplicate,remove,setMode,setDrawMode,toggleFly,setFly,setWalk,issueCameraCommand,toggleModal,finishModal,bspMode,welcomeOpen,dialog]);
   // Browser shortcuts can be reserved above page JavaScript. Guard what the
   // browser allows, and ask before unloading during a live Player Walk.
   // We never attempt to capture Windows-key shortcuts or change global hotkeys.
@@ -650,12 +725,24 @@ export default function App(){
   };
   // Keep BSP and Gameplay mutually exclusive, including file-menu opens.
   useEffect(()=>{if(bspMode&&walkMode)exitGameplayTest()},[bspMode,walkMode]);
+  const openWelcome=()=>{
+    // Closing only the view; never replace the editor project or recreate the viewport.
+    if(document.pointerLockElement)document.exitPointerLock?.();
+    if(useEditor.getState().walkMode)exitGameplayTest();
+    if(useEditor.getState().flyMode)setFly(false);
+    setDialog(null);setFileMenu(false);setStudiosMenu(false);setWorkspaceMenu(false);setExtraMenu(false);
+    setWelcomeOpen(true);
+  };
   const primitive=(type:PlaceableShape)=>useEditor.getState().setPlacementShape(placementShape===type?null:type);
-  // Scale the interface chrome while compensating the root dimensions. The
-  // WebGL viewport applies inverse zoom separately to keep R3F pixel sizing correct.
-  return <div className={`app-shell accent-${accent}`} style={{zoom:uiScale,width:`${100/uiScale}vw`,height:`${100/uiScale}vh`,minHeight:0,'--ui-font-scale':fontScale} as React.CSSProperties}>
-    <header className="titlebar">
-      <div className="brand"><span className="brand-logo"><Box size={20} strokeWidth={2.3}/></span><span>SVEN<span className="brand-light">STUDIO</span></span><span className="brand-tag">3D</span><span className="version-label">v1.4.0 HF15 Preview 3 HF1</span></div>
+  // Workspace interface scale belongs exclusively to MAP Editor. The Welcome
+  // overlay and BSP Viewer are complete independent views that must use 100%
+  // physical CSS pixels regardless of the user's editor UI scale (80–120%).
+  // Changing modes also gives R3F the correct container size to re-measure.
+  const shellScale=resolveShellScale(uiScale,welcomeOpen,bspMode);
+  return <div className={`app-shell accent-${accent} ${welcomeOpen?'welcome-home-active':''} ${bspMode?'bsp-scale-isolated':''} ${autoLayout?'adaptive-ui-enabled':''}`} style={{zoom:shellScale,width:`${100/shellScale}vw`,height:`${100/shellScale}vh`,minHeight:0,'--ui-font-scale':fontScale} as React.CSSProperties}>
+    <header ref={headerRef} className="titlebar" data-header-mode={headerMode}>
+      <div className="titlebar-leading">
+      <button type="button" className={`brand brand-home-trigger ${welcomeOpen?'brand-home-active':''}`} onClick={openWelcome} aria-pressed={welcomeOpen} title={locale==='es'?'Abrir pantalla de inicio':'Open home screen'}><span className="brand-logo"><Box size={20} strokeWidth={2.3}/></span><span>SVEN<span className="brand-light">STUDIO</span></span><span className="brand-tag">3D</span><span className="version-label">v1.5.23</span></button>
       <div className="top-divider"/>
       <div className="menu-parent"><button ref={fileButton} type="button" aria-expanded={fileMenu} aria-controls="sven-file-menu" aria-haspopup="menu" className={`top-nav ${fileMenu?'chosen':''}`} onClick={()=>{setStudiosMenu(false);setWorkspaceMenu(false);setFileMenu(v=>!v)}}>{t('File')} <ChevronDown size={12}/></button>
         <TopDropdown anchor={fileButton} open={fileMenu} onClose={()=>setFileMenu(false)} id="sven-file-menu" className="file-menu" align="left" width={240}><MenuButton onClick={()=>{if(confirm(t('Start a new project? Save existing work first.')))newProject();setFileMenu(false)}}><FilePlus2 size={15}/> {t('New project')}</MenuButton>
@@ -671,13 +758,43 @@ export default function App(){
         </TopDropdown>
       </div>
       <button className="top-nav" onClick={()=>setDialog('about')}>{t('Help')}</button>
-      <FullscreenMenuButton/>
+      <FullscreenMenuButton/><button className={`top-nav bt-top-button ${buildTogetherStatus==="online"?"chosen":""}`} title="BuildTogether — Multiplayer Mapping" onClick={()=>setDialog("buildTogether")}><Users size={15}/> BuildTogether</button>
+      <div className="titlebar-more-parent"><button ref={extraButton} type="button" className="top-nav titlebar-more" title={locale==='es'?'Más acciones':'More actions'} aria-label={locale==='es'?'Más acciones':'More actions'} aria-expanded={extraMenu} aria-haspopup="menu" aria-controls="sven-extra-menu" onClick={()=>{setFileMenu(false);setStudiosMenu(false);setWorkspaceMenu(false);setExtraMenu(v=>!v)}}><Menu size={18}/><span>{locale==='es'?'Más':'More'}</span></button>
+        <TopDropdown anchor={extraButton} open={extraMenu} onClose={()=>setExtraMenu(false)} id="sven-extra-menu" className="studio-menu-dropdown titlebar-extra-menu" align="left" width={265}>
+          <button role="menuitem" onClick={()=>{setDialog('about');setExtraMenu(false)}}><Info size={16}/>{t('Help')}</button>
+          <div className="titlebar-extra-fullscreen"><FullscreenMenuButton/></div>
+          <button role="menuitem" onClick={()=>{setDialog('buildTogether');setExtraMenu(false)}}><Users size={16}/>BuildTogether</button>
+          <div className="menu-separator"/>
+          <button role="menuitem" onClick={()=>{setWelcomeOpen(false);exitGameplayTest();setBspMode(false);setExtraMenu(false)}}><Box size={16}/>{t('MAP Editor')}</button>
+          <button role="menuitem" disabled={bspLoading} onClick={()=>{setWelcomeOpen(false);exitGameplayTest();if(bspMap)setBspMode(true);else if(lastCompiled)void openCompiledBsp();else bspInput.current?.click();setExtraMenu(false)}}><ScanEye size={16}/>{t('BSP Viewer')}</button>
+          <button role="menuitem" disabled={bspLoading} onClick={()=>{setWelcomeOpen(false);toggleGameplayTest();setExtraMenu(false)}}><Play size={16}/>{t('Gameplay Test')}</button>
+          <div className="menu-separator"/>
+          <button role="menuitem" onClick={()=>{setDialog('layout');setExtraMenu(false)}}><LayoutTemplate size={16}/>{t('Workspace layout')}</button>
+          <button role="menuitem" onClick={()=>{setDialog('settings');setExtraMenu(false)}}><Settings2 size={16}/>{t('Build configuration')}</button>
+          <button role="menuitem" onClick={()=>{setDialog('visibility');setExtraMenu(false)}}><ScanEye size={16}/>{t('Visibility')}</button>
+          <button role="menuitem" onClick={()=>{setDialog('cinematic');setExtraMenu(false)}}><Clapperboard size={16}/>{t('Cinematic Camera Studio')}</button>
+          <button role="menuitem" onClick={()=>{setDialog('entityAppearance');setExtraMenu(false)}}><Palette size={16}/>{t('Entity visuals')}</button>
+          <button role="menuitem" onClick={()=>{setDialog('controls');setExtraMenu(false)}}><Keyboard size={16}/>{t('Camera & Gizmo Controls')}</button>
+          <button role="menuitem" onClick={()=>{useEditor.getState().setResourceView('decals');useStudioLayout.getState().setVisible('assets',true);setExtraMenu(false)}}><Paintbrush size={16}/>Decal Studio</button>
+          <button role="menuitem" onClick={()=>{setDialog('packager');setExtraMenu(false)}}><PackagePlus size={16}/>{t('Map Packager Studio')}</button>
+          <button role="menuitem" onClick={()=>{setDialog('output');setExtraMenu(false)}}><Terminal size={16}/>{t('Output')}</button>
+          <button role="menuitem" disabled={walkMode||bspMode} onClick={()=>{document.dispatchEvent(new Event('svenstudio:toggle-gameplay-settings'));setExtraMenu(false)}}><Play size={16}/>{t('Gameplay Test settings')}</button>
+          <button role="menuitem" onClick={()=>{setDialog('npc');setExtraMenu(false)}}><Skull size={16}/>{t('NPC & AI Studio')}</button>
+          <button role="menuitem" onClick={()=>{setDialog('gameplay');setExtraMenu(false)}}><GitBranch size={16}/>{t('Gameplay Studio')}</button>
+          <button role="menuitem" onClick={()=>{setDialog('lighting');setExtraMenu(false)}}><SunMoon size={16}/>{t('Lighting & Environment Studio')}</button>
+          <button role="menuitem" onClick={()=>{setDialog('terrain');setExtraMenu(false)}}><Mountain size={16}/>{t('Terrain & Shape Studio')}</button>
+          <button role="menuitem" onClick={()=>{setDialog('sound');setExtraMenu(false)}}><Headphones size={16}/>{t('Audio Studio')}</button>
+          <button role="menuitem" onClick={()=>{setDialog('doctor');setExtraMenu(false)}}><CheckCircle2 size={16}/>{t('Map Doctor')}</button>
+          <label className="titlebar-extra-language">{t('Interface language')}<select aria-label={t('Interface language')} value={localePreference} onChange={e=>{setLocale(e.target.value as typeof localePreference);setExtraMenu(false)}}><option value="auto">{t('Automatic (system language)')}</option>{LANGUAGES.map(l=><option key={l.id} value={l.id}>{l.label}</option>)}</select></label>
+        </TopDropdown>
+      </div>
+      </div>
       <div className="project-title"><span className="project-status"/><input title={t('Project display name')} value={project.name} onChange={e=>setName(e.target.value)}/><span className="version-label" title={recoveryStatus==='error'?t('Autosave failed; export a project backup.'):t('Autosave is stored in this browser. Export a project file for a portable backup.')}>{recoveryStatus==='error'?t('Autosave error'):recoveryStatus==='saved'?t('Autosaved'):lastRecoveredAt()?t('Session recovered'):t('Workspace')}</span></div>
       <div className="titlebar-right"><div className="bsp-tab-switch" role="group" aria-label="MAP / BSP / Gameplay Test">
-        <button className={!bspMode&&!walkMode?'active':''} aria-pressed={!bspMode&&!walkMode} onClick={()=>{exitGameplayTest();setBspMode(false)}}>{t('MAP Editor')}</button>
-        <button className={bspMode?'active':''} aria-pressed={bspMode} disabled={bspLoading} onClick={()=>{exitGameplayTest();if(bspMap)setBspMode(true);else if(lastCompiled)void openCompiledBsp();else bspInput.current?.click()}}><ScanEye size={14}/>{bspLoading?'...':t('BSP Viewer')}</button>
-        <button className={walkMode?'active gameplay-tab-active':''} aria-pressed={walkMode} disabled={bspLoading} title={t('Gameplay Test')} onClick={toggleGameplayTest}><Play size={14}/>{t('Gameplay Test')}</button>
-      </div><div className="studio-menu-parent"><button ref={studiosButton} type="button" aria-expanded={studiosMenu} aria-controls="sven-studios-menu" aria-haspopup="menu" className="studio-menu-button" onClick={()=>{setFileMenu(false);setWorkspaceMenu(false);setStudiosMenu(v=>!v)}}><Layers size={16}/>{t('Studios')}<ChevronDown size={12}/></button><TopDropdown anchor={studiosButton} open={studiosMenu} onClose={()=>setStudiosMenu(false)} id="sven-studios-menu" className="studio-menu-dropdown" align="right" width={242}><button role="menuitem" onClick={()=>{setDialog('gameplay');setStudiosMenu(false)}}><GitBranch size={16}/>{t('Gameplay Studio')}</button><button role="menuitem" onClick={()=>{setDialog('cinematic');setStudiosMenu(false)}}><Clapperboard size={16}/>{t('Cinematic Camera Studio')}</button><button role="menuitem" onClick={()=>{setDialog('npc');setStudiosMenu(false)}}><Skull size={16}/>{t('NPC & AI Studio')}</button><button role="menuitem" onClick={()=>{useEditor.getState().setResourceView('decals');useStudioLayout.getState().setVisible('assets',true);setStudiosMenu(false)}}><Paintbrush size={16}/>Decal Studio</button><button role="menuitem" onClick={()=>{setDialog('sound');setStudiosMenu(false)}}><Headphones size={16}/>{t('Audio Studio')}</button><button role="menuitem" onClick={()=>{setDialog('lighting');setStudiosMenu(false)}}><SunMoon size={16}/>{t('Lighting & Environment Studio')}</button><button role="menuitem" onClick={()=>{setDialog('terrain');setStudiosMenu(false)}}><Mountain size={16}/>{t('Terrain & Shape Studio')}</button><button role="menuitem" onClick={()=>{setDialog('doctor');setStudiosMenu(false)}}><CheckCircle2 size={16}/>{t('Map Doctor')}</button></TopDropdown></div><label className="language-picker" title={t('Interface language')}><Globe2 size={15}/><select aria-label={t('Interface language')} value={localePreference} onChange={e=>setLocale(e.target.value as typeof localePreference)}><option value="auto">{t('Automatic (system language)')} · {LANGUAGES.find(l=>l.id===locale)?.label??'English'}</option>{LANGUAGES.map(l=><option key={l.id} value={l.id}>{l.label}</option>)}</select></label><div className="studio-menu-parent workspace-menu-parent"><button ref={workspaceButton} type="button" aria-expanded={workspaceMenu} aria-controls="sven-workspace-menu" aria-haspopup="menu" className="studio-menu-button workspace-menu-button" onClick={()=>{setFileMenu(false);setStudiosMenu(false);setWorkspaceMenu(v=>!v)}}><Settings2 size={16}/><span>{t('Workspace')}</span><ChevronDown size={12}/></button><TopDropdown anchor={workspaceButton} open={workspaceMenu} onClose={()=>setWorkspaceMenu(false)} id="sven-workspace-menu" className="studio-menu-dropdown workspace-menu-dropdown" align="right" width={266}>
+        <button className={!bspMode&&!walkMode?'active':''} aria-pressed={!bspMode&&!walkMode} onClick={()=>{setWelcomeOpen(false);exitGameplayTest();setBspMode(false)}}>{t('MAP Editor')}</button>
+        <button className={bspMode?'active':''} aria-pressed={bspMode} disabled={bspLoading} onClick={()=>{setWelcomeOpen(false);exitGameplayTest();if(bspMap)setBspMode(true);else if(lastCompiled)void openCompiledBsp();else bspInput.current?.click()}}><ScanEye size={14}/>{bspLoading?'...':t('BSP Viewer')}</button>
+        <button className={walkMode?'active gameplay-tab-active':''} aria-pressed={walkMode} disabled={bspLoading} title={t('Gameplay Test')} onClick={()=>{setWelcomeOpen(false);toggleGameplayTest()}}><Play size={14}/>{t('Gameplay Test')}</button>
+      </div><div className="studio-menu-parent"><button ref={studiosButton} type="button" aria-expanded={studiosMenu} aria-controls="sven-studios-menu" aria-haspopup="menu" className="studio-menu-button" onClick={()=>{setFileMenu(false);setWorkspaceMenu(false);setStudiosMenu(v=>!v)}}><Layers size={16}/>{t('Studios')}<ChevronDown size={12}/></button><TopDropdown anchor={studiosButton} open={studiosMenu} onClose={()=>setStudiosMenu(false)} id="sven-studios-menu" className="studio-menu-dropdown" align="right" width={242}><button role="menuitem" onClick={()=>{setDialog('buildTogether');setStudiosMenu(false)}}><Users size={16}/>BuildTogether</button><button role="menuitem" onClick={()=>{setDialog('gameplay');setStudiosMenu(false)}}><GitBranch size={16}/>{t('Gameplay Studio')}</button><button role="menuitem" onClick={()=>{setDialog('cinematic');setStudiosMenu(false)}}><Clapperboard size={16}/>{t('Cinematic Camera Studio')}</button><button role="menuitem" onClick={()=>{setDialog('npc');setStudiosMenu(false)}}><Skull size={16}/>{t('NPC & AI Studio')}</button><button role="menuitem" onClick={()=>{useEditor.getState().setResourceView('decals');useStudioLayout.getState().setVisible('assets',true);setStudiosMenu(false)}}><Paintbrush size={16}/>Decal Studio</button><button role="menuitem" onClick={()=>{setDialog('sound');setStudiosMenu(false)}}><Headphones size={16}/>{t('Audio Studio')}</button><button role="menuitem" onClick={()=>{setDialog('lighting');setStudiosMenu(false)}}><SunMoon size={16}/>{t('Lighting & Environment Studio')}</button><button role="menuitem" onClick={()=>{setDialog('terrain');setStudiosMenu(false)}}><Mountain size={16}/>{t('Terrain & Shape Studio')}</button><button role="menuitem" onClick={()=>{setDialog('doctor');setStudiosMenu(false)}}><CheckCircle2 size={16}/>{t('Map Doctor')}</button></TopDropdown></div><label className="language-picker" title={t('Interface language')}><Globe2 size={15}/><select aria-label={t('Interface language')} value={localePreference} onChange={e=>setLocale(e.target.value as typeof localePreference)}><option value="auto">{t('Automatic (system language)')} · {LANGUAGES.find(l=>l.id===locale)?.label??'English'}</option>{LANGUAGES.map(l=><option key={l.id} value={l.id}>{l.label}</option>)}</select></label><div className="studio-menu-parent workspace-menu-parent"><button ref={workspaceButton} type="button" aria-expanded={workspaceMenu} aria-controls="sven-workspace-menu" aria-haspopup="menu" className="studio-menu-button workspace-menu-button" onClick={()=>{setFileMenu(false);setStudiosMenu(false);setWorkspaceMenu(v=>!v)}}><Settings2 size={16}/><span>{t('Workspace')}</span><ChevronDown size={12}/></button><TopDropdown anchor={workspaceButton} open={workspaceMenu} onClose={()=>setWorkspaceMenu(false)} id="sven-workspace-menu" className="studio-menu-dropdown workspace-menu-dropdown" align="right" width={266}>
         <button role="menuitem" onClick={()=>{setDialog('layout');setWorkspaceMenu(false)}}><LayoutTemplate size={16}/>{t('Workspace layout')}</button>
         <button role="menuitem" onClick={()=>{setDialog('visibility');setWorkspaceMenu(false)}}><Eye size={16}/>{t('Visibility manager')}</button>
         <button role="menuitem" onClick={()=>{setDialog('entityAppearance');setWorkspaceMenu(false)}}><Palette size={16}/>{t('Entity visuals')}</button>
@@ -685,12 +802,14 @@ export default function App(){
         <div className="menu-separator"/>
         <button role="menuitem" onClick={()=>{setDialog('output');setWorkspaceMenu(false)}}><Terminal size={16}/>{t('Output')}</button>
         <button role="menuitem" disabled={walkMode||bspMode} onClick={()=>{document.dispatchEvent(new Event('svenstudio:toggle-gameplay-settings'));setWorkspaceMenu(false)}}><Play size={16}/>{t('Gameplay Test settings')}</button>
-      </TopDropdown></div><button className="top-build-settings" title={t('Build configuration')} aria-label={t('Build configuration')} onClick={()=>setDialog('settings')}><Settings2 size={15}/> {t('Build configuration')}</button>{compileBusy?<button className="top-stop" onClick={cancelCompile}><StopCircle size={14}/> {t('Stop Build')}</button>:<button className="top-compile" onClick={compile}><Play size={14} fill="currentColor"/> {t('Compile Map')}</button>}</div>
+      </TopDropdown></div><button className="top-build-settings" title={t('Build configuration')} aria-label={t('Build configuration')} onClick={()=>setDialog('settings')}><Settings2 size={15}/> {t('Build configuration')}</button>{compileBusy?<button className="top-stop" onClick={cancelCompile}><StopCircle size={14}/> {t('Stop Build')}</button>:<button className="top-compile" onClick={()=>void compile('game')}><Play size={14} fill="currentColor"/> {t('Compile Map')}</button>}</div>
       <input ref={projectInput} type="file" accept=".json,.svenstudio.json" hidden onChange={e=>imported(e,'project')}/>
       <input ref={mapInput} type="file" accept=".map" hidden onChange={e=>imported(e,'map')}/>
       <input ref={bspInput} type="file" accept=".bsp" hidden onChange={loadedBsp}/>
     </header>
-    {bspMode&&bspMap?<div className="bsp-workspace"><BspViewer map={bspMap} source={bspSource} onBack={()=>setBspMode(false)} onOpen={()=>bspInput.current?.click()} onCompiled={()=>void openCompiledBsp()} onOpenRecoveredMap={openRecoveredMap}/></div>:<DockWorkspace toolbar={<div className="ribbon">
+    <main className="sven-workstack">
+    <div className={`sven-editor-workspace ${welcomeOpen?'welcome-covered':''}`} inert={welcomeOpen}>
+    {bspMode&&bspMap?<div className="bsp-workspace"><BspViewer map={bspMap} source={bspSource} initialBaked={bspPreviewBaked} onBack={()=>setBspMode(false)} onOpen={()=>bspInput.current?.click()} onCompiled={()=>void openCompiledBsp()} onOpenRecoveredMap={openRecoveredMap}/></div>:<DockWorkspace toolbar={<div className="ribbon">
       <div className="ribbon-group" {...toolbarGroupProps('transform')}><div className="ribbon-tools"><ToolButton title={`${t('Move')} [${displayBinding(controls.shortcuts.move)}]`} active={mode==='translate'} onClick={()=>activateGizmoMode('translate')}><Move3D size={20}/><small>{t('Move')}</small></ToolButton><ToolButton title={`${t('Rotate')} [${displayBinding(controls.shortcuts.rotate)}]`} active={mode==='rotate'} onClick={()=>activateGizmoMode('rotate')}><Rotate3D size={20}/><small>{t('Rotate')}</small></ToolButton><ToolButton title={`${t('Scale')} [${displayBinding(controls.shortcuts.scale)}]`} active={mode==='scale'} onClick={()=>activateGizmoMode('scale')}><Scaling size={20}/><small>{t('Scale')}</small></ToolButton></div><small className="ribbon-caption">{toolbarGrip('transform')}{t('TRANSFORM')} · {t(mode==='select'?'SELECT':mode.toUpperCase())}</small></div>
       <div className="ribbon-group" {...toolbarGroupProps('view')}><div className="ribbon-tools"><ToolButton title={t('Toggle wireframe')} active={wireframe} onClick={()=>setFlag('wireframe',!wireframe)}><Eye size={20}/><small>{t('Wire')}</small></ToolButton><ToolButton title={t('Grid visibility')} active={showGrid} onClick={()=>setFlag('showGrid',!showGrid)}><Grid3x3 size={20}/><small>{t('Grid')}</small></ToolButton><ToolButton title={t('Show entity names')} active={showEntityNames} onClick={()=>setFlag('showEntityNames',!showEntityNames)}><FileCode2 size={20}/><small>{t('Labels')}</small></ToolButton><ToolButton title={t(showTransformGizmo?'Hide transform gizmo':'Show transform gizmo')} active={showTransformGizmo} onClick={()=>setShowTransformGizmo(!showTransformGizmo)}>{showTransformGizmo?<Move3D size={20}/>:<EyeOff size={20}/>}<small>{t('Gizmo')}</small></ToolButton><ToolButton title={t('Ghost mode')} active={ghostHidden} onClick={toggleGhostHidden}><Ghost size={20}/><small>{t('Ghost mode')}</small></ToolButton></div><small className="ribbon-caption">{toolbarGrip('view')}{t('VIEW')}</small></div>
       <div className="ribbon-group" {...toolbarGroupProps('geometry')}><div className="ribbon-tools">
@@ -709,13 +828,17 @@ export default function App(){
         <ToolButton title={t('Terrain & Shape Studio')} onClick={()=>setDialog('terrain')}><Mountain size={20}/><small>{t('Terrain')}</small></ToolButton>
         <ToolButton title={t('Gameplay Studio')} onClick={()=>setDialog('gameplay')}><GitBranch size={20}/><small>{t('Gameplay')}</small></ToolButton>
         <ToolButton title={t('NPC & AI Studio')} onClick={()=>setDialog('npc')}><Skull size={20}/><small>{t('NPC')}</small></ToolButton>
+        <ToolButton title="BuildTogether — Multiplayer Mapping" onClick={()=>setDialog("buildTogether")}><Users size={20}/><small>Together</small></ToolButton>
         <ToolButton title="Decal Studio" onClick={()=>{useEditor.getState().setResourceView('decals');useStudioLayout.getState().setVisible('assets',true)}}><Paintbrush size={20}/><small>Decals</small></ToolButton>
         <ToolButton title={t('Map Doctor')} onClick={()=>setDialog('doctor')}><CheckCircle2 size={20}/><small>{t('Map Doctor')}</small></ToolButton>
         <ToolButton title={t('Map Packager Studio')} onClick={()=>setDialog('packager')}><PackagePlus size={20}/><small>{t('Package')}</small></ToolButton>
       </div><small className="ribbon-caption">{toolbarGrip('studios')}{t('Studios')}</small>
     </div>
-    </div>} viewport={<div className="viewport-column"><ErrorBoundary label="viewport 3D" compact><Viewport/></ErrorBoundary></div>} consolePanel={null}/>} 
-    <footer className="statusbar"><div><span className="status-ok"/>{t('Ready')} <span className="status-divider"/> Svengine · Valve 220 <span className="status-divider"/> {project.objects.filter(o=>o.kind==='brush').length} {t('brushes')} <span className="status-divider"/> {project.objects.filter(o=>o.kind==='entity').length} {t('entities')}</div><div><Keyboard size={13}/> {displayBinding(controls.shortcuts.move)} {t('Move')} · {displayBinding(controls.shortcuts.rotate)} {t('Rotate')} · {displayBinding(controls.shortcuts.scale)} {t('Scale')} · {walkMode?t('Gameplay Test'):flyMode?t('Fly ON'):'RMB look · WASD · Q/E'} <span className="status-divider"/> SvenStudio 3D v1.4.0 HF15 Preview 3 HF1</div></footer>
+    </div>} viewport={<div className={`true-light-workbench ${truePreviewOpen&&truePreviewLayout==='full'?'true-light-full':''}`}><div className="true-light-map"><div className="viewport-column"><ErrorBoundary label="viewport 3D" compact><Viewport trueLightingOpen={truePreviewOpen} trueLightingBusy={truePreviewBusy} onVisualizationMode={chooseVisualization}/></ErrorBoundary></div></div>{truePreviewOpen&&<ErrorBoundary label="SC-RAD preview" compact><TrueLightingPreview map={truePreviewMap} working={truePreviewBusy||compileBusy} status={truePreviewStatus} stale={!!truePreviewMap&&truePreviewSnapshot!==project} layout={truePreviewLayout} onToggleLayout={()=>setTruePreviewLayout(v=>v==='split'?'full':'split')} onBuild={()=>void compile('preview')} onClose={()=>{setTruePreviewOpen(false);setTruePreviewLayout('split')}} onOpenBsp={()=>{if(!truePreviewMap)return;setBspSource(truePreviewSource);setBspMap(truePreviewMap);setBspPreviewBaked(true);setBspMode(true)}}/></ErrorBoundary>}</div>} consolePanel={null}/>}
+    </div>
+    {welcomeOpen&&<WelcomeScreen onStart={()=>setWelcomeOpen(false)}/>}
+    </main>
+    <footer className="statusbar"><div><span className="status-ok"/>{t('Ready')} <span className="status-divider"/> Svengine · Valve 220 <span className="status-divider"/> {project.objects.filter(o=>o.kind==='brush').length} {t('brushes')} <span className="status-divider"/> {project.objects.filter(o=>o.kind==='entity').length} {t('entities')}</div><div><Keyboard size={13}/> {displayBinding(controls.shortcuts.move)} {t('Move')} · {displayBinding(controls.shortcuts.rotate)} {t('Rotate')} · {displayBinding(controls.shortcuts.scale)} {t('Scale')} · {walkMode?t('Gameplay Test'):flyMode?t('Fly ON'):'RMB look · WASD · Q/E'} <span className="status-divider welcome-hide-version"/> <span className="welcome-hide-version">SvenStudio 3D v1.5.23</span></div></footer>
     {!bspMode&&<ShadingPie/>}
     {dialog==='visibility'&&<VisibilityManager onClose={()=>setDialog(null)}/>}
     {dialog==='output'&&<BuildOutputModal onClose={()=>setDialog(null)} onCancel={cancelCompile} onDoctor={()=>setDialog('doctor')}/>}
@@ -728,9 +851,10 @@ export default function App(){
     {dialog==='cinematic'&&<CinematicCameraStudio onClose={()=>setDialog(null)}/>}
     {dialog==='npc'&&<NPCStudio onClose={()=>setDialog(null)}/>}
     {dialog==='sound'&&<SoundStudio onClose={()=>setDialog(null)}/>}
-    {dialog==='lighting'&&<LightingStudio onClose={()=>setDialog(null)}/>}
+    {dialog==='lighting'&&<LightingStudio onClose={()=>setDialog(null)} onPreview={()=>void compile('preview')}/>}
     {dialog==='doctor'&&<MapDoctor onClose={()=>setDialog(null)}/>}
     {dialog==='packager'&&<MapPackagerStudio onClose={()=>setDialog(null)}/>}
-    {dialog==='terrain'&&<TerrainShapeStudio onClose={()=>setDialog(null)}/>} 
+    {dialog==='terrain'&&<TerrainShapeStudio onClose={()=>setDialog(null)}/>}
+    {dialog==='buildTogether'&&<BuildTogetherPanel onClose={()=>setDialog(null)}/>} 
   </div>;
 }

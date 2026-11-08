@@ -5,6 +5,8 @@ import type {PlaceableShape,Vec3} from '../engine/types';
 import {defaultArchitecture} from '../engine/architecture';
 import {useT} from '../i18n';
 import {useHudLayout} from '../hudLayout';
+import {ArchitectureBuilder} from './ArchitectureBuilder';
+import {ArchitectureModePanel} from './ArchitectureModePanel';
 
 const BASIC:PlaceableShape[]=['box','wedge','cylinder','arch','vault','cone','pyramid','icosphere','stairs','pipe'];
 const STRUCTURES:PlaceableShape[]=['wall','slab','beam','column','ramp','frame','room','roof','corner','platform','bridge','barrier','steps','doorframe','windowframe'];
@@ -39,7 +41,7 @@ export function ShapePalette(){
     const frame=root.current?.closest('.viewport-frame');if(frame)observer.observe(frame);
     return()=>{window.removeEventListener('resize',refresh);observer.disconnect()};
   },[open]);
-  const [category,setCategory]=useState<'basic'|'structures'|'prefabs'>('basic');
+  const [category,setCategory]=useState<'basic'|'structures'|'smart'|'prefabs'>('smart');
   const [dimensionsEdited,setDimensionsEdited]=useState(false);
   const [frameThickness,setFrameThickness]=useState(8);
   const [cutOnly,setCutOnly]=useState(false);
@@ -84,7 +86,7 @@ export function ShapePalette(){
     setOpen(false);
   };
   const draw=()=>{setDraw(!drawing);setOpen(false);};
-  return <div ref={root} className={`shape-palette ${popup.above?'shape-palette-above':''} ${hudEditing?'shape-palette-hud-editing':''}`} style={{'--shape-popup-height':`${popup.height}px`} as React.CSSProperties} onPointerDown={e=>e.stopPropagation()} onContextMenu={e=>e.stopPropagation()}>
+  return <div ref={root} className={`shape-palette ${popup.above?'shape-palette-above':''} ${hudEditing?'shape-palette-hud-editing':''} ${open?'shape-palette-expanded':''}`} style={{'--shape-popup-height':`${popup.height}px`} as React.CSSProperties} onPointerDown={e=>e.stopPropagation()} onContextMenu={e=>e.stopPropagation()}>
     <button type="button" className={`shape-palette-toggle ${open?'active':''}`} onClick={()=>setOpen(v=>!v)} aria-expanded={open} aria-label={t('Shape Studio')} title={t('Shape Studio')}><Shapes size={17}/>{t('Shapes')}<ChevronDown size={13}/></button>
     {open&&<section className="shape-palette-panel" aria-label={t('Shape Studio')}>
       <header><strong><Box size={16}/>{t('Shape Studio')}</strong><button type="button" onClick={()=>setOpen(false)} aria-label={t('Close')}><X size={15}/></button></header>
@@ -96,11 +98,13 @@ export function ShapePalette(){
       <div className="shape-palette-tabs">
         <button type="button" className={category==='basic'?'active':''} onClick={()=>setCategory('basic')}>{t('Basic shapes')}</button>
         <button type="button" className={category==='structures'?'active':''} onClick={()=>setCategory('structures')}>{t('Architecture shapes')}</button>
+        <button type="button" className={category==='smart'?'active':''} onClick={()=>setCategory('smart')}>Architecture Mode</button>
         <button type="button" className={category==='prefabs'?'active':''} onClick={()=>setCategory('prefabs')}>{t('Prefabs')}</button>
       </div>
-      {category!=='prefabs'&&<div className="shape-palette-grid" role="group" aria-label={t(category==='basic'?'Basic shapes':'Architecture shapes')}>
+      {(category==='basic'||category==='structures')&&<div className="shape-palette-grid" role="group" aria-label={t(category==='basic'?'Basic shapes':'Architecture shapes')}>
         {(category==='basic'?BASIC:STRUCTURES).map(kind=><button type="button" key={kind} aria-pressed={selected===kind} className={selected===kind?'active':''} onClick={()=>placeShape(kind)}><span>{ICONS[kind]}</span>{t(kind[0].toUpperCase()+kind.slice(1))}</button>)}
       </div>}
+      {category==='smart'&&<><ArchitectureModePanel onStart={()=>setOpen(false)}/><details className="arch-mode-legacy"><summary>Smart Build 2.0 · generadores anteriores</summary><ArchitectureBuilder/></details></>}
       {category==='prefabs'&&<div className="shape-prefab-section" data-prefab-quick-library>
         <div className="shape-prefab-heading"><strong><Package size={15}/>{t('Reusable constructions')}</strong><span>{prefabs.length}/64</span></div>
         <p>{t('Select a brush group, save it and place copies with one click.')}</p>

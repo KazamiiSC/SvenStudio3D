@@ -1,3 +1,365 @@
+## v1.5.23 — Ayuda sin logos (2026-11-08)
+
+- Eliminados los elementos de imagen **GPT-6 Astra** y **KZ-Sheez** exclusivamente de la ventana Ayuda; el texto de créditos se conserva en una franja discreta.
+- Corregido el título de Ayuda de `v1.5.10` a `v1.5.23`; versión actualizada en barra, pie, lanzador y metadatos.
+- Eliminadas las reglas CSS inactivas de esos dos logos en Ayuda. Sus archivos PNG permanecen en `public/` para compatibilidad histórica; no se renderizan desde Ayuda.
+- Actualizados los tests heredados que exigían logos; agregado caso de regresión para garantizar que Ayuda se mantiene sin las dos imágenes.
+- Agregada lista de novedades comparativa con el README de GitHub (`CAMBIOS_DESDE_GITHUB_A_V1.5.23_ES.md`).
+- Sin cambios en edición 3D, BuildTogether, Terrain, Smart Build, Architecture, SDK, formatos MAP/BSP ni recursos de proyectos.
+
+## v1.5.22 — BuildTogether Terrain & Setup (2026-11-08)
+
+- **Paneles al actualizar:** migración única de preferencias de Workspace v1 a v2 que vuelve a mostrar Biblioteca de recursos, Explorador y Propiedades. Las preferencias del usuario tras la migración vuelven a guardarse con normalidad; no se modifica el HUD.
+- **BuildTogether:** interfaz de sesión con pestañas «Sesión» y «Guía y conexión». La ayuda de BuildTogether y la guía de conexión LAN/Pothole se trasladaron íntegramente a ese diálogo, eliminando el bloque duplicado de Ayuda general. Se mantienen botones Crear, Unirse, Solo observar, Copiar código, Seguir cámara, Salir y Descargar recuperación; sin cambios al protocolo TCP/WebSocket.
+- **Compilación:** botones Buscar para elegir visualmente carpetas reales del PC local (Sven Co-op y SDK); búsqueda automática de instalaciones Steam en varias unidades (registry + `libraryfolders.vdf` + rutas típicas). Los resultados se muestran como opciones y no se sobreescribe una ruta existente. Verificación de los cuatro compiladores SC-CSG, SC-BSP, SC-VIS y SC-RAD. El selector es de solo lectura y no modifica archivos del disco.
+- **BuildTogether + Terrain Studio:** envía primero todos los objetos de operaciones grandes en lotes confirmados de hasta 128, dejando el registro de terreno/arquitectura y otros metadatos para el lote final. Preserva los cambios locales optimistas que aún no fueron confirmados al recibir ediciones ajenas de otros objetos/metadatos; calcula los pendientes restantes tras cada confirmación. Elimina el corte artificial de más de 4096 operaciones dentro de proyectos de hasta 25 000 objetos y agrega protección para mensajes demasiado grandes.
+- **Pruebas:** nuevos casos con terreno de 512 brushes, reescultura, inserción concurrente de entidad por el anfitrión, instantánea de un participante tardío, búsqueda de bibliotecas Steam y migración de paneles. Véase `VERIFICACION_SVENSTUDIO_3D_V1.5.22_ES.md` para límites de verificación y pruebas reales pendientes.
+- No se cambian las herramientas de modelado, engine Terrain, Architecture Mode, SC compile pipeline ni formato MAP Valve 220.
+
+## v1.5.21 — Adaptive UI Fix (2026-11-08)
+
+- Barra superior reorganizada en zonas realistas (izquierda, proyecto y acciones), con medición del contenedor mediante `ResizeObserver` y menú **Más acciones** accesible en ventanas estrechas. Nombre del proyecto editable y truncado, sin posicionamiento absoluto.
+- Herramientas: modo compacto con iconos y tooltips según el ancho CSS real, alineación de grupos y reserva de espacio para el scrollbar sin tapar las etiquetas.
+- HUD: posición calculada con tamaño real de cada widget y del visor; `ResizeObserver` reubica las herramientas al abrir paletas y al cambiar la ventana, sin modificar porcentajes persistidos. Desplegables de Visualización y Precisión se reposicionan al lado interior disponible.
+- **Editar HUD**: selección transitoria (no persistida), deselección pulsando el fondo, limpieza de contornos al salir. Formas colapsadas ocupan solo el botón visible.
+- Eliminado mínimo global rígido de 550px para permitir las dimensiones CSS efectivas de Windows al 200%. Se conserva el aislamiento de escala para Home y BSP Viewer.
+- Sin cambios al protocolo BuildTogether, compilación SC, Architecture Mode, MAP Valve 220, materiales, shaders o lógica de edición.
+- Verificación: TypeScript OK, 452/452 pruebas Node aprobadas, 12 simulaciones visuales CSS en Chromium sin desbordamientos. Vite y Windows DPI real pendientes por las limitaciones detalladas en `VERIFICACION_SVENSTUDIO_3D_V1.5.21_ES.md`.
+
+## v1.5.20 — Adaptive UI (Windows display scaling)
+- Measure actual MAP dock area via ResizeObserver, rather than window size assumptions.
+- Automatically reflow saved dock sizes while preserving persistent preferences.
+- Compact controls for narrow libraries, properties, HUD and short displays.
+- Keep topbar actions scrollable at narrower CSS viewports.
+- Optional adaptive setting in Workspace layout (enabled by default for previous installations).
+- No changes to Home/BSP 100% shell scale, BuildTogether, Architecture Mode or compilation.
+
+## v1.5.19 — BuildTogether: guía Porthole integrada (2026-11-08)
+
+- Guía ES/EN desplegable dentro de BuildTogether para alojar con TCP 49178 en Porthole, aprobar el puerto y escoger direcciones locales del invitado.
+- Ejemplos no universales para `127.0.0.1`, `192.168.x.x` y `10.x.x.x`; guía de remapeo local 49179 cuando 49178 está ocupado.
+- Aclarada la diferencia entre código de sesión BuildTogether y sala Porthole, y entre Porthole → Puertos y una LAN clásica.
+- Archivo `GUIA_BUILDTOGETHER_PORTHOLE_ES.md` y pruebas de integración de ayuda; sin cambios al protocolo WebSocket, Architecture Mode, MAP o compiladores.
+
+## v1.5.18 — BuildTogether 2.0: network stability and responsiveness (2026-11-08)
+
+- Los cambios de geometría se agrupan (90 ms) y se envían en lotes de hasta 128 objetos, esperando la confirmación del servidor antes del lote siguiente.
+- Los cursores remotos reciben interpolación visual CSS; envío de cursores/cámaras limitado y priorización de cambios de MAP cuando hay congestión.
+- Ping RTT y variación estimada en el panel BuildTogether, junto con el estado de sincronización y reconexión.
+- Reconexión automática durante cortes breves, restauración de identidad con clave de reanudación de sesión y ventana de gracia de 45 segundos para el anfitrión.
+- Liberación de bloqueos al perder conexión; salida explícita del anfitrión cierra la sesión. Las interrupciones transitorias no la cierran inmediatamente.
+- Si hay cambios locales sin confirmar al reconectar, se guarda una copia en sessionStorage antes de aceptar la versión del servidor (no hay fusión automática de conflictos).
+- Comprobaciones de presión de salida para descartar solo tráfico efímero; los cambios permanentes se confirman o requieren resincronización.
+- Architecture Mode, sus componentes, operaciones, estructuras y validadores NO fueron modificados.
+- Formato MAP Valve 220, SC-RAD, BSP Viewer, BuildTogether TCP 49178 y BuildTogether LAN conservados.
+
+## v1.5.17 — Architecture Mode (2026-11-08)
+
+- Herramienta de dibujo interactivo de muros y habitaciones ortogonales dentro del visor 3D.
+- Cierre de habitaciones, suelo y techo opcional generados como brushes convexos GoldSrc.
+- Previsualización del contorno, ajuste a grilla, Enter/Backspace/Esc y controles accesibles.
+- Editor paramétrico de contorno, altura, grosor, Z y losa, más arrastre de esquinas 3D.
+- Construcciones persistentes en proyectos editables, un Undo/Redo por operación.
+- Protección contra solapamientos, intersecciones, parámetros inválidos y modificaciones manuales.
+- Smart Build original y todas las herramientas previas conservadas en la interfaz.
+- Guardas explícitas de puertas/ventanas para evitar corromper construcciones paramétricas.
+- Formato MAP Valve 220, True Lighting, BuildTogether y compiladores intactos.
+
+## v1.5.16 — Smart Build render loop fix (2026-11-08)
+
+- Fixed `Maximum update depth exceeded` when mounting the `ArchitectureBuilder` component in the Shapes > Smart Build tab on a project without `architectureOpenings` and `architectureAssemblies`.
+- Root cause: selectors `useEditor(s => s.project.architectureOpenings || [])` and `useEditor(s => s.project.architectureAssemblies || [])` allocated a fresh empty array for every `getSnapshot()` call, causing repeated external-store rerenders under Zustand 5 and React 19.
+- Selectors now return the stable stored properties (possibly `undefined`), and module-level typed empty arrays are used as stable presentation fallbacks.
+- Added `tests/smart-build-zustand-v1516.test.mjs` and updated release-version assertions. Full Node regression: 418/418 passing; TypeScript: zero errors.
+- Geometry and map export logic, lighting, tool controls, layout, and all existing architecture actions remain unchanged.
+- Browser startup in the user's Windows environment is still pending confirmation.
+
+## v1.5.15 — Smart Architecture 2.0 (2026-11-07)
+
+- Real Shapes palette now includes a compact **Smart Build** tab; the historical ArchitectureBuilder component was previously unused and is now mounted in the actual viewport UI.
+- Native parametric generators: rooms with optional open roof, open-ended corridors, stairs with landing, bridges, and supported platforms; all pieces are tested as valid convex Svengine Valve 220 brushes.
+- Rebuildable architecture assemblies store editor-only origin, dimensions, member IDs, texture and change-detection signatures in `.svstudio.json`, preserving original authored geometry when users later edit other parts.
+- Opening plan rebuild: update offset, sill, width, height and frame; repeat with controlled spacing; delete a window and restore the original wall without accumulating CSG clips. Other openings on the wall are retained.
+- Smart Build verifies generated structure parts and newly generated window/door wall fragments before replacing them. Its detach actions preserve manually edited world brushes instead of silently overwriting them; a 24-opening limit guards against pathological CSG work. Converting an assembly to ordinary editable brushes deliberately ends its parametric relationship.
+- Stable CSG gizmo centering and multiple-opening support from v1.5.14 preserved. Undo/Redo and historical metadata exports remain unchanged.
+- No edits to MAP Valve 220 exporter, BSP parser, Baked RGB shaders, SC-RAD, build backend, home or BuildTogether.
+
+## v1.5.14 — Architecture window gizmo centering
+
+- Fixed the move/rotate gizmo appearing near `info_player_start` or the origin when selecting a wall fragment generated by an architectural window/door cut.
+- Recenters CSG-generated architectural wall fragments (local vertices + actual brush world-space position), preserving the same world geometry, texture-face metadata and Valve 220 output.
+- For existing saved projects with old world-space CSG vertices, selection pivots now derive from the visible brush bounds, without rewriting project data.
+- Reuses the same correct center for centered scale anchors; ordinary centered brushes retain their original pivot.
+- Regression tests cover displaced walls, new and legacy fragments, movement, export and syntax, plus multi-window architecture cases.
+- Does not change True Lighting, SC-RAD, BSP Viewer, compilation, Material & Surface Studio or BuildTogether.
+
+## v1.5.13 — Material & Surface Studio startup fix
+
+- Fixed a Vite/React-Babel syntax error that prevented SvenStudio from opening after installing v1.5.12. `MaterialSurfaceStudio.tsx` imported `Brush` both as an icon and as a geometric type. The icon is now aliased as `BrushIcon` while the `Brush` type keeps its original name.
+- Added a Babel TSX syntax regression test that reproduces the original error and checks that Material & Surface Studio and its integration parse correctly.
+- Updated the app, launcher, package metadata, and version assertions.
+- No changes to Valve 220 MAP export, GoldSrc geometry, True Lighting shaders, or BuildTogether.
+
+## v1.5.12 — Material & Surface Studio (2026-11-07)
+
+- Added Material & Surface Studio in the left Resource Library beside Texture Browser: native brush presets for glass, alpha-cutout grates, additive screens, and water.
+- Atomic, undoable native brush-entity conversion (`func_wall`, `func_illusionary`, `func_water`) without touching Valve 220 UV or rewriting pre-existing game logic.
+- Editor-only per-project surface sound assignments and legacy ASCII materials.txt export with optional worldspawn linkage; Map Packager includes map-specific text resources when configured.
+- Native `light_surface` helper, animated WAD texture frame inspector, WAD preview, saved presets, and Material Doctor diagnostics.
+- Existing SC-RAD, BSP, visualization, MAP exporter, launcher, viewport renderer, BuildTogether and other tools remain untouched.
+
+## v1.5.11 — Visualization menu and compact True Lighting (2026-11-07)
+
+- Replaced the top-right True Lighting build shortcut with a **Visualización / Visualize** menu beside Perspective inside the MAP editor viewport. Choose normal, quick approximate, or compiled True Lighting mode.
+- Simplified the True Lighting header to Rebuild, Settings, Split/Full and Close; moved Interior/Exterior, gamma, fog, filter, styled lightmaps and diagnostics into collapsible settings.
+- Added an explicit compact status footer for SC-RAD freshness and Baked RGB, plus split and full MAP viewport modes that keep Resources and Properties docked. BSP Viewer access is retained in Settings.
+- Cached BSP preview survives closing its panel, reducing unnecessary recompilation; a modified MAP still warns that a new bake is needed.
+- No changes to MAP Valve 220, SC-RAD, compiled BSP rendering and RGB samples, world geometry, BuildTogether or the welcome page.
+
+## v1.5.10 — True Lighting: BSP fog and display-only color calibration (2026-11-07)
+
+- Added a safe read-only `env_fog` parser for the compiled BSP (RGB, near/far distances, and Start Off spawnflag).
+- Added fog toggle to True Lighting and BSP Viewer; compiled-lighting shader blends fog in linear working space before output color conversion. Approximate built-in non-baked BSP materials also respect the scene fog.
+- Added neutral-default display gamma control, and bilinear/nearest lightmap filtering without rebuilding the BSP.
+- Lightmap samples, MAP Valve 220 export, texture data, SC-RAD compiler path, welcome screen, BuildTogether and all map-editing tools are unchanged.
+- v1.5.9 custom `bspLightUv` fix remains active. Runtime fog triggers and native Svengine user graphics settings are not simulated.
+- Node regression tests include the previously submitted maptest1 BSP with active env_fog. Windows/Chrome and actual Sven Co-op color matching still require visual validation.
+
+## v1.5.9 — True Lighting: custom UV shader fix (2026-11-07)
+
+- Fixed baked RGB WebGL shader reading `uv1` without the conditional Three.js `USE_UV1` attribute declaration. Custom `bspLightUv` is always declared and backed by the exact lightmap UV coordinates.
+- Preserved `uv1` for built-in Three.js lightmaps and maintained atlas and per-face rendering paths.
+- Added regression tests using the actual 14-face BSP lighting test map. No changes to SC-RAD or BSP/MAP writing.
+- Browser WebGL validation on user hardware remains necessary.
+
+## v1.5.8 — True Lighting: direct luxels and compile diagnostics (2026-11-07)
+- For small BSP maps (up to 64 faces), bypass the shared atlas: upload a padded RGB texture per lightmapped face, keeping exact SC-RAD samples and mapping their GoldSrc 16-unit coordinates directly.
+- Add compiled RGB statistics to both True Lighting and BSP Viewer, distinguishing missing, black and dim samples from renderer/geometry problems.
+- Add a non-baked geometry inspection mode to True Lighting; it is clearly identified as unlit rather than falsely presented as exact illumination.
+- Prevent confusing contradictory `Baked RGB` / `Lightmaps` toggles.
+- Preserve MAP/Valve 220, BuildTogether, compilers, BSP preview isolation, original viewport controls and prior versions.
+- Tests performed without the unavailable Vite/Three dependencies; visual WebGL and native SC-RAD output still require Windows validation. This release is a diagnostic/precision fix, not a claim that the user's specific BSP has been solved without its bytes.
+
+## v1.5.7 — BSP interior camera / True Lighting visibility
+
+- Fixed True Lighting showing mainly skybox in small maps: default navigation now starts **inside** compiled map bounds, near `info_player_start` when available.
+- Fixed BSP Viewer starting outside and requiring large zoom/orbit movements to find the map. Interior / Exterior viewpoint controls and reset added to both compiled-map viewers.
+- Included deterministic camera-preset tests for spawn, spawnless rooms, large outdoor maps, and out-of-bounds spawn positions.
+- No changes to SC-CSG, SC-BSP, SC-VIS, SC-RAD, BSP lightmap samples, WAD textures, Valve 220 MAP export or normal build output.
+- Tests runnable without frontend dependencies: 256/256 passed. Remaining dependency-bound regression suites, frontend build/TypeScript type-check and real Windows WebGL/SC-RAD validation remain pending.
+
+## v1.5.6 — True Lighting Preview (2026-11-07)
+
+- Added **True Lighting** to MAP Editor and Lighting Studio: a second, read-only 3D viewport displays **actual BSP30 RGB lightmaps produced by SC-RAD** next to the editable MAP. Rebuild on demand and see when the current MAP differs from its last bake.
+- Added `previewOnly` compilation mode using the original SC-CSG / SC-BSP / SC-VIS / SC-RAD pipeline. The result remains in an isolated temporary build folder and is fetched via an expiring random identifier; unlike normal compilation it **does not install/overwrite** `svencoop/maps/*.bsp` or install demonstration sounds/WADs.
+- BSP parser now preserves all compiled face RGB lighting layers and style identifiers; snapshot slider combines static and named/animated lightstyle layers at a selected tick (does not simulate their exact runtime timing).
+- **Baked RGB** render path multiplies original BSP RGB samples with textures, without editor lighting, fake ambient light, or Three.js PBR. Added Baked RGB toggle to the full BSP Viewer; optional gain, wireframe and lightstyle snapshot sliders; installed skybox and WAD lookup retained.
+- The preview remains tied to a project snapshot and flags stale results after subsequent map edits. Opening the preview in full BSP Viewer does not replace the editable MAP.
+- Browser color management, game gamma/palettes, some moving/dynamic objects, and animated lightstyle timing can still make Svengine's final pixels differ. This is a *compiled-lightmap preview*, not a byte-for-byte reimplementation of the complete engine renderer.
+- 353/353 Node regression tests and TypeScript (no errors); separate synthetic integration test confirms preview-only build/download does not install a BSP and normal compile still installs one. Windows SC-RAD compilation and in-game results remain to be verified.
+
+## v1.5.5 — Advanced Lighting Studio (2026-11-07)
+
+- Lighting Studio retains its native environment, skybox browser, previews and original tools, with three additive tabs: **Texture lights**, **Advanced SC-RAD**, and **Styles & shadows**.
+- Texture lighting: create/edit `light_surface` (native `_tex`, `_light`, optional `_texcolor`, `_frange`, `_texlightgap`), add named RGB/brightness entries to an `info_texlights` entity without deleting other entries; read texture name from a selected MAP brush face or existing map texture list.
+- SC-RAD: validated controls for bounce, patch sizes, smoothing, blur, gamma, reflection, ambient, sky, fades, emissive gap and custom shadow options, written to the documented `info_compile_parameters` entity. Existing unrelated BSP/CSG/VIS and RAD properties remain intact. Three optional editing presets (indoor, final and soft sky).
+- Native light styles: targetname, appearance, optional custom patterns and initially-dark bit, preserving unrelated spawnflags. Create native `light_shadow` and `light_bounce` helpers with checks for opaque target brush entities.
+- Existing MAP Valve 220 exporter and SC-* compiler arguments unchanged. Browser lighting remains an approximation; advanced baked results must be checked in Sven Co-op.
+- Version metadata, in-editor version badges and help updated. Added automated safety/regression tests and a Spanish verification guide. No changes to home parallax/shell scaling or BuildTogether.
+
+## v1.5.4 — Escala aislada y parallax estable (2026-11-07)
+
+- La escala del Workspace solo afecta al editor MAP; la pantalla inicial y BSP Viewer se mantienen a escala 100 %.
+- Corregido el hover que se repetía sobre iconos: tarjetas y botón Start usan contenedores hitbox estáticos con caras 3D independientes y sin eventos de puntero.
+- Se conserva la portada en inglés, el inicio automático y todas las funciones previas, incluyendo BuildTogether y Decal Studio.
+
+## SvenStudio 3D v1.5.2 — Holographic Home (2026-11-07)
+
+- Rebalanced the home to fill the *actual browser content height*, not a full-screen mockup; logo, tools and Start have breathing room. The outer home stays clipped, without fake horizontal/vertical scrollbars on desktop.
+- Added a bounded layered holographic visual: two logo orbits, animated glass halo, projected cyan grid, ambient rings, moving spotlight and extra particles.
+- Strengthened **local** 3D reactions: each card tilts toward the pointer, its icon lifts separately, a light reflection sweeps across the card, while the whole page only moves a few pixels. Accessible reduced-motion/touch fallbacks remain.
+- All visible home wording stays English. Start still enters the mounted editor, with BuildTogether and map state untouched.
+- Release numbering updated to v1.5.2.
+
+## SvenStudio 3D v1.5.1 — Home Fit & Gentle Parallax (2026-11-07)
+
+- **Home now opens on every launch** of the browser editor, instead of entering the 3D workspace immediately. Start resumes the already-mounted editor without resetting the map or BuildTogether.
+- The one-time onboarding guide is deferred until the first Start so it cannot cover the home screen.
+- Solved scrollbars and cropped welcome content on typical desktops by sizing the welcome composition to its own viewport, reducing 3D projection overflow, shrinking the holographic orbit, and tightening vertical spacing.
+- Reduced global mouse tilt and individual card hover angles while retaining cyan reactive glows, depth grid, and particles.
+- Maintained responsive vertical scrolling on physically narrow or short viewports while preventing horizontal scrolling.
+- Updated release to v1.5.1.
+
+## SvenStudio 3D v1.5.0 — Kinetic Parallax & Home Screen (2026-11-07)
+
+- Changed the release version to **1.5.0** in the UI, launcher, package metadata, and verification.
+- Enhanced the 3D welcome page with pronounced multi-layer parallax, per-card mouse-driven 3D tilt, reactive cyan lighting, a holographic orbit around the logo, subtle animated points, and an abstract perspective grid. No gameplay imagery or new map rendering is used.
+- Fixed the horizontal scrollbar caused by oversized transformed layers: the welcome viewport clips horizontal overflow and keeps intentional vertical scrolling only on small screens.
+- All welcome copy remains English by default; map and editor settings remain unchanged when pressing Start.
+- Automatically disables motion for reduced-motion and coarse/touch pointers; all effects are pointer-safe and do not create map edits.
+
+## v1.4.0 HF15 Preview 4 HF4 — Interactive Parallax Home
+
+- Added gentle 3D perspective parallax to the existing solid-blue English homepage: logo, title, tool grid, capabilities and footer respond at different depths to mouse movement.
+- Two ambient cyan lights drift at a lower rate; hovered cards and the Start button have cursor-following glow. The 3D gameplay viewport is not rendered or modified by this effect.
+- Pointer tracking is smoothed with requestAnimationFrame and updates CSS variables without React rerenders. Animation stops when settled and listeners/frames are cleaned up when the home closes.
+- Reverts smoothly to neutral on mouse leave or focus loss. Automatically disabled for reduced-motion settings and coarse/touch pointers.
+- Same project/editor/BuildTogether state, English home copy and responsive solid navy styling as HF3. No image backgrounds.
+
+## v1.4.0 HF15 Preview 4 HF3 — Solid English Home
+
+- Replaced the stretched full-screen screenshot with entirely responsive, real HTML/CSS home components.
+- Removed gameplay/map scenery. Calm solid navy background with subtle cyan highlights; no screenshots or image backgrounds.
+- Home defaults to English independently of the language chosen for the rest of SvenStudio 3D.
+- Responsive hero, nine studio panels, three capability cards, and centered actual Start button.
+- Open-map name and object counts remain live. Home hides duplicate version labels; map/editor, tools and BuildTogether are preserved.
+
+## v1.4.0 HF15 Preview 4 HF2 — Cyan Fullscreen Home
+
+- Full-bleed illustrated cyan/blue landing view matching the selected reference inside the editor (not a mockup).
+- Native interactive Start button layered over the cinematic artwork, returns to the existing live viewport without resetting project or BuildTogether.
+- Existing header/footer remain live. Screenshot chrome cropped out. Header/footer duplicate version strings hidden while welcome is open.
+- Browser window resizing scales the artwork; reduced-motion and accessible names supported.
+
+## v1.4.0 HF15 Preview 4 HF1 — Home Screen
+
+- Clic en logo/título SvenStudio 3D para abrir la portada interna sin descargar ni reemplazar el mapa.
+- Banner de bienvenida, resumen de estudios, nombre del proyecto y botón Iniciar.
+- Editor WebGL y paneles conservados en memoria; la página oculta la vista y desactiva atajos mientras está abierta.
+- Textos ES/EN, diseño responsive y ayuda de validación para Windows.
+
+## SvenStudio 3D v1.4.0 HF15 Preview 4 — BuildTogether (2026-11-07)
+
+- First experimental cooperative mapping service using authenticated rooms and a dedicated WebSocket port (49178).
+- Host creates a private invitation code; guests join by private LAN/overlay address and code, with optional spectator role.
+- Project object and metadata deltas synchronized; selection locking, participant presence, colored remote outlines and screen-space cursors.
+- Optional Follow Camera, independent editor viewport settings, and local-only WAD/FGD/MDL resources and compiler paths.
+- Added trusted-LAN launcher `SvenStudio3D_BUILDTOGETHER_LAN.bat`, BuildTogether panel and Spanish/English Help entries.
+- Server conflict checks and revision ordering; disallowed writes to peer-locked objects.
+- Node.js session integration test plus pre-existing regression suite. Vite/Chrome/Windows validation is still pending.
+
+## HF15 Preview 3 HF1 — Decal Move & Transparency
+
+- Arrastrar decals `infodecal` directamente sobre la cara donde se colocaron. Admite planos verticales, inclinados y horizontales; queda dentro de los límites de la cara.
+- Movimiento con gizmos y campos numéricos restringido a la misma superficie, conservando el desplazamiento de 0,8u hacia el lado original.
+- Una operación de Undo/Redo por arrastre completo; mover el mouse no llena el historial.
+- Vista previa de transparencia mejorada (índice alfa nativo WAD3 y análisis prudente del fondo para entradas WAD3 no nativas).
+- Mantiene la exportación MAP `infodecal` estándar: sólo posición y textura. Sin valores inventados de rotación o escala en GoldSrc.
+
+
+## v1.4.0 HF15 Preview 3 — Native Decal Studio (2026-11-07)
+
+- NEW: Decal Studio tab in Asset Library and Studios navigation. Browse native GoldSrc decals with previews, name filtering and click-to-place interaction on brushes.
+- NEW: import the original `decals.wad` manually or load the fixed `decals.wad` path from the configured local Sven Co-op directory through a read-only validated server endpoint. Decals are not bundled with this distribution.
+- NEW: GoldSrc `infodecal` point entities exported as ordinary Valve 220 MAP entities with a `texture` key. Each placed decal is individually selectable, duplicable, removable and undoable.
+- NEW: editor-side decal visualization with alpha transparency and orientation according to the clicked face. The editor-only normal/brush metadata does not change native MAP export.
+- WAD3 parser: supports native decal lump type `0x40` separately from standard WAD texture type `0x43`; handles index-based alpha and validates ranges and palette contents before decoding.
+- Doc: English/Spanish Help section covering Decal Studio, import, painting, edit, limits and dependencies.
+- Verification: TypeScript clean, Node syntax/server checks clean, 303/303 Node regression tests, local `/api/health` responds, `/api/assets/decals` rejects missing gameDir. Windows Vite build, browser UI and compiled in-game preview remain pending.
+- Scope: native static `infodecal` only. No free scale/rotation, dynamic spray effects or nonnative geometry decals; visual previews are approximations and must be validated in Sven Co-op.
+
+## v1.4.0 HF15 Preview 2 HF5 — UV controls stay fixed in the viewport (2026-11-07)
+
+- FIX: removed the UV widget from Drei `Html` projection in the 3D scene. Even with `fullscreen`, that component moved its HTML wrapper when the camera orbited/zoomed, causing the apparent wandering UI.
+- Render the UV manipulator as a true DOM overlay directly in `.viewport-frame`, with screen-relative pixel coordinates. Camera movement and face selection no longer change its position.
+- The first face click determines the initial widget placement, or the viewport center is used if opening without a face click. Users can drag the `Mover UV` tab to move it; that position is saved and reused for later faces and sessions.
+- A viewport resize can clamp the position only when necessary to keep the control accessible.
+- Changed the storage key from v1 to v2 to avoid carrying over positions saved in the old, camera-projected coordinate space.
+- No changes to Valve 220 UV axes, geometry, WAD data, MAP exporter, or brush clipboard.
+- TypeScript and Node regression tests passed (296/296); interactive Chrome/Windows verification pending.
+
+## v1.4.0 HF15 Preview 2 HF4 — UV workspace and brush clipboard (2026-11-07)
+
+- Removed the redundant **Build Configuration** entry from Workspace; the main top-bar button remains next to Compile Map.
+- Added a distinct **Mover UV** grab tab to the screen-space UV manipulator. Drag the tab to position the controls freely in the viewport. Position stays fixed when selecting different faces/brushes, orbiting, zooming or reopening Texture Studio, and is stored locally.
+- Preserved existing UV transform handles and Valve 220 UV editing; dragging the new tab does not change any brush texture coordinates.
+- Added **Ctrl+C** (copy selected, unlocked visible brushes) and **Ctrl+V** (paste independent duplicates, offset so they can be selected), including multiple brushes and repeated pastes. A paste is one undoable map change; object clipboard operations do not override text field copy/paste or Texture Studio's material buttons.
+- Updated English/Spanish Help guide for both features; no map format or build pipeline changes.
+- TypeScript and automated Node regression tests pass. Browser/Windows visual confirmation remains pending.
+
+## v1.4.0 HF15 Preview 2 HF3 — First-run Guide, Build Configuration & Workspace (2026-11-07)
+
+- Replaced the duplicate top-bar **Save** button with **Build Configuration**. File → Save project and Ctrl+S remain available.
+- Build Configuration explains that successful compilation automatically writes `<gameDir>/maps/<mapName>.bsp`; intermediate MAP files remain in the temporary build folder. The editable project must be saved separately.
+- Rebuilt the Help dialog: updated camera, gizmo, drawing, UV, smart placement, Gameplay Test, every configurable keyboard shortcut (read live), detailed explanations for the studios, Workspace, game-resource loading and contact information (Discord kzsheez / Steam KazamiiSC).
+- Added an explicit incomplete-development notice and recommended Fullscreen navigation warning.
+- Help opens automatically when the editor is opened in a browser for the first time; marking it seen on dismissal preserves the preference per browser.
+- New workspace default matches the requested screenshot: Classic ribbon at the top; Asset Library left; Properties above Explorer on the right. Existing saved arrangements are respected.
+- Increased `info_player_start` MDL idle animation refresh from 10 to up to 30 Hz and adjusted the playback speed (1.4×); hide this preview model in Gameplay Test.
+- Changed Spanish `Wireframe` UI text from `Alámbrico` to `Wireframe`.
+- No changes to MAP export/brush geometry, WAD rendering or SDK build behavior. Existing layout state and project files are retained.
+- Validation: TypeScript clean; 290/290 Node regression tests. Windows Vite build/interactive review pending.
+
+## HF15 Preview 2 HF2 — Stable UV Anchor & Floating Texture Studio
+
+- Pin UV controls to click location (screen-space, zoom independent) until changing face.
+- Keep Texture Studio palette position stable across face changes/double-clicks/reopens.
+- Render palette outside clipped viewport using a body portal; allow dragging to any workspace area.
+- Store position per browser, preserve it between launches and clamp on resize.
+
+## HF15 Preview 2 HF1 — Precision settings & compact UV overlay
+
+- Position precision settings under the triggering toolbar button, raised above side tool rail.
+- Replace face-sized projected yellow UV outline with a compact fixed-size draggable UV gizmo.
+- Keep UV controls on screen as camera zoom changes; avoid near-plane projection instability.
+- Preserve UV texture transforms, brush geometry and Valve 220 MAP export.
+
+## v1.4.0 HF15 Preview 2 — WAD & Valve 220 UV Accuracy (2026-11-07)
+
+- UV Fit and Center now resolve texture dimensions from the **same WAD priority order used by the actual viewport**. This fixes unexpected UV scale when the same texture name exists in WADs with different dimensions.
+- Fit preserves mirrored (negative) U/V scale and correctly anchors repeated texels to the mirrored edge.
+- Align preserves the full source Valve 220 UV axes (including magnitude and rotation) and texel offsets on coplanar faces. Around corners, unusable axes are repaired while preserving phase at the join.
+- WAD3 import validates image and palette bounds **inside each individual lump**, preventing invalid textures from reading data belonging to other textures.
+- WAD priority respects the first declared occurrence of a WAD file; when priorities are equal, the latest import continues to win (existing behavior).
+- Added seven regression tests covering archive priority and reimports, mirrored fitting, non-unit UV alignment, right-angle repairs, malformed WAD3 lumps and shared UV/WAD selection.
+- Retains HF15 Preview 1 HF1 single-grid overlap fix. No changes to BSP compilers, map brush geometry, MAP or project file formats.
+
+Verification: TypeScript OK; 278/278 Node regression tests passed. Vite build and interactive Windows/browser verification are pending due to unavailable Linux Rollup native module.
+
+## HF15 Preview 1 HF1 — Visual grid overlap fix
+
+- Replaced the stacked dual-grid preview with a single larger continuous helper.
+- Eliminated the dark square patch that appeared on the floor when changing the visible grid size or selecting brushes.
+- Kept visible-grid size independent from move/draw precision.
+- Verified TypeScript compilation in the CAAS environment.
+
+## v1.4.0 HF15 Preview 1 — Independent Grid & Precision (2026-11-07)
+- Separate **visible grid** spacing from the **move/draw/snap** increment; initial values 16u visible / 1u editing.
+- Expose both values in viewport HUD and ribbon toolbar; keep the original UI layout.
+- Add precision popover for rotation snap, scale snap, and modifier reference.
+- Fix Shift temporarily disabling gizmo displacement snap (preview and commit) consistently with G/R/C.
+- Persist visible grid preference and edit precision independently; MAP, WAD, BSP, FGD and project formats are unchanged.
+- Grid preview remains an editor-only overlay. This preview does not yet overhaul GoldSrc geometry/UV/lighting.
+
+## v1.4.0 HF14 — Stability & Bug Fixes (Browser)
+
+- Fixed the six-language `DoorMotionControls` type error so TypeScript builds cleanly.
+- Updated two legacy preview tests to validate WAD lookup passed to `buildMeshGeometry` correctly.
+- Added safe migration/sanitization for saved dock layout data, retaining valid preferences.
+- Made panel resize handlers restore the cursor/selection and cancel cleanly on blur, Escape, and pointer cancel; touch handling improved.
+- Repaired standalone smoke and Gameplay Preview 4 verification scripts after engine import growth.
+- Added 4 workspace stability tests, a cross-platform `npm run verify:hf14` command, and a Windows verification launcher.
+- No changes to map serialization, geometry generation, Valve 220, or Sven Co-op SDK compiler pipeline.
+
+Verification: TypeScript clean; 263/263 Node regression tests; additional smoke, layout, gameplay, packager, BSP, terrain, texture and backend API checks passed. Final Vite build and graphical Windows/browser verification remain pending because this environment lacks Rollup's Linux native binary.
+
+---
+
+## v1.4.0 HF13 — Adaptive Docks: Asset Library & Properties
+
+- Asset Library adapts to top/bottom docking with a compact row of search, WAD/FGD import, and filters.
+- Texture previews use capped-size tiles in auto-filling columns instead of stretching two tiles across the panel.
+- Entities and NPC listings use several responsive columns; Model Browser, Sound Browser, and Layers fill available space.
+- Sound files use responsive columns in wide horizontal docking; preview controls remain accessible.
+- Properties adapts to horizontal docking: transform, FGD keyvalues and fields are arranged in columns within a scrollable inspector.
+- Intermediate-width horizontal docks are supported as well as full-width and narrow side docks.
+- Dock locations are passed as presentation-only attributes, so content/layout automatically changes when docking or resizing.
+- All editing actions and underlying project serialization remain unchanged.
+
+Verification: 7 new HF13 tests passed; 241/241 supported regression tests passed. Full run: 245/250 (3 blocked by missing three, 2 outdated legacy assertions for HF2 Formas/Prefabs). TypeScript/TSX syntax and CSS parsing passed. Full Vite build unavailable because vite/client is missing. Automated Chromium screenshot could not be completed in this environment; Windows browser test pending.
+
+---
+
 ## v1.4.0 HF11 — Guías legibles y dirección nativa de func_door
 
 - Gameplay Studio: el inspector conserva un resumen de la mini guía y ofrece «Abrir guía ampliada» en una ventana central de hasta 780 px, con desplazamiento único y accesibilidad básica. Esc cierra la guía, no el estudio.
@@ -405,3 +767,11 @@ Notas anteriores en `docs/history/`.
 - Se mantienen intactos exportador Valve 220, BSP Viewer y backend.
 
 Consulta `LEER_HF5_DESVINCULAR_ENTIDADES_ES.md` y `VERIFICACION_HF5_DESVINCULAR_ENTIDADES_ES.md`.
+
+## v1.4.0 HF12 — MAP Import: Brush Entity Visual Anchors (2026-11-06)
+
+- Fixed imported solid entity markers appearing at world origin when MAP entities have brushes but no `origin` keyvalue.
+- Anchor imported solid entity markers to the bounding box of *all* reconstructed, associated brushes.
+- Preserve explicit `origin` values for entities that have them and leave ordinary point entities unchanged.
+- Keep brush geometry, UVs, targets and Valve 220 MAP export behavior unchanged.
+- Added automated regression tests and a standalone MAP fixture containing `func_door` and `func_button` brush entities.

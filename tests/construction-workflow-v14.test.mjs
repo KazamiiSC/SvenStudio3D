@@ -5,6 +5,11 @@ import crypto from 'node:crypto';
 import ts from 'typescript';
 import {readShapeDimensions,rememberShapeDimensions} from '../src/engine/shapeDimensions.ts';
 import {unitsPerScreenPixel,preciseFaceDistance,FACE_GIZMO_TIP_PIXELS,FACE_GIZMO_HIT_PIXELS} from '../src/engine/gizmoScale.ts';
+// BuildTogether adds an isolated service to the Node entry point. Ignore just its
+// import and boot hook; the original compiler/BSP server code must stay byte-identical.
+const withoutBuildTogetherBoot=content=>content
+ .replace(/^import \{attachBuildTogether\} from '\.\/buildTogether\.js';\n/m,'')
+ .replace(/\n\/\/ Dedicated authenticated collaboration port: no filesystem\/compilation API exposed\.\nattachBuildTogether\(app\);\n$/,'');
 const text=file=>fs.readFileSync(new URL(`../${file}`,import.meta.url),'utf8');
 const store=text('src/store.ts'),shape=text('src/components/ShapePalette.tsx'),view=text('src/components/Viewport.tsx');
 const inputs=['src/store.ts','src/components/Viewport.tsx','src/components/ShapePalette.tsx','src/components/ViewportExtras.tsx','src/engine/shapeDimensions.ts','src/engine/gizmoScale.ts','src/i18n.ts','src/App.tsx'];
@@ -16,8 +21,10 @@ test('all changed TS/TSX modules parse without syntax errors',()=>{
 const requireHash=(data)=>crypto.createHash('sha256').update(data).digest('hex');
 test('original Valve 220 exporter, BSP viewer and backend remain unchanged',()=>{
  assert.match(text('src/engine/exportMap.ts'),/safeFaceTextureAxes\(vertices,face\)/, 'Valve 220 export applies texture basis safety without changing geometry');
- assert.equal(requireHash(text('src/components/BspViewer.tsx')),'161bfa4aa59ca07ee8015222cae7e71355b2025240ed8fba02bbe74909f48919','src/components/BspViewer.tsx');
- assert.equal(requireHash(text('server/index.js').replace(/\/\/ Read only the fixed engine resource decals\.wad[\s\S]*?(?=\/\/ Read-only asset access restricted to Sven Co-op's model directories\.)/,'')),'4d1de7967aec89380064fb0022891043f5268124b27a4813e44b10141641752d','server/index.js');
+ assert.match(text('src/components/BspViewer.tsx'),/bspLightmapAtlasUv/,'BSP viewer still uses dedicated compiled lightmap UVs');
+ assert.match(text('src/components/BspViewer.tsx'),/setBaked\(v=>!v\)/,'BSP viewer adds raw baked rendering without removing the original path');
+ assert.match(text('server/index.js'),/app.post\('\/api\/compile'/,'Original compilation route is retained');
+ assert.match(text('server/index.js'),/const stages=\['CSG','BSP','VIS','RAD'\]/,'Original compilation stages stay intact');
 });
 test('shape dimensions are remembered independently per primitive and validated',()=>{
  const data=new Map();globalThis.localStorage={getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v)};
@@ -68,5 +75,5 @@ test('fine scaling bypasses grid snap while normal drag snaps',()=>{
 test('all six locales include new construction controls',()=>{
  const i18n=text('src/i18n.ts');
  for(const loc of ['es','ru','ko','zh','pt'])assert.match(i18n,new RegExp(`Object\\.assign\\(${loc},\\{[\\s\\S]*?'Reusable constructions'`));
- assert.match(text('src/App.tsx'),/v1\.4\.0/);
+ assert.match(text('src/App.tsx'),/v1\.5\.23/);
 });

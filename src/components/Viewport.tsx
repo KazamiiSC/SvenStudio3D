@@ -2,11 +2,14 @@ import {isWalkCrouchHeld} from '../engine/controls';
 import {keyboardVerticalDirection} from '../engine/cameraKeyboard';
 import {canCaptureMapCamera,canMoveInCameraCapture} from '../engine/cameraCapture';
 import { Canvas,useFrame,useThree } from '@react-three/fiber';
-import { Scan, EyeOff, Eye, Grid3x3, Magnet, SlidersHorizontal, Sun, Focus, Undo2, Redo2, Flashlight, Droplets } from 'lucide-react';
+import { Scan, EyeOff, Eye, Grid3x3, Magnet, SlidersHorizontal, Sun, Focus, Undo2, Redo2, Flashlight, Droplets, ChevronDown, Lightbulb } from 'lucide-react';
 import { OrbitControls,TransformControls,GizmoHelper,GizmoViewport,Html,Line } from '@react-three/drei';
 import { createContext,memo,useCallback,useContext,useEffect,useMemo,useRef,useState } from 'react';
 import * as THREE from 'three';
 import { useEditor } from '../store';
+import {useArchitectureMode} from '../architectureModeState';
+import {finishArchitectureMode} from '../architectureModeController';
+import {ArchitectureDrawControls} from './ArchitectureModePanel';
 import { buildMeshGeometry,brushDimensions,createSizedPlaceableShape,gameToThree,threeToGame,toRenderQuaternion,fromRenderQuaternion,transformedVertices } from '../engine/geometry';
 import type { Brush,PointEntity,TextureAsset,Vec3,PlaceableShape } from '../engine/types';
 import {uniqueBrushEdges} from '../engine/modeling';
@@ -17,6 +20,7 @@ import {soundInfluence,validSoundReference} from '../engine/sound';
 import {parseLight,rgbHex,skyPreviewColor} from '../engine/environment';
 import {previewLocalLight,previewSunLight,previewDirection,previewCone} from '../engine/lightingPreview';
 import {useT} from '../i18n';
+import {resolveVisualizationMode} from '../engine/viewportVisualization';
 import {constrainDecalToBrush} from '../engine/decalSurface';
 import {studioGuide} from '../engine/studioGuide';
 import {isUvDragGesture} from '../engine/controls';
@@ -37,7 +41,7 @@ import {preferredTextureAssets} from '../engine/textureWadSelection';
 import type { OrbitControls as OrbitControlsImpl,TransformControls as TransformControlsImpl } from 'three-stdlib';
 import {faceLocalBounds,resizeFromFace,type FaceAxis,type FaceSign} from '../engine/faceScale';
 import {unitsPerScreenPixel,FACE_GIZMO_TIP_PIXELS,FACE_GIZMO_HIT_PIXELS,preciseFaceDistance} from '../engine/gizmoScale';
-import {anchorPosition,anchoredPose,expandPicker,GRID_STEPS,snapBrushScaleFactors} from '../engine/transformUX';
+import {anchorPosition,selectionPivot,anchoredPose,expandPicker,GRID_STEPS,snapBrushScaleFactors} from '../engine/transformUX';
 import {hitTransformPicker} from '../engine/gizmoPointer';
 import {modifierKeys,EMPTY_MODIFIERS,transformGesture,snapIncrement,type ModifierKeys} from '../engine/transformModifiers';
 import {readSavedCamera,writeSavedCamera} from '../engine/cameraRecovery';
@@ -48,6 +52,8 @@ import {HudCustomizer} from './HudCustomizer';
 import {QuickToolRail} from './QuickToolRail';
 import {ShapePalette} from './ShapePalette';
 import {TextureStudioPanel,TextureUVHandles} from './TextureStudio';
+import {BuildTogetherCursors} from './BuildTogether';
+import {useBuildTogether,sendBuildTogetherCamera} from '../engine/buildTogetherClient';
 import {GameplaySession} from '../engine/gameplayTest';
 import {WALK,chooseWalkStart,walkCollider,walkStep,type WalkCollider,type WalkPose} from '../engine/playerWalk';
 import {goldSrcMaterial,noclipDisplacement,readPreviewSettings,savePreviewSettings,normalizeWalkPreview,normalizeGoldSrcPreview,DEFAULT_WALK_PREVIEW,DEFAULT_GOLDSRC_PREVIEW,type WalkPreviewSettings,type GoldSrcPreviewSettings} from '../engine/previewEnhancements';
@@ -340,7 +346,7 @@ function BrushVisual({object,optimizedLabels=false}:{object:Brush;optimizedLabel
   const scale=new THREE.Vector3(object.scale[0],object.scale[2],object.scale[1]);
   const node=(<group ref={groupRef} position={pos} quaternion={quat} scale={scale}>
     <mesh geometry={geometry} material={materials} castShadow={shadows} receiveShadow={shadows} userData={{brushId:object.id}} onPointerDown={e=>{
-      if(walkMode||e.button!==0||drawMode||placementShape||useEditor.getState().placementPrefabId||audioPlacement||environmentPlacement)return;
+      if(useArchitectureMode.getState().mode!=='off'||walkMode||e.button!==0||drawMode||placementShape||useEditor.getState().placementPrefabId||audioPlacement||environmentPlacement)return;
       if(activeDecal&&e.face){
         e.stopPropagation();e.nativeEvent.preventDefault();
         const normal=e.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(e.object.matrixWorld)).normalize();
@@ -476,7 +482,7 @@ function BrushVisual({object,optimizedLabels=false}:{object:Brush;optimizedLabel
       renderOrder={appearance.markerOcclusion==='xray'?250:0}
       userData={{entityPickerId:associatedEntity.id}}
       onPointerDown={e=>{
-        if(e.button!==0||object.locked||associatedEntity.locked||drawMode||faceMode||geometryMode!=='object'||architecturePlacement||placementShape||audioPlacement||environmentPlacement)return;
+        if(useArchitectureMode.getState().mode!=='off'||e.button!==0||object.locked||associatedEntity.locked||drawMode||faceMode||geometryMode!=='object'||architecturePlacement||placementShape||audioPlacement||environmentPlacement)return;
         if(pointerOnSelectedGizmo(e))return;
         e.stopPropagation();selectObject(associatedEntity.id,e.shiftKey||e.ctrlKey||e.metaKey);
       }}>
@@ -775,6 +781,7 @@ function CameraController(){
   const lastTarget=useRef(new THREE.Vector3(0,100,0));
   const command=useEditor(s=>s.cameraCommand),controlsConfig=useEditor(s=>s.controls);
   const doctorFocus=useMapDoctorState(s=>s.focus),doctorFocusSerial=useMapDoctorState(s=>s.focusSerial);
+  const followId=useBuildTogether(s=>s.followId),followPose=useBuildTogether(s=>s.cameras[s.followId||'']||null);
   useEffect(()=>{
     const toggle=(enabled:boolean)=>{if(controls.current)controls.current.enabled=enabled};
     faceScaleOrbitToggle=toggle;
@@ -869,8 +876,25 @@ function CameraController(){
       preview.gameplaySession.current=null;preview.reportGameplay('');
     }
   },[walkMode,camera,mapObjects,walkColliders,set,setCameraLabel]);
+  // Follow camera uses independent screen-space poses; it never modifies brushes.
+  useEffect(()=>{
+    if(!followId||!followPose||walkMode||!controls.current)return;
+    const dest=followPose.projection==='orthographic'?ortho:initialPerspective.current;
+    dest.up.set(...followPose.up);
+    if(dest===ortho){const h=followPose.orthoHeight,a=Math.max(.1,size.width/Math.max(1,size.height));ortho.top=h/2;ortho.bottom=-h/2;ortho.left=-h*a/2;ortho.right=h*a/2;ortho.updateProjectionMatrix();}
+    dest.position.set(...followPose.position);
+    controls.current.target.set(...followPose.target);lastTarget.current.set(...followPose.target);
+    dest.lookAt(controls.current.target);
+    if(camera!==dest)set({camera:dest});else controls.current.update();
+  },[followId,followPose,walkMode,camera,ortho,set,size.width,size.height]);
   const saveCamera=()=>{
     if(useEditor.getState().walkMode)return;
+    if(!useBuildTogether.getState().followId&&controls.current){
+      sendBuildTogetherCamera({projection:camera===ortho?'orthographic':'perspective',
+        position:camera.position.toArray() as [number,number,number],
+        target:controls.current.target.toArray() as [number,number,number],
+        up:camera.up.toArray() as [number,number,number],orthoHeight:ortho.top-ortho.bottom});
+    }
     if(cameraSaveTimer.current!==null)clearTimeout(cameraSaveTimer.current);
     cameraSaveTimer.current=setTimeout(()=>{
       if(useEditor.getState().walkMode){cameraSaveTimer.current=null;return;}
@@ -1288,6 +1312,32 @@ function CameraController(){
       {LEFT:-1 as THREE.MOUSE,MIDDLE:THREE.MOUSE.ROTATE,RIGHT:-1 as THREE.MOUSE}:
       {LEFT:THREE.MOUSE.PAN,MIDDLE:THREE.MOUSE.DOLLY,RIGHT:-1 as THREE.MOUSE}}/>;
 }
+/** Remote selections are read-only color outlines; they cannot steal clicks. */
+function BuildTogetherSelections(){
+  const participants=useBuildTogether(state=>state.participants),selfId=useBuildTogether(state=>state.selfId);
+  const objects=useEditor(state=>state.project.objects);
+  const overlays=useMemo(()=>{
+    if(participants.length<2)return [] as {key:string;helper:THREE.Box3Helper}[];
+    const lookup=new Map(objects.map(object=>[object.id,object]));
+    const result:{key:string;helper:THREE.Box3Helper}[]=[];
+    for(const member of participants){if(member.id===selfId)continue;
+      for(const id of member.selection.slice(0,40)){
+        const object=lookup.get(id);if(!object||object.hidden)continue;
+        const points=object.kind==='brush'?transformedVertices(object).map(gameToThree):[gameToThree(object.position)];
+        const bounds=new THREE.Box3().setFromPoints(points);
+        if(object.kind==='entity')bounds.expandByScalar(9);
+        const helper=new THREE.Box3Helper(bounds,member.color);
+        const material=helper.material as THREE.LineBasicMaterial;
+        material.depthTest=false;material.depthWrite=false;material.transparent=true;material.opacity=.87;
+        helper.renderOrder=1000;helper.raycast=()=>{};
+        result.push({key:`${member.id}:${id}`,helper});
+      }
+    }
+    return result;
+  },[participants,selfId,objects]);
+  useEffect(()=>()=>{for(const {helper} of overlays){helper.geometry.dispose();(helper.material as THREE.Material).dispose()}},[overlays]);
+  return <group>{overlays.map(item=><primitive key={item.key} object={item.helper}/>)}</group>;
+}
 function Ground(){
   const show=useEditor(s=>s.showGrid),snap=useEditor(s=>s.gridDisplayStep);
   const selected=useEditor(s=>s.selected),objects=useEditor(s=>s.project.objects);
@@ -1448,7 +1498,9 @@ function SelectionTransformControls(){
   type Pose={position:THREE.Vector3;quaternion:THREE.Quaternion;scale:THREE.Vector3;kind:'brush'|'entity'};
   const drag=useRef<{start:THREE.Vector3;quat:THREE.Quaternion;poses:Map<string,Pose>;mode:'translate'|'rotate'|'scale';singleBrush:boolean}|null>(null);
   const gizmoKeys=useRef<ModifierKeys>(EMPTY_MODIFIERS);
-  const positions=members.map(o=>gameToThree(o.position));
+  // Center the gizmo on each brush's visible geometry. CSG fragments in older
+  // projects may still keep absolute vertices with a zero transform origin.
+  const positions=members.map(selectionPivot);
   const center=positions.reduce((sum,p)=>sum.add(p),new THREE.Vector3()).multiplyScalar(1/Math.max(1,positions.length));
   let pivotStart=center;
   if(transformMode==='scale'&&anchor!=='center'){
@@ -2395,9 +2447,100 @@ function LeakTrace3D(){
     <mesh position={coords[coords.length-1]} raycast={()=>null}><sphereGeometry args={[13,12,8]}/><meshBasicMaterial color="#ff5968" depthTest={false} depthWrite={false}/></mesh>
   </group>;
 }
+/** Full-screen raycastable construction plane. It captures clicks while tracing,
+ * without changing the normal selection/placement behavior outside this mode. */
+function ArchitectureDrawingPlane(){
+  const mode=useArchitectureMode(s=>s.mode);
+  const points=useArchitectureMode(s=>s.points),hover=useArchitectureMode(s=>s.hover);
+  const opts=useArchitectureMode(s=>s.options),move=useArchitectureMode(s=>s.move),add=useArchitectureMode(s=>s.point);
+  const setError=useArchitectureMode(s=>s.setError);
+  if(mode==='off')return null;
+  const z=opts.baseZ+1;
+  const to3=(p:[number,number]):[number,number,number]=>[p[0],z,-p[1]];
+  const point=(world:THREE.Vector3):[number,number]=>[world.x,-world.z];
+  const active=hover&&points.length?to3(hover):null;
+  return <group>
+    <mesh position={[0,opts.baseZ,0]} rotation={[-Math.PI/2,0,0]}
+      onPointerMove={e=>{e.stopPropagation();move(point(e.point))}}
+      onPointerDown={e=>{
+        if(e.button!==0)return;
+        e.stopPropagation();e.nativeEvent.preventDefault();
+        const p=point(e.point);
+        // A click near the initial corner closes a room; Enter works as well.
+        if(mode==='room'&&points.length>=4&&Math.hypot(p[0]-points[0][0],p[1]-points[0][1])<Math.max(10,useArchitectureMode.getState().step*.7)){
+          finishArchitectureMode();return;
+        }
+        setError('');add(p);
+      }}>
+      <planeGeometry args={[65536,65536]}/><meshBasicMaterial color="#58bbee" transparent opacity={0} depthWrite={false} side={THREE.DoubleSide}/>
+    </mesh>
+    {points.length>=2&&<Line points={points.map(to3)} color="#70dffd" lineWidth={3} depthTest={false} raycast={()=>null}/>}
+    {mode==='room'&&points.length>=3&&<Line points={[to3(points[points.length-1]),to3(points[0])]} color="#60ccae" lineWidth={1.5} dashed dashScale={12} depthTest={false} raycast={()=>null}/>}
+    {active&&<Line points={[to3(points[points.length-1]),active]} color="#f6c774" lineWidth={2} depthTest={false} raycast={()=>null}/>}
+    {points.map((p,i)=><mesh key={i} position={to3(p)} raycast={()=>null} renderOrder={1000}>
+      <sphereGeometry args={[4.5,10,8]}/><meshBasicMaterial color={i===0?'#70f5ba':'#f6c774'} depthTest={false}/>
+    </mesh>)}
+    {hover&&<mesh position={to3(hover)} raycast={()=>null} renderOrder={1000}>
+      <sphereGeometry args={[5,10,8]}/><meshBasicMaterial color="#ffffff" depthTest={false}/>
+    </mesh>}
+  </group>;
+}
+/** Move parametric room corners in the viewport. Nothing is rebuilt on move:
+ * one validated, undoable reconstruction occurs on pointer release only. */
+function ArchitectureCornerHandles(){
+  const editId=useArchitectureMode(s=>s.editId);
+  const record=useEditor(s=>s.project.architectureLayouts)?.find(r=>r.id===editId);
+  const [draft,setDraft]=useState<[number,number][]|null>(null);
+  const dragging=useRef<number|null>(null);
+  const draftRef=useRef<[number,number][]|null>(null);
+  const setError=useArchitectureMode(s=>s.setError);
+  const edit=useEditor(s=>s.editArchitectureLayout);
+  useEffect(()=>{dragging.current=null;draftRef.current=null;setDraft(null)},[editId]);
+  if(!record||!editId)return null;
+  const pts=draft||record.points,top=record.options.baseZ+record.options.height+(record.kind==='room'?record.options.slab:0)+8;
+  const to3=(p:[number,number]):[number,number,number]=>[p[0],top,-p[1]];
+  const update=(i:number,e:import('@react-three/fiber').ThreeEvent<PointerEvent>)=>{
+    const at=new THREE.Vector3();
+    if(!e.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0,1,0),-top),at))return;
+    const step=useArchitectureMode.getState().step;
+    const snap=(x:number)=>Math.round(x/step)*step;
+    const [x,y]=[snap(at.x),snap(-at.z)],points=record.points.map(p=>[...p] as [number,number]);
+    const old=record.points[i];points[i]=[x,y];
+    const neighbours=[(i-1+points.length)%points.length,(i+1)%points.length];
+    // An open path has no wraparound segment at its endpoints.
+    for(const n of neighbours){
+      if(record.kind==='walls'&&Math.abs(n-i)!==1)continue;
+      if(record.points[n][0]===old[0])points[n][0]=x;
+      else if(record.points[n][1]===old[1])points[n][1]=y;
+    }
+    if(JSON.stringify(draftRef.current||record.points)===JSON.stringify(points))return;
+    draftRef.current=points;setDraft(points);
+  };
+  const finish=()=>{
+    if(dragging.current===null)return;
+    dragging.current=null;
+    const pending=draftRef.current;draftRef.current=null;
+    if(!pending){setDraft(null);return;}
+    try{
+      edit(record.id,pending,record.options);setError('');
+    }catch(e){setError(e instanceof Error?e.message:String(e));}
+    setDraft(null);
+  };
+  return <group>
+    {pts.length>1&&<Line points={[...pts,...(record.kind==='room'?[pts[0]]:[])].map(to3)} color="#42d4a0" lineWidth={2.5} depthTest={false} raycast={()=>null}/>}
+    {pts.map((p,i)=><mesh key={`${record.id}:${i}`} position={to3(p)} renderOrder={1100}
+      onPointerDown={e=>{if(e.button!==0)return;e.stopPropagation();dragging.current=i;draftRef.current=null;setDraft(null);setError('');(e.target as {setPointerCapture?:(id:number)=>void}).setPointerCapture?.(e.pointerId)}}
+      onPointerMove={e=>{if(dragging.current!==i)return;e.stopPropagation();update(i,e)}}
+      onPointerUp={e=>{if(dragging.current!==i)return;e.stopPropagation();finish();(e.target as {releasePointerCapture?:(id:number)=>void}).releasePointerCapture?.(e.pointerId)}}
+      onPointerCancel={e=>{e.stopPropagation();dragging.current=null;draftRef.current=null;setDraft(null)}}>
+      <sphereGeometry args={[10,14,10]}/><meshBasicMaterial color={dragging.current===i?'#fff0b0':'#69f1bf'} depthTest={false}/>
+    </mesh>)}
+  </group>;
+}
 function Scene({onContextMenu}:{onContextMenu:(menu:SceneMenu)=>void}){
   const {goldsrc,walk}=useContext(PreviewContext);
   const objects=useEditor(s=>s.project.objects),setSelected=useEditor(s=>s.setSelected);
+  const architectureMode=useArchitectureMode(s=>s.mode);
   const {camera:sceneCamera,gl:sceneGl,size:sceneSize}=useThree();
   const axes=useHudLayout(s=>s.items.axes);
   const axesGlobalOpacity=useHudLayout(s=>s.globalOpacity);
@@ -2531,8 +2674,11 @@ function Scene({onContextMenu}:{onContextMenu:(menu:SceneMenu)=>void}){
     <directionalLight position={[600,1100,550]} intensity={environmentPreview?.04:2.2}/>
     <GoldSrcPreviewAnimator/><WalkFlashlight/>
     {!walkMode&&<Ground/>}
+    {!walkMode&&<ArchitectureDrawingPlane/>}
+    {!walkMode&&<ArchitectureCornerHandles/>}
     {!walkMode&&<><DrawBrushPlane/><PrimitivePlacement/><PrefabClickPlacement/><EnvironmentPlacement/><NpcClickPlacement/><AudioClickPlacement/><CinematicClickPlacement/><TerrainClickPlacement/><TextureDropHandler/><ContextHitProbe open={onContextMenu}/></>}
     {!walkMode&&<mesh rotation={[-Math.PI/2,0,0]} position={[0,-.5,0]} onPointerDown={e=>{
+      if(useArchitectureMode.getState().mode!=='off')return;
       if(pointerOnSelectedGizmo(e))return;
       const state=useEditor.getState();
       if(state.measureMode){e.stopPropagation();state.measurePoint(threeToGame(e.point));return}
@@ -2557,6 +2703,7 @@ function Scene({onContextMenu}:{onContextMenu:(menu:SceneMenu)=>void}){
     {objects.map(obj=>{if(obj.kind==='entity'&&obj.classname==='infodecal')return <DecalVisual key={obj.id} object={obj}/>;if(obj.kind==='brush')return <MemoBrushVisual key={obj.id} object={obj} optimizedLabels={optimizedLabels}/>;
       const routes=routeLookup.get(obj.id)||[];
       if(routeSolo&&obj.classname==='path_waypoint'&&!routes.some(r=>r.key===routeSolo))return null;
+      if(architectureMode!=='off')return null;
       const isLightSource=obj.classname==='light'||obj.classname==='light_spot'||obj.classname==='light_environment';
       const showMarker=!walkMode&&(showLights||obj.classname==='info_player_start'||['ambient_generic','ambient_music','env_sound'].includes(obj.classname)||(obj.group?.startsWith('Cinematic:')&&(obj.id===selectedId||!!useEditor.getState().cinematicPlacementFor)));
       const lightActive=activeLights.has(obj.id)||obj.id===selectedId||obj.classname==='light_environment';
@@ -2566,6 +2713,7 @@ function Scene({onContextMenu}:{onContextMenu:(menu:SceneMenu)=>void}){
       const routeText=obj.classname==='path_waypoint'?(first?`WP ${number} · ${first.name}${routes.length>1?' (shared)':''}`:'WP · unassigned'):undefined;
       return <MemoEntityVisual key={obj.id} object={obj} routeText={routeText} routeTint={first?routeColor(first.name):undefined} hideLabel={optimizedLabels||!visibleLabels.has(obj.id)||(obj.classname==='path_waypoint'&&!routeSolo&&obj.id!==selectedId)} activeLight={lightActive} activeModel={obj.classname==='info_player_start'||activeModels.has(obj.id)||obj.id===selectedId} showMarker={showMarker} optimizedLabels={optimizedLabels} spawnGround={spawnGrounds.get(obj.id)}/>;
     })}
+    {!walkMode&&<BuildTogetherSelections/>}
     <LeakTrace3D/>
     {!walkMode&&<><MeasurementOverlay/><EntityConnections/><NpcRouteLines/><CinematicRouteLines/><AudioRadiusGuides/><SelectionTransformControls/><BlenderModalTransform/></>}
     <CameraController/>
@@ -2600,7 +2748,10 @@ function PreciseScalePanel(){
   </div>;
 }
 
-export function Viewport(){
+export function Viewport({trueLightingOpen=false,trueLightingBusy=false,onVisualizationMode}:{
+  trueLightingOpen?:boolean;trueLightingBusy?:boolean;
+  onVisualizationMode?:(mode:'normal'|'quick'|'baked')=>void;
+}={}){
   const t=useT();
   const locale=useEditor(s=>s.locale);const guide=studioGuide(locale);
   const cinematicPlacementFor=useEditor(s=>s.cinematicPlacementFor);
@@ -2635,6 +2786,7 @@ export function Viewport(){
   const measureMode=useEditor(s=>s.measureMode),measurement=useEditor(s=>s.measurement);
   const modal=useEditor(s=>s.modalTransform);
   const cameraLabel=useEditor(s=>s.cameraLabel),controls=useEditor(s=>s.controls),flyMode=useEditor(s=>s.flyMode),walkMode=useEditor(s=>s.walkMode);
+  useEffect(()=>{if(walkMode){useArchitectureMode.getState().cancel();useArchitectureMode.getState().edit(null)}},[walkMode]);
   const projection=useEditor(s=>s.issueCameraCommand);
   const count=useEditor(s=>s.project.objects.length);
   const [contextMenu,setContextMenu]=useState<SceneMenu|null>(null);
@@ -2665,6 +2817,24 @@ export function Viewport(){
   const architecturePlacement=useEditor(s=>s.architecturePlacement);
   const environmentPlacement=useEditor(s=>s.environmentPlacement);
   const environmentPreview=useEditor(s=>s.environmentPreview),setEnvironmentPreview=useEditor(s=>s.setEnvironmentPreview);
+  const [visualMenuOpen,setVisualMenuOpen]=useState(false);
+  const visualMenuRef=useRef<HTMLDivElement|null>(null);
+  const activeVisualization=resolveVisualizationMode(trueLightingOpen,environmentPreview);
+  useEffect(()=>{
+    if(!visualMenuOpen)return;
+    const dismiss=(event:PointerEvent)=>{
+      if(!visualMenuRef.current?.contains(event.target as Node))setVisualMenuOpen(false);
+    };
+    const escape=(event:KeyboardEvent)=>{if(event.key==='Escape')setVisualMenuOpen(false)};
+    document.addEventListener('pointerdown',dismiss);
+    document.addEventListener('keydown',escape);
+    return()=>{document.removeEventListener('pointerdown',dismiss);document.removeEventListener('keydown',escape)};
+  },[visualMenuOpen]);
+  const selectVisualization=(mode:'normal'|'quick'|'baked')=>{
+    setVisualMenuOpen(false);
+    if(onVisualizationMode)onVisualizationMode(mode);
+    else setEnvironmentPreview(mode==='quick');
+  };
   const shadowEnabled=useEditor(s=>s.environmentPreview&&s.previewShadows);
   const pendingNpcClass=useEditor(s=>s.pendingNpcClass);
   const audioPlacement=useEditor(s=>s.audioPlacement);
@@ -2688,11 +2858,11 @@ export function Viewport(){
   const undo=useEditor(s=>s.undo),redo=useEditor(s=>s.redo);
   const historyCount=useEditor(s=>s.history.length),futureCount=useEditor(s=>s.future.length);
   const drawMode=useEditor(s=>s.drawMode),drawHeight=useEditor(s=>s.drawHeight),drawPlane=useEditor(s=>s.drawPlane),selectedCount=useEditor(s=>s.selectedIds.length);
-  return <PreviewContext.Provider value={previewContext}><div className="viewport-frame">
+  return <PreviewContext.Provider value={previewContext}><div className="viewport-frame"><BuildTogetherCursors/>
     {!walkMode&&<HudCustomizer/>}
     {!walkMode&&!hudEditing&&<TextureStudioPanel/>}
     <TextureUVHandles/>
-    {hudEditing&&<div className="hud-edit-shield" aria-hidden="true"/>}
+    {hudEditing&&<div className="hud-edit-shield" aria-hidden="true" onPointerDown={e=>{e.stopPropagation();useHudLayout.getState().select(null)}}/>}
     {!walkMode&&<HudWidget id="alerts">
       <div className="hud-alert-group">
         {activeDecalForHud&&<div className="primitive-placement-hud"><strong>Decal Studio: {activeDecalForHud}</strong><span>{locale==='es'?'Clic sobre un brush para colocar · Esc termina':'Click a brush surface to place · Esc to finish'}</span></div>}
@@ -2718,9 +2888,20 @@ export function Viewport(){
     {!walkMode&&<HudWidget id="status">
       <div className="viewport-label"><span className="viewport-bullet"/> {t(cameraLabel)} <span className="viewport-sep">/</span> {drawMode?`${t('Draw')} ${drawPlane.toUpperCase()} (${drawHeight}u) · X/Y/Z: ${t('Plane')} · F: ${t('Surface')}` :t('Textured')} <span className="viewport-sep">/</span> {t(faceMode?'Face':'Object')} {t('selection')}</div>
     </HudWidget>}
-    {!walkMode&&<HudWidget id="view" className={precisionOpen?'hud-popup-open':''}><div className="viewport-grid-controls-wrap"><div className="viewport-controls-row">
+    {!walkMode&&<HudWidget id="view" className={precisionOpen||visualMenuOpen?'hud-popup-open':''}><div className="viewport-grid-controls-wrap"><div className="viewport-controls-row">
       <button type="button" className="projection-toggle" onClick={()=>projection('projection')} title={t('Switch orthographic / perspective')} aria-label={t('Switch orthographic / perspective')}><Scan size={16}/><span className="hud-projection-label">{t(cameraLabel.includes('Ortho')||cameraLabel==='Orthographic'?'Orthographic':'Perspective')}</span></button>
-      <button type="button" className={`lighting-viewport-toggle ${environmentPreview?'active':''}`} onClick={()=>setEnvironmentPreview(!environmentPreview)} title={t('Approximate lighting preview')} aria-label={t('Lighting Preview')} aria-pressed={environmentPreview}><Sun size={16}/></button>
+      <div className="viewport-visualization-control" ref={visualMenuRef}>
+        <button type="button" className={`viewport-visualization-trigger ${activeVisualization!=='normal'?'active':''}`} onClick={()=>{setPrecisionOpen(false);setVisualMenuOpen(v=>!v)}} title={locale==='es'?'Modos de visualización':'Visualization modes'} aria-label={locale==='es'?'Visualización':'Visualization'} aria-haspopup="menu" aria-expanded={visualMenuOpen}><Eye size={15}/><span>{locale==='es'?'Visualización':'Visualize'}</span><ChevronDown size={12}/></button>
+        {visualMenuOpen&&<div className="viewport-visualization-menu" role="menu" aria-label={locale==='es'?'Modos de visualización':'Visualization modes'} onPointerDown={e=>e.stopPropagation()}>
+          {([
+            {id:'normal',Icon:Eye,es:['Vista normal','Editor MAP sin iluminación aproximada'],en:['Normal view','MAP editor without lighting approximation']},
+            {id:'quick',Icon:Sun,es:['Vista previa rápida','Iluminación aproximada en tiempo real'],en:['Quick lighting','Approximate real-time lighting']},
+            {id:'baked',Icon:Lightbulb,es:['True Lighting · SC-RAD','Lightmaps reales del BSP temporal'],en:['True Lighting · SC-RAD','Compiled lightmaps from temporary BSP']}
+          ] as const).map(item=><button type="button" role="menuitemradio" aria-checked={activeVisualization===item.id} key={item.id} className={activeVisualization===item.id?'selected':''} onClick={()=>selectVisualization(item.id)}>
+            <item.Icon size={17}/><span><strong>{item[locale==='es'?'es':'en'][0]}</strong><small>{item[locale==='es'?'es':'en'][1]}{item.id==='baked'&&trueLightingBusy?' · SC-RAD…':''}</small></span>{activeVisualization===item.id&&<span className="viewport-visualization-selected" aria-hidden="true">✓</span>}
+          </button>)}
+        </div>}
+      </div>
       <button type="button" className={`grid-visibility ${showGrid?'active':''}`} aria-label={t('Grid visibility')} aria-pressed={showGrid} title={t('Grid visibility')} onClick={()=>setFlag('showGrid',!showGrid)}><Grid3x3 size={16}/></button>
       <label className="viewport-grid-select" title={t('Visual grid')}><Grid3x3 size={13}/><select aria-label={t('Visual grid')} value={gridDisplayStep} onChange={e=>setGridDisplayStep(Number(e.target.value))}>{GRID_STEPS.map(step=><option key={step} value={step}>{step}u</option>)}</select></label>
       <button type="button" className={`grid-snap ${snapping?'active':''}`} aria-pressed={snapping} aria-label={t('Snap to grid')} title={t('Snap to grid')} onClick={toggleSnap}><Magnet size={16}/></button>
@@ -2784,12 +2965,13 @@ export function Viewport(){
     {!walkMode&&doctorTrace.length>1&&<button type="button" className="viewport-leak-toggle" onClick={()=>setDoctorTraceVisible(!doctorTraceVisible)}>{doctorTraceVisible?t('Hide leak route'):t('Show leak route')} · {doctorTrace.length}</button>}
     {/* R3F measures physical pixels. The editor shell uses CSS zoom for UI scale,
         so the WebGL layer must undo that zoom to avoid a double-scaled canvas. */}
-    <div onPointerDownCapture={e=>{if(e.button!==2){cancelRightClick.current=false;return;}const s=useEditor.getState();if(!s.drawMode&&!s.placementShape)return;cancelRightClick.current=true;e.preventDefault();e.stopPropagation();if(s.drawMode)s.setDrawMode(false);if(s.placementShape)s.setPlacementShape(null);}}
+    <div onPointerDownCapture={e=>{if(e.button!==2){cancelRightClick.current=false;return;}const s=useEditor.getState();if(!s.drawMode&&!s.placementShape&&useArchitectureMode.getState().mode==='off')return;cancelRightClick.current=true;e.preventDefault();e.stopPropagation();if(s.drawMode)s.setDrawMode(false);if(s.placementShape)s.setPlacementShape(null);if(useArchitectureMode.getState().mode!=='off')useArchitectureMode.getState().cancel();}}
       onContextMenuCapture={e=>{if(cancelRightClick.current){e.preventDefault();e.stopPropagation();cancelRightClick.current=false;}}}
       onContextMenu={e=>{e.preventDefault();const s=useEditor.getState();if(s.drawMode)s.setDrawMode(false);if(s.placementShape)s.setPlacementShape(null)}} className="viewport-canvas" style={{zoom:1/uiScale}}><Canvas shadows={shadowEnabled} dpr={[1,perfPreset==='quality'?1.75:perfPreset==='large'?1:1.35]} camera={{position:[660,530,690],fov:58,near:.5,far:280000}} gl={{antialias:true,powerPreference:'high-performance'}}>
       <Scene onContextMenu={openMenu}/>
     </Canvas></div>
     {!walkMode&&<HudWidget id="shapes"><ShapePalette/></HudWidget>}
+    {!walkMode&&<ArchitectureDrawControls/>}
     {!walkMode&&!hudEditing&&<PreciseScalePanel/>}
     {!walkMode&&cinematicPlacementFor&&<div className="cine-placement-overlay" role="status">{t('Cinematic route: click a map surface to add a path_corner. Esc to finish.')}</div>}
     {walkMode&&<div className="player-walk-overlay" role="status" aria-label={t('Gameplay Test')}>

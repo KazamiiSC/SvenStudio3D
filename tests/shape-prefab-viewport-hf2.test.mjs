@@ -89,4 +89,4 @@ test('invalid optional size lookup cannot crash the viewport',()=>{
  }
 });
 
-test('version label identifies stable major/minor version 1.4.0',()=>assert.match(app,/v1\.4\.0/));
+test('version label identifies current release version 1.5.23',()=>assert.match(app,/v1\.5\.23/));

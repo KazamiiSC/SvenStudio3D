@@ -1,9 +1,10 @@
 import {ExplorerOrganized} from './ExplorerOrganized';
 import {DecalStudio} from './DecalStudio';
+import {MaterialSurfaceStudio} from './MaterialSurfaceStudio';
 import { useEffect,useMemo,useRef,useState,type ChangeEvent } from 'react';
 import {createPortal} from 'react-dom';
 import type React from 'react';
-import { Box,Layers,Image,Search,Plus,Star,Eye,EyeOff,Lock,Unlock,ChevronRight,ChevronDown,FileCode2,FolderOpen,Upload,Trash2,Copy,Unlink,Paintbrush,Sun,UserRound,Info,Settings2,Grid3x3,Brush,Check,DoorOpen,CornerDownRight,Globe2, Skull, Route, Headphones } from 'lucide-react';
+import { Box,Layers,Image,Search,Plus,Star,Eye,EyeOff,Lock,Unlock,ChevronRight,ChevronDown,FileCode2,FolderOpen,Upload,Trash2,Copy,Unlink,Paintbrush,Sun,UserRound,Info,Settings2,Grid3x3,Brush,Check,DoorOpen,CornerDownRight,Globe2, Skull, Route, Headphones, Layers3 } from 'lucide-react';
 import { useEditor } from '../store';
 import {confirmBrushDetach} from './brushEntityActions';
 import { parseWad } from '../engine/wad';
@@ -126,14 +127,16 @@ export function AssetPanel(){
     <div className="asset-tabs">
       <button className={resource==='entities'?'active':''} onClick={()=>{setResource('entities');setQuery('')}} title={tr('Entities')}><UserRound size={16}/></button>
       <button className={resource==='textures'?'active':''} onClick={()=>{setResource('textures');setQuery('')}} title={tr('Texture Browser')}><Image size={16}/></button>
+      <button className={resource==='materials'?'active':''} onClick={()=>{setResource('materials');setQuery('')}} title="Material & Surface Studio" aria-label="Material & Surface Studio"><Layers3 size={16}/></button>
       <button className={resource==='decals'?'active':''} onClick={()=>{setResource('decals');setQuery('')}} title="Decal Studio" aria-label="Decal Studio"><Paintbrush size={16}/></button>
       <button className={resource==='models'?'active':''} onClick={()=>{setResource('models');setQuery('')}} title="Model Browser (.mdl)"><Boxes size={16}/></button>
       <button className={resource==='sounds'?'active':''} onClick={()=>{setResource('sounds');setQuery('')}} title={tr('Sound Browser')}><Headphones size={16}/></button>
       <button className={resource==='npcs'?'active':''} onClick={()=>{setResource('npcs');setQuery('')}} title={tr('NPC Browser')}><Skull size={16}/></button>
       <button className={resource==='layers'?'active':''} onClick={()=>{setResource('layers');setQuery('')}} title={tr('Layers')}><Layers size={16}/></button>
     </div>
-    <div className="panel-header"><span>{tr(resource==='entities'?'Entity Browser':resource==='textures'?'Texture Browser':resource==='decals'?'Decal Studio':resource==='models'?'Model Browser':resource==='npcs'?'NPC Browser':resource==='sounds'?'Sound Browser':'Layers')}</span><span className="subtle">{resource==='entities'?classes.length:resource==='textures'?textures.length:resource==='decals'?decals.length:''}</span></div>
+    <div className="panel-header"><span>{tr(resource==='entities'?'Entity Browser':resource==='textures'?'Texture Browser':resource==='materials'?'Material & Surface Studio':resource==='decals'?'Decal Studio':resource==='models'?'Model Browser':resource==='npcs'?'NPC Browser':resource==='sounds'?'Sound Browser':'Layers')}</span><span className="subtle">{resource==='entities'?classes.length:resource==='textures'?textures.length:resource==='decals'?decals.length:''}</span></div>
     {(resource==='entities'||resource==='textures'||resource==='npcs')&&<div className="search-field"><Search size={15}/><input value={query} onChange={e=>{setQuery(e.target.value);setTexturePage(1)}} placeholder={tr(resource==='textures'?'Search textures...':resource==='npcs'?'Search NPCs…':'Search classname...')} /></div>}
+    {resource==='materials'&&<MaterialSurfaceStudio/>}
     {resource==='decals'&&<DecalStudio/>}
     {resource==='models'&&<ModelBrowser/>}
     {resource==='sounds'&&<SoundBrowser compact/>}

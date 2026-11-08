@@ -847,15 +847,12 @@ body > .topbar-floating-menu button:focus-visible{
 .explorer-load-more:hover{background:#315077}
 
 /* v0.8.2 — Credits at the top of the scrollable Help document */
-.help-credits{border:1px solid #4b6191;border-radius:13px;background:linear-gradient(105deg,#182642,#232044 55%,#162a40);padding:16px 20px;margin:3px 2px 18px;display:flex;flex-direction:column;gap:9px;align-items:center}
-.help-credits-logos{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:clamp(15px,5vw,55px);width:100%}
-.help-astra-logo-image{width:clamp(220px,42%,360px);max-height:160px;object-fit:contain;border-radius:14px;box-shadow:0 0 16px #5d7cff33;filter:drop-shadow(0 0 10px #4f86ff4a)}
-.help-kz-logo{width:clamp(165px,36%,275px);max-height:104px;object-fit:contain;filter:drop-shadow(0 0 10px #1875bf52)}
+.help-credits{border:1px solid #4b6191;border-radius:9px;background:linear-gradient(105deg,#182642,#1b2740 55%,#162a40);padding:9px 14px;margin:3px 2px 13px;display:flex;align-items:center;justify-content:center}
 .help-summary{border:1px solid #46567a;background:linear-gradient(180deg,#18243a,#152132);border-radius:12px;padding:12px 14px;margin:10px 0 14px}
 .help-summary h4{margin:0 0 7px;color:#d9eeff;font-size:13px}
 .help-summary p{margin:0;color:#cfe0ef;line-height:1.7;font-size:12px}
-.help-credits p{margin:2px 0 0;text-align:center;font-size:13px;font-weight:700;color:#d5edff;line-height:1.6}
-@media(max-width:600px){.help-credits{padding:12px 10px}.help-credits-logos{gap:9px}.help-kz-logo,.help-astra-logo-image{width:min(88%,320px)}}
+.help-credits p{margin:0;text-align:center;font-size:12px;font-weight:600;color:#b8d8ed;line-height:1.45}
+@media(max-width:600px){.help-credits{padding:9px 10px}}
 
 /* v0.8.3 — compact floating tools: never overlap viewport status bars. */
 .quick-rail-shell{top:54px;bottom:60px;transform:none;align-items:center;max-height:none}
@@ -1812,7 +1809,6 @@ body>.topbar-floating-menu{box-shadow:0 16px 42px #040916bf}
 .spawn-facing-presets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
 .spawn-facing-presets button{padding:6px 2px;border:1px solid #42617e;border-radius:6px;background:#233d57;color:#e3f1ff;cursor:pointer}
 .spawn-facing-presets button.active{background:#346c8d;border-color:#85dafa}
-.help-astra-logo-image{box-shadow:none;background:transparent;border-radius:0;filter:drop-shadow(0 0 12px #629cff44)}
 
 /* HF8: searchable target destinations; match the existing compact dark inspector. */
 .entity-link-picker input,.ea-target-search>select{width:100%;min-width:0;max-width:100%;box-sizing:border-box;padding:7px 8px;color:#e7f3ff;background:#151c32;border:1px solid #434e75;border-radius:7px;font-size:11px;}
@@ -2235,3 +2231,1189 @@ body>.topbar-floating-menu{box-shadow:0 16px 42px #040916bf}
 .decal-placement-status button,.decal-actions button{background:#2c456c;color:#e4f0ff;border:1px solid #4c7098;border-radius:5px;padding:6px;cursor:pointer}
 .decal-actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
 .decal-actions button{display:flex;align-items:center;gap:4px}
+/* HF15 Preview 4 — BuildTogether, isolated from viewport layout and local panels */
+.bt-top-button{display:inline-flex;align-items:center;gap:6px}
+.buildtogether-dialog{width:min(760px,95vw);max-height:min(88vh,800px);display:flex;flex-direction:column;overflow:hidden}
+.bt-scroll{min-height:0;overflow:auto;padding:12px 20px 20px;display:flex;flex-direction:column;gap:13px}
+.bt-scroll label{display:flex;flex-direction:column;gap:5px;font-size:12px}
+.bt-scroll input:not([type=checkbox]){padding:8px 10px;border:1px solid var(--border-color,#526173);border-radius:5px;background:rgba(10,22,38,.85);color:inherit;width:100%;box-sizing:border-box}
+.bt-state{display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(45,67,87,.35);border-radius:7px;padding:10px 12px}
+.bt-state span{display:inline-flex;align-items:center;gap:7px}.bt-online{color:#7cdbb6}.bt-offline{color:#aeb9c9}
+.bt-columns{display:grid;grid-template-columns:1fr 1fr;gap:12px}.bt-section{display:flex;flex-direction:column;gap:12px;padding:14px;background:rgba(20,33,48,.5);border:1px solid rgba(157,178,198,.19);border-radius:7px}
+.bt-section h4{display:flex;align-items:center;gap:8px;margin:0}.bt-section p,.bt-footnote{font-size:12px;color:#b1bfca;line-height:1.5;margin:0}.bt-section button{margin-top:auto}
+.bt-scroll .bt-check{display:flex;align-items:center;flex-direction:row}.bt-info{display:flex;gap:10px;align-items:center;justify-content:space-between;background:#112538;padding:12px;border-radius:6px}.bt-info div{display:flex;flex-direction:column;gap:5px;min-width:0}.bt-info code{word-break:break-all;font-size:13px;color:#b9f3e7}.bt-info button{padding:8px;border:1px solid #537182;border-radius:5px;background:#21394c;color:inherit}
+.bt-hint{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:#a7c9dd;background:rgba(56,110,142,.13);padding:10px;border-radius:5px;line-height:1.5}.bt-hint svg{flex-shrink:0}.bt-members h4{margin:6px 0 10px}.bt-member{display:flex;align-items:center;gap:9px;padding:8px 10px;border-bottom:1px solid rgba(157,178,198,.13)}.bt-color{width:10px;height:10px;border-radius:50%;flex-shrink:0}.bt-member small{color:#abb8c9}.bt-selected{margin-left:auto;font-size:11px;color:#a5d8fc}.bt-leave{align-self:flex-start;border:1px solid #945e66;color:#ffd6da;background:rgba(167,55,71,.18);border-radius:5px;padding:10px 16px;cursor:pointer}.bt-error{font-size:13px;color:#ffaaaa;margin:0}
+.bt-cursor-layer{position:absolute;inset:0;z-index:26;pointer-events:none;overflow:hidden}.bt-cursor{position:absolute;display:flex;flex-direction:column;white-space:nowrap;transform:translate(-2px,-2px);pointer-events:none}.bt-cursor span{color:#142034;font-size:11px;padding:2px 5px;border-radius:3px;margin:2px 0 0 13px;font-weight:700}
+@media(max-width:700px){.bt-columns{grid-template-columns:1fr}.bt-top-button{font-size:11px}}
+
+.bt-follow{background:#214763;color:#d2edff;border:1px solid #3b7392;border-radius:4px;padding:5px 7px;cursor:pointer;font-size:11px}
+
+/* HF15 Preview 4 HF3 — English solid-color welcome screen.
+   All content is native responsive HTML/CSS: no scenery, screenshots or
+   stretched image. These declarations apply only while home is open. */
+.app-shell .brand-home-trigger{border:1px solid transparent;background:transparent;font-family:inherit;cursor:pointer;padding:3px 5px;margin-left:-5px;border-radius:11px;transition:background .17s,border-color .17s;flex-shrink:0;text-align:left}
+.app-shell .brand-home-trigger:hover,.app-shell .brand-home-trigger.brand-home-active{background:#0e394b80;border-color:#277b9e}
+.app-shell .brand-home-trigger:focus-visible{outline:2px solid #24dbf9;outline-offset:2px}
+.sven-workstack{flex:1;min-width:0;min-height:0;position:relative;display:flex;flex-direction:column;overflow:hidden}
+.sven-editor-workspace{display:flex;flex-direction:column;flex:1;min-height:0;min-width:0;overflow:hidden}
+.sven-editor-workspace.welcome-covered{visibility:hidden;pointer-events:none;user-select:none}
+.sven-editor-workspace>.dock-workspace,.sven-editor-workspace>.bsp-workspace{flex:1;min-height:0;min-width:0}
+.app-shell .brand .version-label{display:none}
+.app-shell.welcome-home-active .titlebar{background:#091c2d;border-bottom:1px solid #176b87}
+.app-shell.welcome-home-active .brand-logo{border-color:#0bb9dc;color:#38dffc;box-shadow:0 0 11px #04aed057}
+.app-shell.welcome-home-active .brand-tag{background:#114968;color:#d7faff;border-color:#35a9dc}
+.app-shell.welcome-home-active .top-compile{background:linear-gradient(125deg,#08688e,#098ab9);border-color:#36b6dd}
+.app-shell.welcome-home-active .statusbar{background:#071624;border-top:1px solid #1a5874;color:#b9d8e8}
+.app-shell.welcome-home-active .statusbar .welcome-hide-version{display:none}
+.sven-welcome.sven-welcome-solid{position:absolute;inset:0;z-index:8;overflow:auto;overscroll-behavior:contain;background:#071827;color:#e9faff;isolation:isolate;scrollbar-color:#23667e #071827}
+.sven-welcome-solid::before{content:"";position:fixed;pointer-events:none;inset:0;background:radial-gradient(ellipse at 50% 13%,#0c3d55b0 0,transparent 48%),radial-gradient(ellipse at 96% 82%,#08314876 0,transparent 45%);opacity:.65}
+.sven-welcome-solid::after{content:"";position:absolute;pointer-events:none;inset:0;border-top:1px solid #1d6881;box-shadow:inset 0 0 85px #030c19;z-index:-1}
+.ss-home-content{position:relative;z-index:1;box-sizing:border-box;max-width:1590px;min-height:100%;margin:0 auto;padding:clamp(18px,3.2vh,31px) clamp(24px,3.7vw,52px) clamp(14px,2vh,24px);display:flex;flex-direction:column;justify-content:space-between;gap:clamp(13px,2.8vh,26px)}
+.ss-home-topline{display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:22px;font-size:10px;letter-spacing:1.5px;font-weight:800;text-transform:uppercase;color:#9ad8ec}
+.ss-home-kicker,.ss-home-network{display:inline-flex;align-items:center;gap:9px}
+.ss-home-network{font-size:11px;letter-spacing:.3px;text-transform:none;border:1px solid #137789;background:#06343dbd;color:#70ecdf;border-radius:9px;padding:9px 13px}
+.ss-home-hero{text-align:center;display:flex;flex-direction:column;align-items:center;gap:clamp(7px,1.25vh,12px);padding-bottom:2px}
+.ss-home-symbol{height:clamp(68px,10vh,90px);width:clamp(68px,10vh,90px);display:grid;place-items:center;border:2px solid #24d8fc;border-radius:22px;background:#0d4059;box-shadow:inset 0 0 22px #1fb9dd27,0 0 12px #0bdafc92,0 0 36px #08a3da28;color:#29e4ff}
+.ss-home-symbol svg{width:61%;height:61%}
+.ss-home-hero h1{margin:0;font-size:clamp(37px,4.1vw,69px);line-height:1;letter-spacing:-2px;font-weight:900;display:flex;align-items:center;justify-content:center;gap:0;text-shadow:0 5px 20px #0008;white-space:nowrap}
+.ss-home-hero h1>span{background:linear-gradient(90deg,#e7fbff,#41e7ff 42%,#00b8e8);background-clip:text;-webkit-background-clip:text;color:transparent}
+.ss-home-hero h1>b{margin-left:16px;font-size:.56em;letter-spacing:0;line-height:1.05;border:2px solid #31d4fc;background:#0d344c;color:#f0ffff;padding:9px 13px;border-radius:16px;box-shadow:0 0 12px #1cd6f66b;font-weight:800}
+.ss-home-subtitle{display:flex;align-items:center;justify-content:center;gap:17px;font-size:clamp(11px,1.22vw,17px);letter-spacing:clamp(1px,.2vw,3px);color:#43d9f4;font-weight:800;text-align:center}
+.ss-home-subtitle span{height:1px;width:clamp(18px,5vw,83px);flex-shrink:0;background:linear-gradient(90deg,transparent,#38e4ff)}
+.ss-home-subtitle span:last-child{transform:rotate(180deg)}
+.ss-home-hero p{font-size:clamp(12px,1.3vw,16px);color:#c2dce8;line-height:1.4;margin:0;max-width:800px}
+.ss-home-tools{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:clamp(7px,.75vw,13px)}
+.ss-home-tool{min-width:0;min-height:124px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:9px;padding:14px 8px;background:#0a2435;border:1px solid #2b7495;border-radius:13px;color:#b8e4f5;box-shadow:0 7px 18px #0003,inset 0 1px #88daff16;text-align:center}
+.ss-home-tool svg{flex-shrink:0;color:#a4def0}
+.ss-home-tool strong{font-size:clamp(10px,.91vw,13px);color:#f0fbff;line-height:1.23;white-space:normal}
+.ss-home-tool small{font-size:clamp(9px,.78vw,11px);color:#9db7c9;line-height:1.2}
+.ss-home-tool-featured{background:#083d49;border-color:#21ebdd;box-shadow:inset 0 1px #48fff239,0 0 17px #00bdcf25}
+.ss-home-tool-featured svg,.ss-home-tool-featured small{color:#37f2e0}
+.ss-home-capabilities{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,2.1vw,32px);width:min(1060px,100%);margin:0 auto}
+.ss-home-capability{display:flex;align-items:center;justify-content:center;gap:17px;background:#0b2a40;border:1px solid #2b7192;border-radius:13px;padding:14px 18px;min-width:0;min-height:69px;box-sizing:border-box;box-shadow:inset 0 1px #ffffff0c}
+.ss-home-capability svg{flex-shrink:0;color:#64dfff}
+.ss-home-capability div{display:flex;flex-direction:column;gap:5px;min-width:0}
+.ss-home-capability strong{font-size:clamp(11px,1vw,15px);color:#e7f8ff;white-space:normal}
+.ss-home-capability small{font-size:clamp(9px,.85vw,12px);color:#aac3d3;white-space:normal}
+.ss-home-bottom{display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:end;margin-top:auto;padding-bottom:clamp(5px,1vh,14px)}
+.ss-home-project{display:flex;align-items:center;gap:10px;min-width:0;max-width:270px;color:#6bd9f6}
+.ss-home-project>span{display:flex;min-width:0;flex-direction:column;gap:5px}
+.ss-home-project strong{color:#e4f6ff;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ss-home-project small{color:#8ebacb;font-size:10px}
+.ss-home-action{display:flex;align-items:center;flex-direction:column;gap:10px}
+.ss-home-start{display:flex;justify-content:center;align-items:center;gap:19px;min-width:clamp(235px,25vw,370px);min-height:clamp(53px,7vh,72px);border:2px solid #29e4ff;border-radius:999px;background:linear-gradient(180deg,#0e7291,#064057 53%,#0685a4);box-shadow:inset 0 2px 12px #a0faff3d,0 0 12px #00d9ff9c,0 7px 30px #0008;color:#fff;font-size:clamp(23px,2vw,32px);font-weight:800;cursor:pointer;transition:filter .15s,box-shadow .15s,transform .15s}
+.ss-home-start:hover{filter:brightness(1.18);transform:translateY(-2px);box-shadow:0 0 19px #00e0ff,0 7px 30px #0008}
+.ss-home-start:focus-visible{outline:3px solid white;outline-offset:5px}
+.ss-home-action>span{color:#add2e5;font-size:11px;letter-spacing:1.5px;font-weight:700}
+.ss-home-preserved{display:flex;justify-self:end;align-items:center;gap:7px;color:#73d5c7;font-size:11px;line-height:1.35;max-width:255px}
+.ss-home-preserved svg{flex-shrink:0}
+@media(max-width:1350px){.ss-home-content{gap:15px;padding-left:26px;padding-right:26px}.ss-home-tool{padding:12px 5px;min-height:112px;gap:7px}.ss-home-tool svg{width:27px;height:27px}.ss-home-capabilities{width:min(960px,100%)}}
+@media(max-width:1100px){.ss-home-content{gap:18px}.ss-home-tools{grid-template-columns:repeat(5,minmax(0,1fr))}.ss-home-tool{min-height:102px}.ss-home-tool strong{font-size:12px}.ss-home-tool small{font-size:11px}.ss-home-bottom{grid-template-columns:1fr auto 1fr}}
+@media(max-width:760px){.ss-home-content{padding:18px 18px 24px}.ss-home-topline{font-size:9px;gap:6px}.ss-home-network{font-size:9px;padding:7px 8px}.ss-home-tools{grid-template-columns:repeat(3,minmax(0,1fr))}.ss-home-capabilities{grid-template-columns:1fr;gap:9px}.ss-home-capability{min-height:55px}.ss-home-hero h1{font-size:clamp(29px,6vw,45px)}.ss-home-hero h1>b{margin-left:8px;padding:6px 8px;border-radius:10px}.ss-home-subtitle{font-size:10px;letter-spacing:.7px}.ss-home-subtitle span{width:14px}.ss-home-bottom{display:flex;justify-content:center}.ss-home-project,.ss-home-preserved{display:none}}
+@media(max-height:760px) and (min-width:1101px){.ss-home-content{gap:clamp(8px,1.25vh,14px);padding-top:12px;padding-bottom:8px}.ss-home-symbol{height:60px;width:60px;border-radius:16px}.ss-home-hero{gap:7px}.ss-home-hero h1{font-size:clamp(36px,3.6vw,56px)}.ss-home-tool{min-height:96px;padding:9px 5px;gap:6px}.ss-home-tool svg{height:25px;width:25px}.ss-home-capability{min-height:59px;padding:10px 12px}.ss-home-start{min-height:52px}.ss-home-action{gap:7px}}
+@media(max-height:600px) and (min-width:761px){.sven-welcome-solid{overflow-y:auto}.ss-home-content{min-height:600px}}
+@media(prefers-reduced-motion:reduce){.ss-home-start,.app-shell .brand-home-trigger{transition:none}}
+
+
+/* HF15 Preview 4 HF4 — true multi-plane mouse parallax, GPU-friendly CSS
+   transforms only. No gameplay scenery, no duplicated image, no React rerenders. */
+.ss-home-parallax{--ss-px:0;--ss-py:0;perspective:1300px}
+.ss-home-parallax .ss-home-content{transform-style:preserve-3d}
+.ss-home-motion-light{position:absolute;z-index:0;pointer-events:none;width:min(48vw,690px);height:min(52vh,450px);border-radius:50%;filter:blur(40px);opacity:.44;will-change:transform}
+.ss-home-motion-light-left{left:-19%;top:-22%;background:radial-gradient(ellipse,#0087aa3e,transparent 67%);transform:translate3d(calc(var(--ss-px)*-25px),calc(var(--ss-py)*-18px),0)}
+.ss-home-motion-light-right{right:-17%;bottom:-20%;background:radial-gradient(ellipse,#0a9abb3a,transparent 68%);transform:translate3d(calc(var(--ss-px)*-36px),calc(var(--ss-py)*-26px),0)}
+.ss-home-parallax .ss-home-topline{transform:translate3d(calc(var(--ss-px)*-3px),calc(var(--ss-py)*-2px),0);will-change:transform}
+.ss-home-parallax .ss-home-hero{transform:perspective(1300px) translate3d(calc(var(--ss-px)*9px),calc(var(--ss-py)*7px),0) rotateX(calc(var(--ss-py)*-2deg)) rotateY(calc(var(--ss-px)*2deg));transform-origin:center center;will-change:transform}
+.ss-home-parallax .ss-home-symbol{transform:translate3d(calc(var(--ss-px)*13px),calc(var(--ss-py)*11px),18px) rotateX(calc(var(--ss-py)*-3deg)) rotateY(calc(var(--ss-px)*3deg));will-change:transform}
+.ss-home-parallax .ss-home-tools{transform:perspective(1400px) translate3d(calc(var(--ss-px)*-7px),calc(var(--ss-py)*-5px),0) rotateX(calc(var(--ss-py)*.95deg)) rotateY(calc(var(--ss-px)*-.9deg));will-change:transform}
+.ss-home-parallax .ss-home-capabilities{transform:translate3d(calc(var(--ss-px)*5px),calc(var(--ss-py)*4px),0);will-change:transform}
+.ss-home-parallax .ss-home-bottom{transform:translate3d(calc(var(--ss-px)*2px),calc(var(--ss-py)*2px),0);will-change:transform}
+.ss-home-parallax .ss-home-tool,.ss-home-parallax .ss-home-capability{position:relative;isolation:isolate;overflow:hidden;transition:border-color .2s,box-shadow .22s,transform .22s}
+.ss-home-parallax .ss-home-tool::before,.ss-home-parallax .ss-home-capability::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(circle 105px at var(--ss-spot-x,50%) var(--ss-spot-y,50%),#2cf7ff27,transparent 85%);opacity:0;transition:opacity .2s}
+.ss-home-parallax .ss-home-tool:hover,.ss-home-parallax .ss-home-capability:hover{transform:translateY(-4px);border-color:#4de1ff;box-shadow:0 10px 23px #0005,0 0 13px #21dfff23}
+.ss-home-parallax .ss-home-tool:hover::before,.ss-home-parallax .ss-home-capability:hover::before{opacity:1}
+.ss-home-parallax .ss-home-start{position:relative;isolation:isolate;overflow:hidden}
+.ss-home-parallax .ss-home-start::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(circle 155px at var(--ss-spot-x,50%) var(--ss-spot-y,50%),#c7fdff70,transparent 80%);opacity:0;transition:opacity .2s}
+.ss-home-parallax .ss-home-start:hover::before{opacity:1}
+/* Accessibility: do not animate when a device lacks precise pointing or
+   when OS reduced-motion is enabled. Low-power touch devices stay static. */
+@media (prefers-reduced-motion:reduce),(hover:none),(pointer:coarse){
+ .ss-home-motion-light{display:none!important}
+ .ss-home-parallax .ss-home-topline,.ss-home-parallax .ss-home-hero,.ss-home-parallax .ss-home-symbol,.ss-home-parallax .ss-home-tools,.ss-home-parallax .ss-home-capabilities,.ss-home-parallax .ss-home-bottom{transform:none!important;will-change:auto!important}
+ .ss-home-parallax .ss-home-tool,.ss-home-parallax .ss-home-capability{transition:none}
+ .ss-home-parallax .ss-home-tool:hover,.ss-home-parallax .ss-home-capability:hover{transform:none}
+}
+
+
+/* SvenStudio 3D v1.5.0 — kinetic holographic welcome.
+   All effects are visual only; no 3D map/editor state is touched. */
+.app-shell.welcome-home-active{overflow-x:clip;max-width:100vw}
+.sven-welcome.sven-welcome-solid.ss-home-parallax{overflow-x:hidden;overflow-y:auto;max-width:100%;overscroll-behavior-x:none;scrollbar-gutter:stable}
+.ss-home-parallax{--ss-cursor-x:50%;--ss-cursor-y:50%;perspective:1050px;contain:paint;}
+.ss-home-parallax .ss-home-content{width:100%;max-width:1590px;transform-style:preserve-3d}
+/* Abstract layered depth field, not a gameplay background. The layers are
+   oversized but clipped by the welcome viewport; no horizontal scrolling. */
+.ss-home-depth-field{position:absolute;inset:-6% -8%;pointer-events:none;z-index:0;opacity:.22;
+  background-image:linear-gradient(#19bfff22 1px,transparent 1px),linear-gradient(90deg,#19bfff22 1px,transparent 1px);
+  background-size:54px 54px;
+  mask-image:radial-gradient(ellipse 67% 53% at 50% 60%,black,transparent 100%);
+  transform-origin:50% 65%;transform:perspective(950px) rotateX(58deg) translate3d(calc(var(--ss-px)*-31px),calc(var(--ss-py)*-21px),-85px);
+  will-change:transform;}
+.ss-home-cursor-aura{position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(circle 275px at var(--ss-cursor-x) var(--ss-cursor-y),#08c7ee17,transparent 82%);
+  opacity:1;}
+.ss-home-particles{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+  transform:translate3d(calc(var(--ss-px)*-17px),calc(var(--ss-py)*-11px),-30px);will-change:transform;}
+.ss-home-particles i{position:absolute;width:3px;height:3px;border-radius:50%;background:#83eafa;
+  box-shadow:0 0 8px #3be4ff,0 0 17px #34d5ef;opacity:.52;animation:ss-home-twinkle 5s ease-in-out infinite alternate}
+.ss-home-particles i:nth-child(1){left:9%;top:14%}.ss-home-particles i:nth-child(2){left:19%;top:51%;animation-delay:-2s}.ss-home-particles i:nth-child(3){left:29%;top:24%;animation-delay:-3s}
+.ss-home-particles i:nth-child(4){left:40%;top:76%;animation-delay:-1s}.ss-home-particles i:nth-child(5){left:63%;top:9%;animation-delay:-3.5s}.ss-home-particles i:nth-child(6){left:79%;top:32%;animation-delay:-4s}
+.ss-home-particles i:nth-child(7){left:91%;top:59%;animation-delay:-1.5s}.ss-home-particles i:nth-child(8){left:14%;top:83%;animation-delay:-2.4s}.ss-home-particles i:nth-child(9){left:83%;top:84%;animation-delay:-3.6s}
+.ss-home-particles i:nth-child(10){left:71%;top:73%;animation-delay:-1.2s}.ss-home-particles i:nth-child(11){left:7%;top:37%;animation-delay:-4.5s}.ss-home-particles i:nth-child(12){left:95%;top:18%;animation-delay:-3.1s}
+.ss-home-particles i:nth-child(13){left:35%;top:11%;animation-delay:-2.8s}.ss-home-particles i:nth-child(14){left:54%;top:90%;animation-delay:-.8s}.ss-home-particles i:nth-child(15){left:3%;top:94%;animation-delay:-1.9s}.ss-home-particles i:nth-child(16){left:98%;top:95%;animation-delay:-4.3s}
+@keyframes ss-home-twinkle{from{opacity:.16;scale:.75}to{opacity:.75;scale:1.45}}
+.ss-home-parallax .ss-home-motion-light{opacity:.66;filter:blur(55px)}
+.ss-home-parallax .ss-home-motion-light-left{transform:translate3d(calc(var(--ss-px)*-56px),calc(var(--ss-py)*-35px),0);background:radial-gradient(ellipse,#00b5d558,transparent 72%)}
+.ss-home-parallax .ss-home-motion-light-right{transform:translate3d(calc(var(--ss-px)*-70px),calc(var(--ss-py)*-45px),0);background:radial-gradient(ellipse,#13acd44d,transparent 71%)}
+/* Larger 3D articulation, with a return spring and counter-moving layers. */
+.ss-home-parallax .ss-home-hero{transform:perspective(1150px) translate3d(calc(var(--ss-px)*19px),calc(var(--ss-py)*16px),45px) rotateX(calc(var(--ss-py)*-4deg)) rotateY(calc(var(--ss-px)*5deg));transform-style:preserve-3d}
+.ss-home-symbol-wrap{position:relative;display:grid;place-items:center;transform-style:preserve-3d;
+  transform:translate3d(calc(var(--ss-px)*15px),calc(var(--ss-py)*12px),50px) rotateX(calc(var(--ss-py)*-7deg)) rotateY(calc(var(--ss-px)*8deg));will-change:transform}
+.ss-home-parallax .ss-home-symbol{position:relative;z-index:2;transform:translateZ(28px);box-shadow:inset 0 0 24px #24e4ff33,0 0 23px #0bdafca9,0 0 56px #00b8ef38;}
+.ss-home-symbol-orbit{position:absolute;z-index:1;width:145%;height:145%;border-radius:27px;border:1px solid #46e4ff5b;
+  transform:translateZ(-10px) rotate(-27deg);box-shadow:0 0 20px #25c9e225,inset 0 0 15px #26eeff18;animation:ss-home-orbit 14s linear infinite;}
+.ss-home-symbol-orbit::after{content:'';position:absolute;left:50%;top:-3px;width:6px;height:6px;background:#b5ffff;border-radius:50%;box-shadow:0 0 14px 5px #07dcff7a}
+@keyframes ss-home-orbit{to{transform:translateZ(-10px) rotate(333deg)}}
+.ss-home-parallax .ss-home-hero h1{transform:translateZ(37px);text-shadow:0 7px 17px #020916bc,0 0 24px #07c7ed31}
+.ss-home-parallax .ss-home-subtitle{transform:translateZ(14px)}
+.ss-home-parallax .ss-home-hero p{transform:translateZ(6px)}
+.ss-home-parallax .ss-home-tools{transform:perspective(1300px) translate3d(calc(var(--ss-px)*-16px),calc(var(--ss-py)*-13px),35px) rotateX(calc(var(--ss-py)*1.5deg)) rotateY(calc(var(--ss-px)*-2.4deg));transform-style:preserve-3d}
+.ss-home-parallax .ss-home-capabilities{transform:translate3d(calc(var(--ss-px)*11px),calc(var(--ss-py)*9px),20px);transform-style:preserve-3d}
+.ss-home-parallax .ss-home-bottom{transform:translate3d(calc(var(--ss-px)*-4px),calc(var(--ss-py)*-3px),13px)}
+/* Each card reacts locally to the cursor, independent of the shared layer. */
+.ss-home-parallax .ss-home-tool,.ss-home-parallax .ss-home-capability{
+  --ss-local-x:0;--ss-local-y:0;
+  transform-style:preserve-3d;backface-visibility:hidden;
+  transition:transform .22s cubic-bezier(.15,.9,.35,1),border-color .2s,box-shadow .2s;
+  background-image:linear-gradient(138deg,#1e5a6b15,transparent 45%)}
+.ss-home-parallax .ss-home-tool:hover,.ss-home-parallax .ss-home-capability:hover{
+  transform:perspective(580px) translate3d(0,-8px,27px) rotateX(calc(var(--ss-local-y)*-8deg)) rotateY(calc(var(--ss-local-x)*8deg)) scale(1.025);
+  border-color:#66ecff;box-shadow:0 16px 25px #0008,0 0 22px #0dd9ef51,inset 0 1px #b5feff67}
+.ss-home-parallax .ss-home-tool::before,.ss-home-parallax .ss-home-capability::before{
+  background:radial-gradient(circle 95px at var(--ss-spot-x,50%) var(--ss-spot-y,50%),#94faff53,transparent 94%)}
+.ss-home-parallax .ss-home-tool::after,.ss-home-parallax .ss-home-capability::after{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(105deg,transparent 16%,#8efeff11 46%,transparent 76%);transform:translateX(-130%);transition:transform .55s ease-out}
+.ss-home-parallax .ss-home-tool:hover::after,.ss-home-parallax .ss-home-capability:hover::after{transform:translateX(130%)}
+.ss-home-parallax .ss-home-tool svg,.ss-home-parallax .ss-home-capability svg{filter:drop-shadow(0 0 8px #22e2fa28)}
+.ss-home-parallax .ss-home-start{box-shadow:inset 0 2px 14px #b2ffff67,0 0 20px #00d9ffaf,0 7px 30px #0008;transition:filter .2s,box-shadow .2s,transform .2s}
+.ss-home-parallax .ss-home-start:hover{transform:perspective(600px) translate3d(0,-5px,11px) rotateX(calc(var(--ss-local-y)*-3deg)) rotateY(calc(var(--ss-local-x)*4deg));box-shadow:0 0 32px #00dfffbd,0 0 70px #10d2ff44,0 12px 30px #0008}
+/* Accessible / low-power fallback. */
+@media (prefers-reduced-motion:reduce),(hover:none),(pointer:coarse){
+ .ss-home-depth-field,.ss-home-cursor-aura,.ss-home-particles,.ss-home-symbol-orbit{display:none!important}
+ .ss-home-symbol-wrap,.ss-home-parallax .ss-home-hero h1,.ss-home-parallax .ss-home-subtitle,.ss-home-parallax .ss-home-hero p{transform:none!important;will-change:auto!important}
+ .ss-home-parallax .ss-home-start:hover{transform:none}
+ .ss-home-parallax .ss-home-tool:hover,.ss-home-parallax .ss-home-capability:hover{transform:none!important}
+ .ss-home-particles i,.ss-home-symbol-orbit{animation:none!important}
+}
+
+/* v1.5.0 final overflow hardening: animated lights and perspective grids must
+   never contribute phantom document width/height or create scrollbars. */
+.sven-welcome.sven-welcome-solid.ss-home-parallax{scrollbar-gutter:auto}
+.ss-home-parallax .ss-home-motion-light-left{left:0;top:0;}
+.ss-home-parallax .ss-home-motion-light-right{right:0;bottom:0;}
+.ss-home-parallax .ss-home-depth-field{inset:0;mask-image:radial-gradient(ellipse 68% 50% at 50% 62%,black,transparent 100%);
+ overflow:hidden;transform:translate3d(calc(var(--ss-px)*-15px),calc(var(--ss-py)*-11px),0);}
+.ss-home-parallax .ss-home-depth-field::before{content:"";position:absolute;inset:-14%;
+ background-image:linear-gradient(#19bfff25 1px,transparent 1px),linear-gradient(90deg,#19bfff25 1px,transparent 1px);
+ background-size:54px 54px;transform:perspective(950px) rotateX(60deg) scale(1.06);}
+
+
+/* SvenStudio 3D v1.5.1 — Welcome viewport / scroll fix.
+   Keep the kinetic cyan style, but do not let perspective transforms create
+   phantom scrollbars or clip the Start button or the holographic logo. */
+.app-shell.welcome-home-active{overflow:hidden!important}
+.app-shell.welcome-home-active .sven-workstack{overflow:hidden;min-height:0;min-width:0}
+.sven-welcome.sven-welcome-solid.ss-home-parallax{
+  overflow-x:hidden;overflow-y:hidden;overscroll-behavior:none;
+  width:100%;height:100%;max-width:100%;max-height:100%;box-sizing:border-box;
+}
+.ss-home-parallax .ss-home-content{
+  box-sizing:border-box;width:100%;height:100%;min-height:0;max-width:1590px;
+  padding:clamp(10px,1.7vh,18px) clamp(18px,2.5vw,43px) clamp(9px,1.3vh,14px);
+  display:grid;grid-template-columns:minmax(0,1fr);
+  grid-template-rows:auto auto auto auto minmax(0,1fr);
+  row-gap:clamp(6px,1.4vh,14px);
+  justify-content:stretch;align-items:stretch;
+  transform-style:flat; /* prevents perspective from inflating layout bounds */
+}
+.ss-home-parallax .ss-home-topline{align-self:start}
+.ss-home-parallax .ss-home-hero{
+  align-self:start;justify-self:center;min-height:0;
+  padding:18px 0 6px;gap:clamp(5px,1vh,9px);
+  /* Moderate the scene tilt so all content remains legible and visible. */
+  transform:translate3d(calc(var(--ss-px)*7px),calc(var(--ss-py)*5px),0)
+    rotateX(calc(var(--ss-py)*-1.3deg)) rotateY(calc(var(--ss-px)*1.7deg));
+}
+.ss-home-parallax .ss-home-symbol-wrap{
+  transform:translate3d(calc(var(--ss-px)*5px),calc(var(--ss-py)*4px),0)
+    rotateX(calc(var(--ss-py)*-2.5deg)) rotateY(calc(var(--ss-px)*2.8deg));
+}
+.ss-home-parallax .ss-home-symbol{transform:translateZ(9px)}
+.ss-home-parallax .ss-home-symbol-orbit{width:126%;height:126%;border-radius:24px}
+.ss-home-parallax .ss-home-hero h1{transform:translateZ(10px)}
+.ss-home-parallax .ss-home-subtitle{transform:translateZ(4px)}
+.ss-home-parallax .ss-home-hero p{transform:translateZ(2px)}
+.ss-home-parallax .ss-home-tools{
+  transform:translate3d(calc(var(--ss-px)*-6px),calc(var(--ss-py)*-4px),0)
+    rotateX(calc(var(--ss-py)*.55deg)) rotateY(calc(var(--ss-px)*-.85deg));
+}
+.ss-home-parallax .ss-home-capabilities{transform:translate3d(calc(var(--ss-px)*4px),calc(var(--ss-py)*3px),0)}
+.ss-home-parallax .ss-home-bottom{transform:translate3d(calc(var(--ss-px)*-2px),calc(var(--ss-py)*-2px),0);min-height:0;padding:0 0 2px}
+.ss-home-parallax .ss-home-tool:hover,.ss-home-parallax .ss-home-capability:hover{
+  transform:perspective(650px) translate3d(0,-3px,8px)
+    rotateX(calc(var(--ss-local-y)*-3deg)) rotateY(calc(var(--ss-local-x)*3deg)) scale(1.008);
+}
+.ss-home-parallax .ss-home-start:hover{
+  transform:translate3d(0,-2px,0) rotateX(calc(var(--ss-local-y)*-1.3deg)) rotateY(calc(var(--ss-local-x)*1.5deg));
+}
+.ss-home-parallax .ss-home-motion-light-left{transform:translate3d(calc(var(--ss-px)*-24px),calc(var(--ss-py)*-17px),0)}
+.ss-home-parallax .ss-home-motion-light-right{transform:translate3d(calc(var(--ss-px)*-28px),calc(var(--ss-py)*-20px),0)}
+.ss-home-parallax .ss-home-depth-field{transform:translate3d(calc(var(--ss-px)*-8px),calc(var(--ss-py)*-5px),0)}
+.ss-home-parallax .ss-home-particles{transform:translate3d(calc(var(--ss-px)*-8px),calc(var(--ss-py)*-5px),0)}
+/* More predictable dimensions for medium desktops and short browser windows. */
+@media (min-width:1101px) and (max-height:870px){
+ .ss-home-parallax .ss-home-content{row-gap:clamp(5px,1.2vh,10px);padding-top:10px;padding-bottom:8px}
+ .ss-home-parallax .ss-home-hero{gap:clamp(4px,.7vh,7px);padding-top:15px;padding-bottom:2px}
+ .ss-home-parallax .ss-home-symbol{height:clamp(54px,8vh,73px);width:clamp(54px,8vh,73px);border-radius:17px}
+ .ss-home-parallax .ss-home-hero h1{font-size:clamp(37px,3.65vw,58px)}
+ .ss-home-parallax .ss-home-tool{min-height:clamp(83px,11.9vh,108px);padding:8px 5px;gap:6px}
+ .ss-home-parallax .ss-home-tool svg{width:25px;height:25px}
+ .ss-home-parallax .ss-home-capability{min-height:clamp(54px,7.6vh,64px);padding:8px 12px}
+ .ss-home-parallax .ss-home-start{min-height:clamp(45px,6.7vh,61px)}
+ .ss-home-parallax .ss-home-action{gap:5px}
+}
+/* On narrow or very short screens, preserve access to Start and every tool.
+   Only vertical scrolling may be necessary when the content physically cannot fit. */
+@media (max-width:1100px), (max-height:630px){
+ .sven-welcome.sven-welcome-solid.ss-home-parallax{overflow-y:auto;overflow-x:hidden}
+ .ss-home-parallax .ss-home-content{display:flex;flex-direction:column;justify-content:flex-start;height:auto;min-height:100%;gap:clamp(10px,1.8vh,18px)}
+ .ss-home-parallax .ss-home-bottom{margin-top:auto}
+}
+@media (prefers-reduced-motion:reduce){
+ .ss-home-parallax .ss-home-hero,.ss-home-parallax .ss-home-tools,.ss-home-parallax .ss-home-capabilities,
+ .ss-home-parallax .ss-home-bottom,.ss-home-parallax .ss-home-symbol-wrap{transform:none!important}
+}
+
+.ss-home-parallax .ss-home-bottom{grid-row:5;align-self:end}
+
+
+/* SvenStudio 3D v1.5.2 — balanced holographic homepage.
+   Purposefully keep each section within its allocated box. The richer mouse
+   response lives in depth/light/material layers rather than large translations
+   of entire rows, which previously felt clipped in a non-fullscreen Chrome. */
+.app-shell.welcome-home-active,
+.app-shell.welcome-home-active .sven-workstack,
+.sven-welcome.sven-welcome-solid.ss-home-parallax{overflow:hidden!important;min-width:0;min-height:0}
+.sven-welcome.sven-welcome-solid.ss-home-parallax{
+  container-type:size;isolation:isolate;overscroll-behavior:none;
+  scrollbar-width:none;--ss-px:0;--ss-py:0;
+  background:linear-gradient(145deg,#071624 0%,#061c2a 55%,#051523 100%);
+}
+.sven-welcome.sven-welcome-solid.ss-home-parallax::-webkit-scrollbar{display:none!important}
+.ss-home-parallax .ss-home-content{
+  position:relative;z-index:2;display:flex;flex-direction:column;
+  justify-content:space-between;align-items:stretch;
+  width:100%;height:100%;min-height:0;min-width:0;max-width:1550px;
+  margin-inline:auto;box-sizing:border-box;
+  padding:clamp(12px,2.2cqh,22px) clamp(26px,3.4cqw,58px) clamp(20px,3.5cqh,36px);
+  gap:clamp(9px,1.15cqh,15px);
+  transform-style:flat;
+}
+.ss-home-parallax .ss-home-topline{flex:0 0 auto;position:relative;z-index:2}
+.ss-home-parallax .ss-home-hero{
+  flex:0 1 auto;align-self:center;min-width:0;max-width:100%;
+  padding:0 12px 4px;margin:0;gap:clamp(6px,1.1cqh,10px);
+  transform:translate3d(calc(var(--ss-px)*4px),calc(var(--ss-py)*3px),0)
+    rotateX(calc(var(--ss-py)*-1.5deg)) rotateY(calc(var(--ss-px)*2deg));
+  transform-origin:center center;transform-style:preserve-3d;
+}
+.ss-home-parallax .ss-home-symbol-wrap{
+  position:relative;z-index:1;margin-block:clamp(5px,1.2cqh,10px);
+  transform:translate3d(calc(var(--ss-px)*6px),calc(var(--ss-py)*4px),0)
+    rotateX(calc(var(--ss-py)*-7deg)) rotateY(calc(var(--ss-px)*9deg));
+  transform-style:preserve-3d;
+}
+.ss-home-parallax .ss-home-symbol{
+  width:clamp(62px,10cqh,84px);height:clamp(62px,10cqh,84px);position:relative;z-index:3;
+  transform:translateZ(23px) rotateX(calc(var(--ss-py)*-2deg)) rotateY(calc(var(--ss-px)*3deg));
+  background:linear-gradient(145deg,#127896b3,#052a42 70%);
+  border-color:#67efff;box-shadow:inset 0 0 25px #69f4ff40,0 0 21px #00c9edb8,0 0 54px #11d7ff38;
+}
+.ss-home-symbol-glass{position:absolute;inset:-15%;z-index:0;border:1px solid #31b7cf55;
+  border-radius:26px;transform:translateZ(-20px) rotate(25deg);
+  background:conic-gradient(from 30deg,transparent,#24cfff21,transparent,#0abce21c,transparent);
+  box-shadow:0 0 44px #00bada24;animation:ss-home-glass-pulse 4.6s ease-in-out infinite alternate;
+}
+@keyframes ss-home-glass-pulse{from{opacity:.55;filter:brightness(.8)}to{opacity:1;filter:brightness(1.35)}}
+.ss-home-parallax .ss-home-symbol-orbit{width:153%;height:153%;z-index:1;border-color:#2bcdfb69;
+  animation:ss-home-orbit 19s linear infinite;}
+.ss-home-parallax .ss-home-symbol-orbit-inner{width:130%;height:130%;z-index:1;border-style:dashed;
+  border-color:#00ecf584;animation:ss-home-orbit-reverse 12s linear infinite;
+  transform:translateZ(-3px) rotate(25deg);box-shadow:0 0 11px #02d8ed36;
+}
+@keyframes ss-home-orbit-reverse{to{transform:translateZ(-3px) rotate(-335deg)}}
+.ss-home-parallax .ss-home-symbol-orbit-inner::after{background:#9bfffb;box-shadow:0 0 12px #19edff}
+.ss-home-parallax .ss-home-hero h1{transform:translateZ(15px);font-size:clamp(38px,4vw,68px);line-height:1.04}
+.ss-home-parallax .ss-home-hero h1>span{background-image:linear-gradient(95deg,#e7ffff,#48ebff 40%,#08bde2 72%,#a6faff 90%,#02bde5);background-size:200% auto;
+  animation:ss-home-text-luster 9s ease-in-out infinite alternate;background-clip:text;-webkit-background-clip:text;color:transparent}
+@keyframes ss-home-text-luster{from{background-position:0% 50%}to{background-position:100% 50%}}
+.ss-home-parallax .ss-home-subtitle{transform:translateZ(10px);font-size:clamp(11px,1.1vw,16px)}
+.ss-home-parallax .ss-home-hero p{transform:translateZ(6px);font-size:clamp(12px,1vw,15px)}
+.ss-home-parallax .ss-home-tools{
+  flex:0 0 auto;width:100%;margin:0;grid-template-columns:repeat(9,minmax(0,1fr));
+  gap:clamp(6px,.7cqw,12px);
+  transform:translate3d(calc(var(--ss-px)*-5px),calc(var(--ss-py)*-3px),0)
+    rotateX(calc(var(--ss-py)*.7deg)) rotateY(calc(var(--ss-px)*-.9deg));
+  transform-style:preserve-3d;
+}
+.ss-home-parallax .ss-home-tool{
+  min-height:clamp(84px,13cqh,118px);padding:9px 5px;gap:7px;
+  overflow:hidden;transform-style:preserve-3d;backface-visibility:hidden;
+  background:linear-gradient(158deg,#0b2c3f,#071c2d 75%);
+  box-shadow:inset 0 1px #8cecff20,0 8px 20px #01091655,0 0 0 1px #16769729;
+  transition:transform .22s cubic-bezier(.2,.8,.18,1.25),box-shadow .22s,border-color .22s;
+}
+.ss-home-parallax .ss-home-tool svg{position:relative;z-index:2;filter:drop-shadow(0 0 8px #25deff55);
+  transform:translate3d(calc(var(--ss-px)*3px),calc(var(--ss-py)*-3px),18px);
+  transition:transform .23s,filter .23s;}
+.ss-home-parallax .ss-home-tool strong,.ss-home-parallax .ss-home-tool small{position:relative;z-index:2;
+  transform:translateZ(8px);transition:transform .22s}
+.ss-home-parallax .ss-home-tool::before,.ss-home-parallax .ss-home-capability::before{
+  background:radial-gradient(circle 125px at var(--ss-spot-x,50%) var(--ss-spot-y,50%),#19d6ff64,transparent 78%);
+  z-index:0;opacity:0;transition:opacity .18s;
+}
+.ss-home-parallax .ss-home-tool::after{z-index:1;
+  background:linear-gradient(110deg,transparent 28%,#c8fbff3c 50%,transparent 69%);
+  transform:translateX(-150%) skewX(-17deg);transition:transform .52s ease-out;
+}
+.ss-home-parallax .ss-home-tool:hover,.ss-home-parallax .ss-home-tool:focus-within{
+  border-color:#7ceefd;
+  transform:perspective(510px) translateY(-5px) rotateX(calc(var(--ss-local-y)*-8deg)) rotateY(calc(var(--ss-local-x)*9deg)) scale(1.018);
+  box-shadow:inset 0 0 22px #20cff335,0 14px 24px #0009,0 0 24px #0dccff62;
+}
+.ss-home-parallax .ss-home-tool:hover svg{filter:drop-shadow(0 0 16px #7af8ff);
+  transform:translate3d(calc(var(--ss-local-x)*6px),calc(var(--ss-local-y)*6px),30px) scale(1.13)}
+.ss-home-parallax .ss-home-tool:hover strong{transform:translateZ(16px)}
+.ss-home-parallax .ss-home-tool:hover small{transform:translateZ(10px)}
+.ss-home-parallax .ss-home-tool:hover::after{transform:translateX(155%) skewX(-17deg)}
+.ss-home-parallax .ss-home-tool-featured{background:linear-gradient(145deg,#09636a,#072d43 80%);border-color:#2bf9e5;
+  box-shadow:inset 0 0 15px #00fff322,0 0 19px #06efde36}
+.ss-home-parallax .ss-home-capabilities{
+  flex:0 0 auto;max-width:min(1060px,100%);width:100%;gap:clamp(12px,2cqw,26px);
+  transform:translate3d(calc(var(--ss-px)*3px),calc(var(--ss-py)*2px),0);
+}
+.ss-home-parallax .ss-home-capability{min-height:clamp(49px,8cqh,65px);padding:9px 12px;
+  background:linear-gradient(135deg,#0b354f,#081e31);transform-style:preserve-3d}
+.ss-home-parallax .ss-home-capability:hover{transform:perspective(600px) translateY(-4px)
+  rotateX(calc(var(--ss-local-y)*-4deg)) rotateY(calc(var(--ss-local-x)*5deg));
+  border-color:#6aeafc;box-shadow:0 0 22px #19dcff3d,0 10px 19px #0005}
+.ss-home-parallax .ss-home-capability svg{filter:drop-shadow(0 0 7px #01e8ff5e)}
+.ss-home-parallax .ss-home-bottom{flex:0 0 auto;grid-row:auto;align-self:stretch;
+  min-height:0;margin:0;padding-bottom:0;transform:none}
+.ss-home-parallax .ss-home-action{gap:clamp(6px,1.1cqh,10px)}
+.ss-home-parallax .ss-home-start{
+  min-height:clamp(50px,8cqh,68px);border-color:#66f7ff;
+  background:linear-gradient(155deg,#148caf,#06394e 48%,#075778 75%,#0da1bb);
+  box-shadow:inset 0 2px 16px #c7ffff73,0 0 18px #00d5fc9e,0 0 36px #10dffb35,0 12px 25px #0005;
+}
+.ss-home-parallax .ss-home-start:hover{filter:brightness(1.15);
+  transform:perspective(720px) translateY(-3px) rotateX(calc(var(--ss-local-y)*-3deg)) rotateY(calc(var(--ss-local-x)*4deg));
+  box-shadow:inset 0 0 17px #b9ffff85,0 0 26px #10ecffcf,0 0 61px #08dcff5c,0 14px 26px #0005;
+}
+/* Extra atmosphere: multi-plane depth, proximity glow and a scanning wave.
+   All effects are clipped INSIDE their dedicated absolute overlays. */
+.ss-home-parallax .ss-home-hologrid,.ss-home-parallax .ss-home-backscatter,.ss-home-parallax .ss-home-ambient-rings{
+  position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;contain:paint;
+}
+.ss-home-hologrid::before{content:"";position:absolute;inset:20% -12% -50%;
+  background:repeating-linear-gradient(0deg,#18b6dc29 0 1px,transparent 1px 56px),
+    repeating-linear-gradient(90deg,#18b6dc25 0 1px,transparent 1px 56px);
+  transform-origin:center 20%;transform:perspective(560px) rotateX(68deg) translate3d(calc(var(--ss-px)*-16px),calc(var(--ss-py)*-6px),0);
+  mask-image:radial-gradient(ellipse 55% 53% at 50% 45%,#000 0%,transparent 100%);opacity:.33;
+}
+.ss-home-backscatter{background:radial-gradient(circle 185px at var(--ss-cursor-x) var(--ss-cursor-y),#0acffb29,transparent 95%),
+  radial-gradient(ellipse 50% 45% at 52% 35%,#08739e1f,transparent 95%);mix-blend-mode:screen;opacity:.85}
+.ss-home-ambient-rings::before,.ss-home-ambient-rings::after{content:"";position:absolute;left:50%;top:24%;border-radius:50%;
+  transform:translate(-50%,-50%) rotateX(69deg);border:1px solid #05ccf62b;
+  box-shadow:0 0 24px #00b3e522,inset 0 0 18px #03dcff11;pointer-events:none;}
+.ss-home-ambient-rings::before{width:clamp(220px,37cqw,510px);height:clamp(220px,37cqw,510px);
+  animation:ss-home-ring-breathe 7s ease-in-out infinite alternate}
+.ss-home-ambient-rings::after{width:clamp(165px,29cqw,410px);height:clamp(165px,29cqw,410px);opacity:.55;
+  animation:ss-home-ring-breathe 5s ease-in-out infinite alternate-reverse}
+@keyframes ss-home-ring-breathe{from{opacity:.17;filter:blur(0)}to{opacity:.53;filter:blur(1.5px)}}
+.ss-home-parallax .ss-home-cursor-aura{opacity:.76}
+.ss-home-parallax .ss-home-motion-light-left{opacity:.58;filter:blur(54px);
+  transform:translate3d(calc(var(--ss-px)*-19px),calc(var(--ss-py)*-12px),0)}
+.ss-home-parallax .ss-home-motion-light-right{opacity:.58;filter:blur(54px);
+  transform:translate3d(calc(var(--ss-px)*-23px),calc(var(--ss-py)*-15px),0)}
+.ss-home-parallax .ss-home-particles{transform:translate3d(calc(var(--ss-px)*-9px),calc(var(--ss-py)*-6px),0)}
+.ss-home-particles i:nth-child(17){left:5%;top:64%;animation-delay:-2.6s}
+.ss-home-particles i:nth-child(18){left:92%;top:31%;animation-delay:-4.1s}
+.ss-home-particles i:nth-child(19){left:47%;top:10%;animation-delay:-2.1s}
+.ss-home-particles i:nth-child(20){left:66%;top:55%;animation-delay:-1.7s}
+.ss-home-particles i:nth-child(21){left:16%;top:42%;animation-delay:-.9s}
+.ss-home-particles i:nth-child(22){left:77%;top:87%;animation-delay:-3.8s}
+.ss-home-particles i:nth-child(23){left:34%;top:69%;animation-delay:-1.4s}
+.ss-home-particles i:nth-child(24){left:98%;top:47%;animation-delay:-4.8s}
+/* Browser chrome consumes window height. Compress the card layout by actual
+   available height of the welcome container rather than by window.innerHeight. */
+@container (max-height: 720px){
+  .ss-home-parallax .ss-home-content{gap:6px;padding-top:9px;padding-bottom:15px}
+  .ss-home-parallax .ss-home-hero{gap:5px}
+  .ss-home-parallax .ss-home-symbol-wrap{margin-block:3px}
+  .ss-home-parallax .ss-home-symbol{width:60px;height:60px;border-radius:17px}
+  .ss-home-parallax .ss-home-hero h1{font-size:clamp(36px,3.5vw,56px)}
+  .ss-home-parallax .ss-home-tool{min-height:clamp(79px,12cqh,98px);gap:5px;padding:7px 4px}
+  .ss-home-parallax .ss-home-capability{min-height:50px}
+  .ss-home-parallax .ss-home-start{min-height:52px}
+}
+@container (max-height: 600px){
+  .ss-home-parallax .ss-home-content{padding-top:5px;padding-bottom:8px;gap:5px}
+  .ss-home-parallax .ss-home-network{padding:5px 9px}
+  .ss-home-parallax .ss-home-hero h1{font-size:clamp(29px,3vw,48px)}
+  .ss-home-parallax .ss-home-hero p{font-size:11px}
+  .ss-home-parallax .ss-home-symbol{width:49px;height:49px;border-radius:13px}
+  .ss-home-parallax .ss-home-tools{gap:6px}
+  .ss-home-parallax .ss-home-tool{min-height:69px;gap:3px;padding:5px 3px}
+  .ss-home-parallax .ss-home-tool svg{width:21px;height:21px}
+  .ss-home-parallax .ss-home-capability{min-height:43px;padding:6px}
+  .ss-home-parallax .ss-home-start{min-height:43px;font-size:20px}
+  .ss-home-parallax .ss-home-action{gap:3px}
+}
+/* Keep readable on narrow widths, even when vertical scrolling is required. */
+@media(max-width:1100px){
+  .ss-home-parallax .ss-home-tools{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .sven-welcome.sven-welcome-solid.ss-home-parallax{overflow-y:auto!important;scrollbar-width:none}
+  .ss-home-parallax .ss-home-content{height:auto;min-height:100%;justify-content:flex-start;gap:15px}
+  .ss-home-parallax .ss-home-bottom{margin-top:auto}
+}
+@media(max-width:760px){.ss-home-parallax .ss-home-tools{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce),(hover:none),(pointer:coarse){
+  .ss-home-parallax .ss-home-hero,.ss-home-parallax .ss-home-symbol-wrap,
+  .ss-home-parallax .ss-home-tool svg,.ss-home-parallax .ss-home-tools,
+  .ss-home-parallax .ss-home-capabilities{transform:none!important}
+  .ss-home-parallax .ss-home-tool:hover,.ss-home-parallax .ss-home-capability:hover,.ss-home-parallax .ss-home-start:hover{transform:none!important}
+  .ss-home-symbol-orbit,.ss-home-parallax .ss-home-symbol-glass,
+  .ss-home-parallax .ss-home-ambient-rings::before,.ss-home-parallax .ss-home-ambient-rings::after{
+    animation:none!important}
+}
+/* The earlier compact-layout rule used align-self:start for the top row.
+   That collapsed its width and made the network badge appear beside the kicker. */
+.ss-home-parallax .ss-home-topline{align-self:stretch;width:100%;min-width:0}
+
+/* SvenStudio 3D v1.5.3 — definitive home fit + stable interactive hover.
+   Goal: no clipped feeling in normal Chrome windows, and no repeated/flickering
+   local parallax on cards or the Start button. Keep the scene cooler, but make
+   the card response feel deliberate and single-source. */
+.app-shell.welcome-home-active .sven-workstack,
+.app-shell.welcome-home-active .sven-editor-workspace,
+.sven-welcome.sven-welcome-solid.ss-home-parallax{
+  min-height:0;min-width:0;overflow:hidden!important;
+}
+.sven-welcome.sven-welcome-solid.ss-home-parallax{
+  --ss-px:0;--ss-py:0;--ss-local-x:0;--ss-local-y:0;
+}
+.ss-home-parallax .ss-home-content{
+  max-width:1480px;
+  padding:clamp(8px,1.35cqh,14px) clamp(22px,3cqw,48px) clamp(12px,2.1cqh,22px);
+  gap:clamp(5px,.85cqh,10px);
+  justify-content:space-evenly;
+}
+.ss-home-parallax .ss-home-topline{min-height:18px}
+.ss-home-parallax .ss-home-kicker{font-size:10px}
+.ss-home-parallax .ss-home-network{font-size:10px;padding:7px 11px}
+.ss-home-parallax .ss-home-hero{
+  gap:clamp(4px,.7cqh,7px);
+  padding:0 10px 2px;
+  transform:translate3d(calc(var(--ss-px)*2.5px),calc(var(--ss-py)*2px),0)
+    rotateX(calc(var(--ss-py)*-1deg)) rotateY(calc(var(--ss-px)*1.2deg));
+}
+.ss-home-parallax .ss-home-symbol-wrap{
+  margin-block:clamp(2px,.55cqh,6px);
+  transform:translate3d(calc(var(--ss-px)*4px),calc(var(--ss-py)*2px),0)
+    rotateX(calc(var(--ss-py)*-5deg)) rotateY(calc(var(--ss-px)*6deg));
+}
+.ss-home-parallax .ss-home-symbol{width:clamp(56px,8.1cqh,74px);height:clamp(56px,8.1cqh,74px);border-radius:18px}
+.ss-home-parallax .ss-home-symbol-orbit{width:144%;height:144%}
+.ss-home-parallax .ss-home-symbol-orbit-inner{width:122%;height:122%}
+.ss-home-parallax .ss-home-hero h1{font-size:clamp(34px,3.5vw,60px);line-height:1}
+.ss-home-parallax .ss-home-subtitle{font-size:clamp(10px,1vw,15px)}
+.ss-home-parallax .ss-home-hero p{font-size:clamp(11px,.96vw,14px);max-width:760px}
+.ss-home-parallax .ss-home-tools{
+  gap:clamp(6px,.6cqw,10px);
+  transform:translate3d(calc(var(--ss-px)*-2px),calc(var(--ss-py)*-1px),0)
+    rotateX(calc(var(--ss-py)*.3deg)) rotateY(calc(var(--ss-px)*-.45deg));
+}
+.ss-home-parallax .ss-home-tool{
+  min-height:clamp(76px,10.2cqh,96px);
+  padding:7px 4px;
+  gap:4px;
+}
+.ss-home-parallax .ss-home-tool svg{
+  width:22px;height:22px;
+  transform:translateZ(12px);
+  transition:transform .16s linear,filter .16s linear;
+  pointer-events:none;
+}
+.ss-home-parallax .ss-home-tool strong,.ss-home-parallax .ss-home-tool small,
+.ss-home-parallax .ss-home-capability strong,.ss-home-parallax .ss-home-capability small,
+.ss-home-parallax .ss-home-tool svg,.ss-home-parallax .ss-home-capability svg,
+.ss-home-parallax .ss-home-start svg,.ss-home-parallax .ss-home-start span{
+  pointer-events:none;
+}
+.ss-home-parallax .ss-home-tool strong{font-size:clamp(10px,.82vw,12px)}
+.ss-home-parallax .ss-home-tool small{font-size:clamp(8px,.72vw,10px)}
+.ss-home-parallax .ss-home-capabilities{
+  max-width:min(980px,100%);
+  gap:clamp(10px,1.3cqw,18px);
+  transform:translate3d(calc(var(--ss-px)*1.5px),calc(var(--ss-py)*1px),0);
+}
+.ss-home-parallax .ss-home-capability{min-height:clamp(44px,6cqh,56px);padding:7px 11px}
+.ss-home-parallax .ss-home-capability svg{width:23px;height:23px}
+.ss-home-parallax .ss-home-bottom{padding-top:1px;gap:clamp(8px,1cqh,12px)}
+.ss-home-parallax .ss-home-project strong,.ss-home-parallax .ss-home-preserved{font-size:12px}
+.ss-home-parallax .ss-home-project small{font-size:10px}
+.ss-home-parallax .ss-home-action{gap:4px}
+.ss-home-parallax .ss-home-start{
+  min-height:clamp(44px,6.4cqh,56px);
+  min-width:min(308px,68vw);
+  font-size:clamp(18px,2vw,25px);
+}
+.ss-home-parallax .ss-home-start svg{pointer-events:none}
+.ss-home-parallax .ss-home-bottom,
+.ss-home-parallax .ss-home-project,
+.ss-home-parallax .ss-home-action,
+.ss-home-parallax .ss-home-preserved{position:relative;z-index:2}
+
+/* Stable hover: only elements with the explicit active class should tilt.
+   This avoids the sensation that the effect repeats/flickers over icons/text. */
+.ss-home-parallax .ss-home-tool:hover,
+.ss-home-parallax .ss-home-capability:hover,
+.ss-home-parallax .ss-home-start:hover{transform:none;filter:none}
+.ss-home-parallax .ss-home-tool.ss-home-tilt-active{
+  border-color:#7ceefd;
+  transform:perspective(520px) translateY(-4px) rotateX(calc(var(--ss-local-y)*-6deg)) rotateY(calc(var(--ss-local-x)*7deg)) scale(1.012);
+  box-shadow:inset 0 0 22px #20cff335,0 14px 24px #0009,0 0 24px #0dccff62;
+}
+.ss-home-parallax .ss-home-tool.ss-home-tilt-active::before,
+.ss-home-parallax .ss-home-tool.ss-home-tilt-active::after,
+.ss-home-parallax .ss-home-capability.ss-home-tilt-active::before,
+.ss-home-parallax .ss-home-capability.ss-home-tilt-active::after,
+.ss-home-parallax .ss-home-start.ss-home-tilt-active::before{opacity:1}
+.ss-home-parallax .ss-home-tool.ss-home-tilt-active::after{transform:translateX(155%) skewX(-17deg)}
+.ss-home-parallax .ss-home-tool.ss-home-tilt-active svg{
+  filter:drop-shadow(0 0 14px #7af8ff);
+  transform:translate3d(calc(var(--ss-local-x)*5px),calc(var(--ss-local-y)*5px),18px) scale(1.08);
+}
+.ss-home-parallax .ss-home-tool.ss-home-tilt-active strong{transform:translateZ(14px)}
+.ss-home-parallax .ss-home-tool.ss-home-tilt-active small{transform:translateZ(9px)}
+.ss-home-parallax .ss-home-capability.ss-home-tilt-active{
+  transform:perspective(560px) translateY(-3px) rotateX(calc(var(--ss-local-y)*-3deg)) rotateY(calc(var(--ss-local-x)*4deg));
+  border-color:#6aeafc;box-shadow:0 0 20px #19dcff3d,0 10px 18px #0005;
+}
+.ss-home-parallax .ss-home-start.ss-home-tilt-active{
+  filter:brightness(1.12);
+  transform:perspective(720px) translateY(-2px) rotateX(calc(var(--ss-local-y)*-2deg)) rotateY(calc(var(--ss-local-x)*2.6deg));
+  box-shadow:inset 0 0 17px #b9ffff85,0 0 26px #10ecffcf,0 0 61px #08dcff5c,0 14px 26px #0005;
+}
+
+/* Container-height tuning for normal desktop windows (Chrome not maximized). */
+@container (max-height: 820px){
+  .ss-home-parallax .ss-home-content{padding-top:7px;padding-bottom:11px;gap:5px}
+  .ss-home-parallax .ss-home-hero h1{font-size:clamp(32px,3.25vw,54px)}
+  .ss-home-parallax .ss-home-tool{min-height:72px}
+  .ss-home-parallax .ss-home-capability{min-height:42px;padding:6px 10px}
+  .ss-home-parallax .ss-home-start{min-height:42px}
+}
+@container (max-height: 760px){
+  .ss-home-parallax .ss-home-content{padding-top:6px;padding-bottom:9px;gap:4px}
+  .ss-home-parallax .ss-home-topline{min-height:16px}
+  .ss-home-parallax .ss-home-network{padding:6px 9px}
+  .ss-home-parallax .ss-home-symbol{width:52px;height:52px;border-radius:15px}
+  .ss-home-parallax .ss-home-hero h1{font-size:clamp(29px,3vw,49px)}
+  .ss-home-parallax .ss-home-subtitle{font-size:clamp(9px,.95vw,13px)}
+  .ss-home-parallax .ss-home-hero p{font-size:11px}
+  .ss-home-parallax .ss-home-tool{min-height:68px;padding:6px 4px}
+  .ss-home-parallax .ss-home-tool svg{width:20px;height:20px}
+  .ss-home-parallax .ss-home-capability{min-height:40px}
+  .ss-home-parallax .ss-home-start{min-height:40px;font-size:20px}
+}
+
+
+/* v1.5.4 — stable, non-transformed pointer hitboxes for Home cards. */
+/* The outer blocks have fixed layout geometry; 3D hover is isolated to a
+   pointer-inert inner face, so the hover area never moves under the cursor. */
+.ss-home-parallax .ss-home-tools{transform:none!important}
+.ss-home-parallax .ss-home-capabilities{transform:none!important}
+.ss-home-parallax .ss-home-tool,
+.ss-home-parallax .ss-home-capability,
+.ss-home-parallax .ss-home-start{
+  position:relative;
+  isolation:isolate;
+  overflow:visible;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  filter:none!important;
+  transform:none!important;
+  transition:none!important;
+  perspective:650px;
+}
+.ss-home-parallax .ss-home-tool,
+.ss-home-parallax .ss-home-capability{display:block}
+.ss-home-parallax .ss-home-start{display:block;box-sizing:border-box;cursor:pointer}
+.ss-home-parallax .ss-home-tool::before,
+.ss-home-parallax .ss-home-tool::after,
+.ss-home-parallax .ss-home-capability::before,
+.ss-home-parallax .ss-home-capability::after,
+.ss-home-parallax .ss-home-start::before{content:none!important}
+.ss-home-parallax .ss-home-tool-face,
+.ss-home-parallax .ss-home-capability-face,
+.ss-home-parallax .ss-home-start-face{
+  position:relative;
+  box-sizing:border-box;
+  width:100%;
+  height:100%;
+  min-height:inherit;
+  pointer-events:none!important;
+  transform-style:preserve-3d;
+  backface-visibility:hidden;
+  transition:transform .14s ease-out,border-color .18s ease,box-shadow .18s ease;
+  overflow:hidden;
+}
+.ss-home-parallax .ss-home-tool-face{
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  gap:4px;padding:6px 4px;text-align:center;
+  border-radius:12px;border:1px solid #327895;
+  background:linear-gradient(158deg,#0b2c3f,#071c2d 75%);
+  box-shadow:inset 0 1px #8cecff20,0 7px 17px #0109165c;
+}
+.ss-home-parallax .ss-home-tool-featured .ss-home-tool-face{
+  background:linear-gradient(145deg,#09636a,#072d43 80%);
+  border-color:#2bf9e5;
+  box-shadow:inset 0 0 15px #00fff322,0 0 19px #06efde36;
+}
+.ss-home-parallax .ss-home-capability-face{
+  display:flex;align-items:center;justify-content:center;
+  gap:12px;padding:7px 11px;
+  border-radius:11px;border:1px solid #337fa1;
+  background:linear-gradient(135deg,#0b354f,#081e31);
+  box-shadow:inset 0 1px #a1edff20,0 7px 14px #0109164a;
+}
+.ss-home-parallax .ss-home-start-face{
+  display:flex;justify-content:center;align-items:center;gap:18px;
+  border:2px solid #66f7ff;border-radius:999px;
+  background:linear-gradient(155deg,#148caf,#06394e 48%,#075778 75%,#0da1bb);
+  box-shadow:inset 0 2px 16px #c7ffff73,0 0 18px #00d5fc9e,0 0 36px #10dffb35,0 12px 25px #0005;
+}
+.ss-home-parallax .ss-home-tool-face::before,
+.ss-home-parallax .ss-home-capability-face::before,
+.ss-home-parallax .ss-home-start-face::before{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(circle 150px at var(--ss-spot-x,50%) var(--ss-spot-y,50%),#2bf4ff55,transparent 75%);
+  opacity:0;transition:opacity .15s;
+}
+.ss-home-parallax .ss-home-tool-face::after,
+.ss-home-parallax .ss-home-capability-face::after{
+  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(110deg,transparent 28%,#c8fbff39 50%,transparent 70%);
+  transform:translateX(-150%) skewX(-17deg);
+  transition:transform .48s ease-out;
+}
+.ss-home-parallax .ss-home-tool.ss-home-tilt-active .ss-home-tool-face{
+  transform:rotateX(calc(var(--ss-local-y)*-5.5deg)) rotateY(calc(var(--ss-local-x)*6.5deg)) translateZ(4px);
+  border-color:#7ceefd;
+  box-shadow:inset 0 0 22px #20cff335,0 12px 22px #0008,0 0 23px #0dccff62;
+}
+.ss-home-parallax .ss-home-capability.ss-home-tilt-active .ss-home-capability-face{
+  transform:rotateX(calc(var(--ss-local-y)*-3deg)) rotateY(calc(var(--ss-local-x)*4deg)) translateZ(3px);
+  border-color:#6aeafc;box-shadow:0 0 20px #19dcff3d,0 9px 18px #0005;
+}
+.ss-home-parallax .ss-home-start.ss-home-tilt-active .ss-home-start-face{
+  transform:rotateX(calc(var(--ss-local-y)*-2deg)) rotateY(calc(var(--ss-local-x)*2.5deg));
+  box-shadow:inset 0 0 17px #b9ffff85,0 0 26px #10ecffcf,0 0 56px #08dcff5c;
+}
+.ss-home-parallax .ss-home-tilt-active>.ss-home-tool-face::before,
+.ss-home-parallax .ss-home-tilt-active>.ss-home-capability-face::before,
+.ss-home-parallax .ss-home-tilt-active>.ss-home-start-face::before{opacity:1}
+.ss-home-parallax .ss-home-tilt-active>.ss-home-tool-face::after,
+.ss-home-parallax .ss-home-tilt-active>.ss-home-capability-face::after{transform:translateX(155%) skewX(-17deg)}
+.ss-home-parallax .ss-home-tool-face svg,
+.ss-home-parallax .ss-home-capability-face svg,
+.ss-home-parallax .ss-home-start-face svg{position:relative;z-index:2;pointer-events:none}
+.ss-home-parallax .ss-home-tool-face strong,
+.ss-home-parallax .ss-home-tool-face small,
+.ss-home-parallax .ss-home-capability-face strong,
+.ss-home-parallax .ss-home-capability-face small{position:relative;z-index:2;pointer-events:none}
+.ss-home-parallax .ss-home-tool-face svg{width:22px;height:22px;flex-shrink:0}
+.ss-home-parallax .ss-home-tool-face strong{font-size:clamp(10px,.82vw,12px)}
+.ss-home-parallax .ss-home-tool-face small{font-size:clamp(8px,.72vw,10px)}
+.ss-home-parallax .ss-home-capability-face svg{width:23px;height:23px;flex-shrink:0}
+.ss-home-parallax .ss-home-tool.ss-home-tilt-active .ss-home-tool-face svg{
+  transform:translate3d(calc(var(--ss-local-x)*4px),calc(var(--ss-local-y)*4px),13px) scale(1.08);
+  filter:drop-shadow(0 0 13px #7af8ff);
+}
+.ss-home-parallax .ss-home-start:focus-visible{outline:2px solid #c8ffff;outline-offset:5px;border-radius:999px}
+@media(prefers-reduced-motion:reduce),(hover:none),(pointer:coarse){
+  .ss-home-parallax .ss-home-tool-face,.ss-home-parallax .ss-home-capability-face,
+  .ss-home-parallax .ss-home-start-face{transform:none!important;transition:none!important}
+}
+/* Override generic capability descendant layout: the stationary face is a ROW;
+   only the text column inside it should stack vertically. */
+.ss-home-parallax .ss-home-capability-face{flex-direction:row}
+.ss-home-parallax .ss-home-capability-face>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+
+/* v1.5.5 · Advanced Lighting Studio (scoped to the existing dialog) */
+.al-tabs{display:flex;flex-wrap:wrap;gap:5px;padding:3px 0 9px;border-bottom:1px solid #395a78}
+.al-tabs button,.al-choice button{border:1px solid #456b87;background:#1b334f;color:#bfd8ed;border-radius:7px;padding:9px 10px;font-size:11px;line-height:1.2;cursor:pointer}
+.al-tabs button.active,.al-choice button.active{background:#20567a;border-color:#7fd5ef;color:white;box-shadow:0 0 14px #50bcf022}
+.advanced-lighting-panel{display:flex;flex-direction:column;gap:13px;min-width:0;padding-bottom:20px}
+.advanced-lighting-panel h3{margin-top:5px}
+.advanced-lighting-panel small{font-size:10px;color:#9fbbd6}
+.advanced-lighting-panel .lighting-field select,.advanced-lighting-panel .lighting-field input{width:100%;min-width:0;max-width:100%;box-sizing:border-box;background:#11233b;color:#e1f2ff;border:1px solid #4a6887;border-radius:7px;min-height:34px;padding:7px 9px}
+.advanced-lighting-panel .lighting-field input[type=color]{padding:2px;max-width:100px;height:39px;cursor:pointer}
+.advanced-lighting-panel .lighting-field input:disabled,.advanced-lighting-panel select:disabled{opacity:.5;cursor:default}
+.al-choice{display:flex;flex-wrap:wrap;gap:6px}
+.al-choice button{display:inline-flex;align-items:center;gap:5px}
+.al-entity-list{display:flex;flex-direction:column;gap:5px;max-height:146px;overflow-y:auto;min-height:0}
+.al-entity-list button{padding:9px 10px;min-height:31px;border:1px solid #3b5c7e;background:#1b304a;border-radius:7px;color:#d4e9f8;font-size:11px;text-align:left;overflow-wrap:anywhere;cursor:pointer}
+.al-entity-list button.active{border-color:#7bd5f5;background:#1b5975}
+.al-rad-section{border:1px solid #365577;border-radius:10px;background:#0d1e34a8;padding:11px}
+.al-rad-section h4{margin:0 0 12px;font-size:12px;color:#9ddbf6}
+.al-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.al-fields .lighting-field{gap:5px}
+.al-fields .lighting-field span{font-weight:650}
+.al-fields .lighting-field small{line-height:1.35;min-height:36px}
+.al-warning{display:flex;align-items:flex-start;gap:7px;padding:10px 12px;border:1px solid #a98156;border-radius:7px;color:#ffe0b8;background:#62463133;font-size:11px;line-height:1.4;white-space:pre-line;overflow-wrap:anywhere}
+.al-warning svg{flex-shrink:0}
+@media(max-width:1000px){.al-fields{grid-template-columns:1fr}.al-tabs button{padding:7px;font-size:10px}}
+
+/* v1.5.6 — SC-RAD lightmap comparison inside the existing MAP workspace. */
+.true-light-workbench{display:flex;flex:1;min-width:0;min-height:0;width:100%;height:100%;overflow:hidden}
+.true-light-map{display:flex;flex:1;min-height:0;min-width:210px}
+.true-light-map>.viewport-column{min-width:0;width:100%}
+.true-light-panel{display:flex;flex:0 0 min(46%,620px);flex-direction:column;min-width:280px;min-height:0;overflow:hidden;background:#111e2b;color:#d5e4ed;border-left:1px solid #47738a;box-shadow:-5px 0 20px #0004}
+.true-light-toolbar{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;background:#172c3d;border-bottom:1px solid #36556b}
+.true-light-toolbar strong,.true-light-toolbar>div{display:flex;gap:7px;align-items:center;min-width:0}
+.true-light-toolbar strong{font-size:12px;white-space:nowrap}
+.true-light-toolbar button,.true-light-actions button{display:inline-flex;align-items:center;justify-content:center;gap:5px;background:#233c50;border:1px solid #47687b;border-radius:6px;color:#d7eaf2;cursor:pointer;padding:6px 8px;font-size:11px}
+.true-light-toolbar button:hover:not(:disabled),.true-light-actions button:hover{background:#345b72}
+.true-light-toolbar button:disabled{opacity:.45;cursor:default}
+.true-light-version{font-size:10px;padding:3px 5px;background:#0b4954;color:#8ce7f3;border-radius:4px}
+.true-light-body{position:relative;flex:1;min-height:120px;background:#172532;overflow:hidden}
+.true-light-body canvas{display:block;outline:none}
+.true-light-canvas-help{position:absolute;left:10px;bottom:9px;font-size:10px;color:#d6e9f2;background:#122538cd;border-radius:5px;padding:4px 8px;pointer-events:none}
+.true-light-empty{display:flex;height:100%;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:24px;text-align:center;color:#91baca}
+.true-light-empty strong{font-size:14px;color:#e5f3f7}
+.true-light-empty span{font-size:12px;line-height:1.6;max-width:330px}
+.true-light-progress,.true-light-stale{position:absolute;top:8px;left:8px;right:8px;display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:11px;border:1px solid #416b82;border-radius:5px;background:#172d3ce8;pointer-events:none}
+.true-light-stale{top:auto;bottom:33px;background:#51391de8;border-color:#a67b45;color:#ffe2ab}
+.true-light-options{flex:0 1 auto;min-height:0;max-height:38%;overflow:auto;padding:10px 12px;border-top:1px solid #385970;display:flex;flex-direction:column;gap:9px}
+.true-light-options label{display:flex;flex-direction:column;gap:5px;font-size:11px}
+.true-light-options label>span{display:flex;justify-content:space-between}
+.true-light-options input[type=range]{accent-color:#65c6df;width:100%}
+.true-light-options small{font-size:10px;color:#9eb5c3}
+.true-light-options p{font-size:10px;display:flex;align-items:flex-start;gap:6px;color:#a9c8d8;line-height:1.5;margin:0}
+.true-light-options .true-light-caveat{color:#8dabbc}
+.true-light-actions{display:flex;gap:7px}
+.true-light-actions .enabled{background:#225e6e}
+@media(max-width:1000px){.true-light-panel{min-width:235px;flex-basis:50%}.true-light-map{min-width:160px}.true-light-toolbar button{padding:5px}.true-light-toolbar strong{font-size:11px}}
+.true-light-launch{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;background:#174b59!important;border-color:#3d9ab0!important}
+.true-light-studio-button{margin-top:10px;display:inline-flex;align-items:center;gap:6px;padding:9px;border-radius:5px}
+@media(max-width:1500px){.top-compile.true-light-launch{font-size:0;padding:6px!important;min-width:30px}.top-compile.true-light-launch svg{width:16px;height:16px;flex:0 0 16px}}
+@media(max-width:1300px){.true-light-workbench{position:relative}.true-light-panel{position:absolute;z-index:9;right:0;top:0;bottom:0;width:min(94%,470px);min-width:0;box-shadow:-12px 0 32px #000b}.true-light-map{min-width:0}}
+
+.true-light-error{border-color:#aa765c;background:#482c2beb;color:#ffd0bd}
+
+/* v1.5.7: camera presets in compact True Lighting panel. */
+.true-light-toolbar button.enabled{background:#216479;border-color:#5dc4e3;color:#fff}
+@media(max-width:1250px){.true-light-toolbar{flex-wrap:wrap}.true-light-toolbar>div{width:100%;justify-content:flex-end;flex-wrap:wrap}}
+
+/* v1.5.10 — Optional BSP fog and display-only color calibration. */
+.bsp-info .bsp-light-control select,.true-light-options select{
+  width:100%;background:#142b43;border:1px solid #4e728d;color:#dbedfa;
+  border-radius:6px;padding:5px 8px;font-size:11px;
+}
+.true-light-options .true-light-fog-toggle>span{justify-content:flex-start;align-items:center;gap:7px}
+.true-light-options .true-light-fog-toggle b{margin-left:auto;color:#87dbf2}
+.true-light-options input[type=checkbox]{accent-color:#65c6df}
+
+
+/* v1.5.11: Visualization belongs to the MAP viewport, never the top build toolbar. */
+.viewport-frame .viewport-visualization-control{position:relative;display:flex;flex:0 0 auto;min-width:0;pointer-events:auto}
+.viewport-frame .viewport-controls-row .viewport-visualization-trigger{background:#203754eb;border-color:#567692;gap:5px}
+.viewport-frame .viewport-controls-row .viewport-visualization-trigger.active{background:#17536a;border-color:#70bdd0;color:#ecfdff}
+.viewport-frame .hud-widget .viewport-visualization-menu{position:absolute;z-index:70;top:calc(100% + 8px);left:0;width:min(292px,calc(100vw - 60px));max-width:292px;padding:6px;display:flex;flex-direction:column;gap:3px;background:#142638;color:#e0effa;border:1px solid #537b94;box-shadow:0 18px 44px #000c;border-radius:10px;pointer-events:auto}
+.viewport-frame .hud-widget .viewport-visualization-menu button{position:static!important;display:flex!important;text-align:left;align-items:center;justify-content:flex-start;gap:11px;min-height:57px;width:100%;border:1px solid transparent;background:transparent;box-shadow:none;border-radius:8px;padding:9px!important;white-space:normal}
+.viewport-frame .hud-widget .viewport-visualization-menu button:hover,.viewport-frame .hud-widget .viewport-visualization-menu button.selected{background:#24445b;border-color:#4c8c9f}
+.viewport-visualization-menu button>span:not(.viewport-visualization-selected){flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.viewport-visualization-menu button strong{font-size:12px;font-weight:700}
+.viewport-visualization-menu button small{font-size:10px;color:#b1cedd;line-height:1.3}
+.viewport-visualization-selected{color:#7bdfed;font-size:16px}
+/* Full mode fills only the MAP workspace viewport, leaving Resource/Properties panels docked. */
+.true-light-workbench.true-light-full .true-light-map{display:none}
+.true-light-workbench.true-light-full .true-light-panel{position:relative;inset:auto;width:100%;flex:1 1 auto;min-width:0;max-width:none;border-left:0;box-shadow:none}
+.true-light-panel{position:relative}
+.true-light-toolbar{min-height:42px;flex-wrap:nowrap!important}
+.true-light-toolbar>div.true-light-toolbar-actions{width:auto;flex:0 0 auto;justify-content:flex-end;flex-wrap:nowrap!important;gap:5px}
+.true-light-toolbar .true-light-toolbar-actions button{height:29px;width:29px;padding:5px;flex:0 0 29px}
+.true-light-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:0 0 auto;padding:8px 10px;background:#172b3b;color:#add3dc;font-size:10px;border-top:1px solid #36556b}
+.true-light-footer span:last-child{color:#88e0e7;white-space:nowrap}
+.true-light-footer .true-light-footer-stale{color:#ffd59a}
+.true-light-settings{position:absolute;z-index:20;top:50px;right:9px;max-height:calc(100% - 65px);width:min(305px,calc(100% - 18px));min-width:0;display:flex;flex-direction:column;overflow-y:auto;overscroll-behavior:contain;background:#102438;border:1px solid #5b819c;box-shadow:0 16px 45px #000b;border-radius:9px;color:#d8eff7;pointer-events:auto}
+.true-light-settings-heading{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #34566e;font-size:12px}
+.true-light-settings-heading button{background:transparent;color:#cfe6f0;border:0;cursor:pointer}
+.true-light-camera-presets{display:flex;gap:6px;padding:10px 12px 5px}
+.true-light-camera-presets button,.true-light-open-bsp{background:#233e55;color:#d6eff8;border:1px solid #487087;border-radius:6px;padding:7px 9px;cursor:pointer;font-size:11px}
+.true-light-camera-presets button{flex:1}
+.true-light-camera-presets button.enabled{background:#206077;border-color:#77d8e9}
+.true-light-open-bsp{display:flex;justify-content:center;align-items:center;gap:6px;margin:6px 12px 9px}
+.true-light-open-bsp:disabled{opacity:.45;cursor:default}
+.true-light-settings .true-light-options{max-height:none;overflow:visible;flex:0 0 auto;padding:12px;gap:12px}
+.true-light-settings .true-light-actions{flex-wrap:wrap}
+@media(max-width:700px){.viewport-frame .viewport-visualization-trigger span{display:none}.true-light-toolbar strong{font-size:11px}.true-light-version{display:none}}
+
+/* v1.5.12 — Material & Surface Studio: one compact resource tab, not another ribbon. */
+.material-studio{display:flex;flex-direction:column;gap:10px;padding:12px;min-height:0;overflow:auto;height:100%;color:var(--text,#dbe7f7);font-size:12px}
+.material-head,.material-subhead{display:flex;align-items:center;gap:8px;color:#c9e7fa}
+.material-head{font-size:13px}.material-note,.material-footer{font-size:11px;line-height:1.45;color:#9eb2c9;margin:0}
+.material-footer{border-top:1px solid #40516c;padding-top:10px}
+.material-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px}
+.material-tabs button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 1px 6px;border:1px solid #364969;background:#1c2943;color:#b6cce6;border-radius:7px;cursor:pointer;font-size:9px;min-width:0}
+.material-tabs button.active{background:#235276;border-color:#54b9ea;color:#eff9ff}
+.material-field{display:flex;flex-direction:column;gap:5px;font-size:11px;color:#b8c8e1}
+.material-field input,.material-field select,.material-inline input,.material-assets input{width:100%;min-width:0;box-sizing:border-box;background:#111f38;border:1px solid #415779;border-radius:6px;color:#e5f3ff;padding:7px 8px;font-size:12px}
+.material-field select{color-scheme:dark}
+.material-rgb{display:flex;gap:4px}.material-rgb input{min-width:0;flex:1;width:28%}
+.material-swatch{display:flex;gap:10px;align-items:center;padding:7px;background:#1c2e4b;border-radius:8px;border:1px solid #354a69}
+.material-swatch img{width:58px;height:58px;object-fit:contain;image-rendering:pixelated;border-radius:5px}
+.material-swatch div{display:flex;flex-direction:column;gap:3px;min-width:0;word-break:break-all}.material-swatch small{color:#91a6bc}
+.material-selected{display:flex;justify-content:space-between;color:#afc4da}
+.material-selected strong{color:#6bd8f0}.material-preset-list{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.material-preset-list button{background:#202f4a;border:1px solid #394b67;border-radius:7px;color:#cbdaf3;padding:9px 6px;text-align:left;cursor:pointer;min-width:0}
+.material-preset-list button.active{background:#1a4763;border-color:#5cc9ef}.material-preset-list strong{display:block;font-size:11px;margin-bottom:4px}.material-preset-list small{display:block;color:#9aacc3;font-size:10px}
+.material-check{display:flex;gap:7px;align-items:flex-start;font-size:11px;line-height:1.4}.material-check input{margin-top:2px}
+.material-primary,.material-studio>.soft-button,.material-inline button{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:6px;background:#1d5471;border:1px solid #427da0;color:#e7f6ff;cursor:pointer;font-size:11px}
+.material-primary{width:100%}.material-primary:disabled,.material-studio button:disabled{opacity:.48;cursor:not-allowed}
+.material-visual{display:flex;gap:6px;flex-direction:column;align-items:flex-start;font-size:10px;color:#a9c5d9}
+.material-preview-box{width:100%;height:27px;max-width:260px;border-radius:5px;box-shadow:inset 0 0 0 1px #56647b}
+.material-inline{display:flex;gap:5px;align-items:stretch}.material-inline input{flex:1}.material-inline button{flex:0 0 auto}
+.material-save-row{display:flex;justify-content:space-between;align-items:center;gap:5px;padding:5px 2px;border-bottom:1px solid #30415e;min-width:0}
+.material-save-row button{background:none;border:none;color:#b9ddf4;cursor:pointer;text-align:left;min-width:0;overflow-wrap:anywhere}.material-save-row span{overflow-wrap:anywhere}
+.material-assets{border:1px solid #40516d;border-radius:6px;padding:6px;color:#bfd0e3}
+.material-assets summary{cursor:pointer}.material-asset-list{max-height:140px;overflow:auto;display:flex;flex-direction:column;margin-top:5px}
+.material-asset-list button{background:transparent;color:#acc5e2;text-align:left;border:0;padding:4px;cursor:pointer}.material-asset-list button:hover{background:#2a4566}
+.material-note code{display:block;word-break:break-word;color:#d2e6fc;margin-top:5px}
+.material-animation{border:1px solid #384b65;border-radius:6px;padding:8px;display:flex;flex-direction:column;gap:6px}.material-animation small{color:#9bacc3}
+.material-warning,.material-alert,.material-good{display:flex;align-items:flex-start;gap:7px;border-radius:6px;padding:8px;font-size:11px;line-height:1.4;margin:0}
+.material-warning,.material-alert{color:#ffca80;background:#523a293d;border:1px solid #6e5138}.material-good{color:#8af1cb;background:#17463755;border:1px solid #2e6754}
+.material-sound-entries{max-height:170px;overflow:auto}
+
+/* Smart Architecture 2.0: contained in the Shape palette, no permanent toolbar. */
+.shape-palette-panel:has(.smart-architecture){width:min(420px,calc(100vw - 62px))}
+.shape-palette-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.smart-architecture{padding:2px 1px 10px;margin:6px 0 0;border:0}
+.smart-architecture details{border:1px solid #395571;border-radius:8px;background:#102035;margin:9px 0;padding:7px 8px}
+.smart-architecture summary{font-weight:700;font-size:11px;color:#bce3f9;cursor:pointer;line-height:1.4;padding:4px 2px;list-style:inside}
+.smart-architecture details[open]>summary{border-bottom:1px solid #395571;padding-bottom:9px;margin-bottom:8px}
+.smart-architecture .architecture-kinds{grid-template-columns:repeat(2,minmax(0,1fr))}
+.smart-architecture .architecture-kinds button{padding:5px;min-height:32px;white-space:normal;font-size:11px}
+.smart-architecture .architecture-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.smart-architecture .smart-arch-field,.smart-arch-selector{display:flex;flex-direction:column;gap:5px;min-width:0;color:#a7c8dc;font-size:11px}
+.smart-arch-field input,.smart-arch-selector select{width:100%;min-width:0;box-sizing:border-box;border-radius:5px;border:1px solid #496580;background:#12273b;color:#edf8ff;padding:7px}
+.smart-arch-selector{margin:9px 0}
+.smart-arch-actions{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.smart-arch-actions button,.smart-arch-copy button,.smart-architecture details>.soft-button{flex:1;min-width:100px;padding:8px 6px;color:#e5f5ff;border:1px solid #486d8a;border-radius:6px;background:#294663;cursor:pointer;font-size:11px}
+.smart-arch-actions button.soft-button,.smart-architecture details>.soft-button{background:#245d76;border-color:#6ab4d0}
+.smart-arch-copy{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0;border-top:1px solid #395571;padding-top:10px}
+.smart-arch-copy button{grid-column:1/-1}
+.smart-arch-status{color:#a2eacb;font-size:11px;padding:8px;background:#153e35;border-radius:6px}
+.smart-architecture .shape-inline-check{display:flex;gap:7px;align-items:center;font-size:11px;margin:8px 0}
+@media(max-width:500px){.smart-architecture .architecture-options{grid-template-columns:1fr}.shape-palette-panel:has(.smart-architecture){width:min(355px,calc(100vw - 42px))}}
+
+.smart-architecture .smart-arch-detach{width:100%;padding:8px;color:#c4d9ec;border:1px dashed #64809a;border-radius:6px;background:#1b3045;font-size:11px;cursor:pointer}
+
+/* Architecture Mode 1.5.17: draw-first workflow, legacy builders collapsed. */
+.shape-palette-panel:has(.architecture-mode-panel){width:min(420px,calc(100vw - 50px))}
+.architecture-mode-panel{display:flex;flex-direction:column;gap:8px;padding:4px 0;color:#d5e8f5;font-size:11px}
+.architecture-mode-panel p{font-size:11px;line-height:1.45;margin:2px 0 6px;color:#aec5d7}
+.arch-mode-title{display:flex;gap:7px;align-items:center;color:#9de7fe;font-weight:800;font-size:13px}
+.arch-mode-title span{margin-left:auto;font-weight:500;font-size:10px;color:#87adc4}
+.arch-mode-actions{display:flex;gap:6px;flex-wrap:wrap}
+.arch-mode-actions button{display:flex;align-items:center;justify-content:center;gap:5px;flex:1;min-width:90px;border:1px solid #436784;background:#203d58;color:#e4f7ff;border-radius:7px;padding:8px 6px;cursor:pointer;font-size:11px}
+.arch-mode-actions button:hover,.arch-mode-actions button.active{background:#146887;border-color:#75dbfd}
+.arch-mode-actions button:disabled{opacity:.48;cursor:not-allowed}
+.arch-mode-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.arch-mode-field{display:flex;flex-direction:column;gap:4px;min-width:0;color:#aac9d8}
+.arch-mode-field input,.arch-mode-section select,.arch-mode-vertex-list input{background:#0d2035;color:#eaf7ff;border:1px solid #466781;border-radius:6px;padding:6px;min-width:0;width:100%;box-sizing:border-box;font-size:12px}
+.arch-mode-ceiling{display:flex;align-items:center;gap:7px;color:#b7d8e9}
+.arch-mode-note{background:#12334c;border:1px solid #376486;border-radius:7px;padding:8px;color:#add2e7!important}
+.arch-mode-section,.arch-mode-legacy{border:1px solid #3b5974;border-radius:8px;background:#11283f;padding:9px;margin-top:4px}
+.arch-mode-section summary,.arch-mode-legacy summary{color:#b0e8ff;cursor:pointer;font-weight:650}
+.arch-mode-section>p{margin-top:8px}
+.arch-mode-section>select{margin:9px 0}
+.arch-mode-vertex-list{padding:7px 0;display:flex;flex-direction:column;gap:4px;max-height:190px;overflow-y:auto}
+.arch-mode-vertex-list>div{display:grid;grid-template-columns:24px 1fr 1fr;gap:6px;align-items:center}
+.arch-mode-secondary button{background:#253a51;border-color:#48627f}
+.arch-mode-notice{color:#95f1c6!important;padding:7px;background:#123f37;border-radius:6px}
+.architecture-draw-controls{position:absolute;left:50%;top:100px;transform:translateX(-50%);z-index:37;width:min(455px,calc(100% - 48px));background:#10273dee;border:1px solid #58a6ce;box-shadow:0 7px 30px #081621b8;border-radius:12px;padding:11px 13px;box-sizing:border-box;pointer-events:auto;color:#e1f2ff;backdrop-filter:blur(7px)}
+.architecture-draw-controls>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.architecture-draw-controls>div:first-child button{background:#25445e;border:1px solid #4d7a92;color:#d3ebfb;padding:3px 8px;border-radius:5px;cursor:pointer}
+.architecture-draw-controls p{margin:6px 0 8px;font-size:11px;color:#accbdc;line-height:1.4}
+.architecture-draw-measures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:7px 0}
+.architecture-draw-controls .architecture-error{color:#ffc9b5;margin-top:6px}
+@media(max-width:700px){.architecture-draw-controls{top:75px}.arch-mode-settings{grid-template-columns:1fr 1fr}}
+
+/* BuildTogether 2.0: smooth remote cursors without mutating map coordinates. */
+.bt-cursor{transition:left 85ms linear,top 85ms linear;will-change:left,top}
+@media (prefers-reduced-motion:reduce){.bt-cursor{transition:none}}
+.bt-network{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:10px 0;color:#b7dce9;font-size:12px}
+.bt-network span{display:inline-flex;gap:5px;align-items:center;border:1px solid rgba(132,193,226,.25);border-radius:6px;background:rgba(43,95,127,.16);padding:6px 8px}
+.bt-warning{border:1px solid rgba(237,182,92,.35);color:#f3d6a4;background:rgba(159,103,38,.13)}
+
+/* v1.5.19 — optional Porthole help, scoped to the BuildTogether dialog only. */
+.bt-porthole-guide{border:1px solid rgba(122,175,208,.36);background:rgba(18,43,62,.6);border-radius:8px;color:#dcecf7}
+.bt-porthole-guide>summary{display:flex;align-items:center;gap:9px;padding:11px 13px;font-size:12px;font-weight:650;cursor:pointer;list-style-position:inside}
+.bt-porthole-chevron{margin-left:auto;transition:transform .16s ease}
+.bt-porthole-guide[open] .bt-porthole-chevron{transform:rotate(180deg)}
+.bt-porthole-guide>summary:hover{background:rgba(59,115,145,.18)}
+.bt-porthole-guide>summary:focus-visible{outline:2px solid #76cae4;outline-offset:-2px}
+.bt-porthole-content{padding:0 14px 14px;display:flex;flex-direction:column;gap:12px;font-size:12px;line-height:1.5}
+.bt-porthole-content p,.bt-porthole-content h4{margin:0}
+.bt-porthole-steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.bt-porthole-steps section{min-width:0;background:rgba(10,30,46,.7);border:1px solid rgba(122,175,208,.17);border-radius:6px;padding:10px 11px}
+.bt-porthole-steps h4{font-size:12px;color:#a6e7ff;margin-bottom:8px}
+.bt-porthole-steps ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.bt-porthole-addresses{padding:10px 11px;border-radius:6px;background:rgba(55,125,148,.17)}
+.bt-porthole-addresses>div:first-child{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.bt-porthole-quick{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.bt-porthole-quick button{display:inline-flex;gap:6px;align-items:center;padding:7px 10px;background:#254761;color:#e4f7ff;border:1px solid #4c829d;border-radius:5px;cursor:pointer}
+.bt-porthole-quick button:hover{background:#2d5a78}
+.bt-porthole-warning{padding:10px 11px;border-radius:6px;border:1px solid rgba(216,170,85,.3);background:rgba(151,110,38,.13)}
+.bt-porthole-warning strong{display:block;margin-bottom:5px}
+.bt-porthole-mode-note{color:#b5c9d7}
+.bt-porthole-link{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;color:#96daf7;text-decoration:underline;text-underline-offset:2px}
+@media(max-width:700px){.bt-porthole-steps{grid-template-columns:1fr}}
+
+
+/* v1.5.20 Adaptive UI: react to *available workspace CSS pixels*. Do not apply
+   a second global zoom or touch Home/BSP's isolated 100% shell scale. */
+.studio-body.adaptive-compact .dock-pane-titlebar{padding-inline:5px;gap:3px}
+.studio-body.adaptive-compact .dock-pane-actions{gap:2px;flex-shrink:0}
+.studio-body.adaptive-compact .dock-pane-actions .pane-side-select{max-width:65px}
+.studio-body.adaptive-compact .dock-pane-body .asset-tabs{min-width:0;max-width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;gap:2px;padding-inline:4px}
+.studio-body.adaptive-compact .dock-pane-body .asset-tabs>button{flex:0 0 30px;min-width:30px}
+.studio-body.adaptive-compact .dock-pane-body .asset-tabs>button svg{width:15px;height:15px}
+.studio-body.adaptive-compact .dock-pane-body :is(.search-field,.filter-wrap,.import-area){max-width:100%;min-width:0}
+.studio-body.adaptive-compact .dock-pane-body :is(.search-field input,.filter-wrap select){min-width:0;max-width:100%}
+.studio-body.adaptive-tight .dock-pane-titlebar .drag-grip strong{font-size:9px}
+.studio-body.adaptive-tight .dock-pane-actions .pane-side-select{max-width:52px}
+.studio-body.adaptive-tight .dock-pane-body :is(.operation-grid,.appearance-colors,.primitive-grid){grid-template-columns:minmax(0,1fr)}
+.studio-body.adaptive-tight .dock-pane-body :is(.property-row,.explorer-quickbar){flex-wrap:wrap}
+.studio-body.adaptive-tight .dock-pane-body .texture-grid{grid-template-columns:minmax(0,1fr)}
+.studio-body.adaptive-short .dock-pane-titlebar{height:29px;flex-basis:29px}
+.studio-body.adaptive-short .dock-pane-body .panel-header{min-height:25px}
+.studio-body.adaptive-short .studio-viewport-host .viewport-label{top:8px;left:8px}
+.studio-body.adaptive-short .studio-viewport-host .viewport-hotkeys{bottom:6px;left:7px}
+/* The legacy ribbon remains scrollable instead of forcing a 115px-high row at
+   864 effective CSS pixels. Tool buttons preserve click targets. */
+.studio-body.adaptive-short.toolbar-top .ribbon-shell,
+.studio-body.adaptive-short.toolbar-bottom .ribbon-shell{height:88px}
+.studio-body.adaptive-short.toolbar-top .ribbon-group,
+.studio-body.adaptive-short.toolbar-bottom .ribbon-group{height:51px}
+.studio-body.adaptive-short.toolbar-top .tool-button,
+.studio-body.adaptive-short.toolbar-bottom .tool-button{height:38px;min-width:40px}
+.studio-body.adaptive-short .ribbon-caption{font-size:8px}
+/* Keep all app-wide actions keyboard-accessible at 125–200% Windows scaling.
+   Only the titlebar actions scroll; menus remain mounted outside their clip. */
+@media(max-width:1490px){
+  .app-shell.adaptive-ui-enabled .titlebar{gap:5px;padding-inline:7px}
+  .app-shell.adaptive-ui-enabled .brand{font-size:12px;gap:2px}
+  .app-shell.adaptive-ui-enabled .top-nav{padding-inline:5px}
+  .app-shell.adaptive-ui-enabled .titlebar-right{gap:4px;scrollbar-width:thin}
+  .app-shell.adaptive-ui-enabled .studio-menu-button{padding:5px 6px;gap:3px}
+  .app-shell.adaptive-ui-enabled .project-title{flex-basis:135px;max-width:135px;padding-inline:4px}
+  .app-shell.adaptive-ui-enabled .language-picker{min-width:0}
+}
+@media(max-width:1240px){
+  .app-shell.adaptive-ui-enabled .project-title{flex-basis:100px;max-width:100px}
+  .app-shell.adaptive-ui-enabled .fullscreen-nav span{display:none}
+  .app-shell.adaptive-ui-enabled .bt-top-button{font-size:0;gap:0}
+  .app-shell.adaptive-ui-enabled .bt-top-button svg{width:17px;height:17px}
+  .app-shell.adaptive-ui-enabled .top-divider{display:none}
+  .app-shell.adaptive-ui-enabled .titlebar-right{flex:1 1 auto;overflow-x:auto;overflow-y:hidden;min-width:0}
+  .app-shell.adaptive-ui-enabled .titlebar-right>*,.app-shell.adaptive-ui-enabled .titlebar-right .bsp-tab-switch{flex-shrink:0}
+}
+@media(max-width:980px){
+  .app-shell.adaptive-ui-enabled .project-title{display:none}
+  .app-shell.adaptive-ui-enabled .brand{font-size:11px}
+  .app-shell.adaptive-ui-enabled .brand-logo{width:25px;height:25px}
+  .app-shell.adaptive-ui-enabled .titlebar-right .bsp-tab-switch button{padding-inline:5px;font-size:10px}
+}
+.adaptive-layout-setting{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border:1px solid #4a6080;border-radius:8px;background:#202f48;color:#d8e8fa;font-size:11px}
+.adaptive-layout-setting input{flex:0 0 auto;margin-top:2px;accent-color:#4dbbda}
+.adaptive-layout-setting span{flex:1;min-width:0}
+
+/* Adaptive HUD popups are constrained to the viewport host, not the window. */
+.studio-body.adaptive-compact .viewport-frame .hud-widget .viewport-grid-controls-wrap .viewport-controls-row{max-width:min(760px,calc(100% - 8px));gap:3px}
+.studio-body.adaptive-tight .viewport-frame .hud-widget .viewport-grid-controls-wrap .viewport-controls-row{max-width:min(620px,calc(100% - 8px))}
+.studio-body.adaptive-tight .viewport-frame .hud-widget .viewport-grid-select select{min-width:42px}
+.studio-body.adaptive-tight .viewport-frame .hud-widget .quick-rail-shell.quick-rail-hud .quick-tool span{display:none}
+.studio-body.adaptive-short .viewport-frame .hud-widget .quick-rail-shell.quick-rail-hud .quick-rail{max-height:55dvh;overflow-y:auto}
+.studio-body.adaptive-compact .viewport-frame .hud-widget .quick-rail-shell.quick-rail-hud .quick-flyout{max-width:min(250px,calc(100vw - 100px))}
+
+/* v1.5.21 — Adaptive UI Fix. Header uses three real flex/grid regions and
+   measured CSS width; no absolute project title, no clipped action scroller. */
+.app-shell .titlebar{display:grid;grid-template-columns:max-content minmax(75px,1fr) max-content;gap:8px;min-width:0;overflow:visible;padding-inline:10px}
+.app-shell .titlebar-leading{display:flex;align-items:center;gap:6px;min-width:0;white-space:nowrap}
+.app-shell .titlebar-leading>.menu-parent{flex:0 0 auto}
+.app-shell .titlebar-leading>.brand{min-width:0}
+.app-shell .titlebar .project-title{position:static!important;transform:none!important;left:auto!important;display:flex!important;flex:1 1 auto!important;width:100%;max-width:none!important;min-width:0!important;padding-inline:6px;margin-left:0;overflow:hidden}
+.app-shell .titlebar .project-title input{min-width:0;max-width:none;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+.app-shell .titlebar .project-title .project-status{flex-shrink:0}
+.app-shell .titlebar .titlebar-right{margin-left:0;flex:0 1 auto;min-width:0;overflow:visible;max-width:100%;justify-content:flex-end;gap:6px}
+.app-shell .titlebar .titlebar-right>*{flex:0 0 auto}
+.app-shell .titlebar-more-parent{position:relative;display:none;flex:0 0 auto}
+.app-shell .titlebar-more{align-items:center;gap:5px;padding:7px 8px;white-space:nowrap}
+body>.titlebar-extra-menu{max-height:min(75dvh,600px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+body>.titlebar-extra-menu .titlebar-extra-fullscreen{display:flex;width:100%}
+body>.titlebar-extra-menu .titlebar-extra-fullscreen .top-nav{height:34px;display:flex!important;gap:10px;width:100%;padding:8px 10px;justify-content:flex-start;font-size:11px;color:#dce8fc}
+body>.titlebar-extra-menu .titlebar-extra-fullscreen .top-nav span{display:inline!important}
+body>.titlebar-extra-menu .titlebar-extra-language{display:flex;flex-direction:column;gap:5px;padding:9px 8px;font-size:11px}
+body>.titlebar-extra-menu .titlebar-extra-language select{min-height:31px;max-width:100%;min-width:0;border-radius:6px;border:1px solid #6077a3;background:#1c2a49;padding:5px}
+.app-shell .titlebar[data-header-mode=compact] .titlebar-leading>.top-nav,
+.app-shell .titlebar[data-header-mode=tight] .titlebar-leading>.top-nav,
+.app-shell .titlebar[data-header-mode=minimal] .titlebar-leading>.top-nav{display:none}
+.app-shell .titlebar:not([data-header-mode=wide]) .titlebar-more-parent{display:flex}
+.app-shell .titlebar[data-header-mode=compact] .titlebar-leading>.top-divider,
+.app-shell .titlebar[data-header-mode=tight] .titlebar-leading>.top-divider,
+.app-shell .titlebar[data-header-mode=minimal] .titlebar-leading>.top-divider{display:none}
+.app-shell .titlebar[data-header-mode=compact] .brand>.version-label,
+.app-shell .titlebar[data-header-mode=tight] .brand>.version-label,
+.app-shell .titlebar[data-header-mode=minimal] .brand>.version-label{display:none}
+.app-shell .titlebar[data-header-mode=compact] .titlebar-leading>.bt-top-button{font-size:0;gap:0;padding-inline:7px}
+.app-shell .titlebar[data-header-mode=tight] .titlebar-leading>.bt-top-button,
+.app-shell .titlebar[data-header-mode=minimal] .titlebar-leading>.bt-top-button{display:none}
+.app-shell .titlebar[data-header-mode=tight] .titlebar-right>.language-picker,
+.app-shell .titlebar[data-header-mode=tight] .titlebar-right>.workspace-menu-parent,
+.app-shell .titlebar[data-header-mode=tight] .titlebar-right>.top-build-settings,
+.app-shell .titlebar[data-header-mode=minimal] .titlebar-right>:not(.top-compile):not(.top-stop){display:none}
+.app-shell .titlebar[data-header-mode=minimal] .brand-logo{width:27px;height:27px}
+.app-shell .titlebar[data-header-mode=minimal] .brand-tag{display:none}
+.app-shell .titlebar[data-header-mode=minimal] .titlebar-more span{display:none}
+.app-shell .titlebar[data-header-mode=minimal] .titlebar-right>.top-compile,
+.app-shell .titlebar[data-header-mode=minimal] .titlebar-right>.top-stop{min-width:38px;padding:0 7px;justify-content:center;font-size:0}
+.app-shell .titlebar[data-header-mode=minimal] .titlebar-right>.top-compile svg,
+.app-shell .titlebar[data-header-mode=minimal] .titlebar-right>.top-stop svg{width:17px;height:17px}
+/* Always keep an accessible compile action at the rightmost edge. */
+.app-shell .titlebar .titlebar-right>.top-compile,.app-shell .titlebar .titlebar-right>.top-stop{flex-shrink:0}
+
+/* Reserve a dedicated bottom gutter for the horizontal ribbon scrollbar.
+   Compact labels are represented by their existing button tooltips. */
+.app-shell .studio-body.toolbar-top .ribbon-shell,.app-shell .studio-body.toolbar-bottom .ribbon-shell{height:122px;flex:0 0 122px;min-height:0}
+.app-shell .studio-body.toolbar-top .ribbon,.app-shell .studio-body.toolbar-bottom .ribbon{height:auto;flex:1 1 auto;min-height:0;padding:4px 10px 13px;overflow-x:auto;overflow-y:hidden;scrollbar-gutter:stable;align-items:flex-start;scrollbar-width:thin}
+.app-shell .studio-body.toolbar-top .ribbon-group,.app-shell .studio-body.toolbar-bottom .ribbon-group{min-width:0;flex:0 0 auto;min-height:65px;height:65px;padding:0 8px;justify-content:space-between;overflow:visible}
+.app-shell .studio-body.toolbar-top .ribbon-caption,.app-shell .studio-body.toolbar-bottom .ribbon-caption{display:flex;align-items:center;justify-content:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-height:14px;line-height:12px;margin:0;letter-spacing:.35px}
+.app-shell .studio-body.toolbar-top .ribbon-tools,.app-shell .studio-body.toolbar-bottom .ribbon-tools{display:flex;align-items:center;min-height:43px;flex-shrink:0;gap:2px}
+.app-shell .studio-body.toolbar-top .snap-step-control,.app-shell .studio-body.toolbar-bottom .snap-step-control{flex:0 0 auto;min-width:0}
+.app-shell .studio-body.toolbar-top .snap-select,.app-shell .studio-body.toolbar-bottom .snap-select{margin-top:0}
+.app-shell .studio-body.adaptive-compact.toolbar-top .ribbon-shell,.app-shell .studio-body.adaptive-compact.toolbar-bottom .ribbon-shell{height:102px;flex-basis:102px}
+.app-shell .studio-body.adaptive-compact.toolbar-top .ribbon-group,.app-shell .studio-body.adaptive-compact.toolbar-bottom .ribbon-group{height:49px;min-height:49px;padding-inline:6px}
+.app-shell .studio-body.adaptive-compact.toolbar-top .ribbon-tools,.app-shell .studio-body.adaptive-compact.toolbar-bottom .ribbon-tools{min-height:34px;gap:2px}
+.app-shell .studio-body.adaptive-compact.toolbar-top .tool-button,.app-shell .studio-body.adaptive-compact.toolbar-bottom .tool-button{width:34px;height:34px;min-width:34px;gap:0;padding:5px}
+.app-shell .studio-body.adaptive-compact.toolbar-top .tool-button small,.app-shell .studio-body.adaptive-compact.toolbar-bottom .tool-button small{display:none}
+.app-shell .studio-body.adaptive-compact.toolbar-top .tool-button svg,.app-shell .studio-body.adaptive-compact.toolbar-bottom .tool-button svg{height:19px;width:19px}
+.app-shell .studio-body.adaptive-compact.toolbar-top .ribbon-caption,.app-shell .studio-body.adaptive-compact.toolbar-bottom .ribbon-caption{font-size:8px;max-width:190px;min-height:14px;line-height:12px}
+.app-shell .studio-body.adaptive-compact.toolbar-top .snap-step-control>small,.app-shell .studio-body.adaptive-compact.toolbar-bottom .snap-step-control>small{display:none}
+.app-shell .studio-body.adaptive-compact.toolbar-top .snap-step-control .snap-select,.app-shell .studio-body.adaptive-compact.toolbar-bottom .snap-step-control .snap-select{height:32px;padding:4px;margin:0}
+.app-shell .studio-body.adaptive-short.toolbar-top .ribbon-shell,.app-shell .studio-body.adaptive-short.toolbar-bottom .ribbon-shell{height:98px;flex-basis:98px}
+/* HUD guide states are *only* visible while editing, even if an old persisted
+   selected ID existed. Shape selection follows its collapsed trigger width. */
+.viewport-frame .hud-widget:not(.hud-editing).hud-selected{border:0!important;box-shadow:none!important}
+.viewport-frame .hud-shapes.hud-editing .shape-palette{width:max-content!important;max-width:100%!important;min-width:0!important}
+.viewport-frame .hud-shapes.hud-editing .shape-palette-panel{display:none}
+.viewport-frame .hud-shapes.hud-editing .hud-widget-content{width:max-content;max-width:100%}
+.viewport-frame .hud-widget.hud-view{max-width:calc(100% - 8px)}
+.viewport-frame .hud-widget.hud-view .viewport-grid-controls-wrap{max-width:100%}
+.viewport-frame .hud-widget .viewport-visualization-menu,.viewport-frame .hud-widget .viewport-precision-panel{box-sizing:border-box;max-width:min(292px,calc(var(--hud-container-width,100vw) - 20px));max-height:min(58dvh,440px);overflow-y:auto}
+.viewport-frame .hud-widget.hud-near-right .viewport-visualization-menu,.viewport-frame .hud-widget.hud-near-right .viewport-precision-panel{left:auto;right:0}
+.viewport-frame .hud-editor-controls{max-width:calc(100% - 16px)}
+.viewport-frame .hud-editor-panel{box-sizing:border-box;max-width:min(280px,calc(var(--hud-container-width,100vw) - 20px))}
+@media(max-width:650px){.app-shell .titlebar{gap:3px;padding-inline:4px}.app-shell .titlebar-leading{gap:3px}.app-shell .titlebar .project-title{padding-inline:2px}}
+/* At 200% DPI a 1920×1080 display exposes only 960×540 CSS px. The old
+   global 550px minimum created an artificial vertical overflow. */
+html,body,#root{min-height:0}
+.app-shell{min-height:0}
+/* Collapsed Shapes only occupies its visible trigger; opening the palette
+   grows its measured box, which the HUD ResizeObserver then re-clamps. */
+.viewport-frame .hud-shapes .shape-palette:not(.shape-palette-expanded){width:max-content!important;min-width:0;max-width:100%}
+.viewport-frame .hud-widget.hud-view .viewport-controls-row{max-width:calc(var(--hud-container-width,100vw) - 18px)}
+.viewport-frame .hud-editor-controls{width:min(280px,calc(100% - 16px));align-items:stretch}
+.viewport-frame .hud-editor-controls .hud-editor-toggle{align-self:flex-end}
+.viewport-frame .hud-editor-controls .hud-editor-panel{width:100%;max-width:100%}
+
+/* v1.5.22 — BuildTogether: session and embedded help share a single dialog. */
+.buildtogether-dialog{width:min(820px,calc(100vw - 28px));padding:0;max-height:min(92dvh,880px)}
+.buildtogether-dialog>.modal-title{padding:0 22px;flex:0 0 65px}
+.bt-tabs{display:flex;align-items:center;gap:8px;padding:10px 22px;border-bottom:1px solid rgba(142,171,213,.2);background:rgba(11,26,50,.5)}
+.bt-tabs>button{display:flex;align-items:center;gap:8px;padding:9px 15px;border:1px solid transparent;color:#acbed8;background:transparent;border-radius:8px;cursor:pointer;font-size:12px;font-weight:650;white-space:nowrap}
+.bt-tabs>button:hover{background:rgba(57,111,163,.22)}
+.bt-tabs>button.active{border-color:#5479b6;background:rgba(60,103,179,.28);color:#e3f4ff}
+.bt-tab-health{display:inline-flex;align-items:center;gap:7px;margin-left:auto;color:#aab7c8;font-size:11px;white-space:nowrap}
+.bt-health-dot{width:8px;height:8px;border-radius:50%;background:#7f8d9e}
+.bt-tab-health.connected .bt-health-dot{background:#50e6b5;box-shadow:0 0 9px #50e6b566}
+.bt-session-content,.bt-guide{display:flex;flex-direction:column;gap:13px;min-width:0}
+.bt-guide-intro{display:flex;align-items:center;gap:14px;background:linear-gradient(110deg,#244266,#172c50);padding:17px;border-radius:10px;border:1px solid #42658b}
+.bt-guide-intro>svg{flex-shrink:0;color:#a7e6ff}
+.bt-guide h3,.bt-guide h4,.bt-guide p{margin:0}
+.bt-guide-intro h3{font-size:17px;color:#edf8ff;margin-bottom:4px}
+.bt-guide-intro p,.bt-guide-card p{font-size:12px;color:#b9cfe1;line-height:1.6}
+.bt-guide .bt-porthole-steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.bt-guide .bt-porthole-steps section,.bt-guide-card{background:rgba(19,37,59,.7);border:1px solid rgba(123,163,206,.28);border-radius:9px;padding:15px}
+.bt-guide h4{display:flex;align-items:center;gap:8px;font-size:13px;color:#afdef8;margin-bottom:12px}
+.bt-guide ol{margin:0;padding-left:20px;line-height:1.6;color:#cfdeeb;font-size:12px}
+.bt-guide li+li{margin-top:7px}
+.bt-guide-card{display:flex;flex-direction:column;gap:10px}
+.bt-example{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:8px 11px;border:1px solid #436380;border-radius:8px;background:#0b1e30}
+.bt-example code{color:#91e8c5}.bt-example button,.bt-guide-back{display:inline-flex;align-items:center;gap:6px;border:1px solid #507d9d;border-radius:7px;padding:7px 10px;background:#274d6a;color:#e4f6ff;cursor:pointer}
+.bt-guide-card small{font-size:11px;color:#adc3d4}
+.bt-guide .bt-porthole-warning{display:flex;gap:10px}.bt-guide .bt-porthole-warning svg{flex-shrink:0;color:#e5bc70}
+.bt-guide .bt-porthole-warning p{font-size:12px;color:#e9d4b6;line-height:1.5}
+.bt-guide-back{align-self:flex-end}
+.bt-section{border-radius:10px;background:linear-gradient(145deg,rgba(39,61,91,.5),rgba(17,34,59,.6))}
+.bt-section h4{color:#e0f2ff}.bt-section:focus-within{border-color:#628eb7}
+.bt-scroll{padding:17px 22px 20px}
+@media(max-width:700px){.bt-guide .bt-porthole-steps,.bt-columns{grid-template-columns:1fr}.bt-tabs{padding-inline:12px}.bt-tab-health{font-size:0}.bt-tab-health .bt-health-dot{display:block}.bt-scroll{padding:12px}}
+
+/* v1.5.22 — local read-only filesystem picker and installation discovery. */
+.build-settings-modal{width:min(700px,calc(100vw - 30px))}
+.build-discovery{padding:12px 0;display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+.build-discovery>small{font-size:11px;color:#9cb7c8;line-height:1.4}
+.build-discovery p{font-size:11px;color:#c2e9f5;margin:0}
+.build-path-row{display:flex;align-items:stretch;gap:8px;width:100%}
+.build-path-row input{flex:1;min-width:0}
+.build-path-row button{display:flex;align-items:center;gap:6px;padding:0 12px;border:1px solid #4d7296;background:#284966;color:#e9f6ff;border-radius:8px;cursor:pointer;white-space:nowrap}
+.build-discovered{display:grid;gap:5px;margin-top:-8px}
+.build-discovered button{width:100%;text-align:left;overflow-wrap:anywhere;background:#1b3449;color:#aad6e5;border:1px solid #355672;padding:7px 10px;border-radius:6px;font-size:11px;cursor:pointer}
+.folder-picker-backdrop{z-index:110}
+.folder-picker{width:min(640px,calc(100vw - 24px));padding:0 17px 18px;display:flex;flex-direction:column;gap:12px}
+.folder-drive-list{display:flex;gap:7px;flex-wrap:wrap;max-height:105px;overflow-y:auto}
+.folder-drive-list button,.folder-location button{display:flex;align-items:center;gap:7px;padding:8px 11px;background:#253f5b;color:#e4f3ff;border:1px solid #537493;border-radius:6px;cursor:pointer}
+.folder-drive-list button:hover,.folder-location button:hover{border-color:#81bfdc}
+.folder-location{display:flex;gap:6px;align-items:center}
+.folder-location input{flex:1;min-width:0;background:#0c1c2b;border:1px solid #476b86;color:#e5f4ff;padding:9px 10px;border-radius:6px}
+.folder-list{min-height:110px;max-height:min(35dvh,290px);overflow-y:auto;display:flex;flex-direction:column;gap:3px;border:1px solid #354e70;border-radius:8px;padding:6px;background:#0b1728}
+.folder-list button{display:flex;gap:8px;align-items:center;text-align:left;padding:9px 11px;background:transparent;color:#dcebf9;border:0;border-radius:6px;cursor:pointer;font-size:12px}
+.folder-list button:hover{background:#294561}
+.folder-list p{font-size:12px;color:#adc2d4;padding:10px}

@@ -61,5 +61,5 @@ test('HF7 UI integrations keep entity data as-is',()=>{
  assert.match(viewport,/spawnFloorOffset=\{isSpawn\?groundOffset/);
  assert.match(props,/updateSpawnYaw/);assert.match(props,/className="spawn-facing-editor"/);
  assert.match(modal,/ENTITY_MARKER_SHAPES/);
- assert.match(app,/src="\/kz-sheez-logo\.png"/);
+ assert.doesNotMatch(app,/src="\/kz-sheez-logo\.png"/);
 });

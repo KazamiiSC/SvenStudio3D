@@ -1,7 +1,8 @@
-import {useEffect,useState,type ReactNode,type PointerEvent as ReactPointerEvent,type DragEvent} from 'react';
+import {useEffect,useRef,useState,type ReactNode,type PointerEvent as ReactPointerEvent,type DragEvent} from 'react';
 import {GripVertical,ArrowLeft,ArrowRight,ArrowDownToLine,PanelLeft,PanelRight,PanelTop,PanelBottom,RotateCcw,SlidersHorizontal,Layers,Blocks,FolderTree,Terminal,LayoutTemplate,Eye,EyeOff,Move} from 'lucide-react';
 import {useStudioLayout,TOOLBAR_GROUPS,normalizeToolbarGroups,type DockPanelId,type DockSide,type ToolbarGroup} from '../layout';
 import {useT} from '../i18n';
+import {measureAdaptiveDocks} from '../engine/adaptiveWorkspace';
 import {AssetPanel,Explorer,Properties} from './Panels';
 
 type Dragged={type:'panel',id:DockPanelId}|{type:'toolbar'};
@@ -119,31 +120,37 @@ export function DockWorkspace({toolbar,viewport,consolePanel}:{toolbar:ReactNode
   const t=useT();
   const layout=useStudioLayout();
   const [dragging,setDragging]=useState<Dragged|null>(null);
-  // Recompute visible docks when the window is resized; never let saved dock
-  // dimensions consume the entire viewport at a different resolution/scale.
-  const [windowSize,setWindowSize]=useState(()=>({width:window.innerWidth,height:window.innerHeight}));
+  // Measure the actual dock region, not window.innerWidth. Windows display
+  // scaling, Chrome zoom, classic ribbon and saved zoom all affect its size.
+  const dockRef=useRef<HTMLDivElement|null>(null);
+  const [dockSize,setDockSize]=useState({width:0,height:0});
   useEffect(()=>{
-    const onResize=()=>setWindowSize({width:window.innerWidth,height:window.innerHeight});
-    window.addEventListener('resize',onResize);
-    return()=>window.removeEventListener('resize',onResize);
+    const element=dockRef.current;if(!element)return;
+    const measure=()=>{
+      const {width,height}=element.getBoundingClientRect();
+      // getBoundingClientRect includes CSS zoom; clientWidth/clientHeight are
+      // the logical dimensions used by dock CSS and resize handles.
+      const w=element.clientWidth||width,h=element.clientHeight||height;
+      setDockSize(old=>Math.abs(old.width-w)<1&&Math.abs(old.height-h)<1?old:{width:w,height:h});
+    };
+    measure();
+    const observer=typeof ResizeObserver!=='undefined'?new ResizeObserver(measure):null;
+    observer?.observe(element);
+    window.addEventListener('resize',measure);
+    return()=>{observer?.disconnect();window.removeEventListener('resize',measure)};
   },[]);
   const has=(side:DockSide)=>layout.order.some(id=>id!=='console'&&layout.visible[id]&&layout.sides[id]===side);
-  const logicalWidth=windowSize.width/layout.uiScale;
-  const logicalHeight=windowSize.height/layout.uiScale;
-  const toolbarWidth=layout.compactTools!==false?0:(layout.toolbarDock==='left'||layout.toolbarDock==='right'?124:0);
-  const toolbarHeight=layout.compactTools!==false?0:(layout.toolbarDock==='top'||layout.toolbarDock==='bottom'?115:0);
-  const widthBudget=Math.max(0,logicalWidth-toolbarWidth-220-32);
-  const requestedLeft=has('left')?layout.widths.left:0;
-  const requestedRight=has('right')?layout.widths.right:0;
-  const dockWidthFactor=Math.min(1,widthBudget/Math.max(1,requestedLeft+requestedRight));
-  const responsiveLeft=requestedLeft*dockWidthFactor;
-  const responsiveRight=requestedRight*dockWidthFactor;
-  const heightBudget=Math.max(0,logicalHeight-toolbarHeight-56-30-140-30);
-  const requestedTop=has('top')?layout.heights.top:0;
-  const requestedBottom=has('bottom')?layout.heights.bottom:0;
-  const dockHeightFactor=Math.min(1,heightBudget/Math.max(1,requestedTop+requestedBottom));
-  const responsiveTop=requestedTop*dockHeightFactor;
-  const responsiveBottom=requestedBottom*dockHeightFactor;
+  const sizes=measureAdaptiveDocks({
+    width:dockSize.width||window.innerWidth/layout.uiScale,
+    height:dockSize.height||window.innerHeight/layout.uiScale,
+    left:has('left')?layout.widths.left:0,
+    right:has('right')?layout.widths.right:0,
+    top:has('top')?layout.heights.top:0,
+    bottom:has('bottom')?layout.heights.bottom:0,
+    enabled:layout.autoLayout
+  });
+  const responsiveLeft=sizes.left,responsiveRight=sizes.right;
+  const responsiveTop=sizes.top,responsiveBottom=sizes.bottom;
   const beginPanel=(e:DragEvent,id:DockPanelId)=>{e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('application/x-sven-dock',`panel:${id}`);setDragging({type:'panel',id})};
   const beginToolbar=(e:DragEvent)=>{e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('application/x-sven-dock','toolbar');setDragging({type:'toolbar'})};
   const complete=(e:DragEvent,side:DockSide,before?:DockPanelId)=>{
@@ -185,9 +192,9 @@ export function DockWorkspace({toolbar,viewport,consolePanel}:{toolbar:ReactNode
     </div>
     {toolbar}
   </div>;
-  return <div className={`studio-body toolbar-${layout.toolbarDock}`}>
+  return <div className={`studio-body toolbar-${layout.toolbarDock} ${sizes.compact?'adaptive-compact':''} ${sizes.tight?'adaptive-tight':''} ${sizes.short?'adaptive-short':''}`}>
     {(layout.compactTools===false)&&(layout.toolbarDock==='top'||layout.toolbarDock==='left')&&bar}
-    <div className="dock-workspace">
+    <div className="dock-workspace" ref={dockRef}>
       {top&&<>{zone('top')}<div className="zone-size-handle resize-top" role="separator" aria-label="Resize top dock" onPointerDown={e=>resize(e,'top')}/></>}
       <div className="dock-main-row">
         {left&&<>{zone('left')}<div className="zone-size-handle resize-left" role="separator" aria-label="Resize left dock" onPointerDown={e=>resize(e,'left')}/></>}
@@ -230,6 +237,9 @@ export function LayoutModal({onClose}:{onClose:()=>void}){
     </div>)}</div>
     <div className="layout-subtitle">{t('Panels')}</div>
     <div className="layout-panel-list">{(['assets','explorer','properties'] as const).map(id=>{const Icon=panelIcons[id];return <div key={id}><Icon size={16}/><strong>{t(panelNames[id])}</strong><AttachSelect value={layout.sides[id]} label={panelNames[id]} onChange={side=>layout.movePanel(id,side)}/><button className="visibility-toggle" onClick={()=>layout.setVisible(id,!layout.visible[id])}>{layout.visible[id]?<Eye size={16}/>:<EyeOff size={16}/>}</button></div>})}</div>
+    <div className="layout-subtitle">{t('Adaptive layout / Windows display scaling')}</div>
+    <label className="adaptive-layout-setting"><input type="checkbox" checked={layout.autoLayout} onChange={e=>layout.setAutoLayout(e.target.checked)}/><span>{t('Automatically adjust docks and toolbars to available space')}</span></label>
+    <p className="modal-subtext">{t('Recommended for Windows 125% / 150% display scaling. Keeps manual panel sizes and restores them when there is more space. Does not alter MAP geometry or browser zoom.')}</p>
     <div className="layout-subtitle">{t('Interface size')} <output>{Math.round(layout.uiScale*100)}%</output></div>
     <input className="layout-scale-slider" aria-label={t('Interface size')} type="range" min="0.8" max="1.2" step="0.05" value={layout.uiScale} onChange={e=>layout.setScale(Number(e.target.value))}/>
     <div className="layout-subtitle">{t('Font size')} <output>{Math.round(layout.fontScale*100)}%</output></div>

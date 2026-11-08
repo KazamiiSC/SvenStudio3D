@@ -17,14 +17,36 @@ import {readBuildLeakPointfile} from './leakPointfile.js';
 import {inspectMapPackage,createMapPackage} from './mapPackager.js';
 import {decompileBspToMap} from './surfDecompile.js';
 import {lightTestSettings,lightTestRadArgs} from './lightingTest.js';
+import {attachBuildTogether} from './buildTogether.js';
+import {mountedRoots,discoverInstallations,browseLocalFolder,verifyLocalInstall} from './installationDiscovery.js';
+import {createLightingPreviewRecord,isPreviewCompile,lightingPreviewAvailable} from './lightingPreviewBuild.js';
 
 const app=express();app.use(express.json({limit:'20mb'}));
-const PORT=49177;let active=null;
+const PORT=49177;let active=null;let lastLightingPreview=null;
 const stages=['CSG','BSP','VIS','RAD'];
 const validMapName=s=>typeof s==='string'&&/^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/.test(s);
 const isDir=async p=>{try{return (await fs.stat(p)).isDirectory()}catch{return false}};
 const send=(res,type,message,extra={})=>res.write(`${JSON.stringify({type,message,...extra})}\n`);
 app.get('/api/health',(_req,res)=>res.json({ok:true,platform:process.platform,stages}));
+// Localhost-only setup assistance. Read-only: never writes to the selected drive.
+app.get('/api/setup/roots',async(_req,res)=>{
+ try{return res.json({roots:await mountedRoots(),platform:process.platform});}
+ catch(e){return res.status(500).json({error:String(e.message||e)});}
+});
+app.post('/api/setup/folders',async(req,res)=>{
+ try{return res.json(await browseLocalFolder(req.body?.path));}
+ catch(e){return res.status(400).json({error:String(e.message||e)});}
+});
+app.post('/api/setup/detect',async(_req,res)=>{
+ try{return res.json(await discoverInstallations());}
+ catch(e){return res.status(500).json({error:String(e.message||e)});}
+});
+app.post('/api/setup/verify',async(req,res)=>{
+ const kind=req.body?.kind;
+ if(kind!=='game'&&kind!=='compiler')return res.status(400).json({error:'Invalid folder type.'});
+ return res.json({valid:await verifyLocalInstall(req.body?.path,kind)});
+});
+
 // Read-only access to the BSP produced in the configured Sven Co-op maps folder.
 // No arbitrary filename or user-supplied file path may be requested through this endpoint.
 app.post('/api/bsp/compiled',async(req,res)=>{
@@ -40,6 +62,18 @@ app.post('/api/bsp/compiled',async(req,res)=>{
   }catch{return res.status(404).json({error:'Compiled BSP not found. Compile first or open a local .bsp file.'})}
 });
 
+// Ephemeral SC-RAD preview: accepts only a random identifier issued by this
+// process. It cannot read an arbitrary file path or installed map.
+app.post('/api/lighting-preview/bsp',async(req,res)=>{
+  const id=req.body?.previewId;
+  if(!lightingPreviewAvailable(lastLightingPreview,id))return res.status(404).json({error:'Lighting preview has expired. Rebuild the preview.'});
+  try{
+    const record=lastLightingPreview;
+    const stat=await fs.stat(record.file);
+    if(!stat.isFile()||stat.size!==record.size)return res.status(404).json({error:'Preview BSP changed or is unavailable.'});
+    return res.setHeader('Cache-Control','no-store').type('application/octet-stream').send(await fs.readFile(record.file));
+  }catch{return res.status(404).json({error:'Preview BSP is no longer available.'})}
+});
 // Read-only packaging of a compiled BSP and Sven Co-op addon dependencies.
 app.post('/api/packager/scan',async(req,res)=>{
   try{return res.json(await inspectMapPackage(req.body||{}));}
@@ -155,7 +189,8 @@ app.post('/api/bsp/decompile-map',express.raw({type:'application/octet-stream',l
 });
 app.post('/api/compile',async(req,res)=>{
   if(active)return res.status(409).json({error:'Another compile is already running.'});
-  const {mapName:requestedMapName,mapData,compilerDir,gameDir,wadPaths,fullVis=true,extraRad=true,radAmbientTest='off'}=req.body||{};
+  const {mapName:requestedMapName,mapData,compilerDir,gameDir,wadPaths,fullVis=true,extraRad=true,radAmbientTest='off',previewOnly=false}=req.body||{};
+  if(previewOnly!==false&&!isPreviewCompile(previewOnly))return res.status(400).json({error:'Invalid previewOnly flag.'});
   let plan;
   try{plan=lightTestSettings(requestedMapName,radAmbientTest);}catch(error){return res.status(400).json({error:String(error.message||error)});}
   const {name:mapName,ambient:lightAmbient}=plan;
@@ -185,14 +220,14 @@ app.post('/api/compile',async(req,res)=>{
       throw new Error(`Missing WAD files: ${wadPlan.missingWads.join(', ')}. Set full local WAD paths in Settings (WAD paths) or install the WAD files in svencoop_addon/ or svencoop/. The compiler must be able to read the WAD files. The project and its textures were not modified.`);
     }
     // Only install the bundled WAD when it actually provides map textures.
-    if(wadPlan.wadList.some(x=>path.win32.basename(x.replaceAll('\\','/')).toLowerCase()==='svstudio.wad') && existsSync(builtInWad)){
+    if(!previewOnly&&wadPlan.wadList.some(x=>path.win32.basename(x.replaceAll('\\','/')).toLowerCase()==='svstudio.wad') && existsSync(builtInWad)){
       const runtimeWad=path.join(gameDir,'svstudio.wad');
       if(!existsSync(runtimeWad))await fs.copyFile(builtInWad,runtimeWad);
     }
   // Only install the two original bundled demo WAVs when a map references
   // them. Never overwrite user content. Real Sven Co-op sounds stay in place.
   for(const sample of ['studio_hum.wav','studio_chime.wav']){
-    if(!source.includes(`"message" "svstudio/${sample}"`))continue;
+    if(previewOnly||!source.includes(`"message" "svstudio/${sample}"`))continue;
     const bundled=path.resolve('public','starter-sounds','svstudio',sample);
     if(!existsSync(bundled))continue;
     const demoDir=path.join(gameDir,'sound','svstudio');
@@ -271,6 +306,13 @@ app.post('/api/compile',async(req,res)=>{
       if(e.message.includes('SKY exists in MAP'))throw e;
       send(res,'warning',`BSP SKY audit unavailable: ${e.message}`);
     }
+    if(previewOnly){
+      const compiled=path.join(workDir,`${mapName}.bsp`);
+      const stat=await fs.stat(compiled);
+      lastLightingPreview=createLightingPreviewRecord(compiled,stat.size);
+      send(res,'complete',`SC-RAD preview ready: ${mapName}.bsp (not installed in the game).`,{previewId:lastLightingPreview.id});
+      return;
+    }
     const mapsDir=path.join(gameDir,'maps');await fs.mkdir(mapsDir,{recursive:true});
     const output=path.join(mapsDir,`${mapName}.bsp`);
     await fs.copyFile(`${mapBase}.bsp`,output);
@@ -282,3 +324,6 @@ app.post('/api/compile',async(req,res)=>{
   finally{active=null;res.end()}
 });
 app.listen(PORT,'127.0.0.1',()=>console.log(`Sven Studio compiler service running on http://127.0.0.1:${PORT}`));
+
+// Dedicated authenticated collaboration port: no filesystem/compilation API exposed.
+attachBuildTogether(app);

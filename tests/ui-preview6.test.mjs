@@ -52,7 +52,7 @@ test('Workspace secondary actions are grouped and all settings remain reachable'
   assert.match(app,/svenstudio:toggle-gameplay-settings/);
   assert.match(app,/setDialog\('packager'\)/);
   assert.match(app,/saveProject\(project\)/);
-  assert.match(app,/onClick=\{compile\}/);
+  assert.match(app,/onClick=\{\(\)=>void compile\('game'\)\}/);
   assert.match(app,/toolbarGroupProps\('geometry'\)/);
   assert.match(app,/\<BspViewer map=\{bspMap\}/);
 });

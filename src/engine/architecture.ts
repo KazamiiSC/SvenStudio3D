@@ -4,14 +4,35 @@ import {subtractConvex} from './advancedModeling';
 import {validateBrush} from './exportMap';
 import type {Brush,MapObject,Vec3} from './types';
 
-export type ArchitectureKind='door'|'window'|'frame'|'arch'|'stairs'|'ramp'|'column'|'room';
-export type ArchitectureOptions={width:number;height:number;depth:number;frame:number;steps:number;cutOnly:boolean;doorLeaf:boolean};
-export const defaultArchitecture:ArchitectureOptions={width:96,height:128,depth:24,frame:8,steps:8,cutOnly:false,doorLeaf:false};
+export type ArchitectureKind='door'|'window'|'frame'|'arch'|'stairs'|'ramp'|'column'|'room'|'corridor'|'platform'|'bridge'|'landingStairs';
+export type ArchitectureOptions={width:number;height:number;depth:number;frame:number;steps:number;cutOnly:boolean;doorLeaf:boolean;openTop?:boolean};
+export const defaultArchitecture:ArchitectureOptions={width:96,height:128,depth:24,frame:8,steps:8,cutOnly:false,doorLeaf:false,openTop:false};
 export type ArchitectureResult={objects:MapObject[];removeId?:string};
 export type OpeningPlacement={center:Vec3};
 const EPS=.01;
 const positive=(v:number,label:string,min=1,max=8192)=>{if(!Number.isFinite(v)||v<min||v>max)throw Error(`${label} must be between ${min} and ${max} units.`);return v};
 function bounds(b:Brush){const points=transformedVertices(b);return {min:[0,1,2].map(i=>Math.min(...points.map(v=>v[i]))) as Vec3,max:[0,1,2].map(i=>Math.max(...points.map(v=>v[i]))) as Vec3};}
+/**
+ * CSG clipping works in absolute world coordinates (position = 0). Without
+ * rebasing, fragments of a window/door retain their geometry in vertices but
+ * report their transform origin at [0,0,0]: the move gizmo jumps to the spawn.
+ *
+ * Preserve EVERY world-space vertex and Valve 220 face UV, while placing the
+ * brush transform at the actual bounding-box center. Only CSG fragments use
+ * this helper; authored brush positions and decorative frame parts stay intact.
+ */
+export function centerArchitectureFragment(fragment:Brush):Brush{
+  if(!fragment.vertices.length)return fragment;
+  const points=transformedVertices(fragment);
+  const center=[0,1,2].map(axis=>{
+    const values=points.map(p=>p[axis]);
+    return (Math.min(...values)+Math.max(...values))/2;
+  }) as Vec3;
+  // Round to 5 decimals, the same precision used for CSG's world vertices.
+  const fixed=(value:number)=>Math.round(value*1e5)/1e5;
+  return {...fragment,position:center.map(fixed) as Vec3,rotation:[0,0,0],scale:[1,1,1],
+    vertices:points.map(p=>p.map((v,axis)=>fixed(v-center[axis])) as Vec3)};
+}
 function addBox(result:Brush[],name:string,center:Vec3,size:Vec3,texture:string,group:string,layer='Architecture'){
   if(size.some(n=>n<EPS))throw Error('Architecture piece has no thickness.');
   const b=createBrush('box',center,size,name);b.layer=layer;b.group=group;b.faces.forEach(f=>f.texture=texture);result.push(b);
@@ -50,7 +71,7 @@ function opening(wall:Brush,kind:'door'|'window',o:ArchitectureOptions,texture:s
   const cutter=createBrush('box',cutterCenter,cutterSize,'Architecture Cutter');
   const pieces=subtractConvex(wall,cutter);
   if(!pieces.length)throw Error('Opening removed entire wall.');
-  const result:Brush[]=pieces.map((b,i)=>({...b,name:`${wall.name} / ${kind} wall ${i+1}`,group:wall.group??group}));
+  const result:Brush[]=pieces.map((b,i)=>({...centerArchitectureFragment(b),name:`${wall.name} / ${kind} wall ${i+1}`,group:wall.group??group}));
   const addFrame=(name:string,p:Vec3,s:Vec3)=>addBox(result,name,p,s,texture,group);
   if(!o.cutOnly){
     const depth=Math.max(size[thin]+2,positive(o.depth,'Frame depth'));
@@ -75,7 +96,7 @@ function opening(wall:Brush,kind:'door'|'window',o:ArchitectureOptions,texture:s
   }
   return {objects:result,removeId:wall.id};
 }
-export function createArchitecture(kind:ArchitectureKind,o:ArchitectureOptions,selected:Brush|null,texture='SV_BRICK01',placement?:OpeningPlacement):ArchitectureResult{
+export function createArchitecture(kind:ArchitectureKind,o:ArchitectureOptions,selected:Brush|null,texture='SV_BRICK01',placement?:OpeningPlacement,origin?:Vec3):ArchitectureResult{
   const w=positive(o.width,'Width'),h=positive(o.height,'Height'),d=positive(o.depth,'Depth');
   const frame=positive(o.frame,'Frame thickness',1,128),steps=Math.round(positive(o.steps,'Steps',1,64));
   const group=`Architecture ${kind}`;
@@ -83,7 +104,7 @@ export function createArchitecture(kind:ArchitectureKind,o:ArchitectureOptions,s
     if(!selected)throw Error('Select a Box wall before creating a door or window.');
     return opening(selected,kind,o,texture,group,placement);
   }
-  const at:Vec3=selected?[...selected.position]:[0,0,0];
+  const at:Vec3=origin?[...origin]:selected?[...selected.position]:[0,0,0];
   const result:Brush[]=[];
   const box=(name:string,pos:Vec3,size:Vec3)=>addBox(result,name,pos,size,texture,group);
   // All freestanding generators use the ground plane at selected brush center (Z up).
@@ -112,11 +133,35 @@ export function createArchitecture(kind:ArchitectureKind,o:ArchitectureOptions,s
   }else if(kind==='room'){
     if(w<=frame*2||d<=frame*2||h<=frame*2)throw Error('Room is too small for the specified wall thickness.');
     box('Room floor',[x,y,z+frame/2],[w,d,frame]);
-    box('Room ceiling',[x,y,z+h-frame/2],[w,d,frame]);
+    if(!o.openTop)box('Room ceiling',[x,y,z+h-frame/2],[w,d,frame]);
     box('Room west',[x-w/2+frame/2,y,z+h/2],[frame,d-2*frame,h-2*frame]);
     box('Room east',[x+w/2-frame/2,y,z+h/2],[frame,d-2*frame,h-2*frame]);
     box('Room north',[x,y+d/2-frame/2,z+h/2],[w,frame,h-2*frame]);
     box('Room south',[x,y-d/2+frame/2,z+h/2],[w,frame,h-2*frame]);
+  }else if(kind==='corridor'){
+    if(w<=frame*2||h<=frame*2)throw Error('Corridor is too small for the wall/floor thickness.');
+    box('Corridor floor',[x,y,z+frame/2],[w,d,frame]);
+    if(!o.openTop)box('Corridor ceiling',[x,y,z+h-frame/2],[w,d,frame]);
+    box('Corridor left wall',[x-w/2+frame/2,y,z+h/2],[frame,d,h-2*frame]);
+    box('Corridor right wall',[x+w/2-frame/2,y,z+h/2],[frame,d,h-2*frame]);
+  }else if(kind==='platform'){
+    if(w<=frame*4||d<=frame*4)throw Error('Platform needs room for four supports.');
+    box('Platform deck',[x,y,z+h+frame/2],[w,d,frame]);
+    for(const dx of [-1,1])for(const dy of [-1,1]){
+      box('Platform support',[x+dx*(w/2-frame),y+dy*(d/2-frame),z+h/2],[frame*2,frame*2,h]);
+    }
+  }else if(kind==='bridge'){
+    if(w<=frame*4)throw Error('Bridge must be wider than four rail thicknesses.');
+    box('Bridge walkway',[x,y,z+frame/2],[w,d,frame]);
+    for(const side of [-1,1])
+      box('Bridge railing',[x+side*(w/2-frame/2),y,z+frame+h/2],[frame,d,h]);
+  }else if(kind==='landingStairs'){
+    if(steps<2)throw Error('Landing stairs require at least two steps.');
+    if(d<steps*2)throw Error('Landing stairs need more depth for the chosen steps.');
+    const landingLength=d*.25,run=d-landingLength,rise=h/steps,length=run/steps;
+    for(let i=0;i<steps;i++)
+      box(`Landing stair ${i+1}/${steps}`,[x-d/2+(i+.5)*length,y,z+(i+1)*rise/2],[length,w,(i+1)*rise]);
+    box('Stair landing',[x+d/2-landingLength/2,y,z+h-frame/2],[landingLength,w,frame]);
   }
   for(const b of result){const errors=validateBrush(b);if(errors.length)throw Error(`${b.name}: ${errors[0]}`)}
   return {objects:result};
@@ -127,7 +172,7 @@ export function createArchitecture(kind:ArchitectureKind,o:ArchitectureOptions,s
  * fragments.  Frame/door-leaf pieces remain separate edit-friendly brushes. */
 export function createMultipleWallOpenings(
   wall:Brush,
-  placements:{kind:'door'|'window';center:Vec3;options:ArchitectureOptions}[],
+  placements:{kind:'door'|'window';center:Vec3;options:ArchitectureOptions;texture?:string}[],
   texture:string
 ):{objects:Brush[];memberIds:string[][]}{
   const {min,max}=bounds(wall);
@@ -140,7 +185,7 @@ export function createMultipleWallOpenings(
   for(const placement of placements){
     // This also performs all standard dimension, margin, rotation and
     // eligibility validation against the ORIGINAL wall.
-    const once=opening(wall,placement.kind,placement.options,texture,'Architecture '+placement.kind,{center:placement.center});
+    const once=opening(wall,placement.kind,placement.options,placement.texture||texture,'Architecture '+placement.kind,{center:placement.center});
     const frame=placement.options.cutOnly?0:placement.options.frame;
     const center=[...placement.center] as Vec3;
     center[thin]=(min[thin]+max[thin])/2;
@@ -161,9 +206,41 @@ export function createMultipleWallOpenings(
     const prefix=`${wall.name} / ${placement.kind} wall `;
     decorationGroups.push(once.objects.filter((b):b is Brush=>b.kind==='brush'&&!b.name.startsWith(prefix)));
   }
-  const walls=remaining.map((b,i)=>({...b,name:`${wall.name} / wall section ${i+1}`,group:wall.group}));
+  const walls=remaining.map((b,i)=>({...centerArchitectureFragment(b),name:`${wall.name} / wall section ${i+1}`,group:wall.group}));
   const members=decorationGroups.map(parts=>[...walls.map(b=>b.id),...parts.map(p=>p.id)]);
   const all=[...walls,...decorationGroups.flat()];
   for(const b of all){const issues=validateBrush(b);if(issues.length)throw Error(`${b.name}: ${issues[0]}`)}
   return {objects:all,memberIds:members};
+}
+
+/** Translate a human-readable wall offset into a GoldSrc world-space opening
+ * center. Horizontal offset is measured along the wall from its midpoint;
+ * sill is measured above the original wall's lowest Z plane. Door bottom is
+ * fixed to the ground to prevent invisible gaps. */
+export function architectureOpeningCenter(wall:Brush,kind:'door'|'window',options:ArchitectureOptions,offset:number,sill:number):Vec3{
+  if(!Number.isFinite(offset)||!Number.isFinite(sill))throw Error('Opening position must contain finite values.');
+  const {min,max}=bounds(wall);
+  const extent=max.map((v,i)=>v-min[i]) as Vec3;
+  const thin=extent[0]<extent[1]?0:1,across=thin===0?1:0;
+  const center:Vec3=[(min[0]+max[0])/2,(min[1]+max[1])/2,
+    kind==='door'?min[2]+options.height/2:min[2]+sill+options.height/2];
+  center[across]+=offset;
+  return center;
+}
+/** A signature protects parametric assemblies against accidentally discarding
+ * geometry, UV or entity edits applied manually after generation. */
+export function architecturePartSignature(brush:Brush):string{
+  const value=JSON.stringify([brush.primitive,brush.position,brush.rotation,brush.scale,
+    brush.vertices,brush.faces,brush.entityId,brush.locked,brush.hidden,brush.group,brush.layer]);
+  let hash=2166136261;
+  for(let i=0;i<value.length;i++){hash^=value.charCodeAt(i);hash=Math.imul(hash,16777619)}
+  return `${value.length}:${(hash>>>0).toString(16)}`;
+}
+
+export function architectureOpeningMetrics(wall:Brush,kind:'door'|'window',options:ArchitectureOptions,center:Vec3):{offset:number;sill:number}{
+  const {min,max}=bounds(wall);
+  const extent=max.map((v,i)=>v-min[i]) as Vec3;
+  const across=extent[0]<extent[1]?1:0;
+  return {offset:center[across]-(min[across]+max[across])/2,
+    sill:kind==='door'?0:center[2]-options.height/2-min[2]};
 }

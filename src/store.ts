@@ -7,6 +7,7 @@ import { DEFAULT_CONTROLS,readControls,saveControls } from './engine/controls';
 import type { ControlSettings,ShortcutAction } from './engine/controls';
 import { createBrush, createPlaceableShape, createSizedPlaceableShape, defaultShapeSize, boxFromGroundDrag,boxFromPlaneDrag, resizeBrush,rotateBrushTextureLock } from './engine/geometry';
 import { uid } from './engine/types';
+import {applySurfacePreset,addEmissiveSurface,setSurfaceSound,linkSurfaceMaterialFile,type SurfacePresetId,type SurfaceRenderOptions,type SurfaceSoundCode} from './engine/materialSurface';
 import {makeBrushEntity,makeRelay,connectGameplay,disconnectGameplay} from './engine/gameplay';
 import {createCinematicScene,readCinematicScene,appendCinematicWaypoint,removeLastCinematicWaypoint,updateCinematicCamera,type CinematicOptions,type CameraSettings} from './engine/cinematic';
 import {createWaypoint,makeNpcSpawner,DEFAULT_SPAWNER,type SpawnerOptions} from './engine/npc';
@@ -18,7 +19,9 @@ import {customNpcToFgd,validateCustomNpc,type CustomNpcDefinition} from './engin
 import {editBrushVertices,splitBrush,hollowBox,pushPullFace} from './engine/modeling';
 import {intersectConvex,subtractConvex,unionConvex,bevelEdge,taperInsetFace,extrudeFaceBrush} from './engine/advancedModeling';
 import {createSkyEnclosure,type SkyEnclosureOptions} from './engine/skyEnclosure';
-import {createMultipleWallOpenings,createArchitecture,type ArchitectureKind,type ArchitectureOptions,type OpeningPlacement} from './engine/architecture';
+import {createArchitecture,createMultipleWallOpenings,architecturePartSignature,architectureOpeningCenter,architectureOpeningMetrics,type ArchitectureKind,type ArchitectureOptions,type OpeningPlacement} from './engine/architecture';
+import {rebuildWallOpeningPlan,buildArchitectureAssembly,replaceArchitectureAssembly,removeArchitectureAssembly,detachArchitectureAssembly} from './engine/architecturePlans';
+import {buildArchitectureLayout,replaceArchitectureLayout,removeArchitectureLayout,detachArchitectureLayout,type ArchitecturePoint,type ArchitectureLayoutOptions} from './engine/architectureMode';
 import {mergeIntoConvexBrush} from './engine/smartMerge';
 import {createPrefab,placePrefab,validatePrefab,readPrefabLibrary,writePrefabLibrary,type Prefab} from './engine/prefabs';
 import {rotateObjectsForPlacement} from './engine/smartPlacement';
@@ -32,7 +35,7 @@ import {preferredTextureAssets} from './engine/textureWadSelection';
 import {DEFAULT_ENTITY_APPEARANCE,loadEntityAppearance,saveEntityAppearance,normalizeEntityAppearance,type EntityAppearanceSettings,type EntityColorKind} from './engine/entityAppearance';
 import {DEFAULT_MAP_LABEL_SETTINGS,loadMapLabelSettings,saveMapLabelSettings,normalizeMapLabelSettings,type MapLabelSettings} from './engine/mapEntityLabels';
 export type ToolMode='select'|'translate'|'rotate'|'scale';
-export type ResourceView='objects'|'entities'|'textures'|'decals'|'models'|'npcs'|'sounds'|'layers';
+export type ResourceView='objects'|'entities'|'textures'|'materials'|'decals'|'models'|'npcs'|'sounds'|'layers';
 export type RadAmbientTest='off'|'0.08'|'0.15'|'0.25';
 export type Settings={compilerDir:string;gameDir:string;wadPaths:string;mapName:string;radAmbientTest:RadAmbientTest};
 export const DEFAULT_SETTINGS:Settings={compilerDir:'',gameDir:'',wadPaths:'',mapName:'svstudio_test',radAmbientTest:'off'};
@@ -127,10 +130,22 @@ interface State{
   moveSelection:(delta:Vec3)=>void;transformSelection:(updates:Record<string,{position:Vec3;rotation?:Vec3;scale?:Vec3}>)=>void;setCameraLabel:(label:string)=>void;changeDimensions:(id:string,size:Vec3)=>void;
   setSnap:(v:number)=>void;setGridDisplayStep:(v:number)=>void;toggleSnap:()=>void;setFlag:(k:'wireframe'|'faceMode'|'showGrid'|'showLights'|'showEntityNames',v:boolean)=>void;
   setResourceView:(v:ResourceView)=>void;
+  applyNativeSurfacePreset:(brushIds:string[],preset:SurfacePresetId,options:SurfaceRenderOptions)=>void;
+  addEmissiveFromBrush:(brushId:string,texture:string,brightness:number)=>void;
+  assignSurfaceSound:(texture:string,code:SurfaceSoundCode|null)=>void;
+  linkMaterialSounds:(mapName:string)=>void;
   addBrush:(type:PlaceableShape)=>void;addEntity:(cls:FgdClass,position?:Vec3)=>void;
   buildArchitecture:(kind:ArchitectureKind,options:ArchitectureOptions)=>void;
+  addArchitectureLayout:(kind:'walls'|'room',points:ArchitecturePoint[],options:ArchitectureLayoutOptions)=>void;
+  editArchitectureLayout:(id:string,points:ArchitecturePoint[],options:ArchitectureLayoutOptions)=>void;
+  deleteArchitectureLayout:(id:string)=>void;detachArchitectureLayout:(id:string)=>void;
   architecturePlacement:{kind:'door'|'window';options:ArchitectureOptions}|null;architectureHoverTarget:string|null;architecturePreviousMode:ToolMode|null;setArchitectureHoverTarget:(id:string|null)=>void;startArchitecturePlacement:(kind:'door'|'window'|null,options?:ArchitectureOptions)=>void;placeArchitectureOnWall:(wallId:string,at:Vec3,override?:ArchitectureOptions)=>void;
-  smartMergeSelected:()=>void;mergeIntoOneSelected:()=>void;unmergeSmartSelected:()=>void;updateSelectedOpening:(options:ArchitectureOptions)=>void;createSelectedBrushEntity:(type:'func_wall'|'func_door')=>void;
+  smartMergeSelected:()=>void;mergeIntoOneSelected:()=>void;unmergeSmartSelected:()=>void;updateSelectedOpening:(options:ArchitectureOptions)=>void;
+  editArchitectureOpening:(id:string,options:ArchitectureOptions,offset:number,sill:number)=>void;
+  removeArchitectureOpening:(id:string)=>void;repeatArchitectureOpening:(id:string,count:number,step:number)=>void;detachArchitectureWall:(id:string)=>void;
+  editArchitectureAssembly:(id:string,options:ArchitectureOptions,origin:Vec3)=>void;
+  deleteArchitectureAssembly:(id:string)=>void;detachArchitectureAssembly:(id:string)=>void;
+  createSelectedBrushEntity:(type:'func_wall'|'func_door')=>void;
   generateSkyEnclosure:(options:SkyEnclosureOptions)=>void;
   applyTerrain:(draft:TerrainDraft)=>void;
   terrainPlacement:{kind:'terrain'|'rocks';draft:TerrainDraft;rocks?:Omit<RockOptions,'origin'|'texture'>}|null;
@@ -576,6 +591,22 @@ export const useEditor=create<State>((set,get)=>({
   setGridDisplayStep:value=>set(()=>{const gridDisplayStep=normalizeGridStep(value);saveVisibleGridStep(gridDisplayStep);return {gridDisplayStep}}),
   toggleSnap:()=>set(s=>({snapping:!s.snapping})),
   setFlag:(key,value)=>set(key==='faceMode'?{faceMode:value,geometryMode:value?'face':'object',editIndices:[]}:key==='wireframe'?{wireframe:value,solidShading:value?false:get().solidShading}:{[key]:value}),setResourceView:resourceView=>set({resourceView}),
+  applyNativeSurfacePreset:(brushIds,preset,options)=>set(s=>{
+    const project=applySurfacePreset(s.project,brushIds,preset,options,uid);
+    return {project,history:[...s.history.slice(-70),clone(s.project)],future:[]};
+  }),
+  addEmissiveFromBrush:(brushId,texture,brightness)=>set(s=>{
+    const project=addEmissiveSurface(s.project,brushId,texture,brightness,uid);
+    return {project,history:[...s.history.slice(-70),clone(s.project)],future:[]};
+  }),
+  assignSurfaceSound:(texture,code)=>set(s=>{
+    const project=setSurfaceSound(s.project,texture,code);
+    return {project,history:[...s.history.slice(-70),clone(s.project)],future:[]};
+  }),
+  linkMaterialSounds:mapName=>set(s=>{
+    const project=linkSurfaceMaterialFile(s.project,mapName);
+    return {project,history:[...s.history.slice(-70),clone(s.project)],future:[]};
+  }),
   startAudioPlacement:(classname,file='',options={})=>set({placementPrefabId:null,terrainPlacement:null,cinematicPlacementFor:null,environmentPlacement:null,audioPlacement:classname?{classname,file,options}:null,pendingNpcClass:null,routePlacementFor:null,placementShape:null,drawMode:false,mode:'select',geometryMode:'object',flyMode:false}),
   placePendingAudio:position=>set(s=>{
     if(!s.audioPlacement)return {};
@@ -651,39 +682,91 @@ export const useEditor=create<State>((set,get)=>({
     if(!s.architecturePlacement)throw Error('Choose Door or Window placement first.');
     const hit=s.project.objects.find(o=>o.id===wallId);
     if(!hit||hit.kind!=='brush')throw Error('Point to a wall brush.');
-    const oldRecords=s.project.architectureOpenings||[];
-    const related=oldRecords.filter(r=>r.memberIds.includes(wallId));
+    if((s.project.architectureLayouts||[]).some(a=>a.memberIds.includes(wallId)))
+      throw Error('Esta pared pertenece a Architecture Mode. Convertí primero el trazado a brushes normales.');
+    if((s.project.architectureAssemblies||[]).some(a=>a.memberIds.includes(wallId)))
+      throw Error('This wall is part of a parametric structure. Convert that structure to ordinary brushes in Smart Build before cutting an opening.');
+    const existing=s.project.architectureOpenings||[];
+    const related=existing.filter(r=>r.memberIds.includes(wallId));
     const original=related.length?related[0].wall:hit;
-    const sameWall=oldRecords.filter(r=>r.wall.id===original.id);
+    const sameWall=existing.filter(r=>r.wall.id===original.id);
     const options=override??s.architecturePlacement.options;
-    const opening={id:uid(),kind:s.architecturePlacement.kind,wall:clone(original),center:[...at] as Vec3,options:clone(options)};
-    const all=[...sameWall,opening];
-    const rebuilt=createMultipleWallOpenings(original,all,s.currentTexture||'SV_BRICK01');
-    const removed=new Set(sameWall.flatMap(r=>r.memberIds));
-    if(!sameWall.length)removed.add(hit.id);
-    const base=mutate(s,[...s.project.objects.filter(o=>!removed.has(o.id)),...rebuilt.objects]);
-    const newRecords=all.map((record,index)=>({...record,wall:clone(original),memberIds:rebuilt.memberIds[index]}));
-    const preserved=oldRecords.filter(r=>r.wall.id!==original.id);
-    const selectedIds=rebuilt.memberIds.at(-1)||[];
-    return {...base,project:{...base.project,architectureOpenings:[...preserved,...newRecords]},
-      selected:selectedIds[0]||null,selectedIds,architecturePlacement:null,
+    const texture=s.currentTexture||'SV_BRICK01';
+    const newest={id:uid(),kind:s.architecturePlacement.kind,wall:clone(original),center:[...at] as Vec3,options:clone(options),texture,memberIds:[]};
+    let project:Project;
+    let selectedIds:string[];
+    if(sameWall.length){
+      const rebuilt=rebuildWallOpeningPlan(s.project,original.id,[...sameWall,newest],texture);
+      project=rebuilt.project;selectedIds=rebuilt.members.at(-1)||[];
+    }else{
+      const generated=createMultipleWallOpenings(original,[newest],texture);
+      project={...s.project,objects:[...s.project.objects.filter(o=>o.id!==original.id),...generated.objects],
+        architectureOpenings:[...existing,{...newest,memberIds:generated.memberIds[0],
+          memberSignatures:generated.memberIds[0].map(id=>architecturePartSignature(generated.objects.find(b=>b.id===id)!))}]};
+      selectedIds=generated.memberIds[0];
+    }
+    const base=mutate(s,project.objects);
+    return {...base,project,selected:selectedIds[0]||null,selectedIds,architecturePlacement:null,
       architectureHoverTarget:null,architecturePreviousMode:null,
       mode:s.architecturePreviousMode==='rotate'||s.architecturePreviousMode==='scale'?s.architecturePreviousMode:'translate',selectedFace:null};
   }),
-  updateSelectedOpening:(options)=>set(s=>{
-    const existing=s.project.architectureOpenings||[];
-    const record=[...existing].reverse().find(r=>r.memberIds.includes(s.selected||''));
-    if(!record)throw Error('Select a part of an interactively placed door or window.');
-    const sameWall=existing.filter(r=>r.wall.id===record.wall.id);
-    const updated=sameWall.map(r=>r.id===record.id?{...r,options:clone(options)}:r);
-    const rebuilt=createMultipleWallOpenings(record.wall,updated,s.currentTexture||'SV_BRICK01');
-    const removed=new Set(sameWall.flatMap(r=>r.memberIds));
-    const base=mutate(s,[...s.project.objects.filter(o=>!removed.has(o.id)),...rebuilt.objects]);
-    const newRecords=updated.map((r,index)=>({...r,memberIds:rebuilt.memberIds[index]}));
-    const selectedIds=rebuilt.memberIds[updated.findIndex(r=>r.id===record.id)]||[];
-    return {...base,project:{...base.project,architectureOpenings:[...existing.filter(r=>r.wall.id!==record.wall.id),...newRecords]},
-      selected:selectedIds[0]||null,selectedIds,selectedFace:null};
+  editArchitectureOpening:(id,options,offset,sill)=>set(s=>{
+    const originals=s.project.architectureOpenings||[];
+    const record=originals.find(r=>r.id===id);
+    if(!record)throw Error('Opening not found.');
+    const center=architectureOpeningCenter(record.wall,record.kind,options,offset,sill);
+    const next=originals.filter(r=>r.wall.id===record.wall.id).map(r=>r.id===id?{...r,center,options:clone(options)}:r);
+    const built=rebuildWallOpeningPlan(s.project,record.wall.id,next,s.currentTexture||'SV_BRICK01');
+    const selectedIds=built.members[next.findIndex(r=>r.id===id)]||[];
+    return {...mutate(s,built.project.objects),project:built.project,selected:selectedIds[0]||null,selectedIds,selectedFace:null};
   }),
+  removeArchitectureOpening:id=>set(s=>{
+    const current=s.project.architectureOpenings||[];
+    const record=current.find(r=>r.id===id);
+    if(!record)throw Error('Opening not found.');
+    const desired=current.filter(r=>r.wall.id===record.wall.id&&r.id!==id);
+    const built=rebuildWallOpeningPlan(s.project,record.wall.id,desired,s.currentTexture||'SV_BRICK01');
+    const selectedIds=built.members[0]||[];
+    return {...mutate(s,built.project.objects),project:built.project,selected:selectedIds[0]||null,selectedIds,selectedFace:null};
+  }),
+  repeatArchitectureOpening:(id,count,step)=>set(s=>{
+    if(!Number.isInteger(count)||count<1||count>10||!Number.isFinite(step)||step===0)throw Error('Choose 1-10 copies and a nonzero offset.');
+    const current=s.project.architectureOpenings||[];
+    const record=current.find(r=>r.id===id);
+    if(!record)throw Error('Opening not found.');
+    const group=current.filter(r=>r.wall.id===record.wall.id);
+    const metrics=architectureOpeningMetrics(record.wall,record.kind,record.options,record.center);
+    const appended=Array.from({length:count},(_,index)=>({...record,id:uid(),center:architectureOpeningCenter(record.wall,record.kind,record.options,
+      metrics.offset+step*(index+1),metrics.sill)}));
+    const built=rebuildWallOpeningPlan(s.project,record.wall.id,[...group,...appended],s.currentTexture||'SV_BRICK01');
+    const selectedIds=built.members[group.length]||[];
+    return {...mutate(s,built.project.objects),project:built.project,selected:selectedIds[0]||null,selectedIds,selectedFace:null};
+  }),
+  detachArchitectureWall:id=>set(s=>{
+    const opening=(s.project.architectureOpenings||[]).find(r=>r.id===id);
+    if(!opening)throw Error('Opening not found.');
+    const base=mutate(s,s.project.objects);
+    return {...base,project:{...base.project,
+      architectureOpenings:(s.project.architectureOpenings||[]).filter(r=>r.wall.id!==opening.wall.id)}};
+  }),
+  updateSelectedOpening:(options)=>{
+    const s=get(),record=(s.project.architectureOpenings||[]).find(r=>r.memberIds.includes(s.selected||''));
+    if(!record)throw Error('Select a parametric opening first.');
+    const metrics=architectureOpeningMetrics(record.wall,record.kind,record.options,record.center);
+    get().editArchitectureOpening(record.id,options,metrics.offset,metrics.sill);
+  },
+  editArchitectureAssembly:(id,options,origin)=>set(s=>{
+    const built=replaceArchitectureAssembly(s.project,id,options,origin);
+    return {...mutate(s,built.project.objects),project:built.project,
+      selected:built.memberIds[0]||null,selectedIds:built.memberIds,selectedFace:null};
+  }),
+  deleteArchitectureAssembly:id=>set(s=>{
+    const project=removeArchitectureAssembly(s.project,id);
+    return {...mutate(s,project.objects),project,selected:null,selectedIds:[],selectedFace:null};
+  }),
+  detachArchitectureAssembly:id=>set(s=>({
+    ...mutate(s,s.project.objects),project:detachArchitectureAssembly(s.project,id)
+  })),
   createSelectedBrushEntity:(type)=>set(s=>{
     const ids=new Set(s.selectedIds);
     const brushes=s.project.objects.filter((o):o is Brush=>ids.has(o.id)&&o.kind==='brush');
@@ -710,14 +793,43 @@ export const useEditor=create<State>((set,get)=>({
     const merged=mergeIntoConvexBrush(members);
     return {...mutate(s,[...s.project.objects.filter(o=>!ids.has(o.id)),merged]),selected:merged.id,selectedIds:[merged.id],selectedFace:null,geometryMode:'object',faceMode:false};
   }),
+  addArchitectureLayout:(kind,points,options)=>set(s=>{
+    const generated=buildArchitectureLayout(kind,points,options,s.currentTexture||BOX);
+    const ids=generated.record.memberIds;
+    const base=mutate(s,[...s.project.objects,...generated.objects]);
+    return {...base,project:{...base.project,architectureLayouts:[...(s.project.architectureLayouts||[]),generated.record]},
+      selected:ids[0]||null,selectedIds:ids,selectedFace:null,geometryMode:'object',faceMode:false};
+  }),
+  editArchitectureLayout:(id,points,options)=>set(s=>{
+    const built=replaceArchitectureLayout(s.project,id,points,options);
+    const base=mutate(s,built.project.objects);
+    return {...base,project:built.project,selected:built.memberIds[0]||null,selectedIds:built.memberIds,
+      selectedFace:null,geometryMode:'object',faceMode:false};
+  }),
+  deleteArchitectureLayout:id=>set(s=>{
+    const next=removeArchitectureLayout(s.project,id);
+    return {...mutate(s,next.objects),project:next,selected:null,selectedIds:[],selectedFace:null};
+  }),
+  detachArchitectureLayout:id=>set(s=>{
+    const next=detachArchitectureLayout(s.project,id);
+    return {...mutate(s,next.objects),project:next};
+  }),
   buildArchitecture:(kind,options)=>set(s=>{
     const obj=s.project.objects.find(o=>o.id===s.selected);
     const wall=obj?.kind==='brush'?obj:null;
-    const outcome=createArchitecture(kind,options,wall,s.currentTexture||'SV_BRICK01');
-    const next=[...s.project.objects.filter(o=>o.id!==outcome.removeId),...outcome.objects];
-    const ids=outcome.objects.map(o=>o.id);
-    return {...mutate(s,next),selected:ids.at(-1)||null,selectedIds:ids,
-      selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
+    if(kind==='door'||kind==='window'){
+      const outcome=createArchitecture(kind,options,wall,s.currentTexture||'SV_BRICK01');
+      const next=[...s.project.objects.filter(o=>o.id!==outcome.removeId),...outcome.objects];
+      const ids=outcome.objects.map(o=>o.id);
+      return {...mutate(s,next),selected:ids.at(-1)||null,selectedIds:ids,
+        selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
+    }
+    const generated=buildArchitectureAssembly(kind,options,wall?[...wall.position]:[0,0,0],s.currentTexture||'SV_BRICK01');
+    const next=[...s.project.objects,...generated.objects];
+    const base=mutate(s,next);
+    const ids=generated.record.memberIds;
+    return {...base,project:{...base.project,architectureAssemblies:[...(s.project.architectureAssemblies||[]),generated.record]},
+      selected:ids.at(-1)||null,selectedIds:ids,selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
   }),
   generateSkyEnclosure:options=>set(s=>{
     const output=createSkyEnclosure(s.project.objects,options);

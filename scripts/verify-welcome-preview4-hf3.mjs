@@ -1,0 +1,12 @@
+import {readFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+const app=read('src/App.tsx'),welcome=read('src/components/WelcomeScreen.tsx'),css=read('src/style.css');
+assert.match(app,/onClick={openWelcome}/);
+assert.match(app,/inert={welcomeOpen}/);
+assert.match(welcome,/className="ss-home-start" onClick={onStart}/);
+assert.match(welcome,/WELCOME TO SVENSTUDIO 3D/);
+assert.match(welcome,/sven-welcome-solid/);
+assert.doesNotMatch(welcome,/<img|svenstudio-welcome-cyan-full/);
+assert.match(css,/background:#071827/);
+console.log('HF15 Preview 4 HF3: solid English welcome verified.');

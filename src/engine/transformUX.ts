@@ -2,8 +2,8 @@
  * Anchors are brush-local faces: they work for translated and rotated brushes.
  */
 import * as THREE from 'three';
-import type {Brush,Vec3} from './types';
-import {gameToThree,toRenderQuaternion} from './geometry';
+import type {Brush,MapObject,Vec3} from './types';
+import {gameToThree,toRenderQuaternion,transformedVertices} from './geometry';
 
 export type ScaleAnchor='center'|'xmin'|'xmax'|'ymin'|'ymax'|'zmin'|'zmax';
 export const SCALE_ANCHORS:ReadonlyArray<ScaleAnchor>=['center','xmin','xmax','ymin','ymax','zmin','zmax'];
@@ -11,9 +11,27 @@ import {GRID_STEPS,normalizeGridStep} from './gridPrecision';
 export {GRID_STEPS};
 export function validGridStep(v:number){return normalizeGridStep(v)}
 export function snapDelta(v:number,step:number){return Math.round(v/validGridStep(step))*validGridStep(step)}
+/** Use visible geometry, not the brush transform origin, as the viewport
+ * pivot. Legacy CSG/window fragments can have position=[0,0,0] with all their
+ * vertices stored in absolute map coordinates. This also repairs the gizmo for
+ * existing saved projects without rewriting their MAP/JSON data. */
+export function selectionPivot(object:MapObject):THREE.Vector3{
+  // Keep authored pivots for primitives such as arch segments, whose shared
+  // center may be intentionally outside their individual geometry. The CSG
+  // result is a poly brush, where the geometric center is the safe selection
+  // pivot and fixes older absolute-vertex fragments.
+  if(object.kind!=='brush'||object.primitive!=='poly'||!object.vertices.length)return gameToThree(object.position);
+  const points=transformedVertices(object);
+  const mid=[0,1,2].map(axis=>{
+    const coordinates=points.map(point=>point[axis]);
+    return (Math.min(...coordinates)+Math.max(...coordinates))/2;
+  }) as Vec3;
+  return gameToThree(mid);
+}
 export function anchorPosition(brush:Brush,anchor:ScaleAnchor):THREE.Vector3{
   const origin=gameToThree(brush.position);
-  if(anchor==='center'||!brush.vertices.length)return origin;
+  if(!brush.vertices.length)return origin;
+  if(anchor==='center')return selectionPivot(brush);
   const axis=anchor[0]==='x'?0:anchor[0]==='y'?1:2;
   const sign=anchor.endsWith('min')?-1:1;
   const mins=[0,1,2].map(i=>Math.min(...brush.vertices.map(v=>v[i])));

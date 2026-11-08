@@ -54,10 +54,10 @@ try{
   for(const term of ['This project was made with the help of ChatGPT.','Sven Co-op game data folder','Help recovery','Advanced camera options']){
     assert.ok(i18n.includes(term));
   }
-  assert.match(src('App.tsx'),/help-kz-logo/);
+  assert.doesNotMatch(src('App.tsx'),/help-kz-logo/);
   assert.match(src('App.tsx'),/GPT-6 Astra/);
   assert.match(src('App.tsx'),/cameraDamping/);
   assert.ok(fs.existsSync('public/kz-sheez-logo.png'));
-  console.log('PASS credits, branded image, help and multilingual camera controls are wired');
+  console.log('PASS text-only credits, help and multilingual camera controls are wired');
 }catch(error){console.error('FAIL v0.8.2:',error);process.exitCode=1}
 finally{fs.rmSync(temp,{recursive:true,force:true});}

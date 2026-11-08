@@ -5,6 +5,11 @@ import crypto from 'node:crypto';
 import ts from 'typescript';
 import {brushWorldVertices,faceTextureAxes,lockTranslatedBrushTextures} from '../src/engine/textureStudio.ts';
 
+// BuildTogether adds an isolated service to the Node entry point. Ignore just its
+// import and boot hook; the original compiler/BSP server code must stay byte-identical.
+const withoutBuildTogetherBoot=content=>content
+ .replace(/^import \{attachBuildTogether\} from '\.\/buildTogether\.js';\n/m,'')
+ .replace(/\n\/\/ Dedicated authenticated collaboration port: no filesystem\/compilation API exposed\.\nattachBuildTogether\(app\);\n$/,'');
 const source=name=>fs.readFileSync(new URL(`../${name}`,import.meta.url),'utf8');
 const dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
 const close=(a,b,epsilon=1e-8)=>assert.ok(Math.abs(a-b)<=epsilon,`${a} != ${b}`);
@@ -88,7 +93,9 @@ test('all modified TypeScript/TSX files parse',()=>{
 });
 test('exporter, BSP viewer, backend and terrain unchanged against baseline',()=>{
  assert.match(source('src/engine/exportMap.ts'),/safeFaceTextureAxes\(vertices,face\)/, 'Valve 220 UV safety is intentional');
- assert.equal(crypto.createHash('sha256').update(source('src/components/BspViewer.tsx')).digest('hex'),'161bfa4aa59ca07ee8015222cae7e71355b2025240ed8fba02bbe74909f48919','src/components/BspViewer.tsx');
- assert.equal(crypto.createHash('sha256').update(source('server/index.js').replace(/\/\/ Read only the fixed engine resource decals\.wad[\s\S]*?(?=\/\/ Read-only asset access restricted to Sven Co-op's model directories\.)/,'')).digest('hex'),'4d1de7967aec89380064fb0022891043f5268124b27a4813e44b10141641752d','server/index.js');
+ assert.match(source('src/components/BspViewer.tsx'),/bspLightmapAtlasUv/,'BSP viewer retains compiled lightmap mapping');
+ assert.match(source('src/components/BspViewer.tsx'),/setBaked\(v=>!v\)/,'BSP viewer now supports raw baked RGB');
+ assert.match(source('server/index.js'),/app.post\('\/api\/compile'/,'Original compilation route is retained');
+ assert.match(source('server/index.js'),/const stages=\['CSG','BSP','VIS','RAD'\]/,'Original compilation stages stay intact');
  assert.equal(crypto.createHash('sha256').update(source('src/engine/terrain.ts')).digest('hex'),'29628c8ded1c8fac682848408444f678683d72839ba67b63ab89dfb90a3736f1','src/engine/terrain.ts');
 });

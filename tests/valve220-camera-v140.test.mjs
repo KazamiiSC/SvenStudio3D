@@ -96,8 +96,8 @@ test('Camera: Q/E vertical, WASD horizontal, and right-click menu remain availab
   assert.match(context,/if\(!wasDragged\)show\(previous\.x,previous\.y\)/);
 });
 
-test('Package version is consistently v1.4.0',()=>{
+test('Package version follows current release v1.5.23',()=>{
   const pkg=JSON.parse(readFileSync(resolve(root,'package.json'),'utf8'));
   const lock=JSON.parse(readFileSync(resolve(root,'package-lock.json'),'utf8'));
-  assert.equal(pkg.version,'1.4.0');assert.equal(lock.version,'1.4.0');assert.equal(lock.packages[''].version,'1.4.0');
+  assert.equal(pkg.version,'1.5.23');assert.equal(lock.version,'1.5.23');assert.equal(lock.packages[''].version,'1.5.23');
 });

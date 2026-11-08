@@ -272,6 +272,32 @@ Object.assign(ko,{
 const en:Record<string,string>={};
 const zh:Record<string,string>={};
 const pt:Record<string,string>={};
+// v1.5.20: adaptive workspace presentation (not game entity/class identifiers).
+Object.assign(es,{
+  'Adaptive layout / Windows display scaling':'Diseño adaptable / escala de pantalla de Windows',
+  'Automatically adjust docks and toolbars to available space':'Adaptar automáticamente los paneles y las barras al espacio disponible',
+  'Recommended for Windows 125% / 150% display scaling. Keeps manual panel sizes and restores them when there is more space. Does not alter MAP geometry or browser zoom.':'Recomendado con Windows al 125 % o 150 %. Conserva tus medidas manuales de paneles y las recupera al haber más espacio. No modifica la geometría MAP ni el zoom del navegador.'
+});
+Object.assign(ru,{
+  'Adaptive layout / Windows display scaling':'Адаптивный интерфейс / масштаб Windows',
+  'Automatically adjust docks and toolbars to available space':'Автоматически подстраивать панели и инструменты под доступное место',
+  'Recommended for Windows 125% / 150% display scaling. Keeps manual panel sizes and restores them when there is more space. Does not alter MAP geometry or browser zoom.':'Рекомендуется для масштаба Windows 125 % / 150 %. Размеры панелей сохраняются и восстанавливаются при увеличении пространства. MAP и масштаб браузера не изменяются.'
+});
+Object.assign(ko,{
+  'Adaptive layout / Windows display scaling':'적응형 레이아웃 / Windows 화면 배율',
+  'Automatically adjust docks and toolbars to available space':'사용 가능한 공간에 맞춰 패널과 도구 모음 자동 조정',
+  'Recommended for Windows 125% / 150% display scaling. Keeps manual panel sizes and restores them when there is more space. Does not alter MAP geometry or browser zoom.':'Windows 125% / 150% 화면 배율에 권장됩니다. 수동 패널 크기를 보존하고 공간이 늘어나면 복원합니다. MAP 지오메트리와 브라우저 확대/축소는 변경하지 않습니다.'
+});
+Object.assign(zh,{
+  'Adaptive layout / Windows display scaling':'自适应布局 / Windows 显示缩放',
+  'Automatically adjust docks and toolbars to available space':'根据可用空间自动调整面板和工具栏',
+  'Recommended for Windows 125% / 150% display scaling. Keeps manual panel sizes and restores them when there is more space. Does not alter MAP geometry or browser zoom.':'建议用于 Windows 125% / 150% 缩放。保留手动面板尺寸，并在空间增加时恢复。不修改 MAP 几何或浏览器缩放。'
+});
+Object.assign(pt,{
+  'Adaptive layout / Windows display scaling':'Layout adaptável / escala do Windows',
+  'Automatically adjust docks and toolbars to available space':'Ajustar painéis e barras automaticamente ao espaço disponível',
+  'Recommended for Windows 125% / 150% display scaling. Keeps manual panel sizes and restores them when there is more space. Does not alter MAP geometry or browser zoom.':'Recomendado para escala de 125% ou 150% no Windows. Preserva os tamanhos manuais dos painéis e os restaura com mais espaço. Não altera a geometria MAP nem o zoom do navegador.'
+});
 const dictionaries:Record<Locale,Record<string,string>>={en,es,ru,ko,zh,pt};
 export function translate(locale:Locale,key:string):string{return dictionaries[locale]?.[key]??key}
 // Keep the translator stable while the language is unchanged. Effects depending
@@ -3280,4 +3306,63 @@ Object.assign(zh,{
   'Automatic map output':'自动保存地图输出',
   'When you click Compile Map, the editor generates the MAP source in a temporary build folder and runs the Sven Co-op SDK compilers. After a successful build, the BSP is automatically saved to the maps folder of the configured Sven Co-op game directory using the map name below.':'点击 Compile Map 后，编辑器会创建临时 MAP 并执行 SDK 编译器。成功后，BSP 会以指定名称自动保存到 Sven Co-op 的 maps 文件夹。',
   'Building does not export a portable project file; use File → Save project (Ctrl+S) to back up your editable project. A failed build will not copy a new BSP.':'编译不会导出可编辑项目。请使用 File → Save project (Ctrl+S) 备份。编译失败时不会复制新的 BSP。'
+});
+
+// v1.5.5 Advanced Lighting Studio labels. Native entity classnames and keys stay untranslated.
+Object.assign(es,{
+ 'Advanced Lighting Studio':'Estudio avanzado de iluminación','Environment':'Entorno','Texture lights':'Luces de textura','Advanced SC-RAD':'SC-RAD avanzado','Styles & shadows':'Estilos y sombras',
+ 'Texture Lighting Studio':'Estudio de texturas luminosas','WAD texture name':'Nombre de textura WAD','Use selected face texture':'Usar textura de la cara seleccionada','Brightness (1–100000)':'Brillo (1–100000)',
+ 'Texture light color':'Color de luz de textura','Light RGB (required)':'RGB de luz (obligatorio)','Override texture color (_texcolor)':'Reemplazar color de textura (_texcolor)',
+ 'Use original texture color (no _texcolor override)':'Usar color original de textura (sin modificar _texcolor)',
+ 'Dark gap in front of surface (_texlightgap)':'Separación de luz de la superficie (_texlightgap)',
+ 'Face filter max distance (_frange, optional)':'Distancia máxima del filtro (_frange, opcional)',
+ 'Add / update texture light':'Agregar / actualizar luz de textura','Update selected surface light':'Actualizar luz de superficie','Existing texture lighting':'Iluminación de texturas existente',
+ 'Advanced SC-RAD · info_compile_parameters':'SC-RAD avanzado · info_compile_parameters','Indoor bounce':'Rebotes de interior','Final detail':'Calidad final','Soft sky':'Cielo suave','Reload':'Recargar',
+ 'Apply SC-RAD settings':'Aplicar ajustes SC-RAD','Create SC-RAD settings entity':'Crear entidad de ajustes SC-RAD',
+ 'Bounces':'Rebotes','Quality':'Calidad','Color':'Color','Shadows':'Sombras',
+ 'Light styles & triggers':'Estilos de luces y activadores','Targetname':'Nombre de activación','Appearance (style)':'Apariencia (style)',
+ 'Custom light pattern (a–z, 1–64 characters)':'Patrón de luz personalizado (a–z, 1–64 caracteres)',
+ 'Initially dark (spawnflags bit 1)':'Apagada al inicio (spawnflags bit 1)',
+ 'Apply light style':'Aplicar estilo de luz','Switchable brush shadows & indirect bounce':'Sombras activables de brushes y rebotes indirectos',
+ 'Target brush entity name':'Nombre de la entidad brush objetivo','Add light_shadow':'Agregar light_shadow','Add light_bounce':'Agregar light_bounce'
+});
+Object.assign(ru,{
+ 'Advanced Lighting Studio':'Расширенная студия освещения','Environment':'Окружение','Texture lights':'Светящиеся текстуры','Advanced SC-RAD':'Расширенный SC-RAD','Styles & shadows':'Стили и тени',
+ 'Texture Lighting Studio':'Студия светящихся текстур','WAD texture name':'Имя текстуры WAD','Use selected face texture':'Взять текстуру выбранной грани','Brightness (1–100000)':'Яркость (1–100000)',
+ 'Add / update texture light':'Добавить / обновить светящуюся текстуру','Existing texture lighting':'Существующий свет текстур',
+ 'Indoor bounce':'Отражение в помещении','Final detail':'Финальное качество','Soft sky':'Мягкое небо','Reload':'Перезагрузить',
+ 'Apply SC-RAD settings':'Применить настройки SC-RAD','Create SC-RAD settings entity':'Создать настройки SC-RAD','Bounces':'Отражения','Quality':'Качество','Shadows':'Тени',
+ 'Light styles & triggers':'Стили света и триггеры','Targetname':'Имя цели','Apply light style':'Применить стиль света',
+ 'Switchable brush shadows & indirect bounce':'Переключаемые тени и отражения','Target brush entity name':'Имя целевого браша',
+ 'Add light_shadow':'Добавить light_shadow','Add light_bounce':'Добавить light_bounce'
+});
+Object.assign(ko,{
+ 'Advanced Lighting Studio':'고급 조명 스튜디오','Environment':'환경','Texture lights':'텍스처 조명','Advanced SC-RAD':'고급 SC-RAD','Styles & shadows':'스타일과 그림자',
+ 'Texture Lighting Studio':'텍스처 조명 스튜디오','WAD texture name':'WAD 텍스처 이름','Use selected face texture':'선택한 면의 텍스처 사용','Brightness (1–100000)':'밝기 (1–100000)',
+ 'Add / update texture light':'텍스처 조명 추가 / 수정','Existing texture lighting':'기존 텍스처 조명',
+ 'Indoor bounce':'실내 간접광','Final detail':'최종 품질','Soft sky':'부드러운 하늘광','Reload':'다시 불러오기',
+ 'Apply SC-RAD settings':'SC-RAD 설정 적용','Create SC-RAD settings entity':'SC-RAD 설정 엔티티 만들기','Bounces':'반사','Quality':'품질','Shadows':'그림자',
+ 'Light styles & triggers':'조명 스타일과 트리거','Targetname':'대상 이름','Apply light style':'조명 스타일 적용',
+ 'Switchable brush shadows & indirect bounce':'전환 가능한 그림자와 반사광','Target brush entity name':'대상 브러시 엔티티 이름',
+ 'Add light_shadow':'light_shadow 추가','Add light_bounce':'light_bounce 추가'
+});
+Object.assign(zh,{
+ 'Advanced Lighting Studio':'高级光照工作室','Environment':'环境','Texture lights':'发光纹理','Advanced SC-RAD':'高级 SC-RAD','Styles & shadows':'灯光样式和阴影',
+ 'Texture Lighting Studio':'纹理光照工作室','WAD texture name':'WAD 纹理名称','Use selected face texture':'使用选中面的纹理','Brightness (1–100000)':'亮度 (1–100000)',
+ 'Add / update texture light':'添加 / 更新纹理光','Existing texture lighting':'现有纹理光',
+ 'Indoor bounce':'室内反弹光','Final detail':'最终质量','Soft sky':'柔和天空光','Reload':'重新载入',
+ 'Apply SC-RAD settings':'应用 SC-RAD 设置','Create SC-RAD settings entity':'创建 SC-RAD 设置实体','Bounces':'反弹光','Quality':'质量','Shadows':'阴影',
+ 'Light styles & triggers':'灯光样式与触发器','Targetname':'目标名称','Apply light style':'应用灯光样式',
+ 'Switchable brush shadows & indirect bounce':'可切换的笔刷阴影与反弹光','Target brush entity name':'目标笔刷实体名称',
+ 'Add light_shadow':'添加 light_shadow','Add light_bounce':'添加 light_bounce'
+});
+Object.assign(pt,{
+ 'Advanced Lighting Studio':'Estúdio de iluminação avançada','Environment':'Ambiente','Texture lights':'Luzes de textura','Advanced SC-RAD':'SC-RAD avançado','Styles & shadows':'Estilos e sombras',
+ 'Texture Lighting Studio':'Estúdio de texturas luminosas','WAD texture name':'Nome da textura WAD','Use selected face texture':'Usar textura da face selecionada','Brightness (1–100000)':'Brilho (1–100000)',
+ 'Add / update texture light':'Adicionar / atualizar luz de textura','Existing texture lighting':'Iluminação de textura existente',
+ 'Indoor bounce':'Reflexos internos','Final detail':'Qualidade final','Soft sky':'Céu suave','Reload':'Recarregar',
+ 'Apply SC-RAD settings':'Aplicar ajustes SC-RAD','Create SC-RAD settings entity':'Criar entidade de ajustes SC-RAD','Bounces':'Reflexos','Quality':'Qualidade','Shadows':'Sombras',
+ 'Light styles & triggers':'Estilos de luz e acionadores','Targetname':'Nome do alvo','Apply light style':'Aplicar estilo de luz',
+ 'Switchable brush shadows & indirect bounce':'Sombras alternáveis e reflexos indiretos','Target brush entity name':'Nome da entidade brush alvo',
+ 'Add light_shadow':'Adicionar light_shadow','Add light_bounce':'Adicionar light_bounce'
 });

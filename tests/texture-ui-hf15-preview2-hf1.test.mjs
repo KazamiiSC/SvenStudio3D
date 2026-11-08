@@ -24,7 +24,7 @@ test('UV overlay is camera zoom independent and no longer projects a face-wide b
 test('precision panel is anchored to settings button and has higher stacking priority',()=>{
   const viewport=read('src/components/Viewport.tsx');
   const css=read('src/style.css');
-  assert.match(viewport,/className=\{precisionOpen\?'hud-popup-open':''\}/);
+  assert.match(viewport,/className=\{precisionOpen\|\|visualMenuOpen\?'hud-popup-open':''\}/);
   assert.match(viewport,/setPrecisionLeft\(Math.max\(68,Math.min\(trigger.left-toolbar.left,available\)\)\)/);
   assert.match(viewport,/style=\{\{left:precisionLeft\}\}/);
   assert.match(css,/\.hud-widget\.hud-view\.hud-popup-open\{z-index:66\}/);

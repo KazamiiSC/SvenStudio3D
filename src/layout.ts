@@ -31,6 +31,8 @@ type LayoutState = {
   heights: {top:number;bottom:number};
   weights: Record<DockPanelId,number>;
   uiScale:number;
+  autoLayout:boolean;
+  setAutoLayout:(value:boolean)=>void;
   accent:Accent;
   fontScale:number;
   performancePreset:PerformancePreset;
@@ -56,7 +58,7 @@ const defaults = () => ({
   compactTools:false,floatRailSide:'left' as 'left'|'right',
   widths:{left:254,right:302},heights:{top:192,bottom:168},
   weights:{assets:1,explorer:1,properties:1,console:1},
-  uiScale:1,accent:'nebula' as Accent,fontScale:1,performancePreset:'balanced' as PerformancePreset
+  uiScale:1,autoLayout:true,accent:'nebula' as Accent,fontScale:1,performancePreset:'balanced' as PerformancePreset
 });
 const clamp=(n:number,min:number,max:number)=>Math.min(max,Math.max(min,n));
 const panelIds:DockPanelId[]=['assets','explorer','properties','console'];
@@ -98,6 +100,7 @@ export function mergeSavedLayout(saved:unknown,current:LayoutState):LayoutState{
     floatRailSide,
     toolbarGroups:normalizeToolbarGroups(data.toolbarGroups),
     uiScale:finiteOr(data.uiScale,base.uiScale,.8,1.2),
+    autoLayout:typeof data.autoLayout==='boolean'?data.autoLayout:true,
     fontScale:finiteOr(data.fontScale,base.fontScale,.9,1.2),
     accent:accents.includes(data.accent as Accent)?data.accent as Accent:base.accent,
     performancePreset:performancePresets.includes(data.performancePreset as PerformancePreset)?data.performancePreset as PerformancePreset:base.performancePreset
@@ -139,12 +142,13 @@ export const useStudioLayout=create<LayoutState>()(persist((set)=>({
   }),
   setWeights:(id,a,other,b)=>set(s=>({weights:{...s.weights,[id]:Math.max(.12,a),[other]:Math.max(.12,b)}})),
   setScale:uiScale=>set({uiScale:clamp(uiScale,.8,1.2)}),
+  setAutoLayout:autoLayout=>set({autoLayout}),
   setAccent:accent=>set({accent}),
   setFontScale:fontScale=>set({fontScale:clamp(fontScale,.9,1.2)}),
   setPerformancePreset:performancePreset=>set({performancePreset}),
   resetLayout:()=>set(defaults()),
   usePreset:preset=>set(s=>{
-    const base={...defaults(),accent:s.accent,uiScale:s.uiScale,fontScale:s.fontScale,performancePreset:s.performancePreset};
+    const base={...defaults(),accent:s.accent,uiScale:s.uiScale,autoLayout:s.autoLayout,fontScale:s.fontScale,performancePreset:s.performancePreset};
     if(preset==='organized')return {...base,compactTools:true,visible:{assets:true,explorer:true,properties:true,console:false},widths:{left:266,right:294}};
     if(preset==='classic')return {...base,compactTools:false,toolbarDock:'top',visible:{assets:true,explorer:true,properties:true,console:false}};
     if(preset==='focus')return {...base,toolbarDock:'left',visible:{assets:false,explorer:false,properties:true,console:false}};
@@ -152,4 +156,10 @@ export const useStudioLayout=create<LayoutState>()(persist((set)=>({
     if(preset==='minimal')return {...base,toolbarDock:'left',visible:{assets:false,explorer:false,properties:false,console:false}};
     return base;
   })
-}),{name:'sven-studio-ui-layout-041',version:1,merge:mergeSavedLayout,partialize:s=>({sides:s.sides,order:s.order,visible:s.visible,toolbarDock:s.toolbarDock,toolbarGroups:s.toolbarGroups,compactTools:s.compactTools,floatRailSide:s.floatRailSide,widths:s.widths,heights:s.heights,weights:s.weights,uiScale:s.uiScale,accent:s.accent,fontScale:s.fontScale,performancePreset:s.performancePreset})}));
+}),{name:'sven-studio-ui-layout-041',version:2,migrate:(saved,version)=>{
+  // One-time upgrade: make the three functional dock panels visible even if a
+  // legacy layout hid them. Subsequent user hide/show choices remain persisted.
+  if(version<2&&saved&&typeof saved==='object'){
+    const old=saved as Record<string,unknown>;return {...old,visible:{...recordOrEmpty(old.visible),assets:true,explorer:true,properties:true}};
+  }return saved;
+},merge:mergeSavedLayout,partialize:s=>({sides:s.sides,order:s.order,visible:s.visible,toolbarDock:s.toolbarDock,toolbarGroups:s.toolbarGroups,compactTools:s.compactTools,floatRailSide:s.floatRailSide,widths:s.widths,heights:s.heights,weights:s.weights,uiScale:s.uiScale,autoLayout:s.autoLayout,accent:s.accent,fontScale:s.fontScale,performancePreset:s.performancePreset})}));

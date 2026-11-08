@@ -8,7 +8,7 @@ test('HF4: Build Configuration is only in the top bar, never a Workspace menu en
   const workspace=app.split('id="sven-workspace-menu"')[1].split('</TopDropdown></div>')[0];
   assert.doesNotMatch(workspace,/Build configuration|setDialog\('settings'\)/);
   assert.match(app,/className="top-build-settings"[^>]+onClick=\{\(\)=>setDialog\('settings'\)\}/);
-  assert.match(app,/onClick=\{compile\}/);
+  assert.match(app,/onClick=\{\(\)=>void compile\('game'\)\}/);
 });
 
 test('HF4: UV widget has a separate draggable header with persistent position',()=>{

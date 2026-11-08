@@ -1,4 +1,5 @@
-import {useRef,type PointerEvent as ReactPointerEvent,type ReactNode,type CSSProperties} from 'react';
+import {useLayoutEffect,useRef,useState,type PointerEvent as ReactPointerEvent,type ReactNode,type CSSProperties} from 'react';
+import {clampHudPosition} from '../engine/adaptiveUiGeometry';
 import {Grip,Scaling} from 'lucide-react';
 import {useHudLayout,type HudId} from '../hudLayout';
 import {useT} from '../i18n';
@@ -12,6 +13,20 @@ export function HudWidget({id,children,className='',editPlaceholder}:{id:HudId;c
   const update=useHudLayout(s=>s.update),select=useHudLayout(s=>s.select);
   const root=useRef<HTMLDivElement>(null);
   const motion=useRef<{pointer:number;kind:'move'|'scale';x:number;y:number;startX:number;startY:number;startScale:number}|null>(null);
+  const [bounds,setBounds]=useState({parentWidth:0,parentHeight:0,width:0,height:0});
+  useLayoutEffect(()=>{
+    const element=root.current,parent=element?.parentElement;if(!element||!parent)return;
+    const measure=()=>{
+      const container=parent.getBoundingClientRect(),widget=element.getBoundingClientRect();
+      // Both rects contain the same UI zoom. Ratios and clamping are consistent.
+      setBounds(old=>Math.abs(old.parentWidth-container.width)<.5&&Math.abs(old.parentHeight-container.height)<.5&&Math.abs(old.width-widget.width)<.5&&Math.abs(old.height-widget.height)<.5?old:{parentWidth:container.width,parentHeight:container.height,width:widget.width,height:widget.height});
+    };
+    measure();
+    const ro=typeof ResizeObserver==='undefined'?null:new ResizeObserver(measure);
+    ro?.observe(parent);ro?.observe(element);
+    window.addEventListener('resize',measure);
+    return()=>{ro?.disconnect();window.removeEventListener('resize',measure)};
+  },[editing,config.visible]);
   if(!config.visible&&!editing)return null;
   const start=(event:ReactPointerEvent<HTMLButtonElement>,kind:'move'|'scale')=>{
     if(event.button!==0)return;
@@ -28,8 +43,7 @@ export function HudWidget({id,children,className='',editPlaceholder}:{id:HudId;c
     if(m.kind==='scale'){
       update(id,{scale:Math.min(1.8,Math.max(.45,m.startScale+(event.clientX-m.x+event.clientY-m.y)/210))});
     }else{
-      const content=root.current?.querySelector<HTMLElement>('.hud-widget-content');
-      const child=content?.getBoundingClientRect();
+      const child=root.current?.getBoundingClientRect();
       const maxX=Math.max(0,100-(child?.width??0)/bounds.width*100);
       const maxY=Math.max(0,100-(child?.height??0)/bounds.height*100);
       update(id,{x:Math.min(maxX,Math.max(0,m.startX+(event.clientX-m.x)/bounds.width*100)),
@@ -39,8 +53,18 @@ export function HudWidget({id,children,className='',editPlaceholder}:{id:HudId;c
   const end=(event:ReactPointerEvent<HTMLButtonElement>)=>{
     if(motion.current?.pointer===event.pointerId){motion.current=null;event.stopPropagation()}
   };
-  const style:CSSProperties={left:id==='shapes'?`clamp(0px, ${config.x}%, max(0px, calc(100% - 355px)))`:id==='fps'?`clamp(0px, ${config.x}%, max(0px, calc(100% - 90px)))`:`${config.x}%`,top:`${config.y}%`};
-  return <div ref={root} className={`hud-widget hud-${id} ${editing?'hud-editing':''} ${selected===id?'hud-selected':''} ${!config.visible?'hud-hidden':''} ${className}`} style={style} data-hud-id={id}>
+  // Keep stored percentages unchanged: only presentation is constrained to
+  // the measured viewport and the real rendered widget dimensions.
+  const place=clampHudPosition(config.x,config.y,bounds.parentWidth,bounds.parentHeight,bounds.width,bounds.height);
+  const measured=bounds.parentWidth>0&&bounds.parentHeight>0;
+  const style:CSSProperties={
+    left:measured?`${place.x/bounds.parentWidth*100}%`:`${config.x}%`,
+    top:measured?`${place.y/bounds.parentHeight*100}%`:`${config.y}%`,
+    '--hud-container-width':`${bounds.parentWidth}px`,
+    '--hud-container-height':`${bounds.parentHeight}px`
+  } as CSSProperties;
+  const nearRight=measured&&place.x>bounds.parentWidth*.55;
+  return <div ref={root} className={`hud-widget hud-${id} ${editing?'hud-editing':''} ${editing&&selected===id?'hud-selected':''} ${!config.visible?'hud-hidden':''} ${nearRight?'hud-near-right':''} ${className}`} style={style} data-hud-id={id} onPointerDown={event=>{if(editing&&event.button===0){select(id);event.stopPropagation()}}}>
     {editing&&<div className="hud-widget-bar" onPointerDown={e=>e.stopPropagation()}>
       <button type="button" className="hud-widget-drag" aria-label={`${t('Move HUD element')} ${id}`} title={t('Drag to move')}
         onPointerDown={e=>start(e,'move')} onPointerMove={move} onPointerUp={end} onPointerCancel={end}><Grip size={15}/><span>{t(HUD_NAMES[id])}</span></button>

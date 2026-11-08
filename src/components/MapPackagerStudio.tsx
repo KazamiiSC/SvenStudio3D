@@ -3,6 +3,7 @@ import {AlertTriangle,CheckCircle2,Download,FolderSearch,Package,RefreshCw,Shiel
 import {useT} from '../i18n';
 import {useEditor} from '../store';
 import {customNpcFiles} from '../engine/customNpc';
+import {generateSurfaceMaterialsTxt,materialSoundPath} from '../engine/materialSurface';
 
 type PackageEntry={path:string;status:'ready'|'missing'|'builtin'|'oversize'|'conflict';layer:string;size:number;reason:string;required?:boolean};
 type PackageScan={mapName:string;entries:PackageEntry[];warnings:string[];missing:number;ready:number;builtin:number;entities:number;externalTextures:boolean};
@@ -15,6 +16,8 @@ export function MapPackagerStudio({onClose}:{onClose:()=>void}){
   const projectName=useEditor(s=>s.project.name);
   const [packageMapName,setPackageMapName]=useState(mapName);
   const customNpcs=useEditor(s=>s.project.customNpcs);
+  const surfaceSounds=useEditor(s=>s.project.surfaceSounds);
+  const linkedSurfaceFile=useEditor(s=>s.project.world.materials_file);
   const [manual,setManual]=useState('');
   const [addCustom,setAddCustom]=useState(true);
   const [scan,setScan]=useState<PackageScan|null>(null);
@@ -27,6 +30,9 @@ export function MapPackagerStudio({onClose}:{onClose:()=>void}){
   const makeInput=()=>{
     const inlineFiles:{path:string;content:string}[]=[];
     const scriptLines:string[]=[];
+    if(surfaceSounds&&Object.keys(surfaceSounds).length){
+      inlineFiles.push({path:materialSoundPath(packageMapName),content:generateSurfaceMaterialsTxt(surfaceSounds)});
+    }
     if(addCustom){
       for(const npc of customNpcs||[]){
         const {files,mapScript}=customNpcFiles(npc,packageMapName);
@@ -79,6 +85,7 @@ export function MapPackagerStudio({onClose}:{onClose:()=>void}){
           {projectName&&projectName.toLowerCase()!==packageMapName.toLowerCase()&&<div className="mp-warning" role="alert">{t('The loaded project and the selected compiled BSP have different names. Confirm this is the file you intend to share.')} ({projectName} / {packageMapName}.bsp)</div>}
           <label>{t('Game folder')}<input readOnly value={gameDir||t('Not configured')}/></label>
           <p className="mp-muted">{t('Uses the compiled BSP in your configured maps folder. Compile your latest changes before scanning.')}</p>
+          {surfaceSounds&&Object.keys(surfaceSounds).length>0&&<p className="mp-muted">Material & Surface Studio: {Object.keys(surfaceSounds).length} material sounds. {linkedSurfaceFile!==`sound/${packageMapName}/${packageMapName}_materials.txt`?'Link materials_file in the MAP and recompile the BSP first.':'Project materials.txt will be included in the package.'}</p>}
           <label className="mp-check"><input type="checkbox" checked={addCustom} onChange={e=>{setAddCustom(e.target.checked);setScan(null)}} disabled={!(customNpcs||[]).length}/>{t('Include registered Custom NPC scripts')} ({(customNpcs||[]).length})</label>
           <p className="mp-muted">{t('Scripts are packaged as source, never executed. Existing CFG files are not changed.')}</p>
           <label>{t('Additional game-relative paths (one per line)')}<textarea rows={8} spellCheck={false} value={manual} onChange={e=>{setManual(e.target.value);setScan(null)}} placeholder={'models/my_map/custom.mdl\nsound/my_map/ambient.wav\nsprites/my_map/glow.spr'}/></label>

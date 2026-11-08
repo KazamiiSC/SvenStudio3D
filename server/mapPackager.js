@@ -78,6 +78,10 @@ function refCandidates(entities){
     const cls=e.classname||'entity';
     for(const [key,v] of Object.entries(e)){
       const raw=v.trim();if(!raw||raw.startsWith('*'))continue;
+      // Native worldspawn material sounds: include the map-specific TXT file.
+      if(key==='materials_file'&&/^sound\/[a-z0-9_/-]+\.txt$/i.test(raw)){
+        add(raw,`${cls}.materials_file`,true);continue;
+      }
       if(key==='skyname'){if(!/^[\w-]{1,48}$/.test(raw)){warn.push('Invalid skyname in BSP.');continue}for(const side of SKY_SIDES)add(`gfx/env/${raw}${side}.tga`,'Skybox '+raw);continue}
       if(/(?:\.mdl|\.spr)$/i.test(raw)&&(/model|sprite|view|weapon|effect|gib|beam|custom|spawn|target/i.test(key)||raw.startsWith('models/')||raw.startsWith('sprites/'))){add(raw.startsWith('models/')||raw.startsWith('sprites/')?raw:`models/${raw}`,`${cls}.${key}`);continue}
       if(/\.(wav|mp3|ogg)$/i.test(raw)){add(raw.startsWith('sound/')?raw:`sound/${raw}`,`${cls}.${key}`);continue}

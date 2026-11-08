@@ -1,0 +1,15 @@
+import {readFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const read=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
+const screen=read('src/components/WelcomeScreen.tsx'),css=read('src/style.css'),app=read('src/App.tsx');
+assert.match(screen,/requestAnimationFrame/);
+assert.match(screen,/pointermove/);
+assert.match(screen,/removeEventListener/);
+assert.match(screen,/prefers-reduced-motion: reduce/);
+assert.match(screen,/easeHomePointer/);
+assert.match(screen,/className="ss-home-start" onClick=\{onStart\}/);
+assert.match(css,/\.ss-home-parallax \.ss-home-hero\{transform:perspective/);
+assert.match(css,/@media \(prefers-reduced-motion:reduce\)/);
+assert.match(css,/\.ss-home-start::before/);
+assert.match(app,/inert=\{welcomeOpen\}/);
+console.log('HF15 Preview 4 HF4 interactive parallax verified.');

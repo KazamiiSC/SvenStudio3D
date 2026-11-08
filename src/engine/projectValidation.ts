@@ -44,12 +44,16 @@ function checkObject(value:unknown,index:number):asserts value is MapObject{
 }
 function checkOpening(value:unknown,index:number){
   if(!record(value)||!str(value.id,256)||(value.kind!=='door'&&value.kind!=='window')||
-     !record(value.wall)||!Array.isArray(value.memberIds)||value.memberIds.length>128||
+     !record(value.wall)||!Array.isArray(value.memberIds)||value.memberIds.length>2048||
      !value.memberIds.every(v=>str(v,256))||!vec3(value.center)||!record(value.options))
     bad(`architecture opening ${index+1} is malformed.`);
   const wall={...value.wall,kind:'brush'};checkObject(wall,index);
   for(const key of ['width','height','depth','frame','steps'])if(!optionalNumber(value.options[key]))bad(`architecture opening ${index+1} has invalid ${key}.`);
-  for(const key of ['cutOnly','doorLeaf'])if(!optionalBoolean(value.options[key]))bad(`architecture opening ${index+1} has invalid ${key}.`);
+  for(const key of ['cutOnly','doorLeaf','openTop'])if(!optionalBoolean(value.options[key]))bad(`architecture opening ${index+1} has invalid ${key}.`);
+  if(!optionalText(value.texture,32))bad(`architecture opening ${index+1} has invalid texture.`);
+  if(value.memberSignatures!==undefined&&(!Array.isArray(value.memberSignatures)||
+     value.memberSignatures.length!==value.memberIds.length||!value.memberSignatures.every(v=>str(v,64))))
+    bad(`architecture opening ${index+1} has invalid provenance.`);
 }
 /** Throws on corrupt input, preserving the existing editor state. Never mutates input. */
 export function validateProjectFile(input:unknown):Project{
@@ -79,6 +83,12 @@ export function validateProjectFile(input:unknown):Project{
         Object.keys(d.fgd.props).length>256||!Object.values(d.fgd.props).every(p=>record(p)&&str(p.label,256)&&str(p.type,32))))bad('custom NPC FGD definition is malformed.');
     }
     if(JSON.stringify(input.customNpcs).length>7_000_000)bad('embedded custom NPC source files exceed safe project size.');
+  }
+  if(input.surfaceSounds!==undefined){
+    if(!record(input.surfaceSounds)||Object.keys(input.surfaceSounds).length>500||
+       !Object.entries(input.surfaceSounds).every(([texture,code])=>/^[A-Z0-9_+~!{}*.$%-]{1,15}$/i.test(texture)&&
+         typeof code==='string'&&/^[MVDSTGWPYFO]$/.test(code)))
+       bad('custom material sound assignments are malformed.');
   }
   if(input.graphPositions!==undefined){
     if(!record(input.graphPositions)||Object.keys(input.graphPositions).length>100000||
@@ -115,9 +125,42 @@ export function validateProjectFile(input:unknown):Project{
       groupIds.add(group.id);
     }
   }
+  if(input.architectureLayouts!==undefined){
+    if(!Array.isArray(input.architectureLayouts)||input.architectureLayouts.length>8192)bad('architecture layouts are malformed.');
+    const layoutIds=new Set<string>();
+    for(const [i,item] of input.architectureLayouts.entries()){
+      if(!record(item)||!str(item.id,256)||!item.id||layoutIds.has(item.id)||
+        !['walls','room'].includes(String(item.kind))||!Array.isArray(item.points)||
+        item.points.length<2||item.points.length>48||
+        !item.points.every(p=>Array.isArray(p)&&p.length===2&&p.every(n=>typeof n==='number'&&Number.isFinite(n)&&Math.abs(n)<=16384))||
+        !record(item.options)||!str(item.texture,32)||!Array.isArray(item.memberIds)||!item.memberIds.length||
+        item.memberIds.length>192||!item.memberIds.every(id=>str(id,256))||
+        !Array.isArray(item.signatures)||item.signatures.length!==item.memberIds.length||
+        !item.signatures.every(x=>str(x,64)))bad(`architecture layout ${i+1} is malformed.`);
+      for(const key of ['baseZ','height','thickness','slab'])if(!optionalNumber(item.options[key]))bad(`architecture layout ${i+1} has invalid ${key}.`);
+      if(!optionalBoolean(item.options.ceiling))bad(`architecture layout ${i+1} has invalid ceiling.`);
+      layoutIds.add(item.id);
+    }
+  }
   if(input.architectureOpenings!==undefined){
     if(!Array.isArray(input.architectureOpenings)||input.architectureOpenings.length>8192)bad('architecture openings are malformed.');
     input.architectureOpenings.forEach(checkOpening);
+  }
+  if(input.architectureAssemblies!==undefined){
+    if(!Array.isArray(input.architectureAssemblies)||input.architectureAssemblies.length>8192)bad('architecture assemblies are malformed.');
+    const assemblyIds=new Set<string>();
+    for(const [i,item] of input.architectureAssemblies.entries()){
+      if(!record(item)||!str(item.id,256)||!item.id||assemblyIds.has(item.id)||
+         !['frame','arch','stairs','ramp','column','room','corridor','platform','bridge','landingStairs'].includes(String(item.kind))||
+         !vec3(item.origin)||!record(item.options)||!str(item.texture,32)||
+         !Array.isArray(item.memberIds)||!item.memberIds.length||item.memberIds.length>512||
+         !item.memberIds.every(v=>str(v,256))||
+         !Array.isArray(item.signatures)||item.signatures.length!==item.memberIds.length||
+         !item.signatures.every(v=>str(v,64)))bad(`architecture assembly ${i+1} is malformed.`);
+      for(const key of ['width','height','depth','frame','steps'])if(!optionalNumber(item.options[key]))bad(`architecture assembly ${i+1} has invalid ${key}.`);
+      for(const key of ['cutOnly','doorLeaf','openTop'])if(!optionalBoolean(item.options[key]))bad(`architecture assembly ${i+1} has invalid ${key}.`);
+      assemblyIds.add(item.id);
+    }
   }
   return {...input,target:'svengine'} as Project;
 }

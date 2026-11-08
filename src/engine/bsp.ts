@@ -9,6 +9,8 @@ export interface BspFace {
   /** Raw compiled texinfo axes and shifts for loss-minimizing MAP recovery. */
   sTexinfo?:[number,number,number,number];tTexinfo?:[number,number,number,number];
   lightWidth:number; lightHeight:number; lightRgb?:Uint8Array;
+  /** All compiled face lightstyle numbers and their individual RGB layers. */
+  lightStyles?:number[];lightLayers?:Uint8Array[];
   lightMin:[number,number];
 }
 export interface BspMap {
@@ -138,13 +140,16 @@ export function parseBsp(buffer:ArrayBuffer,name='map.bsp'):BspMap{
     const lightWidth=maxU-minU+1,lightHeight=maxV-minV+1;
     const offset=v.getInt32(p+16,true),light=lumps[8];
     const lightCount=lightWidth*lightHeight*3;
-    let lightRgb:Uint8Array|undefined;
-    if(offset>=0&&lightWidth>0&&lightHeight>0&&lightWidth<=256&&lightHeight<=256&&lightCount<=light.size-offset){
-      // Style 0: static bake. Animated styles cannot be reconstructed without the game engine.
-      lightRgb=new Uint8Array(buffer,light.start+offset,lightCount).slice();lightmappedFaces++;
+    const lightStyles=[0,1,2,3].map(i=>v.getUint8(p+12+i)).filter(style=>style!==255);
+    let lightRgb:Uint8Array|undefined;let lightLayers:Uint8Array[]|undefined;
+    if(offset>=0&&lightWidth>0&&lightHeight>0&&lightWidth<=256&&lightHeight<=256&&lightStyles.length&&lightCount*lightStyles.length<=light.size-offset){
+      // GoldSrc stores consecutive RGB lightmap layers for each active face style.
+      lightLayers=lightStyles.map((_,styleIndex)=>new Uint8Array(buffer,light.start+offset+styleIndex*lightCount,lightCount).slice());
+      lightRgb=lightLayers[lightStyles.indexOf(0)>=0?lightStyles.indexOf(0):0];
+      lightmappedFaces++;
     }
     const model=Math.max(0,models.findIndex(m=>index>=m.first&&index<m.first+m.count));
-    faces.push({texture:info.index,flags:info.flags,model,points,texels,normal,sTexinfo:info.s,tTexinfo:info.t,lightWidth,lightHeight,lightRgb,lightMin:[minU,minV]});
+    faces.push({texture:info.index,flags:info.flags,model,points,texels,normal,sTexinfo:info.s,tTexinfo:info.t,lightWidth,lightHeight,lightRgb,lightStyles,lightLayers,lightMin:[minU,minV]});
   }
   if(skipped)warnings.push(`${skipped} malformed faces were skipped.`);
   const entitiesText=new TextDecoder('latin1').decode(new Uint8Array(buffer,lumps[0].start,lumps[0].size));
