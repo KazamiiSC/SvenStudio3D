@@ -1,8 +1,4 @@
-
-
-
-
-# SvenStudio 3D — Version 1.5.23
+# SvenStudio 3D — Version 1.5
 
 **A modern, browser-based 3D map editor for Sven Co-op (GoldSrc / Svengine).**
 
@@ -20,7 +16,8 @@ Created by **KZ-Sheez** with the help of **ChatGPT-6 Astra**.
 
 *Development screenshots from different v1.5.x builds. Some controls, colors, labels or versions may differ from the latest package.*
 
-*Capturas de distintas versiones v1.5.x en desarrollo. Algunos controles, colores, etiquetas o números de versión pueden variar respecto del paquete más reciente.*
+*Capturas de distintas versiones v1.5.x![Uploading buildtogether-session.png…]()
+ en desarrollo. Algunos controles, colores, etiquetas o números de versión pueden variar respecto del paquete más reciente.*
 
 ### 3D Map Editor / Editor de mapas 3D
 
@@ -31,51 +28,51 @@ Created by **KZ-Sheez** with the help of **ChatGPT-6 Astra**.
 ### Terrain & Shape Studio / Estudio de terrenos y formas
 
 <p align="center">
-  <img src="assets/screenshots/terrain-shape-studio.png" width="88%" alt="Terrain & Shape Studio — sculpt terrain preview" />
+  <img src="https://github.com/user-attachments/assets/e7c19164-1c08-49ee-abca-f5383405e03f" width="88%" alt="Terrain & Shape Studio — sculpt terrain preview" />
 </p>
 
 ### Models, NPCs and sounds / Modelos, NPC y sonidos
 
 <p align="center">
-  <img src="assets/screenshots/model-browser.png" width="49%" alt="Model Browser — MDL asset thumbnails" />
-  <img src="assets/screenshots/npc-ai-studio.png" width="49%" alt="NPC & AI Studio — NPC preview and waypoint tools" />
+  <img src="https://github.com/user-attachments/assets/d22a8684-fe95-4350-8feb-c8d46c9174ff" width="49%" alt="Model Browser — MDL asset thumbnails" />
+  <img src="https://github.com/user-attachments/assets/c9bcc851-fa11-4043-9dde-29281cb78a03" width="49%" alt="NPC & AI Studio — NPC preview and waypoint tools" />
 </p>
 <p align="center">
-  <img src="assets/screenshots/sound-studio.png" width="85%" alt="Sound & Atmosphere Studio — sound browser and waveform" />
+  <img src="https://github.com/user-attachments/assets/4de5587f-3894-46ea-95d1-4a45277e42a6" width="85%" alt="Sound & Atmosphere Studio — sound browser and waveform" />
 </p>
 
 ### Gameplay and cinematic tools / Jugabilidad y cámaras cinematográficas
 
 <p align="center">
-  <img src="assets/screenshots/gameplay-logic.png" width="49%" alt="Gameplay Studio — target and targetname visual connections" />
-  <img src="assets/screenshots/gameplay-test.png" width="49%" alt="Gameplay Test — first-person map preview" />
+  <img src="https://github.com/user-attachments/assets/0db538e3-1c8d-4ceb-9239-c7709c591724" width="49%" alt="Gameplay Studio — target and targetname visual connections" />
+  <img src="https://github.com/user-attachments/assets/a2ce221e-b7e8-4c9d-bcb2-06a24e076261" width="49%" alt="Gameplay Test — first-person map preview" />
 </p>
 <p align="center">
-  <img src="assets/screenshots/cinematic-camera-studio.png" width="88%" alt="Cinematic Camera Studio — native camera entities and path preview" />
+  <img src="https://github.com/user-attachments/assets/e33d1462-98fb-4b9f-910a-f11a083b4206" width="88%" alt="Cinematic Camera Studio — native camera entities and path preview" />
 </p>
 
 ### Advanced lighting and True Lighting / Iluminación avanzada y True Lighting
 
 <p align="center">
-  <img src="assets/screenshots/lighting-studio.png" width="86%" alt="Advanced Lighting Studio — light, sky and fog settings" />
+  <img src="https://github.com/user-attachments/assets/6b46a39f-cd47-49d8-b3df-d125acea01fc" width="86%" alt="Advanced Lighting Studio — light, sky and fog settings" />
 </p>
 <p align="center">
-  <img src="assets/screenshots/true-lighting-preview.png" width="49%" alt="True Lighting — SC-RAD RGB lightmap preview in the editor" />
-  <img src="assets/screenshots/in-game-lighting.png" width="49%" alt="Sven Co-op engine — corresponding compiled lighting in game" />
+  <img src="https://github.com/user-attachments/assets/5cc010c2-4c1c-4e51-a81b-509cd269de8c" width="49%" alt="True Lighting — SC-RAD RGB lightmap preview in the editor" />
+  <img src="https://github.com/user-attachments/assets/12e52d0a-acd2-428d-a4ef-2cb3261e9df9" width="49%" alt="Sven Co-op engine — corresponding compiled lighting in game" />
 </p>
 
 ### BSP Viewer / Visor de mapas BSP
 
 <p align="center">
-  <img src="assets/screenshots/bsp-viewer-exterior.png" width="49%" alt="BSP Viewer — exterior map, entities and GoldSrc material preview" />
-  <img src="assets/screenshots/bsp-viewer-interior.png" width="49%" alt="BSP Viewer — first-person interior walkthrough" />
+  <img src="https://github.com/user-attachments/assets/0a340e23-3440-474d-944e-7b479fb6f65f" width="49%" alt="BSP Viewer — exterior map, entities and GoldSrc material preview" />
+  <img src="https://github.com/user-attachments/assets/689e0298-c743-4da3-b049-cc5a721a4a94" width="49%" alt="BSP Viewer — first-person interior walkthrough" />
 </p>
 
 ### BuildTogether 2.0 / Edición multijugador
 
 <p align="center">
-  <img src="assets/screenshots/buildtogether-session.png" width="43%" alt="BuildTogether — connected multiplayer mapping session" />
-  <img src="assets/screenshots/buildtogether-workspace.png" width="55%" alt="BuildTogether — shared map geometry and remote participant cursor" />
+  <img src="https://github.com/user-attachments/assets/78416736-1a14-4921-ac33-0fde055751ee" width="43%" alt="BuildTogether — connected multiplayer mapping session" />
+  <img src="https://github.com/user-attachments/assets/c982e261-14e6-4564-a1a1-2cabd499140b" width="55%" alt="BuildTogether — shared map geometry and remote participant cursor" />
 </p>
 
 ---
