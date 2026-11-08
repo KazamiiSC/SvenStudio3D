@@ -120,13 +120,13 @@ The editor combines familiar workflows from traditional level editors with moder
 
 #### BuildTogether 2.0 — Multiplayer Mapping
 
-**Collaborate on a map from separate browsers through a local WebSocket session with a host and invited participants.
+*Collaborate on a map from separate browsers through a local WebSocket session with a host and invited participants.
 Synchronize brushes, entities, editing selections and remote cursors; follow another participant's camera when needed.
 Includes smoother cursor updates, reconnection/recovery improvements, and safer batching for large terrain changes.
 Each participant uses local WAD/FGD/MDL and SDK resources; these files are not transferred over BuildTogether.
 Tested with Porthole — Local Port Sharing: Real multiplayer testing was performed between two participants using Porthole's private-network TCP port sharing. This confirms that the tested setup worked, but does not guarantee compatibility with every network or project.
 Experimental feature: BuildTogether 2.0 may still contain bugs, synchronization issues or unexpected behavior, especially with complex tools or large maps. Save backup copies of your project and report any problems you encounter.
-Security: Use trusted private networks only. Do not publicly share session codes or expose the server port directly to the Internet.**
+Security: Use trusted private networks only. Do not publicly share session codes or expose the server port directly to the Internet.*
 
 #### Sound, models and visual previews
 
@@ -247,13 +247,13 @@ Combina herramientas clásicas de creación de mapas con controles modernos, con
 
 #### BuildTogether 2.0 — Multiplayer Mapping
 
-**Colaboración sobre un mismo mapa desde distintos navegadores mediante sesiones WebSocket locales con anfitrión e invitados.
+*Colaboración sobre un mismo mapa desde distintos navegadores mediante sesiones WebSocket locales con anfitrión e invitados.
 Sincronización de brushes, entidades, selecciones y cursores remotos; opción para seguir la cámara de otra persona.
 Incluye cursores más suaves, mejoras de reconexión/recuperación y envío por lotes más seguro para terrenos grandes.
 Cada participante utiliza sus recursos WAD/FGD/MDL y el SDK local; estos archivos no se transfieren durante la sesión.
 Probado con Porthole — Local Port Sharing: Se realizaron pruebas reales de multijugador entre dos participantes utilizando el sistema de puertos TCP compartidos de Porthole en una red privada. Esto confirma el funcionamiento en esa configuración, pero no garantiza compatibilidad con todas las redes o proyectos.
 Función experimental: BuildTogether 2.0 todavía puede presentar errores, problemas de sincronización o comportamientos inesperados, especialmente al utilizar herramientas complejas o mapas grandes. Guardá copias de seguridad de tus proyectos y reportá los problemas que encuentres.
-Seguridad: Utilizá solamente redes privadas de confianza. No compartas públicamente códigos de sesión ni expongas directamente el puerto del servidor a Internet.**
+Seguridad: Utilizá solamente redes privadas de confianza. No compartas públicamente códigos de sesión ni expongas directamente el puerto del servidor a Internet.*
 
 #### Sonidos, modelos y vista previa
 
