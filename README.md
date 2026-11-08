@@ -8,16 +8,9 @@ Created by **KZ-Sheez** with the help of **ChatGPT-6 Astra**.
   <img src="https://github.com/user-attachments/assets/69959e8e-082f-46f5-9418-8a7e05edb67b" alt="SvenStudio 3D — modern home screen" width="100%" />
 </p>
 
-**Languages / Idiomas:** [English](#english) | [Español](#español) | [Screenshots / Galería](#screenshots--galería)
+**Languages / Idiomas:** [English](#english) | [Español](#español)
 
 ---
-
-## Screenshots / Galería
-
-*Development screenshots from different v1.5.x builds. Some controls, colors, labels or versions may differ from the latest package.*
-
-*Capturas de distintas versiones v1.5.x![Uploading buildtogether-session.png…]()
- en desarrollo. Algunos controles, colores, etiquetas o números de versión pueden variar respecto del paquete más reciente.*
 
 ### 3D Map Editor / Editor de mapas 3D
 
