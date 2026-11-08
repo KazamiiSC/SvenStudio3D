@@ -1,3 +1,7 @@
+
+
+
+
 # SvenStudio 3D — Version 1.5.23
 
 **A modern, browser-based 3D map editor for Sven Co-op (GoldSrc / Svengine).**
@@ -5,7 +9,7 @@
 Created by **KZ-Sheez** with the help of **ChatGPT-6 Astra**.
 
 <p align="center">
-  <img src="assets/screenshots/home.png" alt="SvenStudio 3D — modern home screen" width="100%" />
+  <img src="https://github.com/user-attachments/assets/69959e8e-082f-46f5-9418-8a7e05edb67b" alt="SvenStudio 3D — modern home screen" width="100%" />
 </p>
 
 **Languages / Idiomas:** [English](#english) | [Español](#español) | [Screenshots / Galería](#screenshots--galería)
@@ -21,7 +25,7 @@ Created by **KZ-Sheez** with the help of **ChatGPT-6 Astra**.
 ### 3D Map Editor / Editor de mapas 3D
 
 <p align="center">
-  <img src="assets/screenshots/map-editor.png" width="94%" alt="Map Editor — editable brush geometry, WAD textures, gizmos and properties" />
+  <img src="https://github.com/user-attachments/assets/64ad59b8-1d4f-4585-9c2f-36b713e5c7e5"Map Editor — editable brush geometry, WAD textures, gizmos and properties" />
 </p>
 
 ### Terrain & Shape Studio / Estudio de terrenos y formas
