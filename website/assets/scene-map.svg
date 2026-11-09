@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" fill="none">
+<defs>
+ <linearGradient id="back" x1="250" y1="20" x2="700" y2="540" gradientUnits="userSpaceOnUse"><stop stop-color="#0e263d"/><stop offset="1" stop-color="#04111f"/></linearGradient>
+ <linearGradient id="floor" x1="380" y1="280" x2="620" y2="560" gradientUnits="userSpaceOnUse"><stop stop-color="#154960"/><stop offset="1" stop-color="#0b2037"/></linearGradient>
+ <linearGradient id="wall" x1="290" y1="190" x2="300" y2="428" gradientUnits="userSpaceOnUse"><stop stop-color="#285d6e"/><stop offset="1" stop-color="#123448"/></linearGradient>
+ <linearGradient id="roof" x1="350" y1="128" x2="590" y2="325" gradientUnits="userSpaceOnUse"><stop stop-color="#3c7a81"/><stop offset="1" stop-color="#1a394d"/></linearGradient>
+ <linearGradient id="face" x1="500" y1="180" x2="590" y2="420" gradientUnits="userSpaceOnUse"><stop stop-color="#255975"/><stop offset="1" stop-color="#102940"/></linearGradient>
+ <linearGradient id="glass" x1="450" y1="212" x2="570" y2="390" gradientUnits="userSpaceOnUse"><stop stop-color="#51edff" stop-opacity=".62"/><stop offset="1" stop-color="#317cbd" stop-opacity=".06"/></linearGradient>
+ <linearGradient id="stairs" x1="626" y1="276" x2="700" y2="430" gradientUnits="userSpaceOnUse"><stop stop-color="#4d729a"/><stop offset="1" stop-color="#1e3c57"/></linearGradient>
+ <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(493 258) rotate(90) scale(300 470)"><stop stop-color="#0da4c4" stop-opacity=".22"/><stop offset="1" stop-color="#0da4c4" stop-opacity="0"/></radialGradient>
+ <filter id="beam"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<rect width="960" height="560" fill="url(#back)"/><rect width="960" height="560" fill="url(#glow)"/>
+<g stroke="#4de4ef" stroke-opacity=".10" stroke-width="1"><path d="M0 68H960M0 144H960M0 220H960M0 296H960M0 372H960M0 448H960M0 524H960"/><path d="M40 0V560M116 0V560M192 0V560M268 0V560M344 0V560M420 0V560M496 0V560M572 0V560M648 0V560M724 0V560M800 0V560M876 0V560"/></g>
+<g stroke="#6af2ff" stroke-opacity=".20" stroke-width="1.5"><path d="M160 425 453 279 800 415 502 555 160 425Z"/><path d="m160 425 342 130m-227-187 348 132m-228-193 350 137m-459-78 335 142M210 446l291-145M283 472l294-145M358 500l296-145M431 529l298-146"/></g>
+<!-- elevated terrain platform -->
+<path d="m140 409 337-156 347 140-334 169-350-153Z" fill="#112e42" stroke="#4bd8e6" stroke-opacity=".42" stroke-width="2"/>
+<path d="m140 409 350 153v-18L140 394v15Z" fill="#09263c" stroke="#4bd8e6" stroke-opacity=".25"/>
+<!-- building left wall -->
+<path d="m230 287 226-108 0 205-226 108V287Z" fill="url(#wall)" stroke="#61c5d5" stroke-opacity=".68" stroke-width="2"/>
+<path d="m456 179 192 83v202l-192-80V179Z" fill="url(#face)" stroke="#87d5e5" stroke-opacity=".73" stroke-width="2"/>
+<path d="m228 287 229-113 190 82-222 115-197-84Z" fill="url(#roof)" stroke="#b0fcfc" stroke-opacity=".75" stroke-width="2.5"/>
+<path d="m250 286 206-101 165 70-197 100-174-69Z" stroke="#bbffe0" stroke-opacity=".35" stroke-dasharray="5 5"/>
+<!-- roof mechanical patch -->
+<path d="m440 242 55-27 43 18-56 29-42-20Z" fill="#203c55" stroke="#64def1" stroke-opacity=".66"/>
+<path d="m462 236 33-16 23 10-33 17-23-11Z" fill="#142a3b" stroke="#bcfcff" stroke-opacity=".65"/>
+<!-- roof slabs -->
+<path d="m282 295 0 29 80-39v-27" stroke="#5ae8eb" stroke-opacity=".32"/><path d="m362 287 0 29 79-38v-29" stroke="#5ae8eb" stroke-opacity=".32"/>
+<!-- left wall windows -->
+<path d="m265 322 76-37v85l-76 37v-85Z" fill="#0b2a43" stroke="#74e4eb" stroke-width="2"/><path d="m272 325 63-30v68l-63 31v-69Z" fill="url(#glass)"/><path d="m303 308v72m-32-19 64-30" stroke="#81ddeb" stroke-opacity=".64"/>
+<path d="m365 269 67-32v86l-67 33v-87Z" fill="#08283e" stroke="#7be8ef" stroke-opacity=".8" stroke-width="2"/><path d="m370 271 57-27v73l-57 29v-75Z" fill="url(#glass)"/><path d="m397 258v73" stroke="#a6efff" stroke-opacity=".55"/>
+<!-- right wall door -->
+<path d="m502 242 82 33v125l-82-32V242Z" fill="#102638" stroke="#a5e8d6" stroke-width="2.3"/><path d="m511 255 64 27v103l-64-26V255Z" fill="#183b55"/><path d="m511 255 64 27v103l-64-26V255Z" stroke="#25cee3" stroke-opacity=".35"/><path d="m521 266 0 85m14-78v83m15-76v82m14-75v80" stroke="#b9f5f4" stroke-opacity=".17"/>
+<circle cx="562" cy="334" r="4.2" fill="#b9fa6f"/><circle cx="562" cy="334" r="11" stroke="#b9fa6f" stroke-opacity=".38"/>
+<!-- entry ramp -->
+<path d="m498 374 91 37-41 25-100-38 50-24Z" fill="#315872" stroke="#75efed" stroke-opacity=".6"/><path d="m448 398 100 38v10l-100-39v-9Z" fill="#132d41"/>
+<!-- steps outside -->
+<path d="m605 414 70-37 90 37-70 37-90-37Z" fill="url(#stairs)" stroke="#75d6dc" stroke-opacity=".7"/>
+<path d="m605 414 90 37v19l-90-38v-18Z" fill="#123047"/><path d="m632 429 70-38 68 28-70 39-68-29Z" fill="#46759a" stroke="#95e6e8" stroke-opacity=".55"/>
+<path d="m632 429 68 29v14l-68-29v-14Z" fill="#17374b"/><path d="m659 441 67-37 55 22-66 38-56-23Z" fill="#4f80a2" stroke="#98e5e6" stroke-opacity=".5"/><path d="m659 441 56 23v13l-56-24v-12Z" fill="#17374b"/>
+<!-- crate -->
+<path d="m215 446 60-28 70 27-59 32-71-31Z" fill="#687c7d" stroke="#acebd7" stroke-opacity=".8"/><path d="m215 446 71 31v56l-71-32v-55Z" fill="#273f51" stroke="#69b7c7"/><path d="m286 477 59-32v58l-59 30v-56Z" fill="#254559" stroke="#69b7c7"/><path d="m232 455 44 20m-40-6 40 18m13-5 40-23m-29 35 31-16" stroke="#87bcc3" stroke-opacity=".6"/>
+<!-- light halos -->
+<circle cx="520" cy="217" r="90" fill="#40fbf4" fill-opacity=".09" filter="url(#beam)"/><path d="m516 227-77 179 175 65-76-244Z" fill="#55fce7" fill-opacity=".05"/>
+<!-- selection edges -->
+<path d="m228 287 229-113 190 82v207l-192-80-227 109V287Z" stroke="#b9ff6e" stroke-width="2.2" stroke-dasharray="9 7" stroke-opacity=".9"/>
+<path d="m228 287 227 96 192-127" stroke="#b9ff6e" stroke-opacity=".35" stroke-dasharray="6 7"/>
+<g fill="#b9ff6e" stroke="#061323" stroke-width="2"><rect x="222" y="281" width="11" height="11"/><rect x="450" y="169" width="11" height="11"/><rect x="642" y="250" width="11" height="11"/><rect x="450" y="379" width="11" height="11"/><rect x="223" y="487" width="11" height="11"/></g>
+<!-- gizmo -->
+<circle cx="459" cy="386" r="10" fill="#081625" stroke="#fff" stroke-opacity=".8"/><path d="M459 386v-79" stroke="#8aff7d" stroke-width="4"/><path d="m459 307-8 14h16l-8-14Z" fill="#8aff7d"/><path d="m459 386 91 34" stroke="#ff806f" stroke-width="4"/><path d="m550 420-15-12-4 13 19-1Z" fill="#ff806f"/><path d="m459 386-73 40" stroke="#7ca5ff" stroke-width="4"/><path d="m386 426 16-1-8-14-8 15Z" fill="#7ca5ff"/>
+<!-- details -->
+<g font-family="monospace" fill="#83d6e6" font-size="11"><text x="38" y="39">XY / 512.0</text><text x="38" y="56">ZOOM 100%</text><text x="828" y="38">BRUSHES: 024</text><text x="828" y="55">ENTITIES: 008</text><text x="41" y="532">WORLD / GRID: 16</text></g>
+<g fill="#b9ff6e"><circle cx="98" cy="125" r="2"/><circle cx="887" cy="168" r="2"/><circle cx="806" cy="514" r="2"/></g>
+</svg>
