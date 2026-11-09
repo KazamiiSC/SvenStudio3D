@@ -2,8 +2,7 @@
 
 # SVENSTUDIO 3D
 
-### Build worlds. Connect systems. Bring Sven Co-op maps to life.
-
+###
 **A modern browser-based level editor for Sven Co-op · GoldSrc · Svengine**
 
 [![Release](https://img.shields.io/badge/RELEASE-v1.7.19-7058e8?style=for-the-badge)](https://github.com/KazamiiSC/SvenStudio3D/releases)
