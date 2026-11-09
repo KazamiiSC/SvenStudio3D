@@ -1,78 +1,139 @@
-# SvenStudio 3D — v1.7.19
+<div align="center">
 
-**A modern, browser-based 3D map editor for Sven Co-op (GoldSrc / Svengine).**
+# SVENSTUDIO 3D
 
-Created by **KZ-Sheez** with AI-assisted development.
+### Build worlds. Connect systems. Bring Sven Co-op maps to life.
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/69959e8e-082f-46f5-9418-8a7e05edb67b" alt="SvenStudio 3D — modern home screen" width="100%" />
-</p>
+**A modern browser-based level editor for Sven Co-op · GoldSrc · Svengine**
 
-**Languages / Idiomas:** [English](#english) | [Español](#español)
+[![Release](https://img.shields.io/badge/RELEASE-v1.7.19-7058e8?style=for-the-badge)](https://github.com/KazamiiSC/SvenStudio3D/releases)
+![Platform](https://img.shields.io/badge/PLATFORM-Windows%20x64-2384b8?style=for-the-badge)
+![Engine](https://img.shields.io/badge/ENGINE-GoldSrc%20%2F%20Svengine-168c9c?style=for-the-badge)
+![Languages](https://img.shields.io/badge/LANGUAGES-6-364d78?style=for-the-badge)
 
-> **Release status:** v1.7.19 is a release candidate for the 1.7 series, not a guarantee of bug-free operation. The general automated test run previously reported 544/556 passing, with 12 remaining failures requiring investigation. Use backups for important projects; test SDK/SDHLT maps inside Sven Co-op before publishing.
+[**Download Release**](https://github.com/KazamiiSC/SvenStudio3D/releases) · [**Features**](#-features-at-a-glance) · [**Screenshots**](#-screenshots) · [**Installation**](#-get-started) · [**English / Español**](#-full-documentation--documentación-completa)
 
----
+<img src="https://github.com/user-attachments/assets/69959e8e-082f-46f5-9418-8a7e05edb67b" alt="SvenStudio 3D home screen" width="100%" />
 
-### 3D Map Editor / Editor de mapas 3D
+**Created by KZ-Sheez · AI-assisted development**
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/64ad59b8-1d4f-4585-9c2f-36b713e5c7e5" alt="Map Editor — editable brush geometry, WAD textures, gizmos and properties" width="100%" />
-</p>
+</div>
 
-### Terrain & Shape Studio / Estudio de terrenos y formas
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/e7c19164-1c08-49ee-abca-f5383405e03f" width="88%" alt="Terrain & Shape Studio — sculpt terrain preview" />
-</p>
-
-### Models, NPCs and sounds / Modelos, NPC y sonidos
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/d22a8684-fe95-4350-8feb-c8d46c9174ff" width="49%" alt="Model Browser — MDL asset thumbnails" />
-  <img src="https://github.com/user-attachments/assets/c9bcc851-fa11-4043-9dde-29281cb78a03" width="49%" alt="NPC & AI Studio — NPC preview and waypoint tools" />
-</p>
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/4de5587f-3894-46ea-95d1-4a45277e42a6" width="85%" alt="Sound & Atmosphere Studio — sound browser and waveform" />
-</p>
-
-### Gameplay and cinematic tools / Jugabilidad y cámaras cinematográficas
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/0db538e3-1c8d-4ceb-9239-c7709c591724" width="49%" alt="Gameplay Studio — target and targetname visual connections" />
-  <img src="https://github.com/user-attachments/assets/a2ce221e-b7e8-4c9d-bcb2-06a24e076261" width="49%" alt="Gameplay Test — first-person map preview" />
-</p>
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/e33d1462-98fb-4b9f-910a-f11a083b4206" width="88%" alt="Cinematic Camera Studio — native camera entities and path preview" />
-</p>
-
-### Advanced lighting and True Lighting / Iluminación avanzada y True Lighting
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/6b46a39f-cd47-49d8-b3df-d125acea01fc" width="86%" alt="Advanced Lighting Studio — light, sky and fog settings" />
-</p>
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/5cc010c2-4c1c-4e51-a81b-509cd269de8c" width="49%" alt="True Lighting — SC-RAD RGB lightmap preview in the editor" />
-  <img src="https://github.com/user-attachments/assets/12e52d0a-acd2-428d-a4ef-2cb3261e9df9" width="49%" alt="Sven Co-op engine — corresponding compiled lighting in game" />
-</p>
-
-### BSP Viewer / Visor de mapas BSP
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/0a340e23-3440-474d-944e-7b479fb6f65f" width="49%" alt="BSP Viewer — exterior map, entities and GoldSrc material preview" />
-  <img src="https://github.com/user-attachments/assets/689e0298-c743-4da3-b049-cc5a721a4a94" width="49%" alt="BSP Viewer — first-person interior walkthrough" />
-</p>
-
-### BuildTogether / Edición multijugador
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/78416736-1a14-4921-ac33-0fde055751ee" width="43%" alt="BuildTogether — connected multiplayer mapping session" />
-  <img src="https://github.com/user-attachments/assets/c982e261-14e6-4564-a1a1-2cabd499140b" width="55%" alt="BuildTogether — shared map geometry and remote participant cursor" />
-</p>
+> [!IMPORTANT]
+> **v1.7.19 is a release candidate**, not a claim of zero bugs. The previously reported general test run passed **544/556** checks; 12 still require investigation. Keep backups and verify compiled maps in Sven Co-op. Advanced features such as SDHLT and BuildTogether are experimental.
 
 ---
 
-## English
+## ✦ Features at a glance
+
+| Create & edit | Design & test | Compile & collaborate |
+| :--- | :--- | :--- |
+| **3D MAP Editor** — brushes, CSG, vertices, edges & faces | **Gameplay Studio 3.0** — spatial entity logic & events | **SC SDK** — CSG, BSP, VIS & RAD |
+| **Texture Studio 2.0** — WAD, UV, alignment & texture lock | **True Lighting** — baked RGB preview, SC-RAD / SDHLT | **SDHLT (experimental)** — AO & PCF options |
+| **Terrain & Shape Studio** — brush-based terrain | **BSP Viewer** — lighting, models & map inspection | **BuildTogether** — shared editing & remote cameras |
+| **Architecture, prefabs & smart placement** | **NPC & AI, sounds, cinematic cameras** | **Map Doctor, leak tracing & packaging** |
+
+<div align="center">
+
+**Edit in your browser** · **Compile with local tools** · **No system-wide Node.js installation for the complete Windows release**
+
+</div>
+
+---
+
+## ✦ Screenshots
+
+### 01 / Map Editor — Create with precision
+
+<p align="center"><img src="https://github.com/user-attachments/assets/64ad59b8-1d4f-4585-9c2f-36b713e5c7e5" alt="SvenStudio 3D map editor" width="100%" /></p>
+
+### 02 / True Lighting — See compiled lightmaps
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/5cc010c2-4c1c-4e51-a81b-509cd269de8c" alt="True Lighting compiled preview" width="49%" />
+  <img src="https://github.com/user-attachments/assets/12e52d0a-acd2-428d-a4ef-2cb3261e9df9" alt="Corresponding lighting in Sven Co-op" width="49%" />
+</p>
+
+<sub>Left: editor preview · Right: Sven Co-op. Results depend on compiler settings and map content.</sub>
+
+### 03 / BSP Viewer — Explore compiled maps
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/0a340e23-3440-474d-944e-7b479fb6f65f" alt="BSP Viewer exterior" width="49%" />
+  <img src="https://github.com/user-attachments/assets/689e0298-c743-4da3-b049-cc5a721a4a94" alt="BSP Viewer interior" width="49%" />
+</p>
+
+<details>
+<summary><b>Explore more screenshots / Ver más capturas</b></summary>
+
+#### Terrain & Shape Studio
+<p align="center"><img src="https://github.com/user-attachments/assets/e7c19164-1c08-49ee-abca-f5383405e03f" alt="Terrain studio" width="88%" /></p>
+
+#### Models & NPCs
+<p align="center"><img src="https://github.com/user-attachments/assets/d22a8684-fe95-4350-8feb-c8d46c9174ff" alt="Model Browser" width="49%" /> <img src="https://github.com/user-attachments/assets/c9bcc851-fa11-4043-9dde-29281cb78a03" alt="NPC & AI Studio" width="49%" /></p>
+
+#### Sound & Atmosphere
+<p align="center"><img src="https://github.com/user-attachments/assets/4de5587f-3894-46ea-95d1-4a45277e42a6" alt="Sound Studio" width="85%" /></p>
+
+#### Gameplay & Cinematic Cameras
+<p align="center"><img src="https://github.com/user-attachments/assets/0db538e3-1c8d-4ceb-9239-c7709c591724" alt="Gameplay Studio" width="49%" /> <img src="https://github.com/user-attachments/assets/a2ce221e-b7e8-4c9d-bcb2-06a24e076261" alt="Gameplay Test" width="49%" /></p>
+<p align="center"><img src="https://github.com/user-attachments/assets/e33d1462-98fb-4b9f-910a-f11a083b4206" alt="Cinematic Camera Studio" width="88%" /></p>
+
+#### Lighting & Environment Studio
+<p align="center"><img src="https://github.com/user-attachments/assets/6b46a39f-cd47-49d8-b3df-d125acea01fc" alt="Lighting Studio" width="86%" /></p>
+
+#### BuildTogether
+<p align="center"><img src="https://github.com/user-attachments/assets/78416736-1a14-4921-ac33-0fde055751ee" alt="BuildTogether collaborative session" width="43%" /> <img src="https://github.com/user-attachments/assets/c982e261-14e6-4564-a1a1-2cabd499140b" alt="BuildTogether map collaboration" width="55%" /></p>
+
+</details>
+
+---
+
+## ✦ What's new in 1.7
+
+- **Gameplay Studio 3.0:** Interactive top/isometric entity map, event inspection, filters and native keyvalue connections.
+- **SC-RAD + SDHLT True Lighting:** Preview compiled RGB lightmaps; optional SDHLT AO and PCF settings, explicit compiler selection and a free-camera preview.
+- **Improved workspace:** Docking/layout fixes, scalable panels and fullscreen camera controls.
+- **BuildTogether upgrades:** Remote camera visualization, selection sharing, synchronization and reconnection improvements.
+- **Easier Windows startup:** Local Node.js runtime managed by the launcher; no separate system-wide installation for the complete package.
+- **Six UI languages:** English, Español, Русский, 한국어, 简体中文 and Português (Brasil).
+
+---
+
+## ✦ Get started
+
+**Complete Windows release / Versión completa para Windows**
+
+1. [**Download the complete ZIP / Descargá el ZIP completo**](https://github.com/KazamiiSC/SvenStudio3D/releases) and extract everything.
+2. Run **`SvenStudio3D.bat`**. If the local Node.js runtime is missing, the launcher downloads it on the first run; subsequent starts can work offline.
+3. SvenStudio opens in your browser. If needed, visit **`http://127.0.0.1:5173`**.
+4. In **Build Configuration**, select the Sven Co-op SDK, game folders and required WAD/FGD resources.
+5. For **SDHLT**, select **SDHLT — Experimental** and point it to **`tools/`** (or the folder containing its four `sdHL*_x64.exe` compilers). Make `sdhlt.wad` available in the WAD paths.
+
+> [!NOTE]
+> **SDHLT is already included in the complete Windows distribution**, so a separate SDHLT download is unnecessary. The source-code archive is different: it excludes preinstalled `node_modules` and requires Node.js/npm for development.
+
+### Quick controls / Controles rápidos
+
+| Keys | Action / Acción |
+| :---: | :--- |
+| `W A S D` · `Q / E` | Camera movement / Movimiento de cámara |
+| `G` · `R` · `C` | Move · Rotate · Scale / Mover · Rotar · Escalar |
+| `Right Mouse` | Camera look / Girar cámara |
+| `Z` | Point-selectable shading menu / Menú radial de sombreado |
+| `Ctrl+C` · `Ctrl+V` | Copy · Duplicate / Copiar · Duplicar |
+| `Esc` · `F8` | Cancel/release camera · True Lighting fallback / Cancelar/liberar cámara |
+
+**Controls depend on context.** `Ctrl+D` is intentionally not used for duplication. Fullscreen Escape capture depends on browser permissions.
+
+---
+
+## ✦ Full documentation / Documentación completa
+
+Both language references below preserve detailed tool descriptions, limitations, requirements and examples from the project's original documentation.
+
+<details>
+<summary><b>English — features, tools, setup, controls and troubleshooting notes</b></summary>
 
 ### About SvenStudio 3D
 
@@ -221,9 +282,10 @@ I would appreciate help testing, reporting issues, contributing improvements and
 - **Discord:** `kzsheez`
 - **Steam:** https://steamcommunity.com/id/KazamiiSC
 
----
+</details>
 
-## Español
+<details>
+<summary><b>Español — herramientas, instalación, controles y notas técnicas</b></summary>
 
 ### Acerca de SvenStudio 3D
 
@@ -372,4 +434,28 @@ Agradecería ayuda para probar el editor, informar errores, aportar mejoras y am
 - **Discord:** `kzsheez`
 - **Steam:** https://steamcommunity.com/id/KazamiiSC
 
+</details>
+
 ---
+
+## ✦ Credits & community
+
+**SvenStudio 3D** — Created by **KZ-Sheez** with AI-assisted development.
+
+**SDHLT** — Third-party GoldSrc compilation tools by **seedee**, based on Vluzacn's ZHLT v34 and earlier contributions. Original source and license information: **[seedee/SDHLT](https://github.com/seedee/SDHLT)**. SDHLT is independent; inclusion does not imply endorsement. Retain the original notices when redistributing binaries.
+
+**Community / Comunidad** — Bug reports, testing feedback and contributions are welcome.
+
+[![GitHub](https://img.shields.io/badge/GitHub-SvenStudio3D-24292f?logo=github&style=for-the-badge)](https://github.com/KazamiiSC/SvenStudio3D)
+[![Releases](https://img.shields.io/badge/Releases-Download-7058e8?style=for-the-badge)](https://github.com/KazamiiSC/SvenStudio3D/releases)
+[![Steam](https://img.shields.io/badge/Steam-KazamiiSC-1b2838?logo=steam&style=for-the-badge)](https://steamcommunity.com/id/KazamiiSC)
+
+**Discord:** `kzsheez`
+
+<div align="center">
+
+---
+
+**SVENSTUDIO 3D · MADE FOR THE SVEN CO-OP MAPPING COMMUNITY**
+
+</div>
