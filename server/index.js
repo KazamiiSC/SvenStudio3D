@@ -11,6 +11,7 @@ import {inspectSoundReference} from './soundDiagnostics.js';
 import {listSkies,skyFace} from './skyAssets.js';
 import {findBspWadTextures} from './bspWadAssets.js';
 import {prepareCompileWads} from './compileWads.js';
+import {resolveCompilerProfile} from './sdhltCompiler.js';
 import {inspectBspFile} from './bspAudit.js';
 import {createHash} from 'node:crypto';
 import {readBuildLeakPointfile} from './leakPointfile.js';
@@ -189,21 +190,28 @@ app.post('/api/bsp/decompile-map',express.raw({type:'application/octet-stream',l
 });
 app.post('/api/compile',async(req,res)=>{
   if(active)return res.status(409).json({error:'Another compile is already running.'});
-  const {mapName:requestedMapName,mapData,compilerDir,gameDir,wadPaths,fullVis=true,extraRad=true,radAmbientTest='off',previewOnly=false}=req.body||{};
+  const {mapName:requestedMapName,mapData,compilerDir,gameDir,wadPaths,fullVis=true,extraRad=true,radAmbientTest='off',previewOnly=false,compilerEngine='sc',sdhltDir='',sdhltAO=false,sdhltPCF='off'}=req.body||{};
   if(previewOnly!==false&&!isPreviewCompile(previewOnly))return res.status(400).json({error:'Invalid previewOnly flag.'});
   let plan;
   try{plan=lightTestSettings(requestedMapName,radAmbientTest);}catch(error){return res.status(400).json({error:String(error.message||error)});}
-  const {name:mapName,ambient:lightAmbient}=plan;
+  let {name:mapName,ambient:lightAmbient}=plan;
   if(!validMapName(mapName)||typeof mapData!=='string'||mapData.length<40||mapData.length>20_000_000)
     return res.status(400).json({error:'Invalid map name or source.'});
-  if(!await isDir(compilerDir)||!await isDir(gameDir))return res.status(400).json({error:'Compiler and game directories must exist on this PC.'});
-  const executables=[];
-  for(const st of stages){
-    const candidates=[`SC-${st}_x64.exe`,`SC-${st}.exe`,`SC_${st}_x64.exe`,`SC_${st}.exe`];
-    let found=candidates.map(n=>path.join(compilerDir,n)).find(existsSync);
-    if(!found)return res.status(400).json({error:`Compiler missing: ${st} in ${compilerDir}`});
-    executables.push(found);
+  if(!await isDir(gameDir))return res.status(400).json({error:'Game directory must exist on this PC.'});
+  let profile;
+  try{profile=resolveCompilerProfile({compilerEngine,compilerDir,sdhltDir,sdhltAO,sdhltPCF});}
+  catch(error){return res.status(400).json({error:error.message});}
+  if(!await isDir(profile.dir))return res.status(400).json({error:'Selected compiler directory does not exist.'});
+  if(profile.engine==='sdhlt'){
+    const userWadList=Array.isArray(wadPaths)?wadPaths:[];
+    const hasCustomWad=userWadList.some(entry=>typeof entry==='string'&&path.win32.basename(entry.replaceAll('\\','/')).toLowerCase()==='sdhlt.wad'&&existsSync(entry));
+    if(!existsSync(profile.requiredWad)&&!hasCustomWad)
+      return res.status(400).json({error:'SDHLT requires sdhlt.wad. Place it beside the SDHLT compilers or add its full path under WAD paths.'});
+    // Distinct map name: an experimental compiler must never overwrite the SC BSP.
+    mapName=`${mapName}_sdhlt`;
+    if(!validMapName(mapName))return res.status(400).json({error:'Map name too long for the SDHLT output suffix.'});
   }
+  const executables=profile.executablePaths;
   // Only a user-selected local compiler is executed; service listens on loopback only.
   // Every compile gets an isolated directory. Never reuse .bsp/.p0/.prt from older builds.
   const workRoot=path.join(os.tmpdir(),'svenstudio-builds');
@@ -214,7 +222,7 @@ app.post('/api/compile',async(req,res)=>{
   const builtInWad=path.resolve('public','svstudio.wad');
   let source=mapData, wadPlan;
   try{
-    wadPlan=await prepareCompileWads(source,{gameDir,compilerDir,builtInWad,configuredWadPaths:Array.isArray(wadPaths)?wadPaths:[]});
+    wadPlan=await prepareCompileWads(source,{gameDir,compilerDir:profile.dir,builtInWad,configuredWadPaths:[...(Array.isArray(wadPaths)?wadPaths:[]),...(profile.engine==='sdhlt'&&existsSync(profile.requiredWad)?[profile.requiredWad]:[])]});
     source=wadPlan.map;
     if(wadPlan.missingWads.length){
       throw new Error(`Missing WAD files: ${wadPlan.missingWads.join(', ')}. Set full local WAD paths in Settings (WAD paths) or install the WAD files in svencoop_addon/ or svencoop/. The compiler must be able to read the WAD files. The project and its textures were not modified.`);
@@ -241,6 +249,8 @@ app.post('/api/compile',async(req,res)=>{
   res.setHeader('Cache-Control','no-cache');res.setHeader('X-Accel-Buffering','no');
   active={child:null,cancelled:false};const task=active;
   send(res,'info',`Working directory: ${workDir}`);
+  send(res,'info',`Compiler engine: ${profile.engine==='sc'?'Sven Co-op SDK':'SDHLT (experimental)'}; selected directory: ${profile.dir}`);
+  if(profile.engine==='sdhlt')send(res,'warning','SDHLT targets Half-Life GoldSrc. Compiled maps must be checked in Sven Co-op; use the SC toolchain if SDHLT fails or produces incompatible BSPs.');
   if(lightAmbient!==null)send(res,'warning',`SC-RAD LIGHT TEST ONLY: -ambient ${lightAmbient} ${lightAmbient} ${lightAmbient}. Output ${mapName}.bsp; base BSP ${requestedMapName}.bsp remains untouched. Lighting is diagnostic, not a restoration of original lightmaps.`);
   send(res,'info',`MAP SHA-256: ${createHash('sha256').update(source).digest('hex')}`);
   send(res,'info',`Resolved WADs used for THIS build: ${wadPlan.resolvedWadList.join('; ')||'(none)'}`);
@@ -259,8 +269,8 @@ app.post('/api/compile',async(req,res)=>{
       if(task.cancelled)throw new Error('Build cancelled by user.');
       const stage=stages[i];
       const args=[mapBase];if(stage==='VIS'&&fullVis)args.push('-full');if(stage==='RAD'&&extraRad)args.push('-extra');
-      if(stage==='RAD')args.push(...lightTestRadArgs(lightAmbient));
-      send(res,'stage',`Starting SC-${stage}...`,{stage});
+      if(stage==='RAD'){args.push(...lightTestRadArgs(lightAmbient));args.push(...profile.radArgs);}
+      send(res,'stage',`Starting ${profile.engine==='sc'?'SC':'SDHLT'}-${stage}...`,{stage});
       let illegalBrush=false;
       await new Promise((resolve,reject)=>{
         const child=spawn(executables[i],args,{cwd:workDir,windowsHide:true,stdio:['ignore','pipe','pipe']});
@@ -285,9 +295,9 @@ app.post('/api/compile',async(req,res)=>{
         });
       });
       if(stage==='CSG'&&illegalBrush){
-        throw new Error('SC-CSG detected an invalid brush. Build stopped before SC-BSP. Check brush face winding/planarity in your MAP source.');
+        throw new Error('CSG detected an invalid brush. Build stopped before BSP. Check brush face winding/planarity in your MAP source.');
       }
-      send(res,'stage',`SC-${stage} finished successfully.`,{stage});
+      send(res,'stage',`${profile.engine==='sc'?'SC':'SDHLT'}-${stage} finished successfully.`,{stage});
       if(stage==='BSP')await sendLeak();
     }
     if(!existsSync(`${mapBase}.bsp`))throw new Error('Compilers finished but did not create a .bsp file.');
@@ -310,7 +320,7 @@ app.post('/api/compile',async(req,res)=>{
       const compiled=path.join(workDir,`${mapName}.bsp`);
       const stat=await fs.stat(compiled);
       lastLightingPreview=createLightingPreviewRecord(compiled,stat.size);
-      send(res,'complete',`SC-RAD preview ready: ${mapName}.bsp (not installed in the game).`,{previewId:lastLightingPreview.id});
+      send(res,'complete',`${profile.engine==='sc'?'SC-RAD':'SDHLT RAD'} preview ready: ${mapName}.bsp (not installed in the game).`,{previewId:lastLightingPreview.id});
       return;
     }
     const mapsDir=path.join(gameDir,'maps');await fs.mkdir(mapsDir,{recursive:true});

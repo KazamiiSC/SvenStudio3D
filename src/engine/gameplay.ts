@@ -13,7 +13,7 @@ export type GameplayConnection={from:string;to:string;name:string};
 export function getConnections(objects:MapObject[]):GameplayConnection[]{
   const entities=objects.filter(entity);
   const targets=new Map<string,PointEntity[]>();
-  for(const e of entities){const name=e.props.targetname?.trim();if(name)targets.set(name,[...(targets.get(name)||[]),e]);}
+  for(const e of entities){const name=e.props.targetname?.trim();if(name){const list=targets.get(name)||[];list.push(e);targets.set(name,list);}}
   return entities.flatMap(source=>{
     const name=source.props.target?.trim();
     return name?(targets.get(name)||[]).map(dest=>({from:source.id,to:dest.id,name})):[];
@@ -64,17 +64,19 @@ export function analyzeGameplay(objects:MapObject[]):GameplayIssue[]{
   const issues:GameplayIssue[]=[];
   const entities=objects.filter(entity);
   const byName=new Map<string,PointEntity[]>();
-  for(const e of entities){const n=e.props.targetname?.trim();if(n)byName.set(n,[...(byName.get(n)||[]),e]);}
+  for(const e of entities){const n=e.props.targetname?.trim();if(n){const list=byName.get(n)||[];list.push(e);byName.set(n,list);}}
+  const brushOwners=new Set(objects.filter(brush).map(b=>b.entityId).filter(Boolean));
+  const entityIds=new Set(entities.map(e=>e.id));
   for(const e of entities){
     const target=e.props.target?.trim();
     if(target&&!target.startsWith('!')&&!byName.has(target))issues.push({severity:'warning',message:`${e.classname}: target "${target}" has no matching targetname.`,entityId:e.id});
     if(target&&e.props.targetname&&target===e.props.targetname)issues.push({severity:'warning',message:`${e.classname}: self-referencing target "${target}".`,entityId:e.id});
-    if(['func_door','func_button','func_door_rotating','trigger_multiple','trigger_once'].includes(e.classname)&&!objects.some(o=>brush(o)&&o.entityId===e.id))
+    if(['func_door','func_button','func_door_rotating','trigger_multiple','trigger_once'].includes(e.classname)&&!brushOwners.has(e.id))
       issues.push({severity:'error',message:`${e.classname} requires a linked brush, but none was found.`,entityId:e.id});
     if(e.classname==='func_button'&&!target)issues.push({severity:'warning',message:'func_button has no target; pressing it will not activate another entity.',entityId:e.id});
     if(e.classname==='trigger_relay'&&!target)issues.push({severity:'warning',message:'trigger_relay has no target.',entityId:e.id});
   }
-  for(const b of objects.filter(brush))if(b.entityId&&!entities.some(e=>e.id===b.entityId))
+  for(const b of objects.filter(brush))if(b.entityId&&!entityIds.has(b.entityId))
     issues.push({severity:'error',message:`Brush "${b.name}" references a missing entity.`,entityId:b.id});
   return issues;
 }

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import {loadEditStep,saveEditStep,loadVisibleGridStep,saveVisibleGridStep,normalizeGridStep} from './engine/gridPrecision';
-import {createRockCluster,createTerrainBrushes,terrainBrushSignature,terrainRecord,type TerrainDraft,type RockOptions} from './engine/terrain';
+import {createRockCluster,createTerrainBrushes,terrainBrushMatchesSignature,terrainRecord,type TerrainDraft,type RockOptions} from './engine/terrain';
 import {constrainDecalToBrush} from './engine/decalSurface';
 import type {ShadingMode} from './engine/shadingPie';
 import { DEFAULT_CONTROLS,readControls,saveControls } from './engine/controls';
@@ -37,8 +37,9 @@ import {DEFAULT_MAP_LABEL_SETTINGS,loadMapLabelSettings,saveMapLabelSettings,nor
 export type ToolMode='select'|'translate'|'rotate'|'scale';
 export type ResourceView='objects'|'entities'|'textures'|'materials'|'decals'|'models'|'npcs'|'sounds'|'layers';
 export type RadAmbientTest='off'|'0.08'|'0.15'|'0.25';
-export type Settings={compilerDir:string;gameDir:string;wadPaths:string;mapName:string;radAmbientTest:RadAmbientTest};
-export const DEFAULT_SETTINGS:Settings={compilerDir:'',gameDir:'',wadPaths:'',mapName:'svstudio_test',radAmbientTest:'off'};
+export type CompilerEngine='sc'|'sdhlt';
+export type Settings={compilerDir:string;gameDir:string;wadPaths:string;mapName:string;radAmbientTest:RadAmbientTest;compilerEngine?:CompilerEngine;sdhltDir?:string;sdhltAO?:boolean;sdhltPCF?:'off'|'1'|'2'|'4'};
+export const DEFAULT_SETTINGS:Settings={compilerDir:'',gameDir:'',wadPaths:'',mapName:'svstudio_test',radAmbientTest:'off',compilerEngine:'sc',sdhltDir:'',sdhltAO:false,sdhltPCF:'off'};
 const BOX='SV_BRICK01';
 function texBrush(b:Brush,t=BOX){return {...b,faces:b.faces.map(f=>({...f,texture:t}))};}
 /** UV tools must use the identical texture dimensions and WAD priority as
@@ -859,7 +860,7 @@ export const useEditor=create<State>((set,get)=>({
       if(previous.brushIds.length!==previous.brushSignatures.length)throw Error('Terrain source metadata is incomplete.');
       for(let i=0;i<previous.brushIds.length;i++){
         const obj=s.project.objects.find(o=>o.id===previous.brushIds[i]);
-        if(!obj||obj.kind!=='brush'||obj.locked||terrainBrushSignature(obj)!==previous.brushSignatures[i])
+        if(!obj||obj.kind!=='brush'||obj.locked||!terrainBrushMatchesSignature(obj,previous.brushSignatures[i]))
           throw Error('This terrain was edited, locked or partially removed. Your changes were preserved; create a new terrain instead.');
       }
     }

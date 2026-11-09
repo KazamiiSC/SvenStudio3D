@@ -3175,7 +3175,7 @@ body>.topbar-floating-menu{box-shadow:0 16px 42px #040916bf}
 .architecture-draw-controls .architecture-error{color:#ffc9b5;margin-top:6px}
 @media(max-width:700px){.architecture-draw-controls{top:75px}.arch-mode-settings{grid-template-columns:1fr 1fr}}
 
-/* BuildTogether 2.0: smooth remote cursors without mutating map coordinates. */
+/* BuildTogether 3.0: smooth remote cursors without mutating map coordinates. */
 .bt-cursor{transition:left 85ms linear,top 85ms linear;will-change:left,top}
 @media (prefers-reduced-motion:reduce){.bt-cursor{transition:none}}
 .bt-network{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:10px 0;color:#b7dce9;font-size:12px}
@@ -3417,3 +3417,243 @@ html,body,#root{min-height:0}
 .folder-list button{display:flex;gap:8px;align-items:center;text-align:left;padding:9px 11px;background:transparent;color:#dcebf9;border:0;border-radius:6px;cursor:pointer;font-size:12px}
 .folder-list button:hover{background:#294561}
 .folder-list p{font-size:12px;color:#adc2d4;padding:10px}
+
+/* BuildTogether 3.1 presence: viewport-anchored, no full-screen hit layer. */
+.bt-presence-dock{position:absolute;top:78px;right:10px;z-index:31;box-sizing:border-box;width:min(238px,calc(100% - 20px));max-height:min(52%,420px);display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(100,177,224,.44);border-radius:12px;background:rgba(13,25,44,.94);box-shadow:0 9px 26px #0007;color:#d9efff;backdrop-filter:blur(8px);font-size:11px;pointer-events:auto}
+.bt-presence-dock.collapsed{width:auto;max-width:calc(100% - 20px)}
+.bt-presence-title{display:flex;align-items:center;gap:7px;width:100%;padding:9px 10px;background:rgba(55,97,147,.3);border:0;color:#e6f5ff;font-size:12px;cursor:pointer;text-align:left}
+.bt-presence-title strong{font-weight:700;overflow:hidden;text-overflow:ellipsis}
+.bt-presence-title>svg:last-child{margin-left:auto;flex-shrink:0}
+.bt-presence-count{background:rgba(75,192,168,.24);border:1px solid rgba(96,216,190,.5);border-radius:20px;padding:0 5px;font-size:10px}
+.bt-presence-actions{display:flex;gap:6px;padding:7px 9px;border-bottom:1px solid rgba(107,160,204,.2)}
+.bt-presence-actions button,.bt-presence-follow{display:inline-flex;align-items:center;justify-content:center;gap:4px;background:rgba(38,68,103,.8);border:1px solid rgba(108,167,211,.32);color:#b9d9ed;border-radius:6px;padding:4px 7px;font-size:10px;cursor:pointer}
+.bt-presence-actions button[aria-pressed=true],.bt-presence-follow.active{color:#ecfaff;border-color:#6cbaeb;background:rgba(52,131,178,.48)}
+.bt-presence-actions button:disabled{opacity:.45;cursor:default}
+.bt-presence-members{min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.bt-presence-person{padding:8px 9px;border-bottom:1px solid rgba(125,164,199,.14)}
+.bt-presence-identity{display:flex;align-items:center;gap:6px;min-width:0}
+.bt-presence-identity strong{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bt-presence-identity small{font-size:9px;color:#93b7cd;flex-shrink:0}
+.bt-presence-dot{width:9px;height:9px;flex-shrink:0;border-radius:50%;box-shadow:0 0 7px currentColor}
+.bt-presence-ping{display:inline-flex;align-items:center;gap:3px;white-space:nowrap;color:#8cdbce;font-variant-numeric:tabular-nums;font-size:10px}
+.bt-presence-activity{padding:5px 0 0 15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#b5cce4;font-size:10px}
+.bt-presence-follow{margin:7px 0 0 15px}
+.bt-presence-note{padding:6px 10px;color:#7c9baf;font-size:9px}
+.bt-camera-label{display:inline-block;max-width:160px;overflow:hidden;text-overflow:ellipsis;padding:2px 6px;border:1px solid;border-radius:5px;white-space:nowrap;background:#0d1b30ed;color:#f2fbff;font:700 11px/1.35 sans-serif;box-shadow:0 2px 5px #0007}
+@media(max-width:850px){.bt-presence-dock{top:56px;right:5px;width:min(206px,calc(100% - 10px));max-height:45%}}
+@media(max-width:530px){.bt-presence-dock{top:46px;max-width:min(178px,calc(100% - 8px))}.bt-presence-ping{font-size:9px}}
+
+/* Gameplay Studio 3.0 — responsive explorer, viewport-culling and native-keyvalue workspace.
+   Scoped to .gs-v3-shell so other studios, editors and BuildTogether are untouched. */
+.gs-v3-shell{width:min(1720px,97vw);height:min(980px,95dvh);border-color:#456984;background:#0c1a2c;box-shadow:0 24px 100px #01050fd9}
+.gs-v3-shell .gs-topbar{height:66px;flex-basis:66px;background:linear-gradient(100deg,#142e42,#171f3b);gap:12px}
+.gs-v3-shell .gs-logo{background:#164d60;color:#9ef2ed;border-color:#40889b}
+.gs-v3-shell .gs-version{font-style:normal;font-size:10px;vertical-align:middle;border:1px solid #3b8794;background:#215369;color:#c9fbff;padding:2px 6px;border-radius:6px}
+.gs-v3-shell .gs-top-count{margin-left:auto;white-space:nowrap}
+.gs-v3-shell .gs-mode-tabs{display:flex;align-items:center;gap:3px;padding:4px;border:1px solid #3b6082;background:#0c2036;border-radius:10px;min-width:0}
+.gs-v3-shell .gs-mode-tabs button{font-size:11px;font-weight:700;border:0;color:#a6bed5;background:transparent;padding:9px 13px;white-space:nowrap}
+.gs-v3-shell .gs-mode-tabs button.on{color:#f4ffff;background:#216385;box-shadow:inset 0 1px #a9eeff55}
+.gs-v3-shell .gs-dashboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) 26px;gap:9px;align-items:stretch;padding:9px 12px;background:#101e34;border-bottom:1px solid #31516a;flex:0 0 auto}
+.gs-v3-shell .gs-dashboard-card{display:flex;align-items:center;gap:10px;text-align:left;color:#b8e6fa;min-width:0;background:#192d45;border:1px solid #365674;border-radius:10px;padding:9px 12px;cursor:pointer}
+.gs-v3-shell .gs-dashboard-card:hover{background:#254563;border-color:#68bed9}
+.gs-v3-shell .gs-dashboard-card>svg{color:#82d5e5;flex-shrink:0}
+.gs-v3-shell .gs-dashboard-card span{display:flex;flex-direction:column;min-width:0;gap:1px}
+.gs-v3-shell .gs-dashboard-card strong{font-size:17px;line-height:1.1;font-variant-numeric:tabular-nums;color:#effcff}
+.gs-v3-shell .gs-dashboard-card small{font-size:10px;color:#a2c1d7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gs-v3-shell .gs-dashboard-toggle{align-self:center;padding:5px;background:transparent;border:0;color:#a6bbd0;cursor:pointer}
+.gs-v3-shell .gs-show-dashboard{align-self:center;background:#1a394d;border:1px solid #375c74;border-radius:5px;color:#bce5f9;padding:4px 10px;font-size:10px;display:flex;gap:7px;align-items:center}
+.gs-v3-shell .gs-layout{grid-template-columns:minmax(220px,240px) minmax(290px,1fr) minmax(245px,277px)}
+.gs-v3-shell .gs-v3-sidebar{gap:11px;background:#12263a;border-right:1px solid #32576f}
+.gs-v3-shell .gs-v3-inspector{background:#13253b;border-left:1px solid #32576f}
+.gs-v3-shell .gs-center{background:#0c1c2f}
+.gs-v3-shell .gs-canvas-tools{background:#172d43;gap:8px;flex-wrap:wrap;min-height:47px;height:auto;padding:6px 10px;flex:0 0 auto}
+.gs-v3-shell .gs-search-field{max-width:none;min-width:145px}
+.gs-v3-shell .gs-graph-summary{color:#9ccddd;background:#10253a}
+.gs-v3-shell .gs-viewport{background:#0b192c}
+.gs-v3-shell .gs-world{background-image:radial-gradient(#3b597498 1px,transparent 1px);background-size:22px 22px}
+.gs-v3-shell .gs-node.is-traced{box-shadow:0 0 0 2px #f2ce7e,0 0 17px #e8b75b55}
+.gs-v3-shell .gs-layer-filter{display:block;max-width:none;width:100%;height:36px}
+.gs-v3-shell .gs-explorer-summary{font-size:11px;color:#9fbcd6;border-bottom:1px solid #31516b;padding:3px 2px 9px}
+.gs-v3-shell .gs-explorer-items{display:flex;flex-direction:column;gap:4px;min-height:90px;overflow-y:auto;flex:1}
+.gs-v3-shell .gs-explorer-items button{display:flex;align-items:center;gap:8px;min-height:49px;text-align:left;background:#172d46;border:1px solid #32536f;color:#e0f3fb;border-radius:8px;padding:6px 9px;cursor:pointer;flex:0 0 auto}
+.gs-v3-shell .gs-explorer-items button:hover,.gs-v3-shell .gs-explorer-items button.is-current{background:#27516a;border-color:#76c4e0}
+.gs-v3-shell .gs-explorer-items button>span:last-child{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.gs-v3-shell .gs-explorer-items button strong{font-size:11px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.gs-v3-shell .gs-explorer-items button small{font-size:9px;color:#94b9d0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.gs-v3-shell .gs-browser-pages{display:flex;align-items:center;justify-content:space-between;gap:6px;color:#bfd7e5;font-size:10px}
+.gs-v3-shell .gs-browser-pages button{padding:5px 8px;border:1px solid #3d6480;color:#cbeefa;background:#23435c;border-radius:6px;display:grid;place-items:center;cursor:pointer}
+.gs-v3-shell .gs-browser-pages button:disabled{opacity:.3;cursor:default}
+.gs-v3-shell .gs-advanced-trace{display:flex;gap:7px;align-items:center;justify-content:center;padding:10px 8px!important;border:1px solid #4089a4!important;background:#21556e!important;color:#e2faff!important;border-radius:8px;font-size:11px;cursor:pointer;min-height:34px!important;flex-shrink:0}
+.gs-v3-shell .gs-advanced-trace:disabled{opacity:.45;cursor:default}
+.gs-v3-shell .gs-inspector-tabs{display:flex;gap:4px;padding:4px;background:#0b1d30;border:1px solid #315371;border-radius:9px;flex:0 0 auto}
+.gs-v3-shell .gs-inspector-tabs button{display:flex;align-items:center;justify-content:center;gap:5px;flex:1;min-width:0;padding:8px 5px;background:transparent;border:0;border-radius:6px;color:#a3bfd8;font-size:10px;cursor:pointer}
+.gs-v3-shell .gs-inspector-tabs button.on{background:#245676;color:#ebfdff;box-shadow:inset 0 1px #a2eaf85c}
+.gs-v3-shell .gs-issues{max-height:none;min-height:0;overflow-y:auto}
+.gs-v3-shell .gs-trace-steps{display:flex;flex-direction:column;gap:5px;overflow-y:auto;min-height:60px;flex:1}
+.gs-v3-shell .gs-trace-steps button{display:flex;gap:8px;align-items:center;text-align:left;padding:8px;color:#e5f4ff;background:#1a3850;border:1px solid #41627b;border-radius:7px;min-width:0;cursor:pointer}
+.gs-v3-shell .gs-trace-steps button:hover{background:#265a74}
+.gs-v3-shell .gs-trace-steps button span{display:flex;flex-direction:column;min-width:0;overflow-wrap:anywhere;font-size:10px}
+.gs-v3-shell .gs-trace-steps button small{color:#92c2d3;font-size:9px}
+.gs-v3-shell :is(button,input,select):focus-visible{outline:2px solid #7fdef3;outline-offset:1px}
+@media(max-width:1180px){.gs-v3-shell .gs-layout{grid-template-columns:198px minmax(220px,1fr) 225px}.gs-v3-shell .gs-mode-tabs button{padding:7px 8px}.gs-v3-shell .gs-dashboard{gap:5px}.gs-v3-shell .gs-dashboard-card{padding:7px 8px}.gs-v3-shell .gs-top-count{display:none}}
+@media(max-width:890px){.gs-v3-shell .gs-layout{grid-template-columns:180px minmax(220px,1fr)}.gs-v3-shell .gs-v3-inspector{display:flex;position:absolute;z-index:6;right:0;top:0;bottom:0;width:min(290px,60%);box-shadow:-12px 0 30px #0009;transform:translateX(calc(100% - 24px));transition:transform .2s}.gs-v3-shell .gs-v3-inspector:hover,.gs-v3-shell .gs-v3-inspector:focus-within{transform:none}.gs-v3-shell .gs-layout{position:relative}.gs-v3-shell .gs-dashboard-card:nth-child(4){display:none}.gs-v3-shell .gs-dashboard{grid-template-columns:repeat(3,minmax(0,1fr)) 22px}.gs-v3-shell .gs-topbar{padding:0 9px}.gs-v3-shell .gs-mode-tabs button{font-size:10px}}
+@media(max-width:640px){.gs-v3-shell .gs-layout{grid-template-columns:1fr}.gs-v3-shell .gs-v3-sidebar{display:none}.gs-v3-shell .gs-dashboard-card small{font-size:9px}.gs-v3-shell .gs-dashboard-card strong{font-size:13px}.gs-v3-shell .gs-topbar small{display:none}.gs-v3-shell .gs-mode-tabs{flex:1}.gs-v3-shell .gs-mode-tabs button{flex:1}.gs-v3-shell .gs-footer span:last-child{display:none}}
+.gs-v3-shell .gs-mode-tabs{flex-direction:row}
+.gs-v3-shell .gs-inspector-toggle{display:none;color:#c9eaf5;border:1px solid #426782;background:#204660;border-radius:7px;padding:7px;cursor:pointer}
+.gs-v3-shell .gs-inspector-mobile-close{display:none}
+@media(max-width:890px){.gs-v3-shell .gs-inspector-toggle{display:grid;place-items:center}.gs-v3-shell .gs-v3-inspector{transform:translateX(100%)}.gs-v3-shell .gs-v3-inspector.mobile-open{transform:none}.gs-v3-shell .gs-inspector-mobile-close{display:grid;align-self:flex-end;place-items:center;background:#254b63;border:1px solid #49758d;color:#e8fcff;border-radius:6px;padding:5px;cursor:pointer}}
+
+/* Gameplay Studio 3.1 — isolated presentation-only navigation for maps of all sizes. */
+.gs-v31-shell .gs-canvas-tools{gap:7px}
+.gs-v31-shell .gs-canvas-tools>span:first-child{white-space:nowrap}
+.gs-v31-shell .gs-scope-tabs{display:flex;flex:0 0 auto;gap:2px;padding:3px;border:1px solid #39617c;border-radius:9px;background:#0d2439}
+.gs-v31-shell .gs-scope-tabs button{background:transparent;border:0;border-radius:6px;padding:7px 9px;color:#accde2;font-size:10px;cursor:pointer;white-space:nowrap}
+.gs-v31-shell .gs-scope-tabs button.on{background:#287193;color:white;box-shadow:inset 0 1px #b5eeff4a}
+.gs-v31-shell .gs-breadcrumb-back,.gs-v31-shell .gs-overview-hint{display:flex;align-items:center;gap:4px;border:1px solid #3d88a5;background:#1a4b64;border-radius:7px;padding:6px 8px;color:#d5f4ff;font-size:10px;white-space:nowrap;cursor:pointer}
+.gs-v31-shell .gs-overview-hint{display:inline-flex;margin-left:14px}
+.gs-v31-shell .gs-systems-overview{flex:1;min-height:0;overflow:auto;padding:16px 18px 10px;background:radial-gradient(circle at 30% -10%,#224c602c,transparent 45%),#0b1a2d}
+.gs-v31-shell .gs-systems-intro{display:flex;align-items:center;gap:13px;margin:0 0 18px;padding:16px;border:1px solid #38617b;background:linear-gradient(115deg,#17374a,#12263a);border-radius:12px;color:#9de8ee}
+.gs-v31-shell .gs-systems-intro>svg{flex:0 0 auto}
+.gs-v31-shell .gs-systems-intro strong{display:block;color:#f0fcff;font-size:17px}
+.gs-v31-shell .gs-systems-intro p{font-size:11px;line-height:1.5;margin:5px 0 0;color:#afcbdc}
+.gs-v31-shell .gs-system-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:11px;align-content:start}
+.gs-v31-shell .gs-system-card{display:flex;align-items:center;gap:11px;min-width:0;min-height:112px;padding:12px;border-radius:12px;border:1px solid #3a5e7a;background:#182d47;text-align:left;color:#ddf6ff;cursor:pointer;transition:border-color .12s,background .12s}
+.gs-v31-shell .gs-system-card:hover,.gs-v31-shell .gs-system-card:focus-visible{border-color:#66d3e5;background:#21465d}
+.gs-v31-shell .gs-system-icon{display:grid;place-items:center;flex:0 0 39px;height:39px;border-radius:10px;color:var(--node-color);background:#0b2233;border:1px solid currentColor}
+.gs-v31-shell .gs-system-info{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0}
+.gs-v31-shell .gs-system-info strong{display:block;font-size:12px;color:#f2fdff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gs-v31-shell .gs-system-info small{font-size:10px;line-height:1.4;color:#9dbed5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gs-v31-shell .gs-system-metrics{display:flex;gap:5px;align-items:center;font-size:10px;color:#b4d5e6;flex-wrap:wrap}
+.gs-v31-shell .gs-system-metrics b{color:#86e7f1;font-variant-numeric:tabular-nums;margin-left:5px}
+.gs-v31-shell .gs-system-card>svg:last-child{flex:0 0 auto;color:#9ec8d9}
+.gs-v31-shell .gs-systems-pages{display:flex;gap:12px;align-items:center;justify-content:center;padding:18px 0 5px;color:#bedce7;font-size:11px}
+.gs-v31-shell .gs-systems-pages button,.gs-v31-shell .gs-empty-systems button{background:#244b68;color:#e3fcff;border:1px solid #467a96;border-radius:6px;padding:8px;cursor:pointer}
+.gs-v31-shell .gs-systems-pages button:disabled{opacity:.35;cursor:default}
+.gs-v31-shell .gs-empty-systems{display:flex;flex-direction:column;align-items:center;gap:12px;padding:30px;color:#aacddd}
+.gs-v31-shell .gs-minimap{right:12px;bottom:12px;transform:scale(.78);transform-origin:bottom right}
+.gs-v31-shell .gs-minimap.gs-minimap-left{right:auto;left:12px;transform-origin:bottom left}
+.gs-v31-shell .gs-minimap-title{display:flex;align-items:center;gap:6px}
+.gs-v31-shell .gs-minimap-move{margin-left:auto;display:grid;place-items:center;border:1px solid #416c86;background:#1e4a63;border-radius:5px;padding:3px;cursor:pointer;color:#b4e5f1}
+.gs-v31-shell .gs-low-zoom .gs-node-body{display:none}
+.gs-v31-shell .gs-low-zoom .gs-node{background:#1d3650}
+.gs-v31-shell .gs-low-zoom .gs-node-head{height:50px}
+.gs-v31-shell .gs-low-zoom .gs-node-head strong{font-size:14px}
+@media(max-width:1200px){.gs-v31-shell .gs-scope-tabs button{padding:6px}.gs-v31-shell .gs-system-grid{grid-template-columns:repeat(auto-fill,minmax(215px,1fr))}}
+@media(max-width:700px){.gs-v31-shell .gs-systems-overview{padding:9px}.gs-v31-shell .gs-systems-intro{padding:10px}.gs-v31-shell .gs-system-grid{grid-template-columns:1fr}.gs-v31-shell .gs-scope-tabs{order:1}}
+
+.gs-v31-shell .gs-graph-summary{height:auto;min-height:26px;flex-basis:auto;display:flex;align-items:center;flex-wrap:wrap;gap:3px}
+
+.fgd-load-control{margin:8px 10px;padding:8px;border:1px solid #466480;border-radius:7px;background:#162b41;display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;min-width:0}
+.fgd-load-control>span{display:flex;align-items:center;gap:5px;font-size:10px;color:#a9d7ea;min-width:0}
+.fgd-load-control>button{display:flex;align-items:center;justify-content:center;gap:5px;min-height:27px;background:#234b68;border:1px solid #4a859e;border-radius:5px;padding:5px 7px;color:#e6f8ff;cursor:pointer;font-size:10px}
+.fgd-load-control>button:disabled{opacity:.55;cursor:wait}
+.fgd-load-control>small{flex-basis:100%;font-size:10px;color:#ffb9a8;overflow-wrap:anywhere}
+.fgd-load-control.compact{padding:6px;gap:4px}
+
+/* v1.7.10 — One grid, not nested height/scroll containers.
+   The dock body owns the two rows. `display:contents` makes the existing
+   React <Properties> children direct grid items without touching keyvalues,
+   refs, selection state or the dock move/resize protocol. The old nested
+   absolute inset and 100%-height rules caused inconsistent blank space when
+   Chrome zoom, shell zoom or a saved dock size affected nested percentages. */
+.app-shell .dock-pane[data-pane="properties"] {
+  min-width:0!important;
+  min-height:0!important;
+  height:100%!important;
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:hidden!important;
+}
+.app-shell .dock-pane[data-pane="properties"]>.dock-pane-titlebar {
+  position:relative!important;
+  flex:0 0 32px!important;
+  height:32px!important;
+  min-height:32px!important;
+  box-sizing:border-box!important;
+}
+.app-shell .dock-pane[data-pane="properties"]>.dock-pane-body {
+  position:relative!important;
+  inset:auto!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:max-content minmax(0,1fr)!important;
+  flex:1 1 auto!important;
+  align-content:stretch!important;
+  width:100%!important;
+  height:auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:hidden!important;
+}
+.app-shell .dock-pane[data-pane="properties"]>.dock-pane-body>.properties {
+  display:contents!important;
+}
+.app-shell .dock-pane[data-pane="properties"] .properties>.panel-header {
+  position:relative!important;
+  grid-row:1!important;
+  grid-column:1!important;
+  min-width:0!important;
+  min-height:28px!important;
+  height:28px!important;
+  flex:none!important;
+}
+.app-shell .dock-pane[data-pane="properties"] .properties>.property-scroll {
+  position:relative!important;
+  grid-row:2!important;
+  grid-column:1!important;
+  display:block!important;
+  align-self:stretch!important;
+  justify-self:stretch!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  height:auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  scrollbar-width:thin;
+  scrollbar-gutter:stable;
+  overscroll-behavior:contain;
+  padding-bottom:24px!important;
+}
+/* Wide top/bottom docks retain the existing multi-column inspector. */
+@container (min-width:620px) {
+  .app-shell .dock-pane[data-pane="properties"][data-dock-side="top"] .properties>.property-scroll,
+  .app-shell .dock-pane[data-pane="properties"][data-dock-side="bottom"] .properties>.property-scroll {
+    display:grid!important;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    grid-auto-rows:max-content;
+    align-content:start;
+    gap:5px 10px;
+    padding:4px 10px 24px!important;
+  }
+}
+.app-shell .dock-pane[data-pane="properties"] .property-scroll .ea-content{max-height:none;overflow:visible}
+.app-shell .dock-pane[data-pane="properties"] .property-scroll .entity-assistant{overflow:visible}
+.app-shell .studio-body.adaptive-short .dock-pane[data-pane="properties"]>.dock-pane-titlebar {
+  flex-basis:29px!important;
+  height:29px!important;
+  min-height:29px!important;
+}
+
+/* v1.7.14: dedicated compiler controls within the existing True Lighting settings popover. */
+.true-light-compiler-options{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border-bottom:1px solid #34566e;font-size:11px}
+.true-light-compiler-options label{display:flex;flex-direction:column;gap:5px;min-width:0}
+.true-light-compiler-options select{width:100%;min-width:0;padding:6px;background:#1b3549;color:#d8eff7;border:1px solid #47687b;border-radius:5px}
+.true-light-compiler-options .true-light-compiler-check{flex-direction:row;align-items:center;gap:7px}
+.true-light-compiler-options small{color:#98b8c9;line-height:1.45}
+
+/* v1.7.15: True Lighting WASD camera and confirmation before baking. */
+.true-light-build-overlay{position:absolute;inset:0;z-index:19;display:flex;align-items:center;justify-content:center;background:#05121bd6;padding:12px;pointer-events:auto}
+.true-light-build-dialog{width:min(410px,100%);max-height:100%;overflow-y:auto;display:flex;flex-direction:column;gap:13px;padding:20px;background:#152b40;color:#e5f3fa;border:1px solid #5a91af;border-radius:11px;box-shadow:0 15px 48px #000b;font-size:12px}
+.true-light-build-dialog>strong{display:flex;align-items:center;gap:8px;font-size:15px}
+.true-light-build-dialog p{margin:0;line-height:1.6}
+.true-light-build-dialog label{display:flex;flex-direction:column;gap:7px;font-weight:600}
+.true-light-build-dialog select{width:100%;padding:9px;background:#1b374d;border:1px solid #5e91ab;border-radius:6px;color:#fff}
+.true-light-build-dialog small{line-height:1.5;color:#a2c3d4}
+.true-light-build-buttons{display:flex;justify-content:flex-end;gap:8px}
+.true-light-build-buttons button{cursor:pointer;background:#27475e;color:#fff;border:1px solid #587c94;border-radius:6px;padding:9px 13px}
+.true-light-build-buttons button:last-child{background:#18769a;border-color:#58bade}
+.true-light-build-buttons button:disabled{opacity:.5;cursor:not-allowed}

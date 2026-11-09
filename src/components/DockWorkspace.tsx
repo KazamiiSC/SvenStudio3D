@@ -3,6 +3,7 @@ import {GripVertical,ArrowLeft,ArrowRight,ArrowDownToLine,PanelLeft,PanelRight,P
 import {useStudioLayout,TOOLBAR_GROUPS,normalizeToolbarGroups,type DockPanelId,type DockSide,type ToolbarGroup} from '../layout';
 import {useT} from '../i18n';
 import {measureAdaptiveDocks} from '../engine/adaptiveWorkspace';
+import {normalizedDockFlexGrows} from '../engine/dockFlex';
 import {AssetPanel,Explorer,Properties} from './Panels';
 
 type Dragged={type:'panel',id:DockPanelId}|{type:'toolbar'};
@@ -167,11 +168,14 @@ export function DockWorkspace({toolbar,viewport,consolePanel}:{toolbar:ReactNode
   const zone=(side:DockSide)=>{
     const ids=layout.order.filter(id=>id!=='console'&&layout.visible[id]&&layout.sides[id]===side);
     const horizontal=side==='top'||side==='bottom';
+    // Saved weights may sum to less than 1 after other panels move/hide.
+    // Flexbox then leaves the rest of the dock empty; normalize visible ratios.
+    const grow=normalizedDockFlexGrows(ids,layout.weights);
     if(!ids.length&&!dragging)return null;
     return <div className={`dock-zone dock-${side} ${horizontal?'zone-horizontal':'zone-vertical'} ${dragging?'zone-drop-ready':''}`}
       style={side==='left'||side==='right'?{width:ids.length?(side==='left'?responsiveLeft:responsiveRight):78}:{height:ids.length?(side==='top'?responsiveTop:responsiveBottom):42}}
       onDragOver={e=>{e.preventDefault();e.dataTransfer.dropEffect='move'}} onDrop={e=>complete(e,side)}>
-      {ids.length?ids.map((id,index)=><div className="dock-item-slot" key={id} style={{flexGrow:layout.weights[id]||1}}>
+      {ids.length?ids.map((id,index)=><div className="dock-item-slot" key={id} style={{flexGrow:grow[id]}}>
         <div className="dock-pane-wrap" onDragOver={e=>e.preventDefault()} onDrop={e=>complete(e,side,id)}>{pane(id,side)}</div>
       </div>).flatMap((item,index)=>index<ids.length-1?[item,<StackSplitter key={`split-${ids[index]}`} a={ids[index]} b={ids[index+1]} horizontal={horizontal}/>]:[item]):<div className="empty-dock-drop"><ArrowDownToLine size={17}/><span>{t('Dock here')}</span></div>}
     </div>;

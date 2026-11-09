@@ -21,10 +21,29 @@ const round=(n:number)=>Math.round(n*100)/100;
 export function defaultTerrain(origin:Vec3=[0,0,0]):TerrainDraft{
   return {id:uid(),name:'Terrain 01',origin:[...origin],width:512,depth:512,resolution:8,heights:Array(81).fill(0),texture:'SV_BRICK01',baseDepth:96};
 }
-export function terrainBrushSignature(brush:Brush):string{
-  // Detect edits made with existing vertex/face/gizmo tools before replacing a
-  // generated terrain group. Never overwrite manual work silently.
+function terrainSignatureData(brush:Brush):string{
   return JSON.stringify([brush.position,brush.rotation,brush.scale,brush.vertices,brush.faces,brush.entityId]);
+}
+/** Compact, deterministic signature. Older projects stored the entire JSON
+ * geometry as a signature, which duplicated every terrain vertex and face in
+ * map metadata and every BuildTogether terrain update. Two independent 32-bit
+ * hashes keep the saved signature under 24 bytes while detecting edits.
+ */
+export function terrainBrushSignature(brush:Brush):string{
+  const data=terrainSignatureData(brush);
+  let a=2166136261,b=0x9747b28c;
+  for(let i=0;i<data.length;i++){
+    const c=data.charCodeAt(i);
+    a=Math.imul(a^c,16777619);
+    b=Math.imul(b^(c+(i&255)),0x5bd1e995);
+  }
+  return `v2:${(a>>>0).toString(16).padStart(8,'0')}${(b>>>0).toString(16).padStart(8,'0')}`;
+}
+/** Old user projects remain editable. The legacy JSON is computed only when
+ * its stored signature actually is legacy JSON; no silent format migration. */
+export function terrainBrushMatchesSignature(brush:Brush,signature:string):boolean{
+  if(signature.startsWith('v2:'))return terrainBrushSignature(brush)===signature;
+  return terrainSignatureData(brush)===signature;
 }
 export function validateTerrainDraft(d:TerrainDraft):string[]{
   const errors:string[]=[];

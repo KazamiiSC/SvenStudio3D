@@ -1,3 +1,175 @@
+## v1.7.19 — Rama 1.7 / candidata estable (2026-11-09)
+
+- Ayuda actualizada: True Lighting, SC-RAD/SDHLT, cámara libre y Escape/F8, funcionamiento portátil.
+- Se unifican los indicadores de versión de la interfaz y el iniciador.
+- Corregida la selección de `revision` en el panel BuildTogether (error de tipado; sin cambiar el protocolo).
+- Documentación histórica y de instalación anterior archivada en `docs/historico/`, sin saturar la carpeta principal.
+- La condición de versión estable requiere pruebas finales de Windows, compilación SC y SDHLT y sesión real de BuildTogether.
+
+## v1.7.11 — Dock Flex Weight Fix (2026-11-08)
+- Identificada la causa real del hueco de Propiedades: `flex-grow` guardado inferior a 1 en una zona con un solo panel (`0.864242` en la sesión real de Chrome).
+- Los pesos de todos los paneles visibles en cada zona ahora se normalizan a suma 1; se conserva la relación de tamaño entre varios paneles.
+- Solución única en `DockWorkspace`, sin modificar la estructura de Propiedades, scroll, datos FGD, brushes o protocolo BuildTogether.
+- 38/38 pruebas Node dirigidas aprobadas. En Chromium se reprodujo el hueco de 98 px (vertical) y 150 px (horizontal) antes de normalizar y se eliminó después (salvo el borde de 1 px).
+- Pendiente compilación completa Vite/TypeScript y validación en Chrome Windows.
+
+## v1.7.10 — Properties dock / installation verification
+- Un único Grid para la cabecera y el scroll de Propiedades; wrapper `.properties` sin caja de layout dentro del dock.
+- Corregida la versión visible que seguía mostrando v1.7.8.
+- El parche incremental ahora no incluye la carpeta raíz adicional `SvenStudio3D/` para poder extraerlo directamente sobre la instalación.
+- No se modifican las entidades, FGD, BuildTogether ni la exportación MAP/BSP.
+- Prueba real en Windows todavía pendiente.
+
+## v1.7.9 — Propiedades ocupa todo el dock (2026-11-08)
+
+- Corrección del **hueco vacío al pie de Propiedades** observado en Chrome para posiciones derecha e inferior (también compatible con izquierda y superior).
+- El dock conserva su barra de título; el cuerpo queda anclado a `top/right/bottom/left`, mientras `Properties` usa dos filas: cabecera fija y una sola región de scroll que ocupa exactamente el alto restante.
+- El desplazamiento vuelve arriba cuando cambia la selección. El dock inferior mantiene el formato de campos en varias columnas cuando hay suficiente ancho.
+- No se modifican entidades, FGD, MAP Valve 220, BuildTogether ni otros estudios.
+- Verificación: 52/52 pruebas Node dirigidas aprobadas. 8/8 comprobaciones visuales de geometría CSS en Chromium con 75 campos: scrollbar al borde inferior y botones finales accesibles. **Pendiente** el test de la aplicación React real en Windows y build Vite por dependencias npm no instaladas.
+
+## v1.7.8 — Propiedades con scroll exterior (2026-11-08)
+
+- Solución estructural nueva tras comprobar que v1.7.7 seguía dejando una franja vacía bajo la barra de desplazamiento del inspector en Windows.
+- El **elemento `.dock-pane[data-pane="properties"]`** ahora es el único contenedor desplazable; se eliminó el scroll anidado y las alturas absolutas/grids internas del área de campos.
+- La barra de título y la cabecera del inspector permanecen fijas con `position:sticky`; la barra de desplazamiento exterior llega físicamente al borde inferior del panel.
+- Al cambiar de objeto seleccionado, el desplazamiento vuelve al principio del dock. Se mantiene un fallback para inspecciones fuera del dock.
+- No se modificaron los valores FGD, las entidades, la compilación MAP, BuildTogether ni los demás estudios.
+- Verificación: **55/55** regresiones dirigidas Node; **6/6** pruebas de disposición en Chromium usando la hoja CSS real y alturas/escala variadas. Verificación final en Chrome de Windows pendiente, porque la app React completa no pudo compilarse aquí por falta de dependencias npm.
+
+## v1.7.7 — Properties Dock Layout Fix (2026-11-08)
+
+- Corregido el espacio vacío de unos 100–130 px bajo la barra de desplazamiento de Propiedades observado en Windows al seleccionar entidades con FGD extenso.
+- Eliminadas las reglas anteriores de Grid anidado y alturas al 100 % que podían limitar el área desplazable; el cuerpo del dock ahora queda anclado a sus límites y dispone de una única región de scroll flexible.
+- Se conserva cabecera fija y la posición del panel; el final de la lista (incluidos Duplicar/Eliminar) debe seguir siendo accesible en ventanas estrechas y modos de interfaz compacta.
+- Las mini guías y los campos FGD usan la misma región desplazable, sin cambiar sus datos, Undo/Redo, MAP Valve 220, Gameplay Studio ni BuildTogether.
+- Verificación: 54/54 pruebas automatizadas dirigidas, 6/6 simulaciones de layout Chromium (600–1080 px y escalas 0.8–1.5). Pendiente comprobación real con React/Windows y build Vite por dependencias npm ausentes.
+
+## v1.7.6 — Captura de cámara y scroll estructural de Propiedades (2026-11-08)
+
+- **Cámara RMB:** restablecido el `requestPointerLock()` real tanto en pantalla completa como en ventana. El modo `setPointerCapture` introducido en v1.7.5 no confinaba ni ocultaba el cursor y permitía clics accidentales. Se conserva el movimiento alternativo cuando el navegador deniega Pointer Lock; la captura se libera al soltar RMB. Una respuesta tardía al permiso no deja el cursor bloqueado.
+- **Menú contextual nativo:** `preventDefault()` en captura para todo el visor 3D, incluidos overlays dentro de `.viewport-frame`. Fuera del visor se conservan los menús de Chrome.
+- **Propiedades:** reemplazadas las reglas contradictorias de alto automático/overflow visible con un grid acotado al dock: barra de título, cabecera del inspector y un único scroll que ocupa todo el alto restante. No se permite que los campos se recorten sobre una franja vacía. Al cambiar selección se reinicia el scroll interior.
+- **Escape:** se conserva la salida programada a los 1.500 ms y el intento de Keyboard Lock. Los avisos de fullscreen, los permisos y el mecanismo de salida de emergencia dependen del navegador, no pueden desactivarse desde SvenStudio.
+- **Regresión:** 77/77 pruebas aprobadas (Gameplay, BuildTogether, Architecture, Valve 220 y UI). Prueba del layout CSS en Chromium a 900, 720 y 600 px de altura: scroll llega al borde y los últimos botones quedan visibles. El build completo Vite/TypeScript y el test integrado real en Windows/Chrome siguen pendientes por dependencias npm no disponibles.
+- No se cambian los datos de entidad, el formato MAP Valve 220, compiladores, BuildTogether ni los demás estudios.
+
+## v1.7.5 — Escape, cámara y Propiedades (2026-11-08)
+
+- **Escape 1,5 segundos:** `fullscreenEscapeHold` ofrece salida propia al mantener Escape durante 1500 ms, siempre que Chrome entregue las pulsaciones a la aplicación. Una pulsación corta mantiene su función de cancelar. El navegador sigue controlando sus avisos de seguridad y su mecanismo de salida de emergencia.
+- **Cámara con clic derecho:** en pantalla completa se utiliza captura de puntero y movimiento del mouse, sin solicitar `requestPointerLock()` por cada giro. En ventana se conserva el bloqueo de puntero y el control previo.
+- **Propiedades sin recortes:** el cuerpo del dock lateral es el único contenedor con desplazamiento vertical. El inspector y los campos FGD se expanden completos, con cabecera fija y espacio de seguridad al final. Se restablece la posición de scroll al seleccionar otra entidad. Sin cambios en docks superior/inferior.
+- Sin cambios en entidades, edición MAP Valve 220, compiladores, Gameplay Studio 3.0, BuildTogether ni el resto de los estudios.
+- **Verificación dirigida:** 59/59 pruebas aprobadas. Integridad de ZIP verificada. Compilación completa Vite/TypeScript y validación visual en Windows pendientes por dependencias no instaladas / navegador no disponible para la aplicación.
+
+## v1.7.4 — Fullscreen, FGD & Gameplay Inspector (2026-11-08)
+
+- La pantalla completa solicita Keyboard Lock incluyendo `Escape` cuando el navegador lo permite. Un Esc breve se entrega a las herramientas; Chrome reserva un Esc prolongado (aproximadamente dos segundos) como salida de seguridad. Botón de salir existente intacto. En navegadores sin permiso/soporte no se garantiza interceptar Esc.
+- El panel acoplado de Propiedades usa una sola región desplazable; la mini guía de FGD expande su contenido sin interceptar el desplazamiento del panel.
+- El FGD de Sven Co-op se intenta cargar al iniciar desde la carpeta configurada o una única instalación Steam detectada; se usan solicitudes compartidas y se respetan las definiciones manuales que puedan cargarse mientras la operación está pendiente. Los inspectores muestran botón de recarga y errores.
+- Gameplay Studio 3.0 permite deseleccionar haciendo clic en un espacio vacío o clic derecho en el mapa; se desactiva el menú contextual de imagen solo en ese canvas. No cambia el clic derecho de otras herramientas.
+- Gameplay Studio 3.0 permite editar los keyvalues nativos del FGD de la entidad seleccionada en modo Básico/Avanzado, con flags y choices; mini guía desplegable de uso y ejemplo cargada únicamente para la entidad activa.
+- Se mantienen conexiones, Undo/Redo, entidades, MAP Valve 220, BuildTogether y estudios ajenos. Verificación automatizada dirigida y limitaciones: `VERIFICACION_SVENSTUDIO_3D_V1.7.4_ES.md`.
+
+## v1.7.3 — Gameplay Studio 3.0: Top/Iso Map Fix (2026-11-08)
+
+- Contornos 2D derivados de los vértices transformados reales, con rotación y escala, tanto en Superior como en Iso. Eliminados los rectángulos y rombos falsos y el clamp de 350px que deformaba las vistas al acercarse.
+- Pan/zoom que reproyecta puntos originales sin redondeos acumulativos; strokes de grosor CSS fijo; ajuste automático solo cuando cambia la proyección, sector o tamaño del área.
+- Filtros de altura Z (todas/selección/personalizado ±32–512u), geometría de referencia opcional y aislamiento de entidades relacionadas.
+- Entidades coincidentes agrupadas con contador y selector por nombre, classname y Z, con páginas para todos los resultados.
+- El botón «Localizar en mapa» permite centrar de nuevo la entidad; el selector en canvas no desplaza el mapa tras cada clic.
+- Compatibilidad: no cambian entidades nativas, referencias, exportación MAP, compiladores, BuildTogether, Architecture Mode ni los otros estudios.
+- Verificación: 28 pruebas dirigidas de Gameplay aprobadas, 13 de BuildTogether aprobadas. Sintaxis TS/TSX validada. Compilación Vite/TypeScript completa y prueba visual real en Windows pendientes por dependencias ausentes.
+
+## v1.7.2 — Gameplay Studio 3.0: nuevo diseñador visual (2026-11-08)
+
+- Reemplazada por completo la interfaz principal del gráfico de nodos de Gameplay Studio 3.1. Nombre visible **Gameplay Studio 3.0**.
+- Tres áreas nuevas: mapa esquemático interactivo, lista paginada de referencias nativas y laboratorio de diagnóstico/rastreo.
+- Vista superior/isométrica con pan/zoom, selección por marcador, líneas solo de la entidad seleccionada y sectorización espacial sin modificar el proyecto.
+- Explorador de sectores y entidades paginado, filtros por categoría/capa, inspector nativo con keyvalues y guía, edición de conexiones por selección de origen/destino.
+- Rendimiento: canvas 2D para los indicadores en lugar de miles de nodos HTML, listas con páginas acotadas, sectorización de miles de entidades.
+- Sin cambios en las clases/formatos FGD, export MAP Valve 220, BuildTogether 3.5, Terrain Studio, Architecture Mode, Lighting Studio, compiladores, ni operaciones originales del estado.
+- Pruebas dirigidas Gameplay 22/22, BuildTogether 11/11; TypeScript/TSX analizado por parser. Build Vite/TypeScript completo y revisión visual en Windows pendientes (faltan dependencias npm).
+
+## v1.7.1 — Gameplay Studio 3.1: mapa de sistemas y navegación legible (2026-11-08)
+
+- En mapas grandes, el inicio del modo Esencial muestra una vista de sistemas en tarjetas en lugar de cientos de nodos reducidos a 20 % de zoom. Los mapas pequeños siguen entrando al gráfico directamente.
+- Las redes se agrupan según referencias nativas del proyecto (`target`, `moveto`, `killtarget`, `master`). Las entidades sin enlaces se organizan visualmente por capa/categoría en bloques de hasta 24, sin alterar keyvalues o grupos existentes.
+- Vista de sistemas paginada (30 tarjetas/página), búsqueda y filtros compartidos con el explorador avanzado; navegación por sistema con ajuste de zoom y regreso inmediato. La vista de todos los nodos sigue disponible.
+- Posiciones del gráfico localizadas por vista, preservando las coordenadas guardadas del proyecto. Autoorganización sobre el sistema visible y posibilidad de recuperar la distribución previa. Minimap compactable y movible de lado.
+- Se mantiene el renderizado virtualizado de nodos y aristas del viewport. No se cambian los datos de entidades, la compilación GoldSrc MAP, el servidor o protocolo BuildTogether ni los demás estudios.
+- Pruebas automatizadas dirigidas aprobadas. El build completo requiere las dependencias npm y la prueba visual de la aplicación completa en Windows sigue pendiente.
+
+## v1.7.0 — Gameplay Studio 3.0: editor visual renovado y escalable (2026-11-08)
+
+- Dos modos de trabajo: Esencial y Explorador avanzado; vista de estadísticas, filtros por categorías, capas y grupos, lista de resultados paginados y búsqueda indexada.
+- Gráfico de nodos con culling espacial de elementos y aristas por viewport; minimapa limitado por muestreo en mapas grandes. Para mapas con más de 350 entidades abre una vista inicial manejable.
+- Inspector reorganizado en propiedades, diagnóstico y rastreo limitado de referencias nativas. Advertencias de nombres compartidos no tratan usos intencionales como errores definitivos.
+- Mejora de escalado: se indexan nombres de brushes por entidad y se usan conjuntos para validar relaciones brush/entidad sin exploraciones cuadráticas; el editor de Gameplay no altera estructuras ajenas.
+- Compatibilidad: `target`/`targetname`, `moveto`/`killtarget`/`master`, posiciones de nodos, FGD, Undo/Redo, MAP Valve 220, BuildTogether 3.5, Terrain Studio, Architecture Mode, NPC, cámaras y resto de estudios conservados.
+- Verificación: 11/11 pruebas automáticas dirigidas aprobadas (7 de Gameplay y 4 de integración de BuildTogether). Parser TypeScript/TSX correcto. **Typecheck completo, build Vite y pruebas visuales reales pendientes por dependencias npm no presentes**; v1.7.0 se entrega como candidata para Windows.
+
+## v1.6.5 — BuildTogether 3.5: envío fragmentado para terrenos grandes (2026-11-08)
+
+- **Motivo:** en la prueba real con Porthole, 4×4 y 8×8 funcionaban mientras que 12×12 y 16×16 seguían desconectando. Los paquetes de prueba median aproximadamente 21, 86, 197 y 339 KiB, respectivamente. Esa correlación sugiere un límite de transporte o buffering, sin confirmar todavía su causa exacta.
+- **Protocolo 4:** fragmentación de mensajes WebSocket en bloques binarios de 16 KiB codificados en Base64 (aprox. 22 KiB por frame). Se usa tanto cliente→servidor como servidor→cliente, también para snapshots de quienes ingresan tarde. Los frames se envían a ritmo controlado, con seguimiento de `bufferedAmount`.
+- **Atomicidad:** el receptor valida y reconstruye la transacción completa antes de actualizar los brushes, los metadatos y la revisión; no presenta estados intermedios de terreno. La transferencia no elimina vértices ni modifica Valve 220.
+- **Control de recursos:** límites de tamaño, número de fragmentos, orden, identificador y tiempo máximo de ensamblaje. Los datos temporales de cámara y cursores no bloquean la cola de geometría.
+- **Corrección de compatibilidad interna:** los clientes del protocolo 4 siguen usando `metaPatch` por estudio igual que los del protocolo 3; no vuelven a sobrescribir todos los metadatos del mapa. El servidor acepta clientes antiguos del protocolo 2/3. Para usar fragmentación de terreno, *el anfitrión y los invitados deben actualizar a v1.6.5 y reiniciar el servidor*.
+- **Pruebas:** 23/23 pruebas automatizadas dirigidas aprobadas. Incluye una red simulada que rechaza cualquier frame superior a 64 KiB, terreno 12×12 desde el anfitrión, 16×16 desde el invitado, edición de metadatos y entrada posterior de un tercer participante con snapshot fragmentado. TypeScript/Vite completo y conexión Windows/Porthole real pendientes.
+- No se alteró el algoritmo de terreno ni sus materiales, Architecture Mode, Smart Build, cámaras remotas, exportación MAP, compiladores ni el resto del editor.
+
+## v1.6.4 — BuildTogether 3.4: sincronización atómica y terreno más liviano (2026-11-08)
+
+- Las operaciones de Terrain Studio de hasta 512 brushes se envían en una única transacción cuando el paquete pesa menos de 1,5 MB. Para paquetes mayores se conserva el límite y el fraccionamiento seguro; el servidor acepta hasta 512 objetos por operación y mantiene la validación de límites y permisos.
+- Se reduce la carga del cliente receptor al evitar varias reconstrucciones parciales del terreno por cada operación y al reutilizar referencias inmutables durante la actualización de los estados de deshacer y rehacer, en lugar de clonar todos los brushes en cada checkpoint.
+- Las firmas de detección de ediciones manuales se guardan como dos hashes de 32 bits en lugar de duplicar todo el JSON de la geometría. Los mapas anteriores con firmas JSON pueden seguir editándose. El diseño geométrico y la exportación Valve 220 permanecen intactos.
+- Se amplía la tolerancia de los tiempos de espera de confirmación y ping durante la construcción de escenas pesadas; la reconexión sigue disponible ante cortes reales de transporte.
+- No se modifica Architecture Mode, Smart Build, los compiladores, las cámaras remotas, las entidades ni la forma del terreno.
+- Pruebas automatizadas nuevas con 512 brushes, un receptor tardío, 70 checkpoints de historial, dos clientes de prueba, una entidad concurrente, medición de paquetes y compatibilidad de firmas anteriores. No constituye validación en Windows/Porthole.
+
+## v1.6.3 — BuildTogether 3.3: cola fiable de terreno y etiquetas 3D (2026-11-08)
+
+- El servidor WebSocket ya no cierra inmediatamente un cliente al acumular más de 4 MiB de cambios de geometría pendientes. Las actualizaciones fiables se guardan temporalmente en una cola acotada y se entregan en orden cuando el socket libera capacidad (`drain`).
+- Los mensajes efímeros (cámara, cursor, actividad) se omiten bajo congestión para priorizar datos del mapa. La cola se limita a 40 MiB por cliente para impedir consumo de memoria ilimitado: un cliente que deja de leer indefinidamente todavía podría desconectarse.
+- Se conserva la compatibilidad de protocolo BuildTogether 3.0/3.1/3.2 y los límites de validación de paquetes, roles y selecciones.
+- Se corrigen los nombres de cámaras remotas gigantes al alternar entre perspectiva y ortográfica mediante HTML con tamaño fijo (sin `distanceFactor`). Los nombres largos se truncan.
+- Se añade diagnóstico del código de cierre de WebSocket en el registro del editor.
+- Nuevas pruebas de saturación TCP simulada con más de 4 MiB de datos por transmitir, orden de revisiones, preferencia por geometría y límite de memoria.
+- 21/21 pruebas dirigidas aprobadas. Falta validación real en Windows con Porthole y prueba de visualización completa de Three.js.
+
+## v1.6.2 — BuildTogether 3.2: recuperación de terreno y Vista superior (2026-11-08)
+
+- Reconciliación de cambios no confirmados tras reconexión con reenvío selectivo de operaciones pendientes.
+- Conservación temporal de cámaras remotas y participantes durante desconexiones breves, sin conservar bloqueos.
+- Manejo más conservador de conflictos/rechazos y mayor ventana de confirmación de operaciones pesadas.
+- Architecture Mode: evitar que OrbitControls mueva la cámara al dibujar; sincronizar pivote y elevación al cambiar a Vista superior.
+- Nueva prueba de corte real de WebSocket a mitad de un terreno de 512 brushes y prueba de interacción de Vista superior.
+- 17/17 pruebas dirigidas aprobadas. Falta validación real con Windows y Porthole.
+
+## v1.6.1 — BuildTogether 3.1 / Remote Cameras & Presence (2026-11-08)
+
+- Mini cámaras 3D flotantes por participante sobre el visor MAP. Cuerpo, lente y etiqueta de usuario, cono de campo visual y línea de mirada, sin una segunda cámara/render target ni colisiones de selección.
+- Interpolación de posición y orientación para reducir saltos cuando hay latencia. Muestras de cámara limitadas a ~8,7 Hz en buena conexión y menos con congestión/jitter; se descartan actualizaciones efímeras antes de retrasar geometría.
+- Publicación de la pose inicial al conectar y almacenamiento de la última pose en memoria del servidor para participantes que entren más tarde. Validación y eliminación de campos arbitrarios del mensaje de cámara.
+- Panel lateral colapsable «Ping · BuildTogether» con nombre/color, RTT de cada usuario al servidor anfitrión, actividad/herramienta/estudio, selección remota, seguimiento de cámara y controles de visibilidad. No es ping directo entre dos participantes.
+- Estados de actividad sincronizados mediante códigos limitados y sin rutas locales: Terrain, Architecture, Gameplay, Cinematic, NPC, Sound, Lighting, Texture, Decal, Model Browser, Material, transformaciones y otras opciones. Ritmo limitado y sin modificar revisiones del mapa.
+- Optimización de resaltado de selecciones: no reconstruye los rectángulos de brushes por cambios de ping/actividad. Mantiene la sincronización por estudio, permisos, bloqueos, recuperación y clientes compatibles del protocolo 3.
+- Pruebas nuevas de dos clientes, cámara cacheada, espectadores tardíos, ping real, validación de campos y limitación de frecuencia.
+
+**Estado:** experimental. Se requieren pruebas visuales de React/Three.js, TypeScript completo, build Vite y un ensayo Windows + Porthole con dos usuarios.
+
+## v1.6.0 — BuildTogether 3.0 (2026-11-08)
+
+- Sincronización por campo de metadatos `Project` para Terrain, Architecture, Cinematic, Gameplay, NPC y Material & Surface; sincronización de objetos y lotes confirmados existente conservada.
+- Revisión de concurrencia por campo en el servidor y prevención de sobrescrituras de cambios ajenos, con soporte para eliminación de campos opcionales.
+- Detección de conflictos en el cliente, alerta visible y copia de recuperación en el navegador antes de priorizar el estado confirmado del servidor.
+- Puente bidireccional con clientes BuildTogether 2.0 en el servidor actualizado; validación de mensajes entrantes y permisos existentes de espectadores y locks.
+- Diagnóstico visible de revisión, última sincronización y conflictos; corregida la referencia de Porthole en la guía.
+- Nuevas pruebas de protocolo y dos clientes reales de prueba con terreno de 512 brushes, estudios concurrentes, seguridad y control de conflictos.
+- Sin cambios deliberados a Architecture Mode, Smart Build, True Lighting, shaders, SDK SC, MAP Valve 220 ni al resto de herramientas.
+- **Experimental:** faltan pruebas con dos equipos Windows y Porthole, compilación Vite completa y cobertura de todos los gestos de cada estudio.
+
 ## v1.5.23 — Ayuda sin logos (2026-11-08)
 
 - Eliminados los elementos de imagen **GPT-6 Astra** y **KZ-Sheez** exclusivamente de la ventana Ayuda; el texto de créditos se conserva en una franja discreta.

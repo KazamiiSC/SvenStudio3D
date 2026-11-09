@@ -17,6 +17,8 @@ import {Boxes} from 'lucide-react';
 import {npcClasses} from '../engine/npc';
 import {SoundBrowser} from './SoundStudio';
 import {EntityAssistant} from './EntityAssistant';
+import {FgdLoadControl} from './FgdLoadControl';
+import {ensureSvenCoopFgd} from '../engine/svenFgdLoader';
 import {DoorMotionControls} from './DoorMotionControls';
 import {BookOpen as BookOpenIcon} from 'lucide-react';
 import {guideKeys} from '../engine/entityGuide';
@@ -101,16 +103,7 @@ export function AssetPanel(){
       catch(err){appendLogs([`WAD ERROR ${file.name}: ${String(err)}`]);alert(String(err));}
     }e.target.value='';
   };
-  const loadGameFgd=async()=>{
-    if(!gameDir){alert(tr('Configure the game directory in Build Settings first.'));return;}
-    try{
-      const response=await fetch('/api/svengine/fgd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gameDir})});
-      if(!response.ok){const message=await response.json();throw Error(message.error||`HTTP ${response.status}`)}
-      const classes=parseFgd(await response.text());
-      if(!classes.length)throw Error('FGD has no recognizable classes.');
-      setFgd(classes);appendLogs([`Svengine: loaded ${classes.length} entities from sven-coop.fgd.`]);
-    }catch(error){alert(String(error));appendLogs([`FGD: ${String(error)}`])}
-  };
+  const loadGameFgd=async()=>{try{await ensureSvenCoopFgd({discover:true,force:true})}catch(error){alert(String(error));appendLogs([`FGD: ${String(error)}`])}};
   const importFgd=async(e:ChangeEvent<HTMLInputElement>)=>{
     const file=e.target.files?.[0];if(!file)return;
     try{
@@ -255,6 +248,13 @@ export function Properties(){
   const locale=useEditor(s=>s.locale) as Locale;
   const [entityMode,setEntityMode]=useState<'basic'|'advanced'>('basic');
   const [propertyGuideOpen,setPropertyGuideOpen]=useState(false);
+  const propertyRoot=useRef<HTMLDivElement|null>(null);
+  useEffect(()=>{
+    // The inspector body is the only scroll host in the dock and standalone.
+    // Reset when the selected object changes, keeping headers fixed.
+    const scroller=propertyRoot.current?.querySelector('.property-scroll');
+    if(scroller instanceof HTMLElement)scroller.scrollTop=0;
+  },[object?.id]);
   useEffect(()=>{setEntityMode('basic');setPropertyGuideOpen(false)},[object?.id]);
   useEffect(()=>{if(!propertyGuideOpen)return;const onEsc=(e:KeyboardEvent)=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();setPropertyGuideOpen(false)}};window.addEventListener('keydown',onEsc,true);return()=>window.removeEventListener('keydown',onEsc,true)},[propertyGuideOpen]);
   const nativeText:Record<Locale,{basic:string;advanced:string;hint:string;all:string}>={
@@ -279,13 +279,13 @@ export function Properties(){
   const detachCandidates=objects.filter(o=>selectedIds.includes(o.id)&&(o.kind==='brush'&&!!o.entityId||o.kind==='entity'&&objects.some(b=>b.kind==='brush'&&b.entityId===o.id)));
   const world=useEditor(s=>s.project.world),changeWorld=useEditor(s=>s.changeWorld);
   const importantKeys=object?.kind==='entity'?new Set(guideKeys(object.classname,cls).concat(['spawnflags'])):new Set<string>();
-  if(!object)return <div className="properties"><div className="panel-header"><span><Settings2 size={15}/> {t('World Properties')}</span></div><div className="property-scroll">
+  if(!object)return <div ref={propertyRoot} className="properties"><div className="panel-header"><span><Settings2 size={15}/> {t('World Properties')}</span></div><div className="property-scroll">
     <div className="property-object-header"><span className="property-avatar"><Globe2 size={19}/></span><span><strong>worldspawn</strong><small>{t('Map environment')}</small></span></div>
     <div className="property-group-title">{t('WORLD SETTINGS')}</div>
     {['message','skyname','MaxRange','light'].map(k=><Field key={k} label={k} value={world[k]||''} onChange={v=>changeWorld(k,v)}/>)}
     <div className="hint-block">{t('Select a brush or entity in the viewport to edit its properties.')}</div>
   </div></div>;
-  if(selectedIds.length>1)return <div className="properties"><div className="panel-header"><span><Settings2 size={15}/> {t('Multi-selection')}</span><span className="counter">{selectedIds.length}</span></div><div className="property-scroll">
+  if(selectedIds.length>1)return <div ref={propertyRoot} className="properties"><div className="panel-header"><span><Settings2 size={15}/> {t('Multi-selection')}</span><span className="counter">{selectedIds.length}</span></div><div className="property-scroll">
     <div className="property-object-header"><span className="property-avatar"><Layers size={19}/></span><span><strong>{selectedIds.length} {t('objects selected')}</strong><small>{t('Move group with the 3D gizmo')}</small></span></div>
     <p className="panel-text">{t('Use Ctrl/Shift + click in Explorer or the viewport to change the selection. Group move is committed when releasing the gizmo; Rotate and Scale remain individual operations.')}</p>
     {detachCandidates.length>0&&<section className="modeling-properties">
@@ -306,7 +306,7 @@ export function Properties(){
     change(point.id,{props:{...point.props,angles:withSpawnYaw(point.props,yaw),
       ...(point.props.angle!==undefined?{angle:String(Math.round(yaw))}:{})}});
   };
-  return <div className="properties"><div className="panel-header"><span><Settings2 size={15}/> {t('Properties')}</span><span className="counter">{t(brush?'Brush':'Entity')}</span></div>
+  return <div ref={propertyRoot} className="properties"><div className="panel-header"><span><Settings2 size={15}/> {t('Properties')}</span><span className="counter">{t(brush?'Brush':'Entity')}</span></div>
     <div className="property-scroll">
       <div className="property-object-header"><span className="property-avatar">{brush?<Box size={19}/>:<UserRound size={19}/>}</span><span><strong>{object.name}</strong><small>{point?.classname||brush?.primitive||''}</small></span></div>
       <div className="property-group-title">{t('TRANSFORM')}</div>
@@ -315,7 +315,7 @@ export function Properties(){
       {brush&&<><VectorFields label={t('Rotation')} value={brush.rotation} onChange={rotation=>change(brush.id,{rotation})}/><VectorFields label={t('Scale')} value={brush.scale} onChange={scale=>change(brush.id,{scale})}/><VectorFields label={t('Dimensions (units)')} value={brushDimensions(brush)} onChange={size=>{try{setDimensions(brush.id,size)}catch(error){alert(String(error))}}}/></>}
       <div className="property-group-title">{t('ORGANIZATION')}</div>
       <Field label={t('Layer')} value={object.layer||'Geometry'} onChange={layer=>setLayer(object.id,layer)}/>
-      {point&&<><div className="property-group-title">{t('ENTITY KEYVALUES')}</div><Field label="classname" value={point.classname} onChange={classname=>change(object.id,{classname})}/>
+      {point&&<><div className="property-group-title">{t('ENTITY KEYVALUES')}</div><FgdLoadControl compact/><Field label="classname" value={point.classname} onChange={classname=>change(object.id,{classname})}/>
         {point.classname==='info_player_start'&&<section className="spawn-facing-editor">
           <strong>{t('Start facing direction')}</strong>
           <p>{t('Set where the player looks when spawning. The direction arrow in the viewport updates immediately.')}</p>

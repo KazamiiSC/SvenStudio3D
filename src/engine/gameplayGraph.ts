@@ -19,7 +19,7 @@ export type GraphLink=GameplayConnection & {via:'target'|'moveto'|'killtarget'|'
 export function getGameplayGraphConnections(objects:MapObject[]):GraphLink[]{
  const entities=objects.filter((o):o is PointEntity=>o.kind==='entity');
  const byName=new Map<string,PointEntity[]>();
- for(const e of entities){const n=e.props.targetname?.trim();if(n)byName.set(n,[...(byName.get(n)||[]),e]);}
+ for(const e of entities){const n=e.props.targetname?.trim();if(n){const list=byName.get(n)||[];list.push(e);byName.set(n,list);}}
  const links:GraphLink[]=getConnections(objects).map(e=>({...e,via:'target'}));
  const optionalKeys=['moveto','killtarget','master'] as const;
  for(const source of entities)for(const via of optionalKeys){

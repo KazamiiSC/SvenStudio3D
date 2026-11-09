@@ -2,7 +2,7 @@ import {isWalkCrouchHeld} from '../engine/controls';
 import {keyboardVerticalDirection} from '../engine/cameraKeyboard';
 import {canCaptureMapCamera,canMoveInCameraCapture} from '../engine/cameraCapture';
 import { Canvas,useFrame,useThree } from '@react-three/fiber';
-import { Scan, EyeOff, Eye, Grid3x3, Magnet, SlidersHorizontal, Sun, Focus, Undo2, Redo2, Flashlight, Droplets, ChevronDown, Lightbulb } from 'lucide-react';
+import { Scan, EyeOff, Eye, Grid3x3, Magnet, SlidersHorizontal, Sun, Focus, Undo2, Redo2, Flashlight, Droplets, ChevronDown } from 'lucide-react';
 import { OrbitControls,TransformControls,GizmoHelper,GizmoViewport,Html,Line } from '@react-three/drei';
 import { createContext,memo,useCallback,useContext,useEffect,useMemo,useRef,useState } from 'react';
 import * as THREE from 'three';
@@ -52,7 +52,8 @@ import {HudCustomizer} from './HudCustomizer';
 import {QuickToolRail} from './QuickToolRail';
 import {ShapePalette} from './ShapePalette';
 import {TextureStudioPanel,TextureUVHandles} from './TextureStudio';
-import {BuildTogetherCursors} from './BuildTogether';
+import {BuildTogetherCursors,BuildTogetherPresenceDock} from './BuildTogether';
+import {RemoteBuildTogetherCameras} from './RemoteBuildTogetherCameras';
 import {useBuildTogether,sendBuildTogetherCamera} from '../engine/buildTogetherClient';
 import {GameplaySession} from '../engine/gameplayTest';
 import {WALK,chooseWalkStart,walkCollider,walkStep,type WalkCollider,type WalkPose} from '../engine/playerWalk';
@@ -791,6 +792,7 @@ function CameraController(){
   const uvDragging=useEditor(s=>s.textureDragSnapshot!==null);
   const setCameraLabel=useEditor(s=>s.setCameraLabel);
   const flyMode=useEditor(s=>s.flyMode),walkMode=useEditor(s=>s.walkMode),drawMode=useEditor(s=>s.drawMode);
+  const architectureDrawing=useArchitectureMode(s=>s.mode!=='off');
   const mapObjects=useEditor(s=>s.project.objects);
   const walkColliders=useMemo(()=>{
     const classById=new Map(mapObjects.filter((o):o is PointEntity=>o.kind==='entity').map(e=>[e.id,e.classname]));
@@ -887,13 +889,15 @@ function CameraController(){
     dest.lookAt(controls.current.target);
     if(camera!==dest)set({camera:dest});else controls.current.update();
   },[followId,followPose,walkMode,camera,ortho,set,size.width,size.height]);
+  const buildTogetherOnline=useBuildTogether(s=>s.status==='online');
   const saveCamera=()=>{
     if(useEditor.getState().walkMode)return;
     if(!useBuildTogether.getState().followId&&controls.current){
       sendBuildTogetherCamera({projection:camera===ortho?'orthographic':'perspective',
         position:camera.position.toArray() as [number,number,number],
         target:controls.current.target.toArray() as [number,number,number],
-        up:camera.up.toArray() as [number,number,number],orthoHeight:ortho.top-ortho.bottom});
+        up:camera.up.toArray() as [number,number,number],orthoHeight:ortho.top-ortho.bottom,
+        fov:initialPerspective.current.fov,aspect:Math.max(.2,size.width/Math.max(1,size.height))});
     }
     if(cameraSaveTimer.current!==null)clearTimeout(cameraSaveTimer.current);
     cameraSaveTimer.current=setTimeout(()=>{
@@ -909,6 +913,8 @@ function CameraController(){
       cameraSaveTimer.current=null;
     },500);
   };
+  // Send the initial camera as soon as a collaborator joins, even when idle.
+  useEffect(()=>{if(buildTogetherOnline&&!walkMode&&!followId)saveCamera();},[buildTogetherOnline,walkMode,followId]);
   useEffect(()=>{
     const onHide=()=>{
       if(useEditor.getState().walkMode)return;
@@ -945,7 +951,7 @@ function CameraController(){
       }
     };
     const restoreCamera=()=>{
-      if(controls.current)controls.current.enabled=!useEditor.getState().walkMode&&!useEditor.getState().modalTransform&&!useEditor.getState().drawMode&&!useEditor.getState().textureDragSnapshot;
+      if(controls.current)controls.current.enabled=!useEditor.getState().walkMode&&!useEditor.getState().modalTransform&&!useEditor.getState().drawMode&&useArchitectureMode.getState().mode==='off'&&!useEditor.getState().textureDragSnapshot;
     };
     const onRelease=()=>{restoreCamera()};
     const onBlur=()=>{
@@ -976,29 +982,35 @@ function CameraController(){
     const down=(event:PointerEvent)=>{
       if(event.button!==2||!allowed())return;
       rightMouseLook.current=true;
-      // Prevent OrbitControls from interpreting RMB as an orbit around an
-      // object. Instead rotate the camera around its own position.
+      // Rotate around the camera position, not around an OrbitControls pivot.
       if(controls.current)controls.current.enabled=false;
-      if(document.pointerLockElement&&! (document.pointerLockElement===canvas))return;
+      // Pointer capture does NOT hide or constrain the mouse; it also permits
+      // native context menus. The MAP viewport needs true Pointer Lock both in
+      // and out of fullscreen for unlimited RMB camera look. Chrome may show a
+      // security tip; web content cannot suppress that browser-owned UI.
+      event.preventDefault();
+      if(document.pointerLockElement&&document.pointerLockElement!==canvas)return;
       if(document.pointerLockElement===canvas)return;
       try{
-        // A right-button press is a user gesture, so pointer lock can be
-        // requested synchronously. A rejected request leaves drag-look as
-        // a normal pointermove fallback.
-        void Promise.resolve(canvas.requestPointerLock?.()).catch(()=>{});
-      }catch{/* Browser denied lock: normal RMB drag still works. */}
+        void Promise.resolve(canvas.requestPointerLock?.()).then(()=>{
+          // The user may release RMB before a permission prompt resolves.
+          if(!rightMouseLook.current&&document.pointerLockElement===canvas)
+            document.exitPointerLock?.();
+        }).catch(()=>{});
+      }catch{/* Lock denied: keep a bounded drag fallback. */}
     };
     const up=(event:PointerEvent)=>{
       if(event.button!==2||!rightMouseLook.current)return;
       rightMouseLook.current=false;
+      try{if(canvas.hasPointerCapture?.(event.pointerId))canvas.releasePointerCapture(event.pointerId)}catch{/* Optional */}
       if(document.pointerLockElement===canvas)document.exitPointerLock?.();
-      if(controls.current)controls.current.enabled=!useEditor.getState().modalTransform&&!useEditor.getState().drawMode&&!useEditor.getState().textureDragSnapshot;
+      if(controls.current)controls.current.enabled=!useEditor.getState().modalTransform&&!useEditor.getState().drawMode&&useArchitectureMode.getState().mode==='off'&&!useEditor.getState().textureDragSnapshot;
       saveCamera();
     };
     const cancel=()=>{
       rightMouseLook.current=false;
       if(document.pointerLockElement===canvas)document.exitPointerLock?.();
-      if(controls.current)controls.current.enabled=!useEditor.getState().walkMode&&!useEditor.getState().modalTransform&&!useEditor.getState().drawMode&&!useEditor.getState().textureDragSnapshot;
+      if(controls.current)controls.current.enabled=!useEditor.getState().walkMode&&!useEditor.getState().modalTransform&&!useEditor.getState().drawMode&&useArchitectureMode.getState().mode==='off'&&!useEditor.getState().textureDragSnapshot;
     };
     const lockChange=()=>{
       if(document.pointerLockElement!==canvas&&rightMouseLook.current){
@@ -1084,6 +1096,7 @@ function CameraController(){
   },[camera,walkMode]);
   useEffect(()=>{
     const keydown=(e:KeyboardEvent)=>{
+      if(document.querySelector('.true-light-workbench.true-light-full')){keys.current.clear();return;}
       if(useHudLayout.getState().editing||(e.target as HTMLElement)?.closest('input,textarea,select,[contenteditable]')||document.querySelector('.modal-backdrop'))return;
       keys.current.add(e.key.toLowerCase());keys.current.add(e.code);
       if(useEditor.getState().walkMode){
@@ -1112,6 +1125,7 @@ function CameraController(){
     return()=>{window.removeEventListener('keydown',keydown);window.removeEventListener('keyup',keyup);window.removeEventListener('blur',onblur)};
   },[preview.updateWalk,preview.reportGameplay,preview.gameplaySession,camera,getThreeScene]);
   useFrame((_state,delta)=>{
+    if(document.querySelector('.true-light-workbench.true-light-full')){keys.current.clear();return;}
     if(useHudLayout.getState().editing||modal||uvDragging||!controls.current)return;
     const active=keys.current;
     if(walkMode){
@@ -1181,6 +1195,9 @@ function CameraController(){
     const orbit=controls.current;
     if(!orbit)return;
     const target=orbit.target.clone();
+    // Architecture's top view must look at its current drawing height, not
+    // an arbitrary previous orbit pivot (possibly far above the construction plane).
+    if(action==='top'&&useArchitectureMode.getState().mode!=='off')target.y=useArchitectureMode.getState().options.baseZ;
     const isOrtho=camera===ortho;
     const aspect=Math.max(.1,size.width/Math.max(1,size.height));
     const switchCamera=(toOrtho:boolean)=>{
@@ -1209,7 +1226,11 @@ function CameraController(){
         new THREE.Vector3(distance,distance,distance).normalize().multiplyScalar(distance);
       dest.up.set(0,action==='top'?0:1,action==='top'?-1:action==='bottom'?1:0);
       dest.position.copy(target).add(offset);dest.lookAt(target);lastTarget.current.copy(target);
-      if(dest===camera){orbit.target.copy(target);orbit.update()}
+      // OrbitControls must inherit the same pivot when switching projections.
+      // Otherwise its old pivot can immediately pull an orthographic top view
+      // away from the architectural drawing plane.
+      orbit.target.copy(target);
+      if(dest===camera)orbit.update();
       const labels:Record<string,string>={front:'Front (Ortho)',right:'Right (Ortho)',top:'Top (Ortho)',back:'Back (Ortho)',left:'Left (Ortho)',bottom:'Bottom (Ortho)',isometric:'Isometric (Ortho)'};
       setCameraLabel(labels[action]);
       return;
@@ -1302,10 +1323,10 @@ function CameraController(){
     orbit.target.copy(target);lastTarget.current.copy(target);
     orbit.update();
   },[doctorFocusSerial,doctorFocus,walkMode,camera]);
-  return <OrbitControls ref={controls} makeDefault enabled={!walkMode&&!modal&&!drawMode&&!uvDragging}
+  return <OrbitControls ref={controls} makeDefault enabled={!walkMode&&!modal&&!drawMode&&!architectureDrawing&&!uvDragging}
     onChange={saveCamera} enableDamping={controlsConfig.cameraDamping} dampingFactor={controlsConfig.dampingFactor}
     zoomToCursor={controlsConfig.zoomToCursor}
-    enablePan={!drawMode} maxDistance={Math.max(controlsConfig.maxCameraDistance,controlsConfig.minCameraDistance+100)} minDistance={controlsConfig.minCameraDistance}
+    enablePan={!drawMode&&!architectureDrawing} maxDistance={Math.max(controlsConfig.maxCameraDistance,controlsConfig.minCameraDistance+100)} minDistance={controlsConfig.minCameraDistance}
     rotateSpeed={(controlsConfig.invertOrbit?-1:1)*controlsConfig.orbitSensitivity}
     panSpeed={controlsConfig.panSensitivity} zoomSpeed={controlsConfig.zoomSensitivity}
     mouseButtons={blender?
@@ -1316,6 +1337,7 @@ function CameraController(){
 function BuildTogetherSelections(){
   const participants=useBuildTogether(state=>state.participants),selfId=useBuildTogether(state=>state.selfId);
   const objects=useEditor(state=>state.project.objects);
+  const selectionKey=participants.map(member=>`${member.id}:${member.color}:${member.selection.join(',')}`).join('|');
   const overlays=useMemo(()=>{
     if(participants.length<2)return [] as {key:string;helper:THREE.Box3Helper}[];
     const lookup=new Map(objects.map(object=>[object.id,object]));
@@ -1334,7 +1356,7 @@ function BuildTogetherSelections(){
       }
     }
     return result;
-  },[participants,selfId,objects]);
+  },[selectionKey,selfId,objects]);
   useEffect(()=>()=>{for(const {helper} of overlays){helper.geometry.dispose();(helper.material as THREE.Material).dispose()}},[overlays]);
   return <group>{overlays.map(item=><primitive key={item.key} object={item.helper}/>)}</group>;
 }
@@ -2457,15 +2479,16 @@ function ArchitectureDrawingPlane(){
   if(mode==='off')return null;
   const z=opts.baseZ+1;
   const to3=(p:[number,number]):[number,number,number]=>[p[0],z,-p[1]];
-  const point=(world:THREE.Vector3):[number,number]=>[world.x,-world.z];
+  const point=(world:THREE.Vector3):[number,number]|null=>
+    Number.isFinite(world.x)&&Number.isFinite(world.z)&&Math.max(Math.abs(world.x),Math.abs(world.z))<=16384?[world.x,-world.z]:null;
   const active=hover&&points.length?to3(hover):null;
   return <group>
     <mesh position={[0,opts.baseZ,0]} rotation={[-Math.PI/2,0,0]}
-      onPointerMove={e=>{e.stopPropagation();move(point(e.point))}}
+      onPointerMove={e=>{e.stopPropagation();const p=point(e.point);if(p)move(p)}}
       onPointerDown={e=>{
         if(e.button!==0)return;
         e.stopPropagation();e.nativeEvent.preventDefault();
-        const p=point(e.point);
+        const p=point(e.point);if(!p)return;
         // A click near the initial corner closes a room; Enter works as well.
         if(mode==='room'&&points.length>=4&&Math.hypot(p[0]-points[0][0],p[1]-points[0][1])<Math.max(10,useArchitectureMode.getState().step*.7)){
           finishArchitectureMode();return;
@@ -2713,7 +2736,7 @@ function Scene({onContextMenu}:{onContextMenu:(menu:SceneMenu)=>void}){
       const routeText=obj.classname==='path_waypoint'?(first?`WP ${number} · ${first.name}${routes.length>1?' (shared)':''}`:'WP · unassigned'):undefined;
       return <MemoEntityVisual key={obj.id} object={obj} routeText={routeText} routeTint={first?routeColor(first.name):undefined} hideLabel={optimizedLabels||!visibleLabels.has(obj.id)||(obj.classname==='path_waypoint'&&!routeSolo&&obj.id!==selectedId)} activeLight={lightActive} activeModel={obj.classname==='info_player_start'||activeModels.has(obj.id)||obj.id===selectedId} showMarker={showMarker} optimizedLabels={optimizedLabels} spawnGround={spawnGrounds.get(obj.id)}/>;
     })}
-    {!walkMode&&<BuildTogetherSelections/>}
+    {!walkMode&&<><BuildTogetherSelections/><RemoteBuildTogetherCameras/></>}
     <LeakTrace3D/>
     {!walkMode&&<><MeasurementOverlay/><EntityConnections/><NpcRouteLines/><CinematicRouteLines/><AudioRadiusGuides/><SelectionTransformControls/><BlenderModalTransform/></>}
     <CameraController/>
@@ -2858,7 +2881,7 @@ export function Viewport({trueLightingOpen=false,trueLightingBusy=false,onVisual
   const undo=useEditor(s=>s.undo),redo=useEditor(s=>s.redo);
   const historyCount=useEditor(s=>s.history.length),futureCount=useEditor(s=>s.future.length);
   const drawMode=useEditor(s=>s.drawMode),drawHeight=useEditor(s=>s.drawHeight),drawPlane=useEditor(s=>s.drawPlane),selectedCount=useEditor(s=>s.selectedIds.length);
-  return <PreviewContext.Provider value={previewContext}><div className="viewport-frame"><BuildTogetherCursors/>
+  return <PreviewContext.Provider value={previewContext}><div className="viewport-frame" onContextMenuCapture={e=>{e.preventDefault()}}><BuildTogetherCursors/>{!walkMode&&<BuildTogetherPresenceDock/>}
     {!walkMode&&<HudCustomizer/>}
     {!walkMode&&!hudEditing&&<TextureStudioPanel/>}
     <TextureUVHandles/>
@@ -2895,10 +2918,9 @@ export function Viewport({trueLightingOpen=false,trueLightingBusy=false,onVisual
         {visualMenuOpen&&<div className="viewport-visualization-menu" role="menu" aria-label={locale==='es'?'Modos de visualización':'Visualization modes'} onPointerDown={e=>e.stopPropagation()}>
           {([
             {id:'normal',Icon:Eye,es:['Vista normal','Editor MAP sin iluminación aproximada'],en:['Normal view','MAP editor without lighting approximation']},
-            {id:'quick',Icon:Sun,es:['Vista previa rápida','Iluminación aproximada en tiempo real'],en:['Quick lighting','Approximate real-time lighting']},
-            {id:'baked',Icon:Lightbulb,es:['True Lighting · SC-RAD','Lightmaps reales del BSP temporal'],en:['True Lighting · SC-RAD','Compiled lightmaps from temporary BSP']}
+            {id:'quick',Icon:Sun,es:['Vista previa rápida','Iluminación aproximada en tiempo real'],en:['Quick lighting','Approximate real-time lighting']}
           ] as const).map(item=><button type="button" role="menuitemradio" aria-checked={activeVisualization===item.id} key={item.id} className={activeVisualization===item.id?'selected':''} onClick={()=>selectVisualization(item.id)}>
-            <item.Icon size={17}/><span><strong>{item[locale==='es'?'es':'en'][0]}</strong><small>{item[locale==='es'?'es':'en'][1]}{item.id==='baked'&&trueLightingBusy?' · SC-RAD…':''}</small></span>{activeVisualization===item.id&&<span className="viewport-visualization-selected" aria-hidden="true">✓</span>}
+            <item.Icon size={17}/><span><strong>{item[locale==='es'?'es':'en'][0]}</strong><small>{item[locale==='es'?'es':'en'][1]}</small></span>{activeVisualization===item.id&&<span className="viewport-visualization-selected" aria-hidden="true">✓</span>}
           </button>)}
         </div>}
       </div>

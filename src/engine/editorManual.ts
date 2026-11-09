@@ -8,7 +8,7 @@ const en:Manual={
  'Set your map name in Build Configuration and configure the SDK compiler directory and Sven Co-op game data folder.',
  'Load your game’s WAD3 textures in Asset Library → Textures. Import sven-coop.fgd for the complete original entity class list; entity classnames remain in English.',
  'Create or import a MAP, select objects in the 3D viewport or Explorer, then edit properties and textures. Use File → Save project (Ctrl+S) for a portable .svenstudio.json file.',
- 'Click Compile Map to run the SDK compilers. On success the BSP is copied to <game folder>/maps/<map name>.bsp; intermediate MAP/build files are created in a temporary folder.'
+ 'Click Compile Map to run the chosen compilers: Sven Co-op SDK (default) or experimental SDHLT. A successful build copies the BSP into the configured maps directory; intermediate MAP/build files are temporary. SDHLT requires separate external tools.'
  ],fullTitle:'Fullscreen recommended',full:'For reliable camera movement and fewer conflicts with browser keyboard shortcuts, use the editor’s Fullscreen button. Some browser shortcuts such as Ctrl+W, Ctrl+R or F5 may still be reserved; fullscreen cannot guarantee blocking all of them. Save projects frequently.',
  cameraTitle:'Mouse and camera',camera:[
  'Hold right mouse button inside the 3D viewport to look freely. Release it to restore the cursor. A brief right-click opens the context menu.',
@@ -40,7 +40,8 @@ const en:Manual={
  {title:'Shapes & Prefabs',description:'Place prepared architecture (walls, floors, ramps, windows, doors) and reusable groups or saved prefabs.'},
  {title:'Gameplay Studio',description:'Visual configuration of triggers, buttons, doors, relays, entity targets and event connections.'},
  {title:'NPC & AI Studio',description:'Place NPCs, routes, waypoints and spawners; inspect behavior settings and supported custom NPC resources.'},
- {title:'Lighting Studio',description:'Adjust lights, environment, fog and skies; viewport lighting is approximate and not a replacement for SC-RAD.'},
+ {title:'Lighting Studio',description:'Adjust lights, environment, fog and skies; quick viewport lighting is approximate.'},
+ {title:'True Lighting (Studios)',description:'Build temporary baked BSP lightmaps with SC-RAD by default or experimental SDHLT. Select a compiler and confirm the potentially time-consuming bake. In expanded preview, WASD/Q/E navigate the BSP camera; Escape or F8 releases the mouse. AO and PCF require SDHLT and a new bake. Keep the console open during compilation.'},
  {title:'Sound Studio',description:'Configure ambient sounds and music, preview audio and work with supported sound conversion.'},
  {title:'Terrain & Shape Studio',description:'Generate/edit terrain, brush-based landscapes, rocks and cliffs.'},
  {title:'Model Browser',description:'Inspect available Sven Co-op MDL models, skins, bodygroups and animation sequences using game resources.'},
@@ -56,7 +57,7 @@ const en:Manual={
  'Use Edit HUD for draggable on-viewport buttons. Individual windows such as Texture Studio can be moved independently outside the 3D viewport.'
  ],technicalTitle:'How the editor accesses Sven Co-op',technical:[
  'The browser cannot freely read installed game folders. You explicitly import WAD/FGD assets, or provide game and SDK paths to the local Node.js service running on 127.0.0.1.',
- 'The local service can read supported MDL, sounds, sky resources and SDK files using the directories you configure. The project does not ship with copyrighted Sven Co-op assets or compilers.',
+ 'The portable local Node.js runtime is downloaded at first launch if missing; subsequent starts work offline. The local service uses configured game/SDK paths. Sven Co-op WAD/FGD/MDL assets and SC/SDHLT compilers are not bundled.',
  'Saving a project exports .svenstudio.json; session recovery is also stored locally in the browser. MAP export uses Valve 220; Compile Map creates a temporary source MAP and copies the finished BSP to the selected Sven Co-op maps folder on success.'
  ],noticeTitle:'Work in progress',notice:'SvenStudio 3D is NOT 100% finished. New updates arrive periodically. Please report bugs, missing tools, feature requests and suggestions to the developer.',contact:'Discord: kzsheez',linksTitle:'Developer contact'
 };
@@ -98,7 +99,8 @@ const es:Manual={
  {title:'Shapes & Prefabs',description:'Coloca arquitectura rápida (paredes, pisos, rampas, ventanas y puertas) y grupos reutilizables o prefabs guardados.'},
  {title:'Gameplay Studio',description:'Configura visualmente triggers, botones, puertas, relays, targets y conexiones de lógica.'},
  {title:'NPC & AI Studio',description:'Coloca NPC, rutas, waypoints y spawners; revisa ajustes de comportamiento y recursos de NPC personalizados.'},
- {title:'Lighting Studio',description:'Configura luces, ambiente, niebla y sky. La iluminación del visor es aproximada: SC-RAD genera la iluminación final.'},
+ {title:'Lighting Studio',description:'Configura luces, ambiente, niebla y sky; la iluminación rápida del visor es aproximada.'},
+ {title:'True Lighting (Estudios)',description:'Genera lightmaps RGB reales en un BSP temporal con SC-RAD (predeterminado) o SDHLT experimental. Elegí el compilador y confirmá la compilación; puede tardar y afectar el rendimiento. Con la vista ampliada, WASD/Q/E mueven la cámara del BSP; Esc o F8 libera el ratón. AO y PCF necesitan SDHLT y recompilar.'},
  {title:'Sound Studio',description:'Configura sonidos ambientales y música, previsualiza audio y permite conversiones de sonido compatibles.'},
  {title:'Terrain & Shape Studio',description:'Genera y edita terrenos, paisajes de brushes, rocas y acantilados.'},
  {title:'Model Browser',description:'Explora modelos MDL disponibles de Sven Co-op, skins, bodygroups y animaciones usando recursos del juego.'},
@@ -114,8 +116,8 @@ const es:Manual={
  'Con Edit HUD podés reacomodar los botones flotantes del visor. Algunas ventanas, como Texture Studio, también se arrastran fuera del visor 3D.'
  ],technicalTitle:'Cómo obtiene recursos de Sven Co-op',technical:[
  'Por seguridad, el navegador no puede leer carpetas instaladas libremente. Importás WAD/FGD manualmente o indicás las rutas del juego y el SDK al servidor local de Node.js que funciona en 127.0.0.1.',
- 'Ese servidor puede leer modelos MDL, sonidos, cielos y herramientas SDK compatibles desde las carpetas configuradas. El proyecto no distribuye recursos ni compiladores propietarios de Sven Co-op.',
- 'Guardar proyecto exporta .svenstudio.json y hay recuperación local de sesiones. El MAP usa formato Valve 220; Compile Map crea un MAP fuente temporal y, al terminar bien, copia el BSP compilado a la carpeta maps del juego.'
+ 'El runtime Node.js portátil se descarga la primera vez si falta; luego el inicio funciona sin Internet. El servicio lee recursos desde las carpetas configuradas. Los recursos WAD/FGD/MDL de Sven Co-op y los compiladores SC/SDHLT se obtienen por separado.',
+ 'Guardar proyecto exporta .svenstudio.json y hay recuperación local de sesiones. La compilación usa SC-SDK por defecto o SDHLT experimental (requiere ejecutables externos). Compile Map crea un MAP temporal y copia el BSP final a maps según configuración.'
  ],noticeTitle:'Proyecto en desarrollo',notice:'SvenStudio 3D todavía NO está terminado al 100%. Recibe nuevas actualizaciones periódicamente. Por favor, avisame de errores, herramientas que falten y propuestas de mejoras.',contact:'Discord: kzsheez',linksTitle:'Contacto con el desarrollador'
 };
 export const editorManual=(locale:Locale):Manual=>locale==='es'?es:en;

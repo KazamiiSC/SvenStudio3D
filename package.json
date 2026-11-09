@@ -1,6 +1,6 @@
 {
   "name": "sven-studio-3d",
-  "version": "1.5.23",
+  "version": "1.7.19",
   "private": true,
   "type": "module",
   "scripts": {
@@ -44,6 +44,7 @@
     "verify:custom-npc": "node scripts/check-custom-npc.mjs && node scripts/check-custom-npc-state.mjs",
     "verify:packager": "node --test tests/map-packager.test.mjs",
     "verify:terrain": "node scripts/check-terrain.cjs",
+    "verify:buildtogether3": "node --test tests/buildtogether-v160-protocol.test.mjs tests/buildtogether-v160-client.test.mjs tests/buildtogether-v160-ui.test.mjs tests/buildtogether-v161-presence.test.mjs tests/buildtogether-v161-ui.test.mjs",
     "verify:viewport-preview4": "node scripts/check-viewport-preview4.cjs",
     "verify:layout-preview6": "node scripts/check-layout-preview6.cjs",
     "verify:gameplay-test": "node scripts/check-gameplay-test.cjs",
@@ -54,7 +55,10 @@
     "verify:hf14": "node scripts/verify-hf14.mjs",
     "verify:hf15": "node scripts/verify-hf15.mjs",
     "verify:hf15-hf4": "node scripts/verify-hf15-p2-hf4.mjs",
-    "verify:hf15-hf5": "node scripts/verify-hf15-p2-hf5.mjs"
+    "verify:hf15-hf5": "node scripts/verify-hf15-p2-hf5.mjs",
+    "verify:gameplay-v170": "node --test tests/gameplay-v170-workspace.test.mjs",
+    "verify:gameplay-v172": "node --test tests/gameplay-v170-workspace.test.mjs tests/gameplay-v171-systems.test.mjs tests/gameplay-v172-designer.test.mjs",
+    "verify:gameplay-v173": "node --test tests/gameplay-v170-workspace.test.mjs tests/gameplay-v171-systems.test.mjs tests/gameplay-v172-designer.test.mjs tests/gameplay-v173-map.test.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.0.7",
