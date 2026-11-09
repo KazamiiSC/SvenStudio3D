@@ -3,6 +3,7 @@
 // This is a static landing page. It does not contain or run the SvenStudio editor.
 const copy = {
   en: {
+    welcomeHome:'WELCOME TO SVENSTUDIO 3D',multiPill:'BuildTogether · Multiplayer Mapping',studioSlogan:'Create, edit, compile and share Sven Co-op maps with powerful, intuitive tools.',studioStart:'Download SvenStudio',studioExplore:'EXPLORE THE EDITOR',homeWindows:'Windows x64 · Local browser workspace',homePreserved:'Your projects stay on your computer',utilityBuild:'Integrated Compilation',utilityDoctor:'Diagnostics & optimization',utilityBsp:'Inspect compiled maps',previewKicker:'THE REAL WORKSPACE',previewTitle:'The editor behind the vision.',previewDesc:'A real look at the SvenStudio 3D home screen. Download the complete Windows release to use the editor locally — this website is only the official showcase.',previewLink:'Explore real screenshots',moduleMap:'Map Editor',moduleMapDesc:'3D construction',moduleTextures:'Texture Studio',moduleTexturesDesc:'Textures & UVs',moduleDecals:'Decal Studio',moduleDecalsDesc:'Surface details',moduleTogether:'BuildTogether',moduleTogetherDesc:'Collaborative mapping',moduleGameplay:'Gameplay Studio',moduleGameplayDesc:'Logic & objectives',moduleNpc:'NPC & AI Studio',moduleNpcDesc:'NPCs & navigation',moduleLighting:'Lighting Studio',moduleLightingDesc:'Lights & skyboxes',moduleSound:'Sound Studio',moduleSoundDesc:'Sound & ambience',moduleAssets:'Prefabs & Assets',moduleAssetsDesc:'Reusable content',
     skip:'Skip to content',navFeatures:'Features',navGallery:'Showcase',navHow:'How it works',navDownload:'Downloads',navGet:'Get SvenStudio',
     heroEyebrow:'A NEW WAY TO BUILD FOR SVEN CO-OP',heroLine1:'Your worlds.',heroLine2:'Your vision.',heroLine3:'Your editor.',heroDescription:'A powerful, approachable 3D map editor built for Sven Co-op and the GoldSrc / Svengine ecosystem. Create, texture, light and compile — all through a modern local browser workspace.',heroCta:'Download for Windows',heroSecondary:'Explore the editor',heroMeta2:'6 interface languages',heroMeta3:'Local-first workflow',
     featuresKicker:'BUILT FOR CREATORS',featuresTitle:'Everything your next map needs.',featuresDescription:'From your first brush to complex gameplay systems, work with tools designed around the way you build.',
@@ -19,6 +20,7 @@ const copy = {
     questionTitle:'Made for the Sven Co-op community.',questionText:'Explore documentation, follow development or report an issue. SvenStudio 3D is an independent community project and is not affiliated with Valve or the Sven Co-op team.',questionLink:'Project issues & feedback',footerTagline:'A better way to imagine worlds for Sven Co-op.',footerProject:'PROJECT',footerReleases:'Releases',footerIssues:'Issues',footerCommunity:'COMMUNITY',footerDocs:'Documentation',footerCredit:'Created by KZ-Sheez · AI-assisted development',backTop:'Back to top',releaseVersion:'Latest published release:'
   },
   es: {
+    welcomeHome:'BIENVENIDO A SVENSTUDIO 3D',multiPill:'BuildTogether · Edición multijugador',studioSlogan:'Creá, editá, compilá y compartí mapas de Sven Co-op con herramientas potentes e intuitivas.',studioStart:'Descargar SvenStudio',studioExplore:'CONOCER EL EDITOR',homeWindows:'Windows x64 · Editor local en navegador',homePreserved:'Tus proyectos permanecen en tu computadora',utilityBuild:'Compilación integrada',utilityDoctor:'Diagnóstico y optimización',utilityBsp:'Inspección de mapas compilados',previewKicker:'EL ESPACIO DE TRABAJO REAL',previewTitle:'El editor detrás de la visión.',previewDesc:'Una vista real de la pantalla principal de SvenStudio 3D. Descargá la versión completa para Windows para usar el editor localmente: esta web es solo su presentación oficial.',previewLink:'Explorar capturas reales',moduleMap:'Editor de mapas',moduleMapDesc:'Construcción 3D',moduleTextures:'Texture Studio',moduleTexturesDesc:'Texturas y UV',moduleDecals:'Decal Studio',moduleDecalsDesc:'Detalles de superficies',moduleTogether:'BuildTogether',moduleTogetherDesc:'Mapeo colaborativo',moduleGameplay:'Gameplay Studio',moduleGameplayDesc:'Lógica y objetivos',moduleNpc:'NPC & AI Studio',moduleNpcDesc:'NPC y navegación',moduleLighting:'Lighting Studio',moduleLightingDesc:'Luces y cielos',moduleSound:'Sound Studio',moduleSoundDesc:'Sonido y ambiente',moduleAssets:'Prefabs & Assets',moduleAssetsDesc:'Contenido reutilizable',
     skip:'Ir al contenido',navFeatures:'Funciones',navGallery:'Galería',navHow:'Cómo funciona',navDownload:'Descargas',navGet:'Descargar SvenStudio',
     heroEyebrow:'UNA NUEVA FORMA DE CREAR MAPAS PARA SVEN CO-OP',heroLine1:'Tus mundos.',heroLine2:'Tu visión.',heroLine3:'Tu editor.',heroDescription:'Un potente editor de mapas 3D, fácil de usar y creado para Sven Co-op y el ecosistema GoldSrc / Svengine. Construí, aplicá texturas, iluminá y compilá desde un espacio de trabajo moderno que se ejecuta localmente en tu navegador.',heroCta:'Descargar para Windows',heroSecondary:'Conocer el editor',heroMeta2:'6 idiomas de interfaz',heroMeta3:'Trabajo local',
     featuresKicker:'PENSADO PARA CREADORES',featuresTitle:'Todo lo que necesita tu próximo mapa.',featuresDescription:'Desde tu primer brush hasta sistemas de juego complejos, con herramientas que se adaptan a tu forma de construir.',
@@ -130,3 +132,65 @@ document.addEventListener('keydown', event => {
   if (event.key === 'ArrowLeft') showImage(activeImageIndex - 1);
   if (event.key === 'Tab') { event.preventDefault(); lightboxClose.focus(); }
 });
+
+
+// V2 visual effects: only presentation layers are animated; no editor code is loaded.
+(() => {
+  const hero = document.querySelector('.studio-hero');
+  const sky = document.querySelector('#scene-sky');
+  if (!hero || !sky) return;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const coarsePointer = window.matchMedia('(pointer: coarse)');
+  let seed = 4789;
+  function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < 34; i++) {
+    const dot = document.createElement('span');
+    dot.className = 'sky-particle';
+    dot.style.setProperty('--x', `${(rnd() * 100).toFixed(2)}%`);
+    dot.style.setProperty('--y', `${(rnd() * 92).toFixed(2)}%`);
+    dot.style.setProperty('--size', `${(1 + rnd() * 2.3).toFixed(1)}px`);
+    dot.style.setProperty('--delay', `${(-rnd() * 9).toFixed(1)}s`);
+    dot.style.setProperty('--duration', `${(5 + rnd() * 8).toFixed(1)}s`);
+    frag.appendChild(dot);
+  }
+  sky.appendChild(frag);
+  if (reducedMotion.matches || coarsePointer.matches) return;
+  let raf = 0, px = 0, py = 0, tx = 0, ty = 0;
+  const layers = Array.from(hero.querySelectorAll('[data-depth]'));
+  function frame() {
+    raf = 0;
+    px += (tx - px) * 0.095;
+    py += (ty - py) * 0.095;
+    layers.forEach(layer => {
+      const depth = Number(layer.dataset.depth) || 0;
+      layer.style.setProperty('--parallax-x', `${(px * depth).toFixed(2)}px`);
+      layer.style.setProperty('--parallax-y', `${(py * depth).toFixed(2)}px`);
+    });
+    if (Math.abs(px - tx) > .0008 || Math.abs(py - ty) > .0008) raf = requestAnimationFrame(frame);
+  }
+  const schedule = () => { if (!raf) raf = requestAnimationFrame(frame); };
+  hero.addEventListener('pointermove', event => {
+    const bounds = hero.getBoundingClientRect();
+    tx = ((event.clientX - bounds.left) / bounds.width - .5) * 2;
+    ty = ((event.clientY - bounds.top) / bounds.height - .5) * 2;
+    schedule();
+  }, {passive: true});
+  hero.addEventListener('pointerleave', () => { tx = 0; ty = 0; schedule(); }, {passive: true});
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && raf) { cancelAnimationFrame(raf); raf = 0; }
+    else if (!document.hidden) schedule();
+  });
+})();
+
+// Reveal secondary section without hiding content if IntersectionObserver is unavailable.
+(() => {
+  if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const nodes = document.querySelectorAll('.preview-screen, .feature-card, .gallery-card');
+  const io = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) { entry.target.classList.add('is-visible'); io.unobserve(entry.target); }
+    }
+  }, {threshold: 0.09});
+  nodes.forEach(el => { el.classList.add('reveal-ready'); io.observe(el); });
+})();
