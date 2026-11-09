@@ -1,6 +1,6 @@
 <div align="center">
 
-# SvenStudio 3D
+# SvenStudio3D
 
 ###
 **A modern browser-based level editor for Sven Co-op · GoldSrc · Svengine**
