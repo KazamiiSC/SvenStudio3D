@@ -1,77 +1,73 @@
-# SvenStudio 3D — Version 1.5.23
+# SvenStudio 3D — v1.7.19
 
 **A modern, browser-based 3D map editor for Sven Co-op (GoldSrc / Svengine).**
 
-Created by **KZ-Sheez** with the help of **ChatGPT-6 Astra**.
+Created by **KZ-Sheez** with AI-assisted development.
 
 <p align="center">
-  <img src="assets/screenshots/home.png" alt="SvenStudio 3D — modern home screen" width="100%" />
+  <img src="https://github.com/user-attachments/assets/69959e8e-082f-46f5-9418-8a7e05edb67b" alt="SvenStudio 3D — modern home screen" width="100%" />
 </p>
 
-**Languages / Idiomas:** [English](#english) | [Español](#español) | [Screenshots / Galería](#screenshots--galería)
+**Languages / Idiomas:** [English](#english) | [Español](#español)
+
+> **Release status:** v1.7.19 is a release candidate for the 1.7 series, not a guarantee of bug-free operation. The general automated test run previously reported 544/556 passing, with 12 remaining failures requiring investigation. Use backups for important projects; test SDK/SDHLT maps inside Sven Co-op before publishing.
 
 ---
-
-## Screenshots / Galería
-
-*Development screenshots from different v1.5.x builds. Some controls, colors, labels or versions may differ from the latest package.*
-
-*Capturas de distintas versiones v1.5.x en desarrollo. Algunos controles, colores, etiquetas o números de versión pueden variar respecto del paquete más reciente.*
 
 ### 3D Map Editor / Editor de mapas 3D
 
 <p align="center">
-  <img src="assets/screenshots/map-editor.png" width="94%" alt="Map Editor — editable brush geometry, WAD textures, gizmos and properties" />
+  <img src="https://github.com/user-attachments/assets/64ad59b8-1d4f-4585-9c2f-36b713e5c7e5" alt="Map Editor — editable brush geometry, WAD textures, gizmos and properties" width="100%" />
 </p>
 
 ### Terrain & Shape Studio / Estudio de terrenos y formas
 
 <p align="center">
-  <img src="assets/screenshots/terrain-shape-studio.png" width="88%" alt="Terrain & Shape Studio — sculpt terrain preview" />
+  <img src="https://github.com/user-attachments/assets/e7c19164-1c08-49ee-abca-f5383405e03f" width="88%" alt="Terrain & Shape Studio — sculpt terrain preview" />
 </p>
 
 ### Models, NPCs and sounds / Modelos, NPC y sonidos
 
 <p align="center">
-  <img src="assets/screenshots/model-browser.png" width="49%" alt="Model Browser — MDL asset thumbnails" />
-  <img src="assets/screenshots/npc-ai-studio.png" width="49%" alt="NPC & AI Studio — NPC preview and waypoint tools" />
+  <img src="https://github.com/user-attachments/assets/d22a8684-fe95-4350-8feb-c8d46c9174ff" width="49%" alt="Model Browser — MDL asset thumbnails" />
+  <img src="https://github.com/user-attachments/assets/c9bcc851-fa11-4043-9dde-29281cb78a03" width="49%" alt="NPC & AI Studio — NPC preview and waypoint tools" />
 </p>
 <p align="center">
-  <img src="assets/screenshots/sound-studio.png" width="85%" alt="Sound & Atmosphere Studio — sound browser and waveform" />
+  <img src="https://github.com/user-attachments/assets/4de5587f-3894-46ea-95d1-4a45277e42a6" width="85%" alt="Sound & Atmosphere Studio — sound browser and waveform" />
 </p>
 
 ### Gameplay and cinematic tools / Jugabilidad y cámaras cinematográficas
 
 <p align="center">
-  <img src="assets/screenshots/gameplay-logic.png" width="49%" alt="Gameplay Studio — target and targetname visual connections" />
-  <img src="assets/screenshots/gameplay-test.png" width="49%" alt="Gameplay Test — first-person map preview" />
+  <img src="https://github.com/user-attachments/assets/0db538e3-1c8d-4ceb-9239-c7709c591724" width="49%" alt="Gameplay Studio — target and targetname visual connections" />
+  <img src="https://github.com/user-attachments/assets/a2ce221e-b7e8-4c9d-bcb2-06a24e076261" width="49%" alt="Gameplay Test — first-person map preview" />
 </p>
 <p align="center">
-  <img src="assets/screenshots/cinematic-camera-studio.png" width="88%" alt="Cinematic Camera Studio — native camera entities and path preview" />
+  <img src="https://github.com/user-attachments/assets/e33d1462-98fb-4b9f-910a-f11a083b4206" width="88%" alt="Cinematic Camera Studio — native camera entities and path preview" />
 </p>
 
 ### Advanced lighting and True Lighting / Iluminación avanzada y True Lighting
 
 <p align="center">
-  <img src="assets/screenshots/lighting-studio.png" width="86%" alt="Advanced Lighting Studio — light, sky and fog settings" />
+  <img src="https://github.com/user-attachments/assets/6b46a39f-cd47-49d8-b3df-d125acea01fc" width="86%" alt="Advanced Lighting Studio — light, sky and fog settings" />
 </p>
 <p align="center">
-  <img src="assets/screenshots/true-lighting-preview.png" width="49%" alt="True Lighting — SC-RAD RGB lightmap preview in the editor" />
-  <img src="assets/screenshots/in-game-lighting.png" width="49%" alt="Sven Co-op engine — corresponding compiled lighting in game" />
+  <img src="https://github.com/user-attachments/assets/5cc010c2-4c1c-4e51-a81b-509cd269de8c" width="49%" alt="True Lighting — SC-RAD RGB lightmap preview in the editor" />
+  <img src="https://github.com/user-attachments/assets/12e52d0a-acd2-428d-a4ef-2cb3261e9df9" width="49%" alt="Sven Co-op engine — corresponding compiled lighting in game" />
 </p>
 
 ### BSP Viewer / Visor de mapas BSP
 
 <p align="center">
-  <img src="assets/screenshots/bsp-viewer-exterior.png" width="49%" alt="BSP Viewer — exterior map, entities and GoldSrc material preview" />
-  <img src="assets/screenshots/bsp-viewer-interior.png" width="49%" alt="BSP Viewer — first-person interior walkthrough" />
+  <img src="https://github.com/user-attachments/assets/0a340e23-3440-474d-944e-7b479fb6f65f" width="49%" alt="BSP Viewer — exterior map, entities and GoldSrc material preview" />
+  <img src="https://github.com/user-attachments/assets/689e0298-c743-4da3-b049-cc5a721a4a94" width="49%" alt="BSP Viewer — first-person interior walkthrough" />
 </p>
 
-### BuildTogether 2.0 / Edición multijugador
+### BuildTogether / Edición multijugador
 
 <p align="center">
-  <img src="assets/screenshots/buildtogether-session.png" width="43%" alt="BuildTogether — connected multiplayer mapping session" />
-  <img src="assets/screenshots/buildtogether-workspace.png" width="55%" alt="BuildTogether — shared map geometry and remote participant cursor" />
+  <img src="https://github.com/user-attachments/assets/78416736-1a14-4921-ac33-0fde055751ee" width="43%" alt="BuildTogether — connected multiplayer mapping session" />
+  <img src="https://github.com/user-attachments/assets/c982e261-14e6-4564-a1a1-2cabd499140b" width="55%" alt="BuildTogether — shared map geometry and remote participant cursor" />
 </p>
 
 ---
@@ -82,11 +78,7 @@ Created by **KZ-Sheez** with the help of **ChatGPT-6 Astra**.
 
 **SvenStudio 3D** is a local, browser-based level editor designed to make map creation for **Sven Co-op / Svengine** more accessible without sacrificing the tools needed for complex GoldSrc projects. Build and texture brushes in a 3D viewport, configure entities through FGD definitions, preview gameplay logic, inspect compiled BSP maps, and launch the Sven Co-op compilation pipeline from a single workspace.
 
-<<<<<<< HEAD
-The editor combines familiar workflows from traditional level editors with modern viewport navigation, visual controls, reusable structures, smart placement, and diagnostic tools. It is intended for both beginners creating their first room and experienced mappers working on larger environments. This README includes improvements introduced through **v1.5.23**.
-=======
-The editor combines familiar workflows from traditional level editors with modern viewport navigation, visual controls, reusable structures, smart placement, and diagnostic tools. It is intended for both beginners creating their first room and experienced mappers working on larger environments. This README includes improvements introduced through **HF15 Preview 3 HF1**.
->>>>>>> 13fc5a89f43f400c379fdffc02021544099398e2
+The editor combines familiar workflows from traditional level editors with modern viewport navigation, visual controls, reusable structures, smart placement, and diagnostic tools. It is intended for both beginners creating their first room and experienced mappers working on larger environments. This README describes the **v1.7.19 release candidate**. Some advanced features are experimental and should be validated in Sven Co-op.
 
 ### Main features
 
@@ -118,7 +110,7 @@ The editor combines familiar workflows from traditional level editors with moder
 - **FGD-based entity editor:** Import Sven Co-op FGD definitions, inspect class descriptions, edit native keyvalues, and work with additional custom FGD entity classes.
 - **Entity Assistant:** Contextual mini guides explaining what an entity does, relevant properties, usage examples and available capabilities. Open an expanded guide for comfortable reading.
 - **Beginner and advanced properties:** Quick controls for common tasks alongside full access to original FGD keyvalues for experienced mappers.
-- **Gameplay Studio:** Visualize entities as nodes, search and connect `target` to `targetname`, and inspect missing or invalid connections.
+- **Gameplay Studio 3.0:** Interactive top/isometric entity map, spatial selection, search and filters, native `target`/`targetname` relationships, event inspection, entity properties and static checks. Gameplay Studio 3.0 keeps its own feature name independently of the editor version.
 - **Named brushes and searchable targets:** Give brushes a custom editor name (for example, *Laboratory Door*) and find them in the Explorer and entity connection picker. Editor-only names remain separate from Svengine's `targetname`.
 - **Door and button controls:** Configure `func_door` movement direction, speed, travel, wait time, button activation, and sounds through guided properties.
 - **Detach brush entities:** Convert one or multiple brushes belonging to a `func_*` or brush-based trigger entity back to normal `worldspawn` geometry without deleting their shape or textures, with Undo/Redo support.
@@ -128,13 +120,15 @@ The editor combines familiar workflows from traditional level editors with moder
 - **Player start visualization:** `info_player_start` model preview with idle animation where supported, ground alignment preview, and a visible/configurable initial facing direction.
 - **NPC & AI Studio:** Browse NPC classes, preview supported models, place NPCs, create paths, waypoints, and spawners, and check common configuration errors.
 
-#### BuildTogether 2.0 — multiplayer mapping
+#### BuildTogether — Multiplayer Mapping
 
-- Collaborate on a map from separate browsers through a local WebSocket session with a host and invited participants.
-- Synchronize brushes, entities, editing selections and remote cursors; follow another participant's camera when needed.
-- Includes smoother cursor updates, reconnection/recovery improvements, and safer batching for large terrain changes.
-- Each participant uses local WAD/FGD/MDL and SDK resources; these files are **not** transferred over BuildTogether.
-- Supports virtual LAN workflows such as Pothole. Prefer trusted private networks; do not expose a session code or the server port publicly.
+*Collaborate on a map from separate browsers through a local WebSocket session with a host and invited participants.
+Synchronize brushes, entities, editing selections and remote cursors; follow another participant's camera when needed.
+Includes smoother cursor updates, reconnection/recovery improvements, and safer batching for large terrain changes.
+Each participant uses local WAD/FGD/MDL and SDK resources; these files are not transferred over BuildTogether.
+Tested with ***Porthole — Local Port Sharing***: Real multiplayer testing was performed between two participants using Porthole's private-network TCP port sharing. This confirms that the tested setup worked, but does not guarantee compatibility with every network or project.
+Experimental feature: BuildTogether may still contain bugs, synchronization issues or unexpected behavior, especially with complex tools or large maps. Save backup copies of your project and report any problems you encounter.
+Security: Use trusted private networks only. Do not publicly share session codes or expose the server port directly to the Internet.*
 
 #### Sound, models and visual previews
 
@@ -142,9 +136,9 @@ The editor combines familiar workflows from traditional level editors with moder
 - **Sound and action helpers:** Set up button sounds, door movement/stop sounds and audio-related keyvalues; use `ambient_generic` or relays for more advanced sequences.
 - **MDL Model Browser:** Browse Sven Co-op models and inspect their animations, skins and bodygroups; preview supported assets in the editor.
 - **Advanced Lighting Studio:** Configure `light`, `light_spot`, `light_environment`, skyboxes, fog, lightstyles and advanced SC-RAD settings. The standard viewport preview remains approximate.
-- **True Lighting:** Preview compiled BSP lightmaps with SC-RAD RGB lighting inside the editor, including a diagnostic view; compiled lighting remains the reference for fidelity.
+- **True Lighting (Studies):** Preview baked RGB lightmaps from **SC-RAD** or optional **SDHLT**, select the compiler before rebuilding, and inspect the resulting BSP lighting. SDHLT supports experimental AO/PCF options when available. Rebuilding displays a warning because compilation may take time and affect performance. Enlarged preview uses its own free camera (WASD, Q/E, mouse; Esc or F8 releases cursor where supported). Rendered lightmaps are more faithful than approximate real-time preview, but final results should still be checked in-game.
 - **GoldSrc materials:** Visual previews of water, glass, masked textures, transparency and additive effects, subject to differences from in-game rendering.
-- **Shading modes:** Wireframe, Solid, Material Preview and Rendered, including a Blender-inspired shading pie menu.
+- **Shading modes:** Wireframe, Solid, Material Preview and Rendered, including a pointer-selectable radial shading menu.
 - **Cinematic Camera Studio:** Arrange native Sven Co-op camera entities, preview paths and scenes, configure timing and camera keyvalues, and validate routes. The preview is approximate and must be verified in-game.
 
 #### BSP, gameplay testing and compilation
@@ -153,7 +147,7 @@ The editor combines familiar workflows from traditional level editors with moder
 - **BSP-to-MAP / recovery tools:** Experimental recovery and inspection workflows for existing BSP files; reconstructed geometry, texture alignment and lighting may differ from the original source.
 - **Player Walk and Gameplay Test:** Explore an editable map in first person with WASD, mouse look, jumping, sprinting, crouching, gravity, collisions and noclip options.
 - **Player flashlight and HUD:** Flashlight, coordinates, speed readouts, FPS-only counter, and customizable/movable HUD elements.
-- **Integrated Sven Co-op SDK compilation:** Run **SC-CSG, SC-BSP, SC-VIS and SC-RAD** through the local tooling and inspect their output.
+- **Integrated compilation:** Use **SC-CSG / SC-BSP / SC-VIS / SC-RAD** by default, or configure **SDHLT** as an optional experimental toolchain. Executables and compatible resource paths are required; SDHLT may produce different lighting or hit different map limits.
 - **Valve 220 MAP import/export:** Save maps for the GoldSrc/Svengine toolchain, with geometry validation and warnings for unsupported or potentially lossy imports.
 - **Map Doctor 2.0:** Detect issues with geometry, entities, textures, resources, SKY enclosure and compilation; display warnings including UV-axis alignment repairs.
 - **Visual leak tracing:** Import compiler `.pts`/`.lin` point files and inspect leak routes in 3D, including navigation to their endpoints.
@@ -167,9 +161,25 @@ The editor combines familiar workflows from traditional level editors with moder
 - **Autosave and recovery:** Session restoration, project checkpoints, validation, and safeguards for incomplete or damaged imports.
 - **Customizable/adaptive UI:** Dockable/resizable panels, compact responsive toolbars, themes, contextual menus, configurable HUD and workspace layouts, including improved behavior with Windows display scaling.
 - **Fullscreen editing:** Optional browser fullscreen with Keyboard Lock where supported. Some browser/system shortcuts cannot be intercepted in every environment.
-- **Multilingual interface:** Spanish, English, Russian and Korean, with technical FGD classnames and keyvalues preserved in their original form.
-- **Windows launcher and branding:** `SvenStudio3D.bat`, application icon, desktop shortcut and browser favicon.
+- **Multilingual interface:** English, Spanish, Russian, Korean, Simplified Chinese and Brazilian Portuguese; native FGD classnames and keyvalues are not translated.
+- **Windows launcher and branding:** `SvenStudio3D.bat` starts the local editor with a bundled/download-on-first-launch Node.js runtime (no system-wide Node.js installation required); launcher messages follow the Windows display language where supported, otherwise English.
 - **Build configuration convenience:** Folder browsing and discovery of Sven Co-op and SDK compiler locations across registered Steam libraries, including other drives, where available.
+
+### Controls and shortcuts
+
+| Control | Action |
+| --- | --- |
+| Right mouse button + mouse | Look around in the MAP editor |
+| WASD / Q / E | Move camera / down and up (when navigation has focus) |
+| G / R / C | Move / rotate / scale selected geometry |
+| Left click / right click | Confirm / cancel an active transform where applicable |
+| Z | Radial shading menu (point at the choice) |
+| Ctrl+C / Ctrl+V | Copy / duplicate selection |
+| Esc | Cancel tool or release supported free-camera capture |
+| F8 | Alternative cursor release in True Lighting free-camera mode |
+| Shift | Faster movement in supported free-camera views |
+
+**Fullscreen:** A long Escape press (about 1.5 seconds) may exit fullscreen where Keyboard Lock is supported. Browser-reserved shortcuts cannot always be intercepted. `Ctrl+D` is intentionally not used for duplication. Actual bindings depend on editor context and configurable shortcuts.
 
 ### Example: a button opens a door
 
@@ -181,20 +191,28 @@ The editor combines familiar workflows from traditional level editors with moder
 
 ### Requirements
 
-- **Node.js 22 or newer** — required for the local editor and its development server.
+- **Windows x64** for the provided launcher and included Windows dependencies. A recent Chromium-based desktop browser is recommended.
+- **Internet on first launch only if the local Node.js runtime has not yet been downloaded.** A global Node.js installation is not required to run the packaged Windows release.
 - **Sven Co-op SDK / compatible SC compilation tools** — required to compile BSP maps.
 - **Sven Co-op** — required for testing and playing compiled maps.
-- **A modern desktop browser** — Chrome or another compatible Chromium-based browser is recommended for the local editor.
 
 ### Installation
 
-1. Download the latest package from [Releases](../../releases) and extract it to a folder.
-2. Install [Node.js](https://nodejs.org/) (version 22 or newer).
-3. Launch **`SvenStudio3D.bat`** on Windows.
-4. Open the local address shown by the launcher in your browser.
-5. Use **Build Configuration** to browse for Sven Co-op/SDK folders or detect registered Steam libraries, then configure FGD/WAD resources as needed.
+1. Download the complete Windows package from [Releases](https://github.com/KazamiiSC/SvenStudio3D/releases) and extract **all** files to a writable folder.
+2. Run **`SvenStudio3D.bat`**. On the first run, if the Node.js runtime is missing, the launcher downloads it once; subsequent launches can work offline. **Do not run `npm install`** for the complete packaged release.
+3. Open the local address displayed by the launcher (normally `http://127.0.0.1:5173`) if the browser does not open automatically.
+4. Use **Build Configuration** to choose Sven Co-op/SDK compiler folders and required WAD/FGD files.
+5. **SDHLT is already included in the complete Windows package**, inside the `tools` folder. In **Build Configuration**, choose **SDHLT — Experimental** and point the SDHLT tool directory to that folder (or the subfolder containing `sdHLCSG_x64.exe`, `sdHLBSP_x64.exe`, `sdHLVIS_x64.exe`, and `sdHLRAD_x64.exe`). Make sure `sdhlt.wad` is available in the configured WAD resources. No separate SDHLT download is needed for the complete release. Test compiled maps in Sven Co-op.
+
+**From source:** The smaller GitHub source archive does **not** contain `node_modules` or a ready-to-run runtime. Developers need a compatible Node.js/npm installation and must install dependencies themselves.
 
 > **Note:** SvenStudio 3D runs locally in the browser. The browser interface alone cannot run Windows SDK compilers; compilation depends on the local backend and configured Sven Co-op tools. Visual previews (especially lighting, textures and recovered BSPs) should be checked in-game before release.
+
+### Third-party credits — SDHLT
+
+- **SDHLT** — Half-Life 1 / GoldSrc map compilation tools developed and maintained by **seedee**, based on **Vluzacn's ZHLT v34** with contributions from other developers and earlier Valve tooling.
+- **Official source repository:** [github.com/seedee/SDHLT](https://github.com/seedee/SDHLT)
+- **Project license and original notices:** [SDHLT LICENSE.md](https://github.com/seedee/SDHLT/blob/master/LICENSE.md). SDHLT is a separate third-party project; integration into SvenStudio 3D does not imply its authors endorse SvenStudio 3D.
 
 ### Feedback and collaboration
 
@@ -211,11 +229,7 @@ I would appreciate help testing, reporting issues, contributing improvements and
 
 **SvenStudio 3D** es un editor de niveles 3D que funciona localmente en el navegador y está diseñado para facilitar la creación de mapas para **Sven Co-op / Svengine**, sin renunciar a las herramientas que necesitan los proyectos avanzados de GoldSrc. Permite construir y texturizar brushes en un visor 3D, configurar entidades a partir de archivos FGD, organizar conexiones de jugabilidad, inspeccionar BSP compilados y ejecutar el proceso de compilación desde un mismo entorno.
 
-<<<<<<< HEAD
-Combina herramientas clásicas de creación de mapas con controles modernos, construcción reutilizable, colocación inteligente y diagnóstico. Está pensado tanto para personas que crean su primera habitación como para mappers experimentados que trabajan en escenarios grandes. Este README incluye las mejoras incorporadas hasta **v1.5.23**.
-=======
-Combina herramientas clásicas de creación de mapas con controles modernos, construcción reutilizable, colocación inteligente y diagnóstico. Está pensado tanto para personas que crean su primera habitación como para mappers experimentados que trabajan en escenarios grandes. Este README incluye las mejoras incorporadas hasta **HF15 Preview 3 HF1**.
->>>>>>> 13fc5a89f43f400c379fdffc02021544099398e2
+Combina herramientas clásicas de creación de mapas con controles modernos, construcción reutilizable, colocación inteligente y diagnóstico. Está pensado tanto para personas que crean su primera habitación como para mappers experimentados que trabajan en escenarios grandes. Este README describe la **versión candidata v1.7.19**. Algunas funciones avanzadas son experimentales y deben comprobarse dentro de Sven Co-op.
 
 ### Características principales
 
@@ -247,7 +261,7 @@ Combina herramientas clásicas de creación de mapas con controles modernos, con
 - **Editor de entidades FGD:** Importar definiciones de Sven Co-op, consultar sus descripciones y editar keyvalues originales, incluidas clases personalizadas de otros FGD.
 - **Asistente de entidades:** Mini guías contextuales sobre qué hace cada entidad, qué propiedades utiliza, ejemplos prácticos y capacidades disponibles; incluye una guía ampliada para leer cómodamente.
 - **Propiedades básicas y avanzadas:** Controles sencillos para tareas comunes y acceso completo a keyvalues FGD para usuarios experimentados.
-- **Gameplay Studio:** Visualizar entidades como nodos, buscar y conectar `target` con `targetname`, e identificar conexiones inválidas o inexistentes.
+- **Gameplay Studio 3.0:** Mapa interactivo de entidades en vista superior/isométrica, selección espacial, búsqueda y filtros, conexiones nativas `target`/`targetname`, inspección de eventos, edición de propiedades y comprobaciones estáticas. Gameplay Studio 3.0 conserva su nombre independientemente de la versión del editor.
 - **Nombres personalizados y conexiones buscables:** Dar a un brush un nombre como *Puerta del laboratorio* y encontrarlo en el Explorador y el selector de conexiones. El nombre del editor es independiente del `targetname` que utiliza el motor.
 - **Puertas y botones:** Configurar dirección de apertura de `func_door`, velocidad, recorrido, espera, activación desde botones y sonidos mediante controles explicados.
 - **Desvincular entidades de brushes:** Convertir uno o varios brushes de una entidad `func_*` o trigger sólida en geometría normal de `worldspawn`, conservando sus texturas y forma, con Deshacer/Rehacer.
@@ -257,13 +271,15 @@ Combina herramientas clásicas de creación de mapas con controles modernos, con
 - **Vista previa del jugador inicial:** `info_player_start` con modelo, idle cuando está disponible, alineación visual con el suelo y dirección inicial visible y configurable.
 - **NPC & AI Studio:** Exploración de clases NPC, vista previa de modelos compatibles, colocación de NPC, creación de rutas, waypoints y spawners, y validaciones de configuración.
 
-#### BuildTogether 2.0 — creación de mapas en multijugador
+#### BuildTogether — Multiplayer Mapping
 
-- Colaboración sobre un mismo mapa desde distintos navegadores mediante sesiones WebSocket locales con anfitrión e invitados.
-- Sincronización de brushes, entidades, selecciones y cursores remotos; opción para seguir la cámara de otra persona.
-- Incluye cursores más suaves, mejoras de reconexión/recuperación y envío por lotes más seguro para terrenos grandes.
-- Cada participante utiliza sus recursos WAD/FGD/MDL y el SDK local; estos archivos **no** se transfieren durante la sesión.
-- Compatible con redes LAN virtuales como Pothole. Se recomienda una red privada de confianza y no exponer públicamente el puerto o código de sesión.
+*Colaboración sobre un mismo mapa desde distintos navegadores mediante sesiones WebSocket locales con anfitrión e invitados.
+Sincronización de brushes, entidades, selecciones y cursores remotos; opción para seguir la cámara de otra persona.
+Incluye cursores más suaves, mejoras de reconexión/recuperación y envío por lotes más seguro para terrenos grandes.
+Cada participante utiliza sus recursos WAD/FGD/MDL y el SDK local; estos archivos no se transfieren durante la sesión.
+Probado con ***Porthole — Local Port Sharing***: Se realizaron pruebas reales de multijugador entre dos participantes utilizando el sistema de puertos TCP compartidos de Porthole en una red privada. Esto confirma el funcionamiento en esa configuración, pero no garantiza compatibilidad con todas las redes o proyectos.
+Función experimental: BuildTogether todavía puede presentar errores, problemas de sincronización o comportamientos inesperados, especialmente al utilizar herramientas complejas o mapas grandes. Guardá copias de seguridad de tus proyectos y reportá los problemas que encuentres.
+Seguridad: Utilizá solamente redes privadas de confianza. No compartas públicamente códigos de sesión ni expongas directamente el puerto del servidor a Internet.*
 
 #### Sonidos, modelos y vista previa
 
@@ -271,9 +287,9 @@ Combina herramientas clásicas de creación de mapas con controles modernos, con
 - **Asistentes de sonido y acciones:** Sonido de botones, sonidos de movimiento y detención de puertas, y keyvalues de audio; soporte para `ambient_generic` y relays en secuencias más complejas.
 - **Explorador de modelos MDL:** Navegar modelos de Sven Co-op, inspeccionar animaciones, skins y bodygroups y previsualizar recursos compatibles.
 - **Advanced Lighting Studio:** Configuración de `light`, `light_spot`, `light_environment`, skyboxes, niebla, estilos de iluminación y ajustes avanzados de SC-RAD. La vista previa normal sigue siendo aproximada.
-- **True Lighting:** Vista de lightmaps RGB provenientes de la compilación SC-RAD de BSP dentro del editor, con diagnóstico; el resultado compilado es la referencia de fidelidad.
+- **True Lighting (Estudios):** Vista de lightmaps RGB compilados con **SC-RAD** o **SDHLT** opcional, selección del compilador antes de reconstruir e inspección de la iluminación BSP resultante. SDHLT incorpora opciones experimentales AO/PCF cuando están disponibles. La reconstrucción advierte que puede tardar y afectar el rendimiento. La vista ampliada utiliza cámara libre independiente (WASD, Q/E, ratón; Esc o F8 para liberar el cursor cuando el navegador lo permite). Los lightmaps compilados ofrecen mayor fidelidad que la vista aproximada, pero conviene verificar el resultado en el juego.
 - **Materiales GoldSrc:** Vistas previas de agua, vidrio, texturas enmascaradas, transparencias y efectos aditivos, con posibles diferencias respecto al juego.
-- **Modos de sombreado:** Wireframe, Solid, Material Preview y Rendered, con menú radial inspirado en Blender.
+- **Modos de sombreado:** Wireframe, Solid, Material Preview y Rendered, con menú radial de sombreado seleccionable al apuntar.
 - **Cinematic Camera Studio:** Creación de escenas mediante entidades de cámara nativas de Sven Co-op, rutas, tiempos, keyvalues y validación. La vista previa es aproximada y se debe verificar dentro del juego.
 
 #### BSP, pruebas y compilación
@@ -282,7 +298,7 @@ Combina herramientas clásicas de creación de mapas con controles modernos, con
 - **Herramientas BSP a MAP / recuperación:** Funciones experimentales para inspeccionar y reconstruir mapas a partir de BSP; la geometría, las UV o la iluminación recuperadas pueden diferir del proyecto original.
 - **Player Walk y Gameplay Test:** Recorrer mapas en primera persona con WASD, mouse, salto, carrera, agacharse, gravedad, colisiones y opciones noclip.
 - **Linterna y HUD:** Linterna, coordenadas, velocidad, monitor que muestra únicamente FPS y elementos del HUD movibles y personalizables.
-- **Compilación integrada:** Ejecución local de **SC-CSG, SC-BSP, SC-VIS y SC-RAD** con acceso a sus registros.
+- **Compilación integrada:** Uso predeterminado de **SC-CSG / SC-BSP / SC-VIS / SC-RAD** y opción experimental **SDHLT** con rutas independientes. Es necesario disponer de ejecutables y recursos compatibles; SDHLT puede cambiar la iluminación o presentar límites distintos.
 - **Importación/exportación MAP Valve 220:** Compatibilidad con herramientas de GoldSrc/Svengine, validación de geometría y advertencias cuando una importación podría perder datos incompatibles.
 - **Map Doctor 2.0:** Comprobación de geometría, entidades, texturas, recursos, SKY y errores de compilación; advertencias sobre ejes UV reparados.
 - **Detección visual de LEAK:** Importación de recorridos `.pts`/`.lin` generados por los compiladores y visualización 3D de fugas, con navegación a sus extremos.
@@ -296,9 +312,25 @@ Combina herramientas clásicas de creación de mapas con controles modernos, con
 - **Guardado automático y recuperación:** Restauración de sesión, puntos de recuperación, validación de proyectos y protecciones ante importaciones incompletas o dañadas.
 - **Interfaz personalizable y adaptable:** Paneles acoplables y redimensionables, barras responsivas, temas, menús contextuales, HUD configurable y mejoras para distintas escalas de pantalla de Windows.
 - **Pantalla completa:** Modo opcional con Keyboard Lock cuando el navegador lo permite. Algunos atajos del navegador o del sistema no se pueden bloquear en todos los equipos.
-- **Interfaz multilingüe:** Español, inglés, ruso y coreano; los `classname` y keyvalues técnicos FGD se conservan con sus nombres originales.
-- **Lanzador e identidad visual para Windows:** `SvenStudio3D.bat`, icono de aplicación, acceso directo y favicon del navegador.
+- **Interfaz multilingüe:** Inglés, español, ruso, coreano, chino simplificado y portugués de Brasil; los `classname` y keyvalues FGD mantienen sus nombres originales.
+- **Iniciador para Windows:** `SvenStudio3D.bat` abre el editor usando el runtime de Node.js incluido o descargado en el primer inicio (sin instalación global de Node.js). Los mensajes detectan el idioma de Windows si está admitido; si no, usan inglés.
 - **Configuración de compilación más sencilla:** Exploración de carpetas y búsqueda de Sven Co-op y sus compiladores SDK en bibliotecas Steam registradas, incluso en otras unidades cuando están disponibles.
+
+### Controles y atajos
+
+| Control | Acción |
+| --- | --- |
+| Botón derecho + ratón | Mirar alrededor en el editor MAP |
+| WASD / Q / E | Mover cámara / bajar y subir (cuando la navegación tiene el foco) |
+| G / R / C | Mover / rotar / escalar geometría seleccionada |
+| Clic izquierdo / derecho | Confirmar / cancelar transformaciones, según contexto |
+| Z | Menú radial de sombreado (seleccionar apuntando) |
+| Ctrl+C / Ctrl+V | Copiar / duplicar selección |
+| Esc | Cancelar herramienta o liberar cámara libre compatible |
+| F8 | Alternativa para liberar el cursor de True Lighting |
+| Shift | Acelerar en vistas de cámara libre compatibles |
+
+**Pantalla completa:** mantener Escape aproximadamente 1,5 segundos puede salir de pantalla completa cuando el navegador autoriza Keyboard Lock. Algunos atajos reservados no pueden interceptarse. `Ctrl+D` no se utiliza para duplicar. Los atajos pueden variar según el contexto y la configuración.
 
 ### Ejemplo práctico: botón que abre una puerta
 
@@ -310,20 +342,28 @@ Combina herramientas clásicas de creación de mapas con controles modernos, con
 
 ### Requisitos
 
-- **Node.js 22 o superior** — necesario para el editor local y su servidor de desarrollo.
+- **Windows x64** para el iniciador distribuido y sus dependencias de Windows. Se recomienda Chrome u otro navegador de escritorio basado en Chromium.
+- **Internet solo en el primer inicio si todavía falta descargar el runtime local de Node.js.** No es necesario instalar Node.js globalmente para ejecutar el paquete completo.
 - **SDK de Sven Co-op / herramientas SC compatibles** — necesarias para generar mapas BSP.
 - **Sven Co-op** — necesario para probar y jugar los mapas compilados.
-- **Navegador de escritorio moderno** — se recomienda Chrome u otro navegador compatible basado en Chromium.
 
 ### Instalación
 
-1. Descargá el último paquete desde [Releases](../../releases) y extraelo en una carpeta.
-2. Instalá [Node.js](https://nodejs.org/) (versión 22 o superior).
-3. Ejecutá **`SvenStudio3D.bat`** en Windows.
-4. Abrí en el navegador la dirección local indicada por el lanzador.
-5. Usá **Configuración de compilación** para buscar las carpetas de Sven Co-op/SDK o detectar bibliotecas Steam registradas y después configurá recursos FGD/WAD si es necesario.
+1. Descargá el paquete completo de Windows desde [Releases](https://github.com/KazamiiSC/SvenStudio3D/releases) y extraé **todos** sus archivos en una carpeta con permisos de escritura.
+2. Ejecutá **`SvenStudio3D.bat`**. Si falta el runtime local de Node.js, se descargará una sola vez durante el primer inicio; después podrá iniciarse sin Internet. **No ejecutes `npm install`** para el paquete completo.
+3. Si Chrome no se abre automáticamente, utilizá la dirección indicada en la consola (normalmente `http://127.0.0.1:5173`).
+4. En **Build Configuration** configurá el SDK de Sven Co-op y los WAD/FGD necesarios.
+5. **SDHLT ya está incluido en el paquete completo para Windows**, dentro de la carpeta `tools`. En **Build Configuration**, seleccioná **SDHLT — Experimental** y configurá la ruta de esa carpeta (o la subcarpeta donde estén `sdHLCSG_x64.exe`, `sdHLBSP_x64.exe`, `sdHLVIS_x64.exe` y `sdHLRAD_x64.exe`). Comprobá que `sdhlt.wad` esté disponible entre los recursos WAD configurados. No hace falta descargar SDHLT por separado para el paquete completo. Verificá los BSP generados dentro de Sven Co-op.
+
+**Desde el código fuente:** El ZIP reducido de GitHub no incluye `node_modules` ni el runtime listo para usar. Para desarrollo sí se necesita instalar Node.js/npm y las dependencias.
 
 > **Nota:** SvenStudio 3D funciona localmente desde el navegador. La interfaz web por sí sola no ejecuta los compiladores de Windows; para compilar se necesita el backend local y las herramientas de Sven Co-op configuradas. Las vistas previas —especialmente iluminación, texturas y BSP recuperados— deben comprobarse dentro del juego antes de publicar un mapa.
+
+### Créditos de terceros — SDHLT
+
+- **SDHLT** — Herramientas de compilación para Half-Life 1 / GoldSrc desarrolladas y mantenidas por **seedee**, basadas en **Vluzacn's ZHLT v34**, con contribuciones de otros desarrolladores y herramientas anteriores de Valve.
+- **Repositorio oficial:** [github.com/seedee/SDHLT](https://github.com/seedee/SDHLT)
+- **Licencia y avisos originales:** [SDHLT LICENSE.md](https://github.com/seedee/SDHLT/blob/master/LICENSE.md). SDHLT es un proyecto independiente; su integración no implica que sus autores respalden SvenStudio 3D.
 
 ### Comentarios y colaboración
 
