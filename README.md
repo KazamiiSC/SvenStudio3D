@@ -19,7 +19,7 @@
 </div>
 
 > [!IMPORTANT]
-> **v1.7.19 is a release candidate**, not a claim of zero bugs. The previously reported general test run passed **544/556** checks; 12 still require investigation. Keep backups and verify compiled maps in Sven Co-op. Advanced features such as SDHLT and BuildTogether are experimental.
+> **v1.7 is a release candidate**, not a claim of zero bugs. Keep backups and verify compiled maps in Sven Co-op. Advanced features such as SDHLT and BuildTogether are experimental.
 
 ---
 
