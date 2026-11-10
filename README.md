@@ -5,7 +5,7 @@
 ###
 **A modern browser-based level editor for Sven Co-op · GoldSrc · Svengine**
 
-[![Release](https://img.shields.io/badge/RELEASE-v1.7.19-7058e8?style=for-the-badge)](https://github.com/KazamiiSC/SvenStudio3D/releases)
+[![Release](https://img.shields.io/badge/RELEASE-v1.9.0-7058e8?style=for-the-badge)](https://github.com/KazamiiSC/SvenStudio3D/releases)
 ![Platform](https://img.shields.io/badge/PLATFORM-Windows%20x64-2384b8?style=for-the-badge)
 ![Engine](https://img.shields.io/badge/ENGINE-GoldSrc%20%2F%20Svengine-168c9c?style=for-the-badge)
 ![Languages](https://img.shields.io/badge/LANGUAGES-6-364d78?style=for-the-badge)
