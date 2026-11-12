@@ -5,7 +5,7 @@
 ###
 **A modern browser-based level editor for Sven Co-op · GoldSrc · Svengine**
 
-[![Release](https://img.shields.io/badge/RELEASE-v1.9.0-7058e8?style=for-the-badge)](https://github.com/KazamiiSC/SvenStudio3D/releases)
+[![Release](https://img.shields.io/badge/RELEASE-v2.0.0-7058e8?style=for-the-badge)](https://github.com/KazamiiSC/SvenStudio3D/releases)
 ![Platform](https://img.shields.io/badge/PLATFORM-Windows%20x64-2384b8?style=for-the-badge)
 ![Engine](https://img.shields.io/badge/ENGINE-GoldSrc%20%2F%20Svengine-168c9c?style=for-the-badge)
 ![Languages](https://img.shields.io/badge/LANGUAGES-6-364d78?style=for-the-badge)
@@ -19,7 +19,7 @@
 </div>
 
 > [!IMPORTANT]
-> **v1.9** not a claim of zero bugs. Keep backups and verify compiled maps in Sven Co-op. Advanced features such as SDHLT and BuildTogether are experimental.
+> **v2.0** is not a claim of zero bugs. Keep backups and verify compiled maps in Sven Co-op. BSP recovery, SDHLT and BuildTogether include experimental workflows.
 
 ---
 
@@ -28,9 +28,9 @@
 | Create & edit | Design & test | Compile & collaborate |
 | :--- | :--- | :--- |
 | **3D MAP Editor** — brushes, CSG, vertices, edges & faces | **Gameplay Studio 3.0** — spatial entity logic & events | **SC SDK** — CSG, BSP, VIS & RAD |
-| **Texture Studio 2.0** — WAD, UV, alignment & texture lock | **True Lighting** — baked RGB preview, SC-RAD / SDHLT | **SDHLT (experimental)** — AO & PCF options |
-| **Terrain & Shape Studio** — brush-based terrain | **BSP Viewer** — lighting, models & map inspection | **BuildTogether** — shared editing & remote cameras |
-| **Architecture, prefabs & smart placement** | **NPC & AI, sounds, cinematic cameras** | **Map Doctor, leak tracing & packaging** |
+| **MAP & BSP Texture Studio** — WAD, UV, alignment & texture lock | **True Lighting** — baked RGB preview, SC-RAD / SDHLT | **Smart Build 3.0** — isolated output & safe packaging |
+| **Terrain & World Builder** — brush-based environments | **BSP Viewer & Editor** — entities, faces, regions & textures | **BuildTogether** — shared editing & remote cameras |
+| **Prefabs, smart placement & resource library** | **NPC, sounds, cinematic cameras & six UI themes** | **Map Doctor, SDHLT & Map Packager 2.0** |
 
 <div align="center">
 
@@ -88,17 +88,21 @@
 
 ---
 
-## ✦ What's new in 1.9
+## ✦ What's new in 2.0
 
-- **World Builder Studio:** Advanced terrain sculpting, mountains, caves, tunnels, roads, bridges, heightmaps and reusable construction paths.
-- **Brush Workshop 3D:** Edit brushes in a fully navigable 3D viewport, create holes, panels, frames and detailed shapes with live previews.
-- **Smart Brush Fusion:** Merge compatible brushes into a single solid or combine complex structures into editable objects.
-- **Universal Placement 3D:** Place objects freely in 3D space, align them to surfaces and precisely adjust height and depth.
-- **Blueprint to Map:** Design multi-floor buildings with editable rooms, walls, doors, windows and stairs.
-- **Hammer & SvenCraft RMF Importer:** Import existing projects while preserving supported geometry, entities and textures.
-- **Curves & Repetitions:** Create curved structures and radial arrangements directly within World Builder.
-- **Map Packager 2.0:** Automatic RES generation, missing resource detection and improved map distribution.
-- **Improved workspace & stability:** Larger 3D viewports, better camera controls, interface refinements and numerous bug fixes.
+- **SvenStudio Themes — six complete interface styles:** Windows 98 Classic, Windows XP Luna, GoldSrc Workshop, Modern Dark, Cyber Neon and Midnight Minimal. Themes cover the editor, studies, dialogs, menus and floating tools; accent colors remain customizable.
+- **Redesigned interface & organized toolbars:** Cleaner panels, reorganized Studies, contextual controls and a more consistent dark/classic workspace, without removing existing tools.
+- **Customizable workspaces:** Construction, Entities and BSP layouts; resizable/dockable panels, saved custom layouts and favorite toolbar groups.
+- **Advanced BSP Editor:** Edit supported BSP entities and inspect/select faces and regions, with dedicated texture, model and BSP editing workflows. Compiled geometry retains engine-specific editing limitations.
+- **BSP Texture Studio:** Inspect and adjust supported compiled-map surface materials, UV offsets, scaling and rotation, with a dedicated BSP texture library.
+- **BSP recovery & reusable objects:** Recover compatible geometry and entities into editable MAP content or prefabs when possible; reconstruction may differ from the original source.
+- **Smart Build 3.0:** Compile to an isolated workspace by default, collect required resources, generate a per-map Smart WAD when needed, and prepare distribution folders or ZIP packages. Installing files into Sven Co-op requires an explicit choice and confirmation.
+- **Expanded Prefab Studio:** Browse, preview and import reusable structures, including their associated materials and WAD requirements.
+- **Resource Library 2.0:** Faster browsing through large WAD collections, progressive texture thumbnails, favorites, recent textures and stable scrolling when choosing a material.
+- **Interactive entity placement:** Choose a point entity from the library, preview its position on the map, place it with a click and cancel with right-click or Esc. Optional repeated placement is available.
+- **Improved Entity Guides & Inspector:** Expanded FGD-based descriptions, keyvalues and examples; clearer property sections and more suitable numeric/color inputs.
+- **Better responsiveness & usability:** Cleaner tool grouping, workspace presets, refinements to floating panels and additional stability fixes.
+- **Previously introduced in v1.9:** World Builder, Brush Workshop 3D, Smart Brush Fusion, Universal Placement 3D, Blueprint to Map, Hammer & SvenCraft RMF import, Curves & Repetitions and Map Packager 2.0.
 - **Six UI languages:** English, Español, Русский, 한국어, 简体中文 and Português (Brasil).
 
 ---
@@ -110,11 +114,11 @@
 1. [**Download the complete ZIP / Descargá el ZIP completo**](https://github.com/KazamiiSC/SvenStudio3D/releases) and extract everything.
 2. Run **`SvenStudio3D.bat`**. If the local Node.js runtime is missing, the launcher downloads it on the first run; subsequent starts can work offline.
 3. SvenStudio opens in your browser. If needed, visit **`http://127.0.0.1:5173`**.
-4. In **Build Configuration**, select the Sven Co-op SDK, game folders and required WAD/FGD resources.
+4. In **Build Configuration**, select the Sven Co-op SDK, game folders and required WAD/FGD resources. **Smart Build 3.0** writes to an isolated build folder by default; exporting or installing resources is a separate, explicit action.
 5. For **SDHLT**, select **SDHLT — Experimental** and point it to **`tools/`** (or the folder containing its four `sdHL*_x64.exe` compilers). Make `sdhlt.wad` available in the WAD paths.
 
 > [!NOTE]
-> **SDHLT is already included in the complete Windows distribution**, so a separate SDHLT download is unnecessary. The source-code archive is different: it excludes preinstalled `node_modules` and requires Node.js/npm for development.
+> **The complete Windows distribution includes SDHLT**; a separate SDHLT download is unnecessary. Smart Build 3.0 uses an isolated build destination by default. The source-code archive excludes preinstalled `node_modules` and requires Node.js/npm for development.
 
 ### Quick controls / Controles rápidos
 
@@ -142,7 +146,7 @@ Both language references below preserve detailed tool descriptions, limitations,
 
 **SvenStudio 3D** is a local, browser-based level editor designed to make map creation for **Sven Co-op / Svengine** more accessible without sacrificing the tools needed for complex GoldSrc projects. Build and texture brushes in a 3D viewport, configure entities through FGD definitions, preview gameplay logic, inspect compiled BSP maps, and launch the Sven Co-op compilation pipeline from a single workspace.
 
-The editor combines familiar workflows from traditional level editors with modern viewport navigation, visual controls, reusable structures, smart placement, and diagnostic tools. It is intended for both beginners creating their first room and experienced mappers working on larger environments. This README describes the **v1.7.19 release candidate**. Some advanced features are experimental and should be validated in Sven Co-op.
+The editor combines familiar workflows from traditional level editors with modern viewport navigation, visual controls, reusable structures, smart placement, and diagnostic tools. It is intended for both beginners creating their first room and experienced mappers working on larger environments. This README describes **SvenStudio 3D v2.0**. Some advanced features remain experimental and should be validated in Sven Co-op.
 
 ### Main features
 
@@ -154,13 +158,13 @@ The editor combines familiar workflows from traditional level editors with moder
 - **Precision transforms:** Move, Rotate and Scale gizmos, keyboard shortcuts, grid snapping, fine adjustments, numeric dimensions, and improved handling for small brushes.
 - **Smart Placement 3D:** Preview and rotate a shape before placing it, align it to surfaces, choose rotation axes, and draw on horizontal or vertical planes. Repeat placement without re-entering dimensions.
 - **Architecture tools:** Quickly build wall openings, doors, windows, frames, stairs and other structural elements.
-- **Reusable prefabs:** Save a selection of brushes and linked entities as a reusable construction, preserve their relative positions and textures, and place rotated copies in other areas or projects.
+- **Reusable prefabs:** Save a selection of brushes and linked entities as a reusable construction, preserve their relative positions and textures, and place rotated copies in other areas or projects. The expanded Prefab Studio also previews reusable objects and checks their material/WAD requirements.
 - **Organization:** Groups, layers, hide/lock controls, selection tools, measurements, named brushes, and searchable scene objects.
 - **Terrain & Shape Studio:** Sculpt solid brush-based terrain, configure size, grid resolution, height, smoothing and noise, and preview the result before applying it, within GoldSrc/Svengine limits.
 
 #### Texture Studio 2.0 and WAD workflow
 
-- **WAD texture browser:** Import WAD archives, browse thumbnails, search by name, and assign materials to brushes and individual faces.
+- **WAD texture browser:** Import WAD archives, browse progressively loaded thumbnails, search by name, use favorites/recent textures, and assign materials to brushes and individual faces without the list jumping back to the top.
 - **Floating Texture Studio:** Edit texture scale U/V, offset U/V, rotation, repetition, centering, and mirroring without leaving the 3D viewport.
 - **Direct manipulation:** Move, rotate and resize a face's texture with on-surface controls, including eight scale handles.
 - **Smart Fit and Smart Align:** Fit a texture to a face, configure horizontal/vertical tiling, and align materials across adjacent surfaces.
@@ -172,8 +176,8 @@ The editor combines familiar workflows from traditional level editors with moder
 #### Entities, gameplay and logic
 
 - **FGD-based entity editor:** Import Sven Co-op FGD definitions, inspect class descriptions, edit native keyvalues, and work with additional custom FGD entity classes.
-- **Entity Assistant:** Contextual mini guides explaining what an entity does, relevant properties, usage examples and available capabilities. Open an expanded guide for comfortable reading.
-- **Beginner and advanced properties:** Quick controls for common tasks alongside full access to original FGD keyvalues for experienced mappers.
+- **Entity Assistant:** Contextual mini guides and expanded FGD-based references explaining entity purpose, supported keyvalues, default values when defined and practical usage examples.
+- **Beginner and advanced properties:** Category navigation, numeric/color inputs when supported, quick controls for common tasks and full access to original FGD keyvalues for experienced mappers.
 - **Gameplay Studio 3.0:** Interactive top/isometric entity map, spatial selection, search and filters, native `target`/`targetname` relationships, event inspection, entity properties and static checks. Gameplay Studio 3.0 keeps its own feature name independently of the editor version.
 - **Named brushes and searchable targets:** Give brushes a custom editor name (for example, *Laboratory Door*) and find them in the Explorer and entity connection picker. Editor-only names remain separate from Svengine's `targetname`.
 - **Door and button controls:** Configure `func_door` movement direction, speed, travel, wait time, button activation, and sounds through guided properties.
@@ -183,6 +187,7 @@ The editor combines familiar workflows from traditional level editors with moder
 - **Optimized entity labels:** Camera-aware limits, reduced overlap, selected-entity priority, and lightweight display settings for dense maps.
 - **Player start visualization:** `info_player_start` model preview with idle animation where supported, ground alignment preview, and a visible/configurable initial facing direction.
 - **NPC & AI Studio:** Browse NPC classes, preview supported models, place NPCs, create paths, waypoints, and spawners, and check common configuration errors.
+- **Point-entity placement:** Preview the selected entity at a chosen position in the 3D viewport, click to place it, cancel with right-click/Esc, or enable repeated placement.
 
 #### BuildTogether — Multiplayer Mapping
 
@@ -208,10 +213,13 @@ Security: Use trusted private networks only. Do not publicly share session codes
 #### BSP, gameplay testing and compilation
 
 - **Advanced BSP Viewer:** Inspect compiled BSP maps, geometry, textures, baked RGB lightmaps, skyboxes, entities and supported models, with smart labels, improved rendering and interior/exterior navigation.
-- **BSP-to-MAP / recovery tools:** Experimental recovery and inspection workflows for existing BSP files; reconstructed geometry, texture alignment and lighting may differ from the original source.
+- **BSP Editor:** Select and edit supported entities, inspect faces and regions, work with model and surface tools, and export supported edits. Not every compiled BSP element can be reconstructed as its original brush.
+- **BSP Texture Studio:** Inspect compatible BSP surfaces and adjust WAD material selection, UV offsets, scaling and rotation, with a separate texture browser.
+- **BSP-to-MAP / recovery tools:** Experimental recovery and inspection workflows for existing BSP files, including conversion to editable MAP content and reusable prefabs where supported; reconstructed geometry, texture alignment and lighting may differ from the original source.
 - **Player Walk and Gameplay Test:** Explore an editable map in first person with WASD, mouse look, jumping, sprinting, crouching, gravity, collisions and noclip options.
 - **Player flashlight and HUD:** Flashlight, coordinates, speed readouts, FPS-only counter, and customizable/movable HUD elements.
 - **Integrated compilation:** Use **SC-CSG / SC-BSP / SC-VIS / SC-RAD** by default, or configure **SDHLT** as an optional experimental toolchain. Executables and compatible resource paths are required; SDHLT may produce different lighting or hit different map limits.
+- **Smart Build 3.0:** Compiles to an isolated folder by default, manages Smart WAD and related assets for each map, and offers optional distribution folders and ZIP export. Explicit game installation requires confirmation; choosing the game path alone does not authorize writing into it.
 - **Valve 220 MAP import/export:** Save maps for the GoldSrc/Svengine toolchain, with geometry validation and warnings for unsupported or potentially lossy imports.
 - **Map Doctor 2.0:** Detect issues with geometry, entities, textures, resources, SKY enclosure and compilation; display warnings including UV-axis alignment repairs.
 - **Visual leak tracing:** Import compiler `.pts`/`.lin` point files and inspect leak routes in 3D, including navigation to their endpoints.
@@ -223,7 +231,8 @@ Security: Use trusted private networks only. Do not publicly share session codes
 
 - **Optimized for larger maps:** Rendering presets, progressive asset loading, optimized labels, and options for controlling editor visual complexity.
 - **Autosave and recovery:** Session restoration, project checkpoints, validation, and safeguards for incomplete or damaged imports.
-- **Customizable/adaptive UI:** Dockable/resizable panels, compact responsive toolbars, themes, contextual menus, configurable HUD and workspace layouts, including improved behavior with Windows display scaling.
+- **Customizable/adaptive UI:** Dockable/resizable panels, compact responsive toolbars, favorite groups, contextual menus, configurable HUD, workspace presets for Construction/Entities/BSP and saved personal layouts, including improved behavior with Windows display scaling.
+- **SvenStudio Themes:** Six selectable complete UI styles — Windows 98, Windows XP, GoldSrc Workshop, Modern Dark, Cyber Neon and Midnight Minimal — with separate accent color choices. The selected theme applies to menus, Studies, dialogs, inspectors and floating panels without changing map textures or the 3D render.
 - **Fullscreen editing:** Optional browser fullscreen with Keyboard Lock where supported. Some browser/system shortcuts cannot be intercepted in every environment.
 - **Multilingual interface:** English, Spanish, Russian, Korean, Simplified Chinese and Brazilian Portuguese; native FGD classnames and keyvalues are not translated.
 - **Windows launcher and branding:** `SvenStudio3D.bat` starts the local editor with a bundled/download-on-first-launch Node.js runtime (no system-wide Node.js installation required); launcher messages follow the Windows display language where supported, otherwise English.
@@ -265,7 +274,7 @@ Security: Use trusted private networks only. Do not publicly share session codes
 1. Download the complete Windows package from [Releases](https://github.com/KazamiiSC/SvenStudio3D/releases) and extract **all** files to a writable folder.
 2. Run **`SvenStudio3D.bat`**. On the first run, if the Node.js runtime is missing, the launcher downloads it once; subsequent launches can work offline. **Do not run `npm install`** for the complete packaged release.
 3. Open the local address displayed by the launcher (normally `http://127.0.0.1:5173`) if the browser does not open automatically.
-4. Use **Build Configuration** to choose Sven Co-op/SDK compiler folders and required WAD/FGD files.
+4. Use **Build Configuration** to choose Sven Co-op/SDK compiler folders and required WAD/FGD files. Smart Build 3.0 keeps its default output isolated; install-to-game is a separate, explicitly confirmed option.
 5. **SDHLT is already included in the complete Windows package**, inside the `tools` folder. In **Build Configuration**, choose **SDHLT — Experimental** and point the SDHLT tool directory to that folder (or the subfolder containing `sdHLCSG_x64.exe`, `sdHLBSP_x64.exe`, `sdHLVIS_x64.exe`, and `sdHLRAD_x64.exe`). Make sure `sdhlt.wad` is available in the configured WAD resources. No separate SDHLT download is needed for the complete release. Test compiled maps in Sven Co-op.
 
 **From source:** The smaller GitHub source archive does **not** contain `node_modules` or a ready-to-run runtime. Developers need a compatible Node.js/npm installation and must install dependencies themselves.
@@ -294,7 +303,7 @@ I would appreciate help testing, reporting issues, contributing improvements and
 
 **SvenStudio 3D** es un editor de niveles 3D que funciona localmente en el navegador y está diseñado para facilitar la creación de mapas para **Sven Co-op / Svengine**, sin renunciar a las herramientas que necesitan los proyectos avanzados de GoldSrc. Permite construir y texturizar brushes en un visor 3D, configurar entidades a partir de archivos FGD, organizar conexiones de jugabilidad, inspeccionar BSP compilados y ejecutar el proceso de compilación desde un mismo entorno.
 
-Combina herramientas clásicas de creación de mapas con controles modernos, construcción reutilizable, colocación inteligente y diagnóstico. Está pensado tanto para personas que crean su primera habitación como para mappers experimentados que trabajan en escenarios grandes. Este README describe la **versión candidata v1.7.19**. Algunas funciones avanzadas son experimentales y deben comprobarse dentro de Sven Co-op.
+Combina herramientas clásicas de creación de mapas con controles modernos, construcción reutilizable, colocación inteligente y diagnóstico. Está pensado tanto para personas que crean su primera habitación como para mappers experimentados que trabajan en escenarios grandes. Este README describe **SvenStudio 3D v2.0**. Algunas funciones avanzadas siguen siendo experimentales y deben comprobarse dentro de Sven Co-op.
 
 ### Características principales
 
@@ -306,13 +315,13 @@ Combina herramientas clásicas de creación de mapas con controles modernos, con
 - **Transformaciones precisas:** Gizmos de mover, rotar y escalar, atajos, ajuste a grilla, control fino, dimensiones numéricas y mejoras para objetos pequeños.
 - **Smart Placement 3D:** Previsualización y giro de formas antes de colocarlas, alineación con superficies, elección de ejes y dibujo sobre planos horizontales y verticales. Permite repetir objetos sin volver a ingresar medidas.
 - **Herramientas de arquitectura:** Creación rápida de aberturas, puertas, ventanas, marcos, escaleras y otras estructuras.
-- **Prefabs reutilizables:** Guardar grupos de brushes y entidades vinculadas, conservar posiciones relativas y texturas, y colocar copias rotadas en otro lugar o proyecto.
+- **Prefabs reutilizables:** Guardar grupos de brushes y entidades vinculadas, conservar posiciones relativas y texturas, y colocar copias rotadas en otro lugar o proyecto. El Estudio de Prefabricados ampliado permite previsualizar objetos y revisar sus materiales y dependencias WAD.
 - **Organización:** Grupos, capas, ocultar/bloquear, selección, medición de distancias, nombres personalizados para brushes y búsqueda de objetos.
 - **Terrain & Shape Studio:** Modelado de terreno sólido basado en brushes, con control de tamaño, resolución, altura, suavizado y ruido, y vista previa antes de aplicar cambios, dentro de las limitaciones de GoldSrc/Svengine.
 
 #### Texture Studio 2.0 y texturas WAD
 
-- **Explorador WAD:** Importar archivos WAD, recorrer miniaturas, buscar texturas y aplicarlas a brushes o caras individuales.
+- **Explorador WAD:** Importar archivos WAD, recorrer miniaturas cargadas progresivamente, buscar texturas, utilizar favoritos y recientes y aplicarlas a brushes o caras individuales sin que la lista vuelva al comienzo al seleccionar.
 - **Texture Studio flotante:** Ajustar escala U/V, desplazamiento U/V, rotación, repetición, centrado e inversión desde una mini interfaz sin salir del visor 3D.
 - **Edición directa con mouse:** Mover, girar y cambiar el tamaño de la textura sobre la cara, con ocho manejadores de escala.
 - **Smart Fit y Smart Align:** Ajustar una textura al tamaño de una cara, configurar repeticiones y alinear materiales entre superficies contiguas.
@@ -324,8 +333,8 @@ Combina herramientas clásicas de creación de mapas con controles modernos, con
 #### Entidades, jugabilidad y lógica
 
 - **Editor de entidades FGD:** Importar definiciones de Sven Co-op, consultar sus descripciones y editar keyvalues originales, incluidas clases personalizadas de otros FGD.
-- **Asistente de entidades:** Mini guías contextuales sobre qué hace cada entidad, qué propiedades utiliza, ejemplos prácticos y capacidades disponibles; incluye una guía ampliada para leer cómodamente.
-- **Propiedades básicas y avanzadas:** Controles sencillos para tareas comunes y acceso completo a keyvalues FGD para usuarios experimentados.
+- **Asistente de entidades:** Mini guías contextuales y referencias FGD ampliadas para explicar la función de cada entidad, sus keyvalues compatibles, valores predeterminados cuando están definidos y ejemplos de uso.
+- **Propiedades básicas y avanzadas:** Navegación por categorías, entradas numéricas y de color cuando corresponda, controles sencillos para tareas comunes y acceso a los keyvalues originales del FGD.
 - **Gameplay Studio 3.0:** Mapa interactivo de entidades en vista superior/isométrica, selección espacial, búsqueda y filtros, conexiones nativas `target`/`targetname`, inspección de eventos, edición de propiedades y comprobaciones estáticas. Gameplay Studio 3.0 conserva su nombre independientemente de la versión del editor.
 - **Nombres personalizados y conexiones buscables:** Dar a un brush un nombre como *Puerta del laboratorio* y encontrarlo en el Explorador y el selector de conexiones. El nombre del editor es independiente del `targetname` que utiliza el motor.
 - **Puertas y botones:** Configurar dirección de apertura de `func_door`, velocidad, recorrido, espera, activación desde botones y sonidos mediante controles explicados.
@@ -335,6 +344,7 @@ Combina herramientas clásicas de creación de mapas con controles modernos, con
 - **Etiquetas optimizadas:** Límites según cámara y distancia, reducción de superposiciones, prioridad para entidades seleccionadas y opciones livianas para mapas densos.
 - **Vista previa del jugador inicial:** `info_player_start` con modelo, idle cuando está disponible, alineación visual con el suelo y dirección inicial visible y configurable.
 - **NPC & AI Studio:** Exploración de clases NPC, vista previa de modelos compatibles, colocación de NPC, creación de rutas, waypoints y spawners, y validaciones de configuración.
+- **Colocación interactiva de entidades puntuales:** Vista previa en la posición elegida del visor 3D, colocación con clic, cancelación con clic derecho/Esc y opción de colocación consecutiva.
 
 #### BuildTogether — Multiplayer Mapping
 
@@ -360,10 +370,13 @@ Seguridad: Utilizá solamente redes privadas de confianza. No compartas pública
 #### BSP, pruebas y compilación
 
 - **Visor BSP avanzado:** Inspección de mapas BSP compilados, geometría, texturas, lightmaps RGB horneados, skyboxes, entidades y modelos compatibles, con etiquetas inteligentes, renderizado mejorado y navegación interior/exterior.
-- **Herramientas BSP a MAP / recuperación:** Funciones experimentales para inspeccionar y reconstruir mapas a partir de BSP; la geometría, las UV o la iluminación recuperadas pueden diferir del proyecto original.
+- **Editor BSP:** Selección y edición de entidades compatibles, inspección de caras y regiones, herramientas de modelos y superficies y exportación de cambios admitidos. No toda la geometría compilada puede recuperarse como brushes originales.
+- **BSP Texture Studio:** Inspección de superficies BSP compatibles y edición de materiales WAD, desplazamiento UV, escala y rotación, con biblioteca de texturas específica.
+- **Herramientas BSP a MAP / recuperación:** Funciones experimentales para inspeccionar y reconstruir contenido desde BSP, convertirlo a MAP editable o prefabricados cuando sea posible; la geometría, las UV o la iluminación recuperadas pueden diferir del proyecto original.
 - **Player Walk y Gameplay Test:** Recorrer mapas en primera persona con WASD, mouse, salto, carrera, agacharse, gravedad, colisiones y opciones noclip.
 - **Linterna y HUD:** Linterna, coordenadas, velocidad, monitor que muestra únicamente FPS y elementos del HUD movibles y personalizables.
 - **Compilación integrada:** Uso predeterminado de **SC-CSG / SC-BSP / SC-VIS / SC-RAD** y opción experimental **SDHLT** con rutas independientes. Es necesario disponer de ejecutables y recursos compatibles; SDHLT puede cambiar la iluminación o presentar límites distintos.
+- **Smart Build 3.0:** Compilación aislada por defecto, administración de Smart WAD y recursos asociados al mapa, distribución opcional por carpetas y exportación ZIP. Para instalar archivos dentro del juego se requiere una acción explícita y confirmación; elegir la ruta del juego no permite escribir automáticamente en ella.
 - **Importación/exportación MAP Valve 220:** Compatibilidad con herramientas de GoldSrc/Svengine, validación de geometría y advertencias cuando una importación podría perder datos incompatibles.
 - **Map Doctor 2.0:** Comprobación de geometría, entidades, texturas, recursos, SKY y errores de compilación; advertencias sobre ejes UV reparados.
 - **Detección visual de LEAK:** Importación de recorridos `.pts`/`.lin` generados por los compiladores y visualización 3D de fugas, con navegación a sus extremos.
@@ -375,7 +388,8 @@ Seguridad: Utilizá solamente redes privadas de confianza. No compartas pública
 
 - **Optimización para mapas grandes:** Perfiles de rendimiento, carga progresiva, etiquetas optimizadas y ajustes para reducir el coste de los elementos visuales.
 - **Guardado automático y recuperación:** Restauración de sesión, puntos de recuperación, validación de proyectos y protecciones ante importaciones incompletas o dañadas.
-- **Interfaz personalizable y adaptable:** Paneles acoplables y redimensionables, barras responsivas, temas, menús contextuales, HUD configurable y mejoras para distintas escalas de pantalla de Windows.
+- **Interfaz personalizable y adaptable:** Paneles acoplables y redimensionables, barras responsivas con grupos favoritos, menús contextuales, HUD configurable, perfiles Construcción/Entidades/BSP y diseños personalizados guardables, con mejoras para distintas escalas de pantalla de Windows.
+- **SvenStudio Themes:** Seis estilos completos — Windows 98, Windows XP, GoldSrc Workshop, Modern Dark, Cyber Neon y Midnight Minimal — con colores de acento independientes. Los temas abarcan Estudios, menús, diálogos, inspector y ventanas flotantes sin modificar las texturas del mapa ni el renderizado 3D.
 - **Pantalla completa:** Modo opcional con Keyboard Lock cuando el navegador lo permite. Algunos atajos del navegador o del sistema no se pueden bloquear en todos los equipos.
 - **Interfaz multilingüe:** Inglés, español, ruso, coreano, chino simplificado y portugués de Brasil; los `classname` y keyvalues FGD mantienen sus nombres originales.
 - **Iniciador para Windows:** `SvenStudio3D.bat` abre el editor usando el runtime de Node.js incluido o descargado en el primer inicio (sin instalación global de Node.js). Los mensajes detectan el idioma de Windows si está admitido; si no, usan inglés.
@@ -417,7 +431,7 @@ Seguridad: Utilizá solamente redes privadas de confianza. No compartas pública
 1. Descargá el paquete completo de Windows desde [Releases](https://github.com/KazamiiSC/SvenStudio3D/releases) y extraé **todos** sus archivos en una carpeta con permisos de escritura.
 2. Ejecutá **`SvenStudio3D.bat`**. Si falta el runtime local de Node.js, se descargará una sola vez durante el primer inicio; después podrá iniciarse sin Internet. **No ejecutes `npm install`** para el paquete completo.
 3. Si Chrome no se abre automáticamente, utilizá la dirección indicada en la consola (normalmente `http://127.0.0.1:5173`).
-4. En **Build Configuration** configurá el SDK de Sven Co-op y los WAD/FGD necesarios.
+4. En **Build Configuration** configurá el SDK de Sven Co-op y los WAD/FGD necesarios. Smart Build 3.0 genera la salida en una carpeta aislada por defecto; instalar recursos en el juego exige elegir y confirmar esa opción.
 5. **SDHLT ya está incluido en el paquete completo para Windows**, dentro de la carpeta `tools`. En **Build Configuration**, seleccioná **SDHLT — Experimental** y configurá la ruta de esa carpeta (o la subcarpeta donde estén `sdHLCSG_x64.exe`, `sdHLBSP_x64.exe`, `sdHLVIS_x64.exe` y `sdHLRAD_x64.exe`). Comprobá que `sdhlt.wad` esté disponible entre los recursos WAD configurados. No hace falta descargar SDHLT por separado para el paquete completo. Verificá los BSP generados dentro de Sven Co-op.
 
 **Desde el código fuente:** El ZIP reducido de GitHub no incluye `node_modules` ni el runtime listo para usar. Para desarrollo sí se necesita instalar Node.js/npm y las dependencias.
