@@ -1,6 +1,14 @@
+import {saveBlueprintToProject,saveBlueprintDraftToProject,placeBlueprintAtPoint,removeBlueprintFromProject,type BlueprintPlan} from './engine/blueprintToMap';
 import { create } from 'zustand';
 import {loadEditStep,saveEditStep,loadVisibleGridStep,saveVisibleGridStep,normalizeGridStep} from './engine/gridPrecision';
-import {createRockCluster,createTerrainBrushes,terrainBrushMatchesSignature,terrainRecord,type TerrainDraft,type RockOptions} from './engine/terrain';
+import {createRockCluster,createTerrainBrushes,terrainBrushMatchesSignature,terrainBrushSignature,terrainRecord,type TerrainDraft,type RockOptions} from './engine/terrain';
+import {createPathStructureBrushes,type PathStructureOptions,type PathStructureRecord} from './engine/pathStructures';
+import {planSmartWorld,type SmartWorldSettings} from './engine/smartWorld';
+import {createRailwayExtras,railwayEntitySignature,checkRailwayGraph} from './engine/railwayBuilder';
+import type {PathEditAxis} from './engine/path3DMath';
+import {applyRecord,removeRecord,cueIssues,missionIssues,type MissionPlan,type EventSequence} from './engine/missionEvents';
+import {saveEncounter,removeEncounter,type EncounterPlan} from './engine/npcEncounters';
+import {savePuzzle,removePuzzle,type PuzzlePlan} from './engine/coopPuzzles';
 import {constrainDecalToBrush} from './engine/decalSurface';
 import type {ShadingMode} from './engine/shadingPie';
 import { DEFAULT_CONTROLS,readControls,saveControls } from './engine/controls';
@@ -23,23 +31,28 @@ import {createArchitecture,createMultipleWallOpenings,architecturePartSignature,
 import {rebuildWallOpeningPlan,buildArchitectureAssembly,replaceArchitectureAssembly,removeArchitectureAssembly,detachArchitectureAssembly} from './engine/architecturePlans';
 import {buildArchitectureLayout,replaceArchitectureLayout,removeArchitectureLayout,detachArchitectureLayout,type ArchitecturePoint,type ArchitectureLayoutOptions} from './engine/architectureMode';
 import {mergeIntoConvexBrush} from './engine/smartMerge';
+import {previewFusion,type FusionMode} from './engine/brushFusion';
+import {planWorkshop,type WorkshopOperation,type WorkshopShape} from './engine/brushWorkshop';
+import {buildCurvedRamp,curvedBrushSignature,radialArrayBrushes,type CurveSettings,type RadialArrayOptions} from './engine/curvedGeometry';
 import {createPrefab,placePrefab,validatePrefab,readPrefabLibrary,writePrefabLibrary,type Prefab} from './engine/prefabs';
 import {rotateObjectsForPlacement} from './engine/smartPlacement';
 import {detachBrushEntities as detachBrushEntityObjects} from './engine/brushEntityDetach';
 import type {PlacementAxis,DrawPlane} from './engine/smartPlacementMath';
+import {readUniversalPlacement,saveUniversalPlacement,normalizeUniversalPlacement,type UniversalPlacementSettings} from './engine/universalPlacement';
 import {readShapeDimensions,rememberShapeDimensions} from './engine/shapeDimensions';
 import {preferredLocale,readLocalePreference,saveLocalePreference,systemLocale,type Locale,type LocalePreference} from './i18n';
 import {textureSettings} from './engine/geometry';
 import {fitFace,centerFace,flipFace,alignFaceToReference,gesturePatch,faceTexturePatch,sanitizeTexturePatch,isTextureFaceRef,readTexturePresets,writeTexturePresets,type TextureFaceRef,type TextureFacePatch,type TexturePreset,type UvHandle} from './engine/textureStudio';
-import {preferredTextureAssets} from './engine/textureWadSelection';
+import {preferredTextureAssets,wadBasename} from './engine/textureWadSelection';
+import {planMapWadRemoval,pruneMapWadReferences} from './engine/mapWadRemoval';
 import {DEFAULT_ENTITY_APPEARANCE,loadEntityAppearance,saveEntityAppearance,normalizeEntityAppearance,type EntityAppearanceSettings,type EntityColorKind} from './engine/entityAppearance';
 import {DEFAULT_MAP_LABEL_SETTINGS,loadMapLabelSettings,saveMapLabelSettings,normalizeMapLabelSettings,type MapLabelSettings} from './engine/mapEntityLabels';
 export type ToolMode='select'|'translate'|'rotate'|'scale';
 export type ResourceView='objects'|'entities'|'textures'|'materials'|'decals'|'models'|'npcs'|'sounds'|'layers';
 export type RadAmbientTest='off'|'0.08'|'0.15'|'0.25';
 export type CompilerEngine='sc'|'sdhlt';
-export type Settings={compilerDir:string;gameDir:string;wadPaths:string;mapName:string;radAmbientTest:RadAmbientTest;compilerEngine?:CompilerEngine;sdhltDir?:string;sdhltAO?:boolean;sdhltPCF?:'off'|'1'|'2'|'4'};
-export const DEFAULT_SETTINGS:Settings={compilerDir:'',gameDir:'',wadPaths:'',mapName:'svstudio_test',radAmbientTest:'off',compilerEngine:'sc',sdhltDir:'',sdhltAO:false,sdhltPCF:'off'};
+export type Settings={compilerDir:string;gameDir:string;wadPaths:string;mapName:string;radAmbientTest:RadAmbientTest;compilerEngine?:CompilerEngine;sdhltDir?:string;sdhltAO?:boolean;sdhltPCF?:'off'|'1'|'2'|'4';smartWadMode?:'off'|'embed'|'external';distributionDir?:string;distributionFormat?:'off'|'build'|'folder'|'folder_zip'|'install';resourceRoots?:string[]};
+export const DEFAULT_SETTINGS:Settings={compilerDir:'',gameDir:'',wadPaths:'',mapName:'svstudio_test',radAmbientTest:'off',compilerEngine:'sc',sdhltDir:'',sdhltAO:false,sdhltPCF:'off',smartWadMode:'off',distributionDir:'',distributionFormat:'build',resourceRoots:[]};
 const BOX='SV_BRICK01';
 function texBrush(b:Brush,t=BOX){return {...b,faces:b.faces.map(f=>({...f,texture:t}))};}
 /** UV tools must use the identical texture dimensions and WAD priority as
@@ -78,6 +91,12 @@ interface State{
   prefabs:Prefab[];saveSelectedPrefab:(name:string)=>void;addPrefab:(prefab:Prefab)=>void;removePrefab:(id:string)=>void;instantiatePrefab:(id:string,position:Vec3)=>void;
   placementPrefabId:string|null;setPlacementPrefab:(id:string|null)=>void;placePrefabAt:(position:Vec3,autoYaw?:number)=>void;
   placementAxis:PlacementAxis;placementAngle:number;placementAutoAlign:boolean;placementRepeat:boolean;
+  universalPlacement:UniversalPlacementSettings;
+  universalPlacementHover:Vec3|null;
+  setUniversalPlacement:(updates:Partial<UniversalPlacementSettings>)=>void;
+  setUniversalPlacementHover:(position:Vec3|null)=>void;
+  hasPendingPlacement:()=>boolean;cancelPendingPlacement:()=>void;
+  resetUniversalPlacement:()=>void;
   setPlacementAxis:(axis:PlacementAxis)=>void;stepPlacementAngle:(degrees:number)=>void;resetPlacementAngle:()=>void;togglePlacementAutoAlign:()=>void;togglePlacementRepeat:()=>void;
   faceClipboard:Partial<Face>|null;copyFaceSettings:(id:string,index:number)=>void;pasteFaceSettings:(id:string,index:number)=>void;alignFaceTexture:(id:string,index:number)=>void;snapSelectionToGrid:()=>void;
   textureStudioOpen:boolean;setTextureStudioOpen:(open:boolean)=>void;texturePickerActive:boolean;setTexturePickerActive:(enabled:boolean)=>void;sampleTextureStudioFace:(id:string,face:number)=>void;textureFaceSelection:TextureFaceRef[];selectTextureStudioFace:(id:string,face:number,additive:boolean)=>void;selectAllTextureFaces:()=>void;clearTextureFaces:()=>void;
@@ -109,7 +128,7 @@ interface State{
   cinematicPlacementFor:string|null;startCinematicPlacement:(cameraId:string|null)=>void;placeCinematicPoint:(position:Vec3)=>void;createCinematic:(options:CinematicOptions)=>string;updateCinematic:(cameraId:string,settings:CameraSettings)=>void;setCinematicPreviewSpeed:(pointId:string,speed:number|null)=>void;removeLastCinematicPoint:(cameraId:string)=>void;
   pendingNpcClass:string|null;routePlacementFor:string|null;routeSolo:string|null;setRouteSolo:(name:string|null)=>void;
   startNpcPlacement:(classname:string|null)=>void;startWaypointPlacement:(ownerId:string|null)=>void;
-  placePendingNpc:(position:Vec3)=>void;placeWaypoint:(ownerId:string,position:Vec3)=>void;
+  placePendingNpc:(position:Vec3,repeat?:boolean)=>void;placeWaypoint:(ownerId:string,position:Vec3)=>void;
   spawnFromNpc:(npcId:string,options?:SpawnerOptions)=>void;
   placementShape:PlaceableShape|null;shapeSize:Vec3;setShapeSize:(size:Vec3)=>void;
   setPlacementShape:(kind:PlaceableShape|null)=>void;
@@ -141,7 +160,12 @@ interface State{
   editArchitectureLayout:(id:string,points:ArchitecturePoint[],options:ArchitectureLayoutOptions)=>void;
   deleteArchitectureLayout:(id:string)=>void;detachArchitectureLayout:(id:string)=>void;
   architecturePlacement:{kind:'door'|'window';options:ArchitectureOptions}|null;architectureHoverTarget:string|null;architecturePreviousMode:ToolMode|null;setArchitectureHoverTarget:(id:string|null)=>void;startArchitecturePlacement:(kind:'door'|'window'|null,options?:ArchitectureOptions)=>void;placeArchitectureOnWall:(wallId:string,at:Vec3,override?:ArchitectureOptions)=>void;
-  smartMergeSelected:()=>void;mergeIntoOneSelected:()=>void;unmergeSmartSelected:()=>void;updateSelectedOpening:(options:ArchitectureOptions)=>void;
+  smartMergeSelected:()=>void;mergeIntoOneSelected:()=>void;unmergeSmartSelected:()=>void;
+  fuseSelection:(mode:FusionMode)=>void;separateSelectedComposite:()=>void;
+  createCurvedRamp:(options:CurveSettings)=>void;updateCurvedRamp:(id:string,options:CurveSettings)=>void;detachCurvedRamp:(id:string)=>void;
+  radialArraySelected:(options:RadialArrayOptions)=>void;
+  applyBrushWorkshop:(brushId:string,face:number,operation:WorkshopOperation,settings:WorkshopShape)=>void;
+  updateSelectedOpening:(options:ArchitectureOptions)=>void;
   editArchitectureOpening:(id:string,options:ArchitectureOptions,offset:number,sill:number)=>void;
   removeArchitectureOpening:(id:string)=>void;repeatArchitectureOpening:(id:string,count:number,step:number)=>void;detachArchitectureWall:(id:string)=>void;
   editArchitectureAssembly:(id:string,options:ArchitectureOptions,origin:Vec3)=>void;
@@ -149,8 +173,18 @@ interface State{
   createSelectedBrushEntity:(type:'func_wall'|'func_door')=>void;
   generateSkyEnclosure:(options:SkyEnclosureOptions)=>void;
   applyTerrain:(draft:TerrainDraft)=>void;
-  terrainPlacement:{kind:'terrain'|'rocks';draft:TerrainDraft;rocks?:Omit<RockOptions,'origin'|'texture'>}|null;
+  applySmartWorld:(terrainId:string,options:PathStructureOptions,settings:SmartWorldSettings)=>void;
+  pathEditingId:string|null;pathEditAxis:PathEditAxis;setPathEditing:(id:string|null)=>void;setPathEditAxis:(axis:PathEditAxis)=>void;
+  addPathStructure:(options:PathStructureOptions,origin:Vec3)=>void;
+  updatePathStructure:(id:string,options:PathStructureOptions)=>void;
+  terrainPlacement:{kind:'terrain'|'rocks'|'path';draft:TerrainDraft;rocks?:Omit<RockOptions,'origin'|'texture'>;path?:PathStructureOptions}|null;
   startTerrainPlacement:(request:State['terrainPlacement'])=>void;placePendingTerrain:(origin:Vec3)=>void;
+  saveEventSequence:(record:EventSequence)=>void;removeEventSequence:(id:string,detach?:boolean)=>void;
+  saveMissionPlan:(record:MissionPlan)=>void;removeMissionPlan:(id:string,detach?:boolean)=>void;
+  saveNpcEncounter:(record:EncounterPlan)=>void;removeNpcEncounter:(id:string,detach?:boolean)=>void;
+  saveCoopPuzzle:(record:PuzzlePlan)=>void;removeCoopPuzzle:(id:string,detach?:boolean)=>void;
+  saveBlueprint:(record:BlueprintPlan)=>void;saveBlueprintDraft:(record:BlueprintPlan)=>void;removeBlueprint:(id:string,detach?:boolean)=>void;
+  blueprintPlacementId:string|null;setBlueprintPlacement:(id:string|null)=>void;placeBlueprintAt:(position:Vec3)=>void;
   addObjects:(o:MapObject[])=>void;updateObject:(id:string,changes:Partial<MapObject>)=>void;
   changeFace:(id:string,face:number,changes:Partial<Face>)=>void;paintSelected:(texture:string)=>void;
   removeSelected:()=>void;duplicateSelected:()=>void;brushClipboard:Brush[];brushPasteCount:number;copySelectedBrushes:()=>void;pasteCopiedBrushes:()=>void;setObjectProp:(id:string,key:string,value:string)=>void;
@@ -160,7 +194,7 @@ interface State{
   changeWorld:(key:string,value:string)=>void;newProject:()=>void;loadProject:(p:Project)=>void;setName:(name:string)=>void;
   toggleVisibility:(id:string)=>void;toggleLocked:(id:string)=>void;toggleLayerVisibility:(layer:string)=>void;  setLayer:(id:string,layer:string)=>void;
   selectSameClass:(classname:string)=>void;selectSameLayer:(layer:string)=>void;isolateSelection:()=>void;revealAll:()=>void;unlockAll:()=>void;
-  undo:()=>void;redo:()=>void;setTextures:(textures:TextureAsset[],wad:string)=>void;setFgd:(classes:FgdClass[])=>void;
+  undo:()=>void;redo:()=>void;setTextures:(textures:TextureAsset[],wad:string,options?:{trackProject?:boolean})=>void;removeTextureWad:(wad:string)=>void;setFgd:(classes:FgdClass[])=>void;
   appendLogs:(lines:string[])=>void;clearLogs:()=>void;setCompileBusy:(b:boolean)=>void;setSettings:(s:Partial<Settings>)=>void;
 }
 /** No hidden/locked brush is ever edited. One batch is one undo step. */
@@ -247,11 +281,13 @@ export const useEditor=create<State>((set,get)=>({
     const label=name.trim().slice(0,64);
     if(!label||!s.selectedIds.length)throw Error('Select objects and enter a group name.');
     const selected=new Set(s.selectedIds);
+    if((s.project.brushComposites||[]).some(r=>r.memberIds.some(id=>selected.has(id))))throw Error('Separate the composite before changing group assignments.');
     return {...mutate(s,s.project.objects.map(o=>selected.has(o.id)&&!o.locked?{...o,group:label}:o))};
   }),
   ungroupSelected:()=>set(s=>{
     if(!s.selectedIds.length)throw Error('Select one or more grouped objects.');
     const selected=new Set(s.selectedIds);
+    if((s.project.brushComposites||[]).some(r=>r.memberIds.some(id=>selected.has(id))))throw Error('Use Separate composite to preserve the previous groups.');
     return {...mutate(s,s.project.objects.map(o=>selected.has(o.id)&&!o.locked?{...o,group:undefined}:o))};
   }),
   selectGroup:name=>set(s=>{const ids=s.project.objects.filter(o=>o.group===name).map(o=>o.id);return {selected:ids.at(-1)??null,selectedIds:ids,selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};}),
@@ -416,6 +452,27 @@ export const useEditor=create<State>((set,get)=>({
   }),
   prefabs:readPrefabLibrary(),
   placementAxis:'z',placementAngle:0,placementAutoAlign:true,placementRepeat:false,
+  universalPlacement:readUniversalPlacement(),universalPlacementHover:null,
+  setUniversalPlacement:updates=>set(s=>{
+    const next=normalizeUniversalPlacement({...s.universalPlacement,...updates});
+    const prev=s.universalPlacement;
+    if(next.mode===prev.mode&&next.planeZ===prev.planeZ&&next.freeDepth===prev.freeDepth&&next.twoStep===prev.twoStep&&next.staged===prev.staged&&next.offsetZ===prev.offsetZ&&next.lockPosition===prev.lockPosition&&next.objectSnapRadius===prev.objectSnapRadius&&next.position.every((v,i)=>v===prev.position[i])&&next.workplanes.length===prev.workplanes.length&&next.workplanes.every((v,i)=>v===prev.workplanes[i]))return s;
+    saveUniversalPlacement(next);
+    return {universalPlacement:next};
+  }),
+  setUniversalPlacementHover:position=>set(s=>{
+    if(!position&&!s.universalPlacementHover)return s;
+    if(position&&s.universalPlacementHover&&position.every((v,i)=>v===s.universalPlacementHover![i]))return s;
+    return {universalPlacementHover:position};
+  }),
+  resetUniversalPlacement:()=>set(s=>{const next=normalizeUniversalPlacement({mode:'surface',position:s.universalPlacement.position});saveUniversalPlacement(next);return {universalPlacement:next,universalPlacementHover:null}}),
+  hasPendingPlacement:()=>{const s=get();return !!(s.placementShape||s.placementPrefabId||s.terrainPlacement||s.blueprintPlacementId||s.audioPlacement||s.environmentPlacement||s.pendingNpcClass||s.routePlacementFor||s.cinematicPlacementFor||s.drawMode);},
+  cancelPendingPlacement:()=>set(s=>{
+    if(!(s.placementShape||s.placementPrefabId||s.terrainPlacement||s.blueprintPlacementId||s.audioPlacement||s.environmentPlacement||s.pendingNpcClass||s.routePlacementFor||s.cinematicPlacementFor||s.drawMode))return s;
+    return {placementShape:null,placementPrefabId:null,terrainPlacement:null,blueprintPlacementId:null,audioPlacement:null,
+      environmentPlacement:null,pendingNpcClass:null,routePlacementFor:null,cinematicPlacementFor:null,drawMode:false,
+      universalPlacementHover:null,universalPlacement:{...s.universalPlacement,lockPosition:false,staged:false}};
+  }),
   setPlacementAxis:placementAxis=>set({placementAxis}),
   stepPlacementAngle:delta=>set(s=>({placementAngle:(s.placementAngle+delta)%360})),
   resetPlacementAngle:()=>set({placementAngle:0,placementAxis:'z'}),
@@ -434,7 +491,13 @@ export const useEditor=create<State>((set,get)=>({
   instantiatePrefab:(id,position)=>set(s=>{
     const prefab=s.prefabs.find(p=>p.id===id);if(!prefab)throw Error('Prefab not found.');
     const copies=placePrefab(prefab,position);
-    return {...mutate(s,[...s.project.objects,...copies]),selected:copies.at(-1)!.id,selectedIds:copies.map(o=>o.id),selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
+    const base=mutate(s,[...s.project.objects,...copies]);
+    // BSP-extracted prefabs carry their source WAD. Repeated placement in a
+    // NEW MAP must register it, but ordinary prefabs keep legacy behavior.
+    const bspPrefab=prefab as Prefab&{format?:string;wad?:{filename?:string}};
+    const nativeWad=bspPrefab.format==='svenstudio-bsp-object'&&typeof bspPrefab.wad?.filename==='string'?bspPrefab.wad.filename:null;
+    const nextProject=nativeWad?{...base.project,wadNames:[...new Set([...base.project.wadNames,nativeWad])]}:base.project;
+    return {...base,project:nextProject,selected:copies.at(-1)!.id,selectedIds:copies.map(o=>o.id),selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
   }),
   placementPrefabId:null,
   setPlacementPrefab:id=>set(s=>{
@@ -449,9 +512,13 @@ export const useEditor=create<State>((set,get)=>({
     const prefab=s.prefabs.find(item=>item.id===s.placementPrefabId);
     if(!prefab)return {placementPrefabId:null};
     const step=s.snapping?s.snap:1;
-    const at=position.map(value=>Math.round(value/step)*step) as Vec3;
+    const at=s.universalPlacement.lockPosition?[...position] as Vec3:position.map(value=>Math.round(value/step)*step) as Vec3;
     const copies=placePrefab(prefab,at,s.placementAxis,s.placementAngle,autoYaw);
-    return {...mutate(s,[...s.project.objects,...copies]),selected:copies.at(-1)!.id,
+    const base=mutate(s,[...s.project.objects,...copies]);
+    const bspPrefab=prefab as Prefab&{format?:string;wad?:{filename?:string}};
+    const nativeWad=bspPrefab.format==='svenstudio-bsp-object'&&typeof bspPrefab.wad?.filename==='string'?bspPrefab.wad.filename:null;
+    const nextProject=nativeWad?{...base.project,wadNames:[...new Set([...base.project.wadNames,nativeWad])]}:base.project;
+    return {...base,project:nextProject,selected:copies.at(-1)!.id,
       selectedIds:copies.map(o=>o.id),selectedFace:null,editIndices:[],
       geometryMode:'object',faceMode:false,placementPrefabId:s.placementRepeat?s.placementPrefabId:null};
   }),
@@ -495,7 +562,7 @@ export const useEditor=create<State>((set,get)=>({
   placeShapeAt:(ground,autoYaw=0)=>set(s=>{
     if(!s.placementShape||ground.some(v=>!Number.isFinite(v)))return {};
     const snap=s.snapping?s.snap:1;
-    const position=ground.map(v=>Math.round(v/snap)*snap) as Vec3;
+    const position=s.universalPlacement.lockPosition?[...ground] as Vec3:ground.map(v=>Math.round(v/snap)*snap) as Vec3;
     const shape=createSizedPlaceableShape(s.placementShape,position,s.shapeSize,s.currentTexture);
     const additions=rotateObjectsForPlacement(shape,position,s.placementAxis,s.placementAngle,autoYaw);
     return {...mutate(s,[...s.project.objects,...additions]),selected:additions[0].id,selectedIds:additions.map(b=>b.id),selectedFace:null,placementShape:s.placementRepeat?s.placementShape:null};
@@ -652,7 +719,7 @@ export const useEditor=create<State>((set,get)=>({
   startNpcPlacement:classname=>set({placementPrefabId:null,terrainPlacement:null,cinematicPlacementFor:null,environmentPlacement:null,pendingNpcClass:classname,routePlacementFor:null,audioPlacement:null,placementShape:null,drawMode:false,mode:'select',geometryMode:'object',flyMode:false}),
   setRouteSolo:routeSolo=>set({routeSolo}),
   startWaypointPlacement:ownerId=>set({terrainPlacement:null,cinematicPlacementFor:null,environmentPlacement:null,routePlacementFor:ownerId,pendingNpcClass:null,audioPlacement:null,placementShape:null,drawMode:false,mode:'select',geometryMode:'object',flyMode:false}),
-  placePendingNpc:position=>{const s=get();const classname=s.pendingNpcClass;const def=s.project.customNpcs?.find(c=>c.classname===classname);const npcDef=def?customNpcToFgd(def):s.fgdClasses.find(c=>c.name===classname);if(!npcDef||npcDef.type!=='point')throw Error('This NPC is not in the loaded FGD.');s.addEntity(npcDef,position);set({pendingNpcClass:null});},
+  placePendingNpc:(position,repeat=false)=>{const s=get();const classname=s.pendingNpcClass;const def=s.project.customNpcs?.find(c=>c.classname===classname);const npcDef=def?customNpcToFgd(def):s.fgdClasses.find(c=>c.name===classname);if(!npcDef||npcDef.type!=='point')throw Error('This point entity is not in the loaded FGD.');s.addEntity(npcDef,position);set({pendingNpcClass:repeat?classname:null});},
   placeWaypoint:(ownerId,position)=>set(s=>{const result=createWaypoint(s.project.objects,ownerId,position);return {...mutate(s,result.objects),selected:result.id,selectedIds:[result.id],resourceView:'npcs'};}),
   spawnFromNpc:(npcId,options=DEFAULT_SPAWNER)=>set(s=>{const result=makeNpcSpawner(s.project.objects,npcId,options);return {...mutate(s,result.objects),selected:result.id,selectedIds:[result.id],resourceView:'npcs'};}),
   // Backwards-compatible entry point: clicking any shape enters placement
@@ -777,6 +844,88 @@ export const useEditor=create<State>((set,get)=>({
     const objects=s.project.objects.map(o=>ids.has(o.id)&&o.kind==='brush'?{...o,entityId:id}:o);
     return {...mutate(s,[...objects,e]),selected:id,selectedIds:[id],selectedFace:null};
   }),
+  createCurvedRamp:options=>set(s=>{
+    const brushes=buildCurvedRamp(options);
+    const record={id:uid(),options:structuredClone(options),memberIds:brushes.map(b=>b.id),signatures:brushes.map(curvedBrushSignature)};
+    const changed=mutate(s,[...s.project.objects,...brushes]);
+    return {...changed,project:{...changed.project,curveAssemblies:[...(s.project.curveAssemblies??[]),record]},selected:brushes[0].id,selectedIds:brushes.map(b=>b.id),selectedFace:null,geometryMode:'object',faceMode:false};
+  }),
+  updateCurvedRamp:(id,options)=>set(s=>{
+    const record=s.project.curveAssemblies?.find(r=>r.id===id);
+    if(!record)throw Error('The curved structure is no longer linked.');
+    const members=record.memberIds.map(key=>s.project.objects.find((o):o is Brush=>o.id===key&&o.kind==='brush'));
+    if(members.some((b,i)=>!b||b.locked||curvedBrushSignature(b)!==record.signatures[i]))
+      throw Error('Curve brushes were edited manually. Detach the curve instead of overwriting the changes.');
+    const generated=buildCurvedRamp(options);
+    const ids=new Set(record.memberIds);
+    const changed=mutate(s,[...s.project.objects.filter(o=>!ids.has(o.id)),...generated]);
+    const replacement={id,options:structuredClone(options),memberIds:generated.map(b=>b.id),signatures:generated.map(curvedBrushSignature)};
+    return {...changed,project:{...changed.project,curveAssemblies:s.project.curveAssemblies!.map(r=>r.id===id?replacement:r)},selected:generated[0].id,selectedIds:generated.map(b=>b.id),selectedFace:null,geometryMode:'object',faceMode:false};
+  }),
+  detachCurvedRamp:id=>set(s=>{
+    if(!s.project.curveAssemblies?.some(r=>r.id===id))throw Error('Curve not found.');
+    const changed=mutate(s,s.project.objects);
+    return {...changed,project:{...changed.project,curveAssemblies:s.project.curveAssemblies!.filter(r=>r.id!==id)}};
+  }),
+  radialArraySelected:options=>set(s=>{
+    const ids=new Set(s.selectedIds),members=s.project.objects.filter((o):o is Brush=>ids.has(o.id)&&o.kind==='brush');
+    if(!members.length||members.length!==ids.size)throw Error('Select brushes to repeat on a curve.');
+    if(members.some(b=>(s.project.curveAssemblies??[]).some(r=>r.memberIds.includes(b.id)) || (s.project.brushComposites??[]).some(r=>r.memberIds.includes(b.id))))
+      throw Error('Detach a generated curve or composite before copying its members.');
+    const generated=radialArrayBrushes(members,options);
+    const changed=mutate(s,[...s.project.objects,...generated]);
+    return {...changed,selected:generated[0].id,selectedIds:generated.map(b=>b.id),selectedFace:null,geometryMode:'object',faceMode:false};
+  }),
+  fuseSelection:mode=>set(s=>{
+    const ids=new Set(s.selectedIds);
+    const members=s.project.objects.filter((o):o is Brush=>ids.has(o.id)&&o.kind==='brush');
+    if(members.length!==ids.size)throw Error('Fusion accepts brushes only.');
+    const managed=s.project.brushComposites??[];
+    if(members.some(b=>managed.some(record=>record.memberIds.includes(b.id))))
+      throw Error('Separate an existing composite before fusing its members again.');
+    // Avoid invalidating the procedural generators that own these brushes.
+    if(members.some(b=>(s.project.architectureOpenings||[]).some(r=>r.memberIds.includes(b.id))||
+      (s.project.architectureLayouts||[]).some(r=>r.memberIds.includes(b.id))||
+      (s.project.architectureAssemblies||[]).some(r=>r.memberIds.includes(b.id))||
+      (s.project.terrainGroups||[]).some(r=>r.brushIds?.includes(b.id))||
+      (s.project.pathGroups||[]).some(r=>r.brushIds.includes(b.id))||
+      (s.project.curveAssemblies||[]).some(r=>r.memberIds.includes(b.id))))
+      throw Error('Detach this generated structure before fusing its brushes.');
+    const plan=previewFusion(members,mode);
+    if(plan.kind==='single'){
+      const merged={...plan.merged!,group:members.every(b=>b.group===members[0].group)?members[0].group:undefined};
+      return {...mutate(s,[...s.project.objects.filter(o=>!ids.has(o.id)),merged]),selected:merged.id,selectedIds:[merged.id],selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
+    }
+    const group=`Smart Merge ${uid().slice(0,8)}`;
+    const record={id:uid(),group,memberIds:members.map(b=>b.id),previousGroups:Object.fromEntries(members.map(b=>[b.id,b.group??null]))};
+    const changed=mutate(s,s.project.objects.map(o=>ids.has(o.id)?{...o,group}:o));
+    return {...changed,project:{...changed.project,brushComposites:[...managed,record]},selected:members[0].id,selectedIds:members.map(b=>b.id),selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
+  }),
+  separateSelectedComposite:()=>set(s=>{
+    const id=s.selectedIds[0]??s.selected;
+    const group=s.project.objects.find(o=>o.id===id)?.group;
+    const record=s.project.brushComposites?.find(r=>r.group===group);
+    if(!record)throw Error('Select a composite created with Smart Brush Fusion.');
+    const selectedIds=record.memberIds.filter(id=>s.project.objects.some(o=>o.id===id));
+    const changed=mutate(s,s.project.objects.map(o=>o.group===group?{...o,group:record.previousGroups[o.id]??undefined}:o));
+    return {...changed,project:{...changed.project,brushComposites:(s.project.brushComposites||[]).filter(r=>r.id!==record.id)},selected:selectedIds[0]??null,selectedIds,selectedFace:null};
+  }),
+  applyBrushWorkshop:(brushId,face,operation,settings)=>set(s=>{
+    const brush=s.project.objects.find((o):o is Brush=>o.id===brushId&&o.kind==='brush');
+    if(!brush)throw Error('Choose one brush to edit.');
+    if((s.project.brushComposites||[]).some(record=>record.memberIds.includes(brushId)))
+      throw Error('Separate this composite before modifying individual members.');
+    if((s.project.architectureOpenings||[]).some(r=>r.memberIds.includes(brushId))||
+       (s.project.architectureLayouts||[]).some(r=>r.memberIds.includes(brushId))||
+       (s.project.architectureAssemblies||[]).some(r=>r.memberIds.includes(brushId))||
+       (s.project.curveAssemblies||[]).some(r=>r.memberIds.includes(brushId)))
+      throw Error('Detach the procedural architecture before modifying its geometry.');
+    const outcome=planWorkshop(brush,face,operation,settings);
+    const created=[...(outcome.replacement??[]),...outcome.additions];
+    const objects=outcome.replacement?s.project.objects.flatMap(o=>o.id===brushId?created:[o]):[...s.project.objects,...created];
+    const updated=mutate(s,objects);
+    return {...updated,selected:created[0]?.id??brushId,selectedIds:created.map(b=>b.id),selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
+  }),
   smartMergeSelected:()=>set(s=>{
     const ids=new Set(s.selectedIds);const members=s.project.objects.filter(o=>ids.has(o.id));
     if(members.length<2||members.some(o=>o.kind!=='brush'||o.locked))throw Error('Select at least two unlocked brushes.');
@@ -786,7 +935,9 @@ export const useEditor=create<State>((set,get)=>({
   unmergeSmartSelected:()=>set(s=>{
     const group=s.project.objects.find(o=>o.id===s.selected)?.group;
     if(!group||!group.startsWith('Smart Merge '))throw Error('Select a Smart Merge member.');
-    return {...mutate(s,s.project.objects.map(o=>o.group===group?{...o,group:undefined}:o))};
+    const record=s.project.brushComposites?.find(r=>r.group===group);
+    const changed=mutate(s,s.project.objects.map(o=>o.group===group?{...o,group:record?.previousGroups[o.id]??undefined}:o));
+    return {...changed,project:{...changed.project,brushComposites:(s.project.brushComposites||[]).filter(r=>r.group!==group)}};
   }),
   mergeIntoOneSelected:()=>set(s=>{
     const ids=new Set(s.selectedIds);const members=s.project.objects.filter((o):o is Brush=>ids.has(o.id)&&o.kind==='brush');
@@ -848,14 +999,95 @@ export const useEditor=create<State>((set,get)=>({
     if(!request||s.compileBusy||origin.some(v=>!Number.isFinite(v)))return;
     const draft={...request.draft,origin:[...origin] as Vec3};
     if(request.kind==='terrain')s.applyTerrain(draft);
-    else{
+    else if(request.kind==='path'){
+      if(!request.path)throw Error('Path placement configuration missing.');
+      const delta=origin.map((value,i)=>value-request.draft.origin[i]) as Vec3;
+      const points=request.path.points.map(p=>p.map((v,i)=>v+delta[i]) as Vec3);
+      s.addPathStructure({...request.path,points},origin);
+    }else{
       if(!request.rocks)throw Error('Rock placement configuration missing.');
       s.addObjects(createRockCluster({...request.rocks,origin,texture:draft.texture}));
     }
     set({terrainPlacement:null});
   },
+  pathEditingId:null,pathEditAxis:'xy',
+  setPathEditing:id=>set(s=>({pathEditingId:id&&s.project.pathGroups?.some(g=>g.id===id)?id:null,mode:'select',modalTransform:null,terrainPlacement:null,flyMode:false,walkMode:false})),
+  setPathEditAxis:pathEditAxis=>set({pathEditAxis}),
+  addPathStructure:(options,origin)=>set(s=>{
+    const brushes=createPathStructureBrushes(options,true);
+    const extras=createRailwayExtras(options,true);
+    const generated=[...brushes,...extras.brushes],entities=extras.entities;
+    if(generated.length>640)throw Error('Railway exceeds the safe 640 brush limit for an editable route. Lower detail or split the route.');
+    if(entities.length>200)throw Error('Railway exceeds the safe 200 generated entity limit. Split the network.');
+    const errors=checkRailwayGraph(entities);if(errors.length)throw Error(errors.join(' | '));
+    const targetNames=new Set(s.project.objects.filter((o):o is PointEntity=>o.kind==='entity').map(o=>o.props.targetname).filter(Boolean));
+    if(entities.some(e=>e.props.targetname&&targetNames.has(e.props.targetname)))throw Error('Railway network name conflicts with existing entities. Choose a new network ID.');
+    const record:PathStructureRecord={id:uid(),origin:[...origin],options:clone(options),brushIds:generated.map(b=>b.id),signatures:generated.map(terrainBrushSignature),
+      entityIds:entities.map(e=>e.id),entitySignatures:entities.map(railwayEntitySignature)};
+    const base=mutate(s,[...s.project.objects,...generated,...entities]);
+    return {...base,project:{...base.project,pathGroups:[...(s.project.pathGroups||[]),record]},
+      selected:brushes[0].id,selectedIds:[brushes[0].id],selectedFace:null};
+  }),
+  updatePathStructure:(id,options)=>set(s=>{
+    const old=s.project.pathGroups?.find(record=>record.id===id);
+    if(!old)throw Error('Stored route no longer exists. Create a new route instead.');
+    if(old.integratedTerrainId)throw Error('This route is linked to a World Builder terrain. Preserve the link and create a new route instead of editing one side alone.');
+    if(old.brushIds.length!==old.signatures.length)throw Error('Route metadata is incomplete; original geometry preserved.');
+    for(let index=0;index<old.brushIds.length;index++){
+      const brush=s.project.objects.find(obj=>obj.id===old.brushIds[index]);
+      if(!brush||brush.kind!=='brush'||brush.locked||!terrainBrushMatchesSignature(brush,old.signatures[index]))
+        throw Error('Route brushes were changed or deleted. To prevent data loss, generate a new route instead.');
+    }
+    if((old.entityIds?.length??0)!==(old.entitySignatures?.length??0))throw Error('Railway entity provenance is incomplete. Original route preserved.');
+    for(let index=0;index<(old.entityIds?.length??0);index++){
+      const e=s.project.objects.find(obj=>obj.id===old.entityIds![index]);
+      if(!e||e.kind!=='entity'||e.locked||railwayEntitySignature(e)!==old.entitySignatures![index])
+        throw Error('Railway entities were changed or deleted. Original railway preserved.');
+    }
+    const brushes=createPathStructureBrushes(options,true);
+    const extras=createRailwayExtras(options,true);
+    const generated=[...brushes,...extras.brushes],entities=extras.entities;
+    if(generated.length>640)throw Error('Railway exceeds the safe 640 brush limit for an editable route. Lower detail or split the route.');
+    if(entities.length>200)throw Error('Railway exceeds the safe 200 generated entity limit. Split the network.');
+    const errors=checkRailwayGraph(entities);if(errors.length)throw Error(errors.join(' | '));
+    const remove=new Set([...old.brushIds,...(old.entityIds||[])]);
+    const targetNames=new Set(s.project.objects.filter((o):o is PointEntity=>o.kind==='entity'&&!remove.has(o.id)).map(o=>o.props.targetname).filter(Boolean));
+    if(entities.some(e=>e.props.targetname&&targetNames.has(e.props.targetname)))throw Error('Railway network name conflicts with existing entities.');
+    const base=mutate(s,[...s.project.objects.filter(obj=>!remove.has(obj.id)),...generated,...entities]);
+    const updated:PathStructureRecord={...old,options:clone(options),brushIds:generated.map(b=>b.id),signatures:generated.map(terrainBrushSignature),
+      entityIds:entities.map(e=>e.id),entitySignatures:entities.map(railwayEntitySignature)};
+    return {...base,project:{...base.project,pathGroups:(s.project.pathGroups||[]).map(rec=>rec.id===id?updated:rec)},
+      selected:brushes[0].id,selectedIds:[brushes[0].id],selectedFace:null};
+  }),
+  applySmartWorld:(terrainId,options,settings)=>set(s=>{
+    if(s.compileBusy)throw Error('Cannot edit terrain while a map is compiling.');
+    const original=s.project.terrainGroups?.find(g=>g.id===terrainId);
+    if(!original)throw Error('Select an existing, saved World Builder terrain first.');
+    if((s.project.pathGroups?.length??0)>=256)throw Error('Route limit reached for this project.');
+    if(original.brushIds.length!==original.brushSignatures.length)throw Error('Terrain metadata is incomplete. Nothing was modified.');
+    for(let i=0;i<original.brushIds.length;i++){
+      const brush=s.project.objects.find(obj=>obj.id===original.brushIds[i]);
+      if(!brush||brush.kind!=='brush'||brush.locked||!terrainBrushMatchesSignature(brush,original.brushSignatures[i]))
+        throw Error('Source terrain brushes were changed, locked or removed. Existing work preserved; use an untouched terrain.');
+    }
+    // All planning and serialization checks occur before the first mutation.
+    const plan=planSmartWorld(original,options,settings);
+    const terrainBrushes=createTerrainBrushes(plan.terrain,original.brushIds);
+    const routeBrushes=createPathStructureBrushes(plan.path,true);
+    if(terrainBrushes.length>512||routeBrushes.length>640)throw Error('BSP brush limit for this World Builder operation exceeded.');
+    const edited=new Set(original.brushIds);
+    const generated=[...s.project.objects.filter(o=>!edited.has(o.id)),...terrainBrushes,...routeBrushes];
+    const rec:PathStructureRecord={id:uid(),origin:[...plan.terrain.origin],options:clone(plan.path),integratedTerrainId:terrainId,brushIds:routeBrushes.map(b=>b.id),signatures:routeBrushes.map(terrainBrushSignature)};
+    const base=mutate(s,generated);
+    return {...base,project:{...base.project,
+      terrainGroups:[...(s.project.terrainGroups||[]).filter(g=>g.id!==terrainId),terrainRecord(plan.terrain,terrainBrushes)],
+      pathGroups:[...(s.project.pathGroups||[]),rec]},
+      selected:routeBrushes[0]?.id||null,selectedIds:routeBrushes.length?[routeBrushes[0].id]:[],selectedFace:null};
+  }),
   applyTerrain:draft=>set(s=>{
     const previous=s.project.terrainGroups?.find(g=>g.id===draft.id);
+    if(previous&&s.project.pathGroups?.some(g=>g.integratedTerrainId===draft.id))
+      throw Error('This terrain is linked to a Smart World route. To prevent misalignment, create a new terrain instead of editing only one side.');
     if(previous){
       if(previous.brushIds.length!==previous.brushSignatures.length)throw Error('Terrain source metadata is incomplete.');
       for(let i=0;i<previous.brushIds.length;i++){
@@ -870,6 +1102,37 @@ export const useEditor=create<State>((set,get)=>({
     const history=[...s.history.slice(-70),clone(s.project)];
     return {project:{...s.project,objects:next,terrainGroups:[...(s.project.terrainGroups||[]).filter(g=>g.id!==draft.id),terrainRecord(draft,brushes)]},history,future:[],selected:brushes[0]?.id||null,selectedIds:brushes[0]?[brushes[0].id]:[],selectedFace:null};
   }),
+  saveEventSequence:record=>set(s=>{
+    const issues=cueIssues(record.cues,s.project,record.id);
+    if(!record.name.trim()||record.name.length>100||issues.some(i=>i.level==='error'))throw Error(issues.filter(i=>i.level==='error').map(i=>i.message).join(' | ')||'Invalid sequence.');
+    const result=applyRecord(s.project,record,'event');
+    return {...mutate(s,result.project.objects),project:result.project};
+  }),
+  removeEventSequence:(id,detach=false)=>set(s=>{const project=removeRecord(s.project,id,'event',detach);return {...mutate(s,project.objects),project};}),
+  saveMissionPlan:record=>set(s=>{
+    const issues=missionIssues(record,s.project);
+    if(issues.some(i=>i.level==='error'))throw Error(issues.map(i=>i.message).join(' | '));
+    const result=applyRecord(s.project,record,'mission');
+    return {...mutate(s,result.project.objects),project:result.project};
+  }),
+  removeMissionPlan:(id,detach=false)=>set(s=>{const project=removeRecord(s.project,id,'mission',detach);return {...mutate(s,project.objects),project};}),
+  saveNpcEncounter:record=>set(s=>{const project=saveEncounter(s.project,record);return {...mutate(s,project.objects),project};}),
+  removeNpcEncounter:(id,detach=false)=>set(s=>{const project=removeEncounter(s.project,id,detach);return {...mutate(s,project.objects),project};}),
+  saveCoopPuzzle:record=>set(s=>{const project=savePuzzle(s.project,record);return {...mutate(s,project.objects),project};}),
+  removeCoopPuzzle:(id,detach=false)=>set(s=>{const project=removePuzzle(s.project,id,detach);return {...mutate(s,project.objects),project};}),
+  saveBlueprint:record=>{const state=get();const result=saveBlueprintToProject(state.project,record);
+    set(s=>({...mutate(s,result.project.objects),project:result.project,selected:result.memberIds[0]||null,selectedIds:result.memberIds.length?[result.memberIds[0]]:[]}));},
+  saveBlueprintDraft:record=>{const state=get();const project=saveBlueprintDraftToProject(state.project,record);
+    set(s=>({...mutate(s,s.project.objects),project}));},
+  blueprintPlacementId:null,
+  setBlueprintPlacement:id=>set({blueprintPlacementId:id,placementPrefabId:null,placementShape:null,
+    terrainPlacement:null,environmentPlacement:null,audioPlacement:null,pendingNpcClass:null,routePlacementFor:null,
+    cinematicPlacementFor:null,architecturePlacement:null,drawMode:false,flyMode:false,walkMode:false}),
+  placeBlueprintAt:position=>{const state=get();if(!state.blueprintPlacementId)return;
+    const result=placeBlueprintAtPoint(state.project,state.blueprintPlacementId,position);
+    set(s=>({...mutate(s,result.project.objects),project:result.project,blueprintPlacementId:null,
+      selected:result.memberIds[0]||null,selectedIds:result.memberIds.length?[result.memberIds[0]]:[]}));},
+  removeBlueprint:(id,detach=false)=>set(s=>{const project=removeBlueprintFromProject(s.project,id,detach);return {...mutate(s,project.objects),project,selected:null,selectedIds:[]};}),
   addObjects:objects=>set(s=>({...mutate(s,[...s.project.objects,...objects]),selected:objects[0]?.id||s.selected,selectedIds:objects.length?[objects[0].id]:s.selectedIds})),
   updateObject:(id,changes)=>set(s=>({...mutate(s,s.project.objects.map(o=>{
     if(o.id!==id)return o;
@@ -975,8 +1238,8 @@ export const useEditor=create<State>((set,get)=>({
   setGraphPosition:(id,position)=>set(s=>({project:{...s.project,graphPositions:{...s.project.graphPositions,[id]:position}}})),
   setGraphPositions:positions=>set(s=>({project:{...s.project,graphPositions:{...s.project.graphPositions,...positions}}})),
   changeWorld:(key,value)=>set(s=>({project:{...s.project,world:{...s.project.world,[key]:value}},history:[...s.history.slice(-70),clone(s.project)],future:[]})),
-  newProject:()=>set({textureFaceSelection:[],textureStudioOpen:false,texturePickerActive:false,terrainPlacement:null,cinematicPlacementFor:null,isolationSnapshot:null,project:demoProject(),placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,routePlacementFor:null,routeSolo:null,selected:null,selectedIds:[],selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false,history:[],future:[]}),
-  loadProject:project=>set({textureFaceSelection:[],textureStudioOpen:false,texturePickerActive:false,terrainPlacement:null,cinematicPlacementFor:null,walkMode:false,flyMode:false,architecturePlacement:null,architectureHoverTarget:null,architecturePreviousMode:null,isolationSnapshot:null,project:clone(project),placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,routePlacementFor:null,routeSolo:null,selected:null,selectedIds:[],selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false,history:[],future:[]}),
+  newProject:()=>set({pathEditingId:null,textureFaceSelection:[],textureStudioOpen:false,texturePickerActive:false,terrainPlacement:null,cinematicPlacementFor:null,isolationSnapshot:null,project:demoProject(),placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,routePlacementFor:null,routeSolo:null,selected:null,selectedIds:[],selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false,history:[],future:[]}),
+  loadProject:project=>set({pathEditingId:null,textureFaceSelection:[],textureStudioOpen:false,texturePickerActive:false,terrainPlacement:null,cinematicPlacementFor:null,walkMode:false,flyMode:false,architecturePlacement:null,architectureHoverTarget:null,architecturePreviousMode:null,isolationSnapshot:null,project:clone(project),placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,routePlacementFor:null,routeSolo:null,selected:null,selectedIds:[],selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false,history:[],future:[]}),
   setName:name=>set(s=>({project:{...s.project,name}})),
   toggleVisibility:id=>set(s=>({...mutate(s,s.project.objects.map(o=>o.id===id?{...o,hidden:!o.hidden}:o)),visibilityListIds:s.visibilityListIds.includes(id)?s.visibilityListIds:[...s.visibilityListIds,id]})),
   toggleLocked:id=>set(s=>({...mutate(s,s.project.objects.map(o=>o.id===id?{...o,locked:!o.locked}:o))})),
@@ -1035,7 +1298,24 @@ export const useEditor=create<State>((set,get)=>({
     if(!valid||valid.every((v,i)=>Math.abs(v-obj.position[i])<.0001))return {};
     return {...mutate(s,s.project.objects.map(o=>o.id===id?{...obj,position:valid}:o)),selected:id,selectedIds:[id],selectedFace:null};
   }),
-  setTextures:(assets,wad)=>set(s=>({textureAssets:[...s.textureAssets.filter(t=>t.wad!==wad),...assets],project:{...s.project,wadNames:[...new Set([...s.project.wadNames,wad])]}})),
+  setTextures:(assets,wad,options)=>set(s=>({
+    textureAssets:[...s.textureAssets.filter(t=>wadBasename(t.wad)!==wadBasename(wad)),...assets],
+    // Restoring browser WADs must never add stale files to an unrelated MAP.
+    project:options?.trackProject===false?s.project:{...s.project,wadNames:[...new Set([...s.project.wadNames.filter(name=>wadBasename(name)!==wadBasename(wad)),wad])]},
+  })),
+  removeTextureWad:wad=>set(s=>{
+    const paths=s.settings.wadPaths.split(/[\r\n]+/).map(v=>v.trim()).filter(Boolean);
+    const plan=planMapWadRemoval(wad,s.textureAssets,s.project,s.history,s.future,paths);
+    if(!plan.ok)throw Error(plan.reason==='used'?`WAD ${wad} is used by map textures or undo/redo: ${plan.usedTextures.slice(0,5).join(', ')}`:
+      plan.reason==='built-in'?'The built-in WAD cannot be removed.':plan.reason==='reserved'?'This WAD is reserved for Decal Studio.':`WAD ${wad} is not loaded.`);
+    const remaining=s.textureAssets.filter(t=>wadBasename(t.wad)!==wadBasename(wad));
+    const oldCurrentStillAvailable=remaining.some(t=>t.name.toLowerCase()===s.currentTexture.toLowerCase());
+    const defaultTexture=remaining.find(t=>t.name.toLowerCase()===BOX.toLowerCase())?.name||remaining[0]?.name||BOX;
+    return {textureAssets:remaining,currentTexture:oldCurrentStillAvailable?s.currentTexture:defaultTexture,
+      project:pruneMapWadReferences(s.project,wad),
+      history:s.history.map(snapshot=>pruneMapWadReferences(snapshot,wad)),
+      future:s.future.map(snapshot=>pruneMapWadReferences(snapshot,wad))};
+  }),
   registerCustomNpc:definition=>set(s=>{
     const issues=validateCustomNpc(definition);if(issues.length)throw Error(issues.join('\n'));
     const list=[...(s.project.customNpcs||[]).filter(c=>c.classname!==definition.classname),structuredClone(definition)];

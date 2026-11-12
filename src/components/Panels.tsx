@@ -1,4 +1,6 @@
 import {ExplorerOrganized} from './ExplorerOrganized';
+import {VirtualTextureGallery} from './VirtualTextureGallery';
+import {useStudioLayout} from '../layout';
 import {DecalStudio} from './DecalStudio';
 import {MaterialSurfaceStudio} from './MaterialSurfaceStudio';
 import { useEffect,useMemo,useRef,useState,type ChangeEvent } from 'react';
@@ -8,6 +10,9 @@ import { Box,Layers,Image,Search,Plus,Star,Eye,EyeOff,Lock,Unlock,ChevronRight,C
 import { useEditor } from '../store';
 import {confirmBrushDetach} from './brushEntityActions';
 import { parseWad } from '../engine/wad';
+import {forgetSavedWadFile} from '../engine/wadPersistence';
+import {planMapWadRemoval,mapWadUsage} from '../engine/mapWadRemoval';
+import {wadBasename} from '../engine/textureWadSelection';
 import { parseFgd } from '../engine/fgd';
 import type { MapObject,Brush as BrushObject,PointEntity,FgdClass,Face,TextureAsset } from '../engine/types';
 import { brushDimensions } from '../engine/geometry';
@@ -26,16 +31,31 @@ import type {Locale} from '../i18n';
 import {spawnYaw,withSpawnYaw} from '../engine/spawnPresentation';
 import {entityConnectionLabel,connectionSearchText} from '../engine/entityNaming';
 
+
+/** MAP editor controls are intentionally separate from BSP's WAD session list.
+ * Browser storage deletion must remain available in all six UI languages. */
+const mapWadLabels={
+  es:{manage:'Gestionar WAD',remove:'Quitar',builtIn:'Integrado',protected:'Protegido (Decals)',used:'En uso',unused:'Sin uso',removing:'Quitando...',help:'Quita WAD antiguos de la biblioteca y de la memoria del navegador. No borra archivos del juego.',confirm:'¿Quitar este WAD de la biblioteca guardada? Se conservará el archivo del disco.',failure:'No se pudo quitar el WAD:',usedInfo:'El mapa o su historial utiliza estas texturas:',paths:'Las rutas de Compilación se conservan.',noWads:'No hay WAD importados para quitar.'},
+  en:{manage:'Manage WADs',remove:'Remove',builtIn:'Built-in',protected:'Protected (Decals)',used:'In use',unused:'Unused',removing:'Removing...',help:'Remove old WADs from the library and browser storage. Game files are never deleted.',confirm:'Remove this WAD from the saved library? The disk file will remain.',failure:'Could not remove WAD:',usedInfo:'Map or undo history uses these textures:',paths:'Build Settings paths are preserved.',noWads:'No imported WADs to remove.'},
+  ru:{manage:'Управление WAD',remove:'Удалить',builtIn:'Встроенный',protected:'Защищён (Decals)',used:'Используется',unused:'Не используется',removing:'Удаление...',help:'Убирает старые WAD из библиотеки и памяти браузера. Файлы игры не удаляются.',confirm:'Удалить WAD из сохранённой библиотеки? Файл на диске останется.',failure:'Не удалось удалить WAD:',usedInfo:'Карта или история использует текстуры:',paths:'Пути компиляции сохраняются.',noWads:'Нет импортированных WAD.'},
+  ko:{manage:'WAD 관리',remove:'제거',builtIn:'기본 제공',protected:'보호됨 (Decals)',used:'사용 중',unused:'미사용',removing:'제거 중...',help:'이전 WAD를 라이브러리와 브라우저 저장소에서 제거합니다. 게임 파일은 삭제하지 않습니다.',confirm:'저장된 라이브러리에서 이 WAD를 제거할까요? 디스크 파일은 유지됩니다.',failure:'WAD 제거 실패:',usedInfo:'맵 또는 실행 취소 기록에서 사용하는 텍스처:',paths:'빌드 경로는 유지됩니다.',noWads:'제거할 가져온 WAD가 없습니다.'},
+  zh:{manage:'管理 WAD',remove:'移除',builtIn:'内置',protected:'受保护 (Decals)',used:'使用中',unused:'未使用',removing:'移除中...',help:'从资源库和浏览器存储中移除旧 WAD，不删除游戏文件。',confirm:'从保存的资源库中移除此 WAD？磁盘文件会保留。',failure:'无法移除 WAD：',usedInfo:'地图或撤销历史使用以下纹理：',paths:'编译路径保持不变。',noWads:'没有可移除的已导入 WAD。'},
+  pt:{manage:'Gerenciar WADs',remove:'Remover',builtIn:'Integrado',protected:'Protegido (Decals)',used:'Em uso',unused:'Não usado',removing:'Removendo...',help:'Remove WAD antigos da biblioteca e do armazenamento do navegador, sem apagar arquivos do jogo.',confirm:'Remover este WAD da biblioteca salva? O arquivo no disco será mantido.',failure:'Não foi possível remover o WAD:',usedInfo:'O mapa ou histórico usa estas texturas:',paths:'Os caminhos de compilação são preservados.',noWads:'Não há WAD importados para remover.'},
+} as const;
+
 function stopProp(e:React.MouseEvent){e.stopPropagation()}
 export function AssetPanel(){
   const tr=useT();
-  const savedResource=useEditor(s=>s.resourceView),resource=savedResource==='objects'?'entities':savedResource,setResource=useEditor(s=>s.setResourceView);
+  const savedResource=useEditor(s=>s.resourceView),resource=savedResource==='objects'||savedResource==='layers'?'entities':savedResource,setResource=useEditor(s=>s.setResourceView);
   const [query,setQuery]=useState('');
   const [entityInfo,setEntityInfo]=useState<FgdClass|null>(null);
-  useEffect(()=>{setQuery('');setTexturePage(1);},[resource]);
+  useEffect(()=>{setQuery('');},[resource]);
   const wadsRef=useRef<HTMLInputElement>(null),fgdRef=useRef<HTMLInputElement>(null);
   const setTextures=useEditor(s=>s.setTextures),setFgd=useEditor(s=>s.setFgd);
   const textures=useEditor(s=>s.textureAssets),decals=useEditor(s=>s.decalAssets),classes=useEditor(s=>s.fgdClasses);
+  const locale=useEditor(s=>s.locale),mapWadText=mapWadLabels[locale];
+  const project=useEditor(s=>s.project),history=useEditor(s=>s.history),future=useEditor(s=>s.future);
+  const wadPaths=useEditor(s=>s.settings.wadPaths),removeTextureWad=useEditor(s=>s.removeTextureWad);
   const fgdLoaded=useEditor(s=>s.fgdLoaded);
   const placementShape=useEditor(s=>s.placementShape);
   const gameDir=useEditor(s=>s.settings.gameDir);
@@ -44,12 +64,19 @@ export function AssetPanel(){
   const addEntity=useEditor(s=>s.addEntity);
   const startNpc=useEditor(s=>s.startNpcPlacement);
   const npcPending=useEditor(s=>s.pendingNpcClass);
+  const entityStampMode=useStudioLayout(s=>s.entityStampMode),setEntityStampMode=useStudioLayout(s=>s.setEntityStampMode);
+  const placementMode=useEditor(s=>s.universalPlacement.mode),setPlacementMode=useEditor(s=>s.setUniversalPlacement);
   const [filter,setFilter]=useState('all');
+  const [wadManagerOpen,setWadManagerOpen]=useState(false);
+  const [removingWad,setRemovingWad]=useState<string|null>(null);
+  const [wadRemoveError,setWadRemoveError]=useState('');
   const [entityCategory,setEntityCategory]=useState('all');
   const [favorites,setFavorites]=useState<string[]>(()=>{try{return JSON.parse(localStorage.getItem('svenstudio-texture-favorites')||'[]')}catch{return []}});
   const [onlyFavorites,setOnlyFavorites]=useState(false);
-  const [texturePage,setTexturePage]=useState(1);
-  const [recent,setRecent]=useState<string[]>([]);
+  const [recentTextures,setRecentTextures]=useState<string[]>(()=>{try{return JSON.parse(localStorage.getItem('svenstudio-texture-recent-v1')||'[]')}catch{return []}});
+  const [onlyRecent,setOnlyRecent]=useState(false);
+
+  // Texture order stays stable while painting; selecting never re-sorts the library.
   // A lightweight right-click menu for WAD tiles and FGD classes. Keeps
   // common actions discoverable without adding hundreds of extra buttons.
   const [assetMenu,setAssetMenu]=useState<{x:number;y:number;kind:'texture';value:TextureAsset}|{x:number;y:number;kind:'entity';value:FgdClass}|null>(null);
@@ -74,15 +101,44 @@ export function AssetPanel(){
     try{localStorage.setItem('svenstudio-texture-favorites',JSON.stringify(next))}catch{/* Favorite remains available in this session. */}
     return next;
   });
-  const applyTexture=(t:{name:string;wad:string})=>{selectTexture(t.name);setRecent(a=>[favoriteKey(t),...a.filter(x=>x!==favoriteKey(t))].slice(0,15))};
+  const applyTexture=(t:{name:string;wad:string})=>{
+    selectTexture(t.name);
+    const key=favoriteKey(t);
+    setRecentTextures(prev=>{
+      const next=[key,...prev.filter(x=>x!==key)].slice(0,24);
+      try{localStorage.setItem('svenstudio-texture-recent-v1',JSON.stringify(next))}catch{/* private session */}
+      return next;
+    });
+  };
   const appendLogs=useEditor(s=>s.appendLogs);
-  const filteredTextures=useMemo(()=>textures.filter(t=>(filter==='all'||filter===t.wad)&&(!onlyFavorites||favorites.includes(favoriteKey(t)))&&t.name.toLowerCase().includes(query.toLowerCase()))
-    .sort((a,b)=>{
-      const ia=recent.indexOf(favoriteKey(a)),ib=recent.indexOf(favoriteKey(b));
-      if(ia>=0||ib>=0)return ia<0?1:ib<0?-1:ia-ib;
-      return a.name.localeCompare(b.name);
-    }),[textures,filter,query,onlyFavorites,favorites,recent]);
-  const shownTextures=filteredTextures.slice(0,texturePage*80);
+  const filteredTextures=useMemo(()=>textures.filter(t=>(filter==='all'||filter===t.wad)&&(!onlyFavorites||favorites.includes(favoriteKey(t)))&&(!onlyRecent||recentTextures.includes(favoriteKey(t)))&&t.name.toLowerCase().includes(query.toLowerCase()))
+    .sort((a,b)=>a.name.localeCompare(b.name)||a.wad.localeCompare(b.wad)),[textures,filter,query,onlyFavorites,favorites,onlyRecent,recentTextures]);
+  const loadedWads=useMemo(()=>Array.from(new Map(textures.map(asset=>[wadBasename(asset.wad),asset.wad])).values()).sort((a,b)=>a.localeCompare(b)),[textures]);
+  const wadRemovalPlans=useMemo(()=>{if(!wadManagerOpen)return new Map();const paths=wadPaths.split(/[\r\n]+/).map(p=>p.trim()).filter(Boolean);const usage=mapWadUsage(textures,[project,...history,...future],paths);return new Map(loadedWads.map(wad=>[wad,planMapWadRemoval(wad,textures,project,history,future,paths,usage)]));},[wadManagerOpen,loadedWads,textures,project,history,future,wadPaths]);
+  const removeUnusedMapWad=async(wad:string)=>{
+    if(removingWad)return;
+    setWadRemoveError('');
+    const current=useEditor.getState();
+    const plan=planMapWadRemoval(wad,current.textureAssets,current.project,current.history,current.future,current.settings.wadPaths.split(/[\r\n]+/).map(p=>p.trim()).filter(Boolean));
+    if(!plan.ok){setWadRemoveError(`${mapWadText.usedInfo} ${plan.usedTextures.slice(0,6).join(', ')}`);return;}
+    if(!window.confirm(`${wad} (${plan.textureCount})\n${mapWadText.confirm}\n${mapWadText.paths}`))return;
+    setRemovingWad(wad);
+    try{
+      // Mutate editor state only after the persistent deletion succeeds.
+      await forgetSavedWadFile(wad);
+      removeTextureWad(wad);
+      if(wadBasename(filter)===wadBasename(wad)){setFilter('all');}
+      setFavorites(prev=>{
+        const next=prev.filter(key=>wadBasename(key.split(':')[0])!==wadBasename(wad));
+        try{localStorage.setItem('svenstudio-texture-favorites',JSON.stringify(next));}catch{/* no persistence available */}
+        return next;
+      });
+  
+      appendLogs([`MAP WAD library: removed ${wad} from browser storage; game files and Build Settings unchanged.`]);
+    }catch(error){setWadRemoveError(`${mapWadText.failure} ${String(error instanceof Error?error.message:error)}`);}
+    finally{setRemovingWad(null);}
+  };
+
   const entityCategoryOf=(cls:FgdClass):string=>{
     if(cls.name.startsWith('monster_'))return 'NPCs';
     if(cls.name.startsWith('trigger_'))return 'Triggers';
@@ -125,15 +181,15 @@ export function AssetPanel(){
       <button className={resource==='models'?'active':''} onClick={()=>{setResource('models');setQuery('')}} title="Model Browser (.mdl)"><Boxes size={16}/></button>
       <button className={resource==='sounds'?'active':''} onClick={()=>{setResource('sounds');setQuery('')}} title={tr('Sound Browser')}><Headphones size={16}/></button>
       <button className={resource==='npcs'?'active':''} onClick={()=>{setResource('npcs');setQuery('')}} title={tr('NPC Browser')}><Skull size={16}/></button>
-      <button className={resource==='layers'?'active':''} onClick={()=>{setResource('layers');setQuery('')}} title={tr('Layers')}><Layers size={16}/></button>
     </div>
     <div className="panel-header"><span>{tr(resource==='entities'?'Entity Browser':resource==='textures'?'Texture Browser':resource==='materials'?'Material & Surface Studio':resource==='decals'?'Decal Studio':resource==='models'?'Model Browser':resource==='npcs'?'NPC Browser':resource==='sounds'?'Sound Browser':'Layers')}</span><span className="subtle">{resource==='entities'?classes.length:resource==='textures'?textures.length:resource==='decals'?decals.length:''}</span></div>
-    {(resource==='entities'||resource==='textures'||resource==='npcs')&&<div className="search-field"><Search size={15}/><input value={query} onChange={e=>{setQuery(e.target.value);setTexturePage(1)}} placeholder={tr(resource==='textures'?'Search textures...':resource==='npcs'?'Search NPCs…':'Search classname...')} /></div>}
+    {(resource==='entities'||resource==='textures'||resource==='npcs')&&<div className="search-field"><Search size={15}/><input value={query} onChange={e=>{setQuery(e.target.value)}} placeholder={tr(resource==='textures'?'Search textures...':resource==='npcs'?'Search NPCs…':'Search classname...')} /></div>}
     {resource==='materials'&&<MaterialSurfaceStudio/>}
     {resource==='decals'&&<DecalStudio/>}
     {resource==='models'&&<ModelBrowser/>}
     {resource==='sounds'&&<SoundBrowser compact/>}
     {resource==='npcs'&&<div className="assets-scroll npc-asset-list">
+      <div className="ui3-entity-tools"><label><input type="checkbox" checked={entityStampMode} onChange={e=>setEntityStampMode(e.target.checked)}/>{tr('Place multiple')}</label></div>
       <p className="npc-hint">{tr('Choose an NPC and click on a map surface to place it. Drag and drop also works.')}</p>
       {!fgdLoaded&&<p className="npc-hint">{tr('Starter list. Import sven-coop.fgd for full list.')}</p>}
       {npcList.map(cls=><button className={`entity-entry ${npcPending===cls.name?'active':''}`} key={cls.name} draggable
@@ -147,21 +203,36 @@ export function AssetPanel(){
       <div className="entity-category-row"><select value={entityCategory} onChange={e=>setEntityCategory(e.target.value)} title={tr('Entity category')}>
         {['all','NPCs','Triggers','Weapons','Items','Lighting','Brush entities','Logic & effects','Other'].map(v=><option value={v} key={v}>{tr(v==='all'?'All categories':v)}</option>)}
       </select><span>{filteredClasses.length}</span></div>
-      <div className="assets-scroll entity-list">{filteredClasses.map(cls=><div className="entity-entry-wrap" key={cls.name}><button draggable={cls.type==='point'}
+      <div className="ui3-entity-tools"><label><input type="checkbox" checked={entityStampMode} onChange={e=>setEntityStampMode(e.target.checked)}/>{tr('Place multiple')}</label>
+        <button type="button" className={placementMode==='grid'?'active':''} onClick={()=>setPlacementMode({mode:placementMode==='grid'?'surface':'grid',lockPosition:false,staged:false})}>{placementMode==='grid'?tr('Placement: Plane'):tr('Placement: Surface')}</button>
+      </div>
+      <p className="npc-hint">{locale==='es'?'Elegí una entidad de punto; clic izquierdo sobre el mapa para colocarla, clic derecho o Esc para cancelar. Las entidades sólidas se asocian a un brush seleccionado.':tr('Choose an NPC and click on a map surface to place it. Drag and drop also works.')}</p><div className="assets-scroll entity-list">{filteredClasses.map(cls=><div className="entity-entry-wrap" key={cls.name}><button draggable={cls.type==='point'}
         onDragStart={e=>{e.dataTransfer.setData('application/x-svenstudio-entity',cls.name);e.dataTransfer.effectAllowed='copy'}}
-        className="entity-entry" onContextMenu={e=>{e.preventDefault();setAssetMenu({x:e.clientX,y:e.clientY,kind:'entity',value:cls})}} onClick={()=>addEntity(cls)} title={`${cls.description} · ${cls.type}`}>
+        className={`entity-entry ${npcPending===cls.name?'active':''}`} onContextMenu={e=>{e.preventDefault();setAssetMenu({x:e.clientX,y:e.clientY,kind:'entity',value:cls})}} onClick={()=>cls.type==='point'?startNpc(npcPending===cls.name?null:cls.name):addEntity(cls)} title={`${cls.description} · ${cls.type}`}>
         <span className={`entity-type ${cls.type}`}>{cls.type==='point'?<UserRound size={13}/>:<Box size={13}/>}</span><span><strong>{cls.name}</strong><small>{cls.description}</small></span><Plus size={13}/></button>
         <button type="button" className="entity-guide-icon" aria-label={`Guía ${cls.name}`} title={`Guía: ${cls.name}`} onClick={()=>setEntityInfo(cls)}><Info size={14}/></button></div>)}</div>
     </>}
     {resource==='textures'&&<>
-      <div className="import-area"><button className="soft-button" onClick={()=>wadsRef.current?.click()}><Upload size={14}/> {tr('Import WAD3')}</button><input ref={wadsRef} multiple type="file" hidden accept=".wad" onChange={importWads}/><p>{tr('Choose textures, then paint selected faces or brushes.')}</p></div>
-      {textures.length>0&&<div className="filter-wrap"><button className={`favorite-filter ${onlyFavorites?'active':''}`} title={tr('Show favorites only')} onClick={()=>{setOnlyFavorites(v=>!v);setTexturePage(1)}}><Star size={13} fill={onlyFavorites?'currentColor':'none'}/></button><select value={filter} onChange={e=>{setFilter(e.target.value);setTexturePage(1)}}><option value="all">{tr('All WAD files')}</option>{Array.from(new Set(textures.map(t=>t.wad))).map(n=><option key={n} value={n}>{n}</option>)}</select></div>}
-      {textures.length===0?<div className="empty-message"><Image size={30}/><strong>{tr('No WAD textures loaded')}</strong><span>{tr('Import halflife.wad or another WAD3 file from Sven Co-op.')}</span></div>:<div className="texture-results assets-scroll"><p className="texture-progress">{tr('Showing textures')}: {shownTextures.length} / {filteredTextures.length}</p><div className="texture-grid">{shownTextures.map((t,i)=><div key={t.wad+':'+t.name+':'+i} className={`texture-tile ${currentTexture===t.name?'chosen':''}`} onContextMenu={e=>{e.preventDefault();setAssetMenu({x:e.clientX,y:e.clientY,kind:'texture',value:t})}}>
-        <button className="texture-apply" draggable onDragStart={e=>{e.dataTransfer.setData('application/x-svenstudio-texture',t.name);e.dataTransfer.effectAllowed='copy'}} onClick={()=>applyTexture(t)} title={`${t.name} · ${t.width}x${t.height} · ${t.wad}. Drag over a 3D face to paint it.`}><img src={t.thumbUrl||t.dataUrl} alt={t.name} loading="lazy"/><span>{t.name}</span></button>
-        <button className={`texture-favorite ${favorites.includes(favoriteKey(t))?'active':''}`} onClick={()=>toggleFavorite(t)} title={tr('Toggle favorite')}><Star size={12} fill={favorites.includes(favoriteKey(t))?'currentColor':'none'}/></button>
-      </div>)}</div>{shownTextures.length<filteredTextures.length&&<button className="texture-load-more" onClick={()=>setTexturePage(v=>v+1)}>{tr('Load more textures')} (+{Math.min(80,filteredTextures.length-shownTextures.length)})</button>}</div>}
+      <div className="import-area"><button className="soft-button" onClick={()=>wadsRef.current?.click()}><Upload size={14}/> {tr('Import WAD3')}</button><input ref={wadsRef} multiple type="file" hidden accept=".wad" onChange={importWads}/><p>{tr('Choose textures, then paint selected faces or brushes.')}</p>
+        <button type="button" className="map-wad-manager-toggle" aria-expanded={wadManagerOpen} onClick={()=>{setWadManagerOpen(open=>!open);setWadRemoveError('')}}><Trash2 size={13}/>{mapWadText.manage}{wadManagerOpen?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
+      </div>
+      {wadManagerOpen&&<div className="map-wad-manager" aria-label={mapWadText.manage}>
+        <p>{mapWadText.help}</p>
+        <div className="map-wad-list">{loadedWads.filter(wad=>wadBasename(wad)!=='svstudio.wad').length===0&&<p>{mapWadText.noWads}</p>}
+          {loadedWads.map(wad=>{const plan=wadRemovalPlans.get(wad)!;const builtIn=plan.reason==='built-in'||plan.reason==='reserved';return <div className="map-wad-list-item" key={wad}>
+            <span className="map-wad-item-info" title={plan.reason==='used'?`${mapWadText.usedInfo} ${plan.usedTextures.join(', ')}`:wad}><strong>{wad}</strong><small>{plan.textureCount} · {plan.reason==='reserved'?mapWadText.protected:builtIn?mapWadText.builtIn:plan.reason==='used'?`${mapWadText.used} (${plan.usedTextures.length})`:mapWadText.unused}</small></span>
+            {!builtIn&&<button type="button" disabled={!plan.ok||removingWad!==null} title={plan.reason==='used'?`${mapWadText.usedInfo} ${plan.usedTextures.slice(0,5).join(', ')}`:mapWadText.remove} aria-label={`${mapWadText.remove} ${wad}`} onClick={()=>void removeUnusedMapWad(wad)}><Trash2 size={13}/>{removingWad===wad?mapWadText.removing:mapWadText.remove}</button>}
+          </div>})}
+        </div>
+        {wadRemoveError&&<p className="map-wad-remove-error" role="alert">{wadRemoveError}</p>}
+      </div>}
+      {textures.length>0&&<div className="filter-wrap"><button className={`favorite-filter ${onlyFavorites?'active':''}`} title={tr('Show favorites only')} aria-pressed={onlyFavorites} onClick={()=>setOnlyFavorites(v=>!v)}><Star size={13} fill={onlyFavorites?'currentColor':'none'}/></button>
+      <button className={`recent-filter ${onlyRecent?'active':''}`} title={tr('Recent textures')} aria-pressed={onlyRecent} onClick={()=>setOnlyRecent(v=>!v)}><span>◷</span></button><select value={filter} onChange={e=>{setFilter(e.target.value)}}><option value="all">{tr('All WAD files')}</option>{Array.from(new Set(textures.map(t=>t.wad))).map(n=><option key={n} value={n}>{n}</option>)}</select></div>}
+      {textures.length===0?<div className="empty-message"><Image size={30}/><strong>{tr('No WAD textures loaded')}</strong><span>{tr('Import halflife.wad or another WAD3 file from Sven Co-op.')}</span></div>:
+        <VirtualTextureGallery textures={filteredTextures} resetKey={`${filter}|${query}|${onlyFavorites}|${onlyRecent}`} selected={currentTexture} onPick={applyTexture}
+          isFavorite={texture=>favorites.includes(favoriteKey(texture))} onFavorite={toggleFavorite}
+          onContextMenu={(event,texture)=>{event.preventDefault();setAssetMenu({x:event.clientX,y:event.clientY,kind:'texture',value:texture})}}/>}
     </>}
-    {resource==='layers'&&<LayerPanel/>}
     {assetMenu&&createPortal(<div className="studio-context-menu asset-context-menu" role="menu" onContextMenu={e=>e.preventDefault()} style={{left:Math.max(6,Math.min(window.innerWidth-280,assetMenu.x)),top:Math.max(6,Math.min(window.innerHeight-250,assetMenu.y))}}>
       <div className="context-head"><span>{assetMenu.value.name}</span><small>{assetMenu.kind==='texture'?`${assetMenu.value.wad} · ${assetMenu.value.width}×${assetMenu.value.height}`:assetMenu.value.type}</small></div>
       {assetMenu.kind==='texture'?<>
@@ -170,7 +241,7 @@ export function AssetPanel(){
         <button type="button" onClick={()=>{void navigator.clipboard?.writeText(assetMenu.value.name);setAssetMenu(null)}}><Copy size={15}/><span>{tr('Copy texture name')}</span></button>
         <button type="button" onClick={()=>{void navigator.clipboard?.writeText(assetMenu.value.wad);setAssetMenu(null)}}><Copy size={15}/><span>{tr('Copy WAD name')}</span></button>
       </>:<>
-        <button type="button" onClick={()=>{addEntity(assetMenu.value);setAssetMenu(null)}}><Plus size={15}/><span>{tr('Add entity to map')}</span></button>
+        <button type="button" onClick={()=>{if(assetMenu.value.type==='point')startNpc(assetMenu.value.name);else addEntity(assetMenu.value);setAssetMenu(null)}}><Plus size={15}/><span>{tr('Add entity to map')}</span></button>
         <button type="button" onClick={()=>{useEditor.getState().selectSameClass(assetMenu.value.name);setAssetMenu(null)}}><UserRound size={15}/><span>{tr('Select same classname')}</span></button>
         <button type="button" onClick={()=>{void navigator.clipboard?.writeText(assetMenu.value.name);setAssetMenu(null)}}><Copy size={15}/><span>{tr('Copy classname')}</span></button>
         <button type="button" onClick={()=>{setEntityInfo(assetMenu.value);setAssetMenu(null)}}><Info size={15}/><span>{tr('Entity guide')}</span></button>
@@ -236,6 +307,26 @@ function Field({label,value,onChange,type='text',step=1}:{label:string,value:str
 }
 function VectorFields({label,value,onChange}:{label:string,value:[number,number,number],onChange:(a:[number,number,number])=>void}){
   return <div className="vector-property"><span>{label}</span><div>{value.map((v,i)=><label key={i} className={`vector-item v${i}`}><small>{['X','Y','Z'][i]}</small><input type="number" key={`${i}-${v}`} defaultValue={Number(v.toFixed(2))} step={1} onBlur={e=>{const n=Number(e.target.value);if(Number.isFinite(n)&&n!==v){const copy=[...value] as [number,number,number];copy[i]=n;onChange(copy)}}} onKeyDown={e=>{if(e.key==='Enter')e.currentTarget.blur()}}/></label>)}</div></div>;
+}
+/** Inspector jump links scroll only the dock body; never move the browser viewport. */
+function InspectorNavigation({point,brush}:{point:boolean;brush:boolean}){
+  const t=useT();
+  const links=[['transform','TRANSFORM'],['organization','ORGANIZATION'],...(point?[['behavior','ENTITY KEYVALUES']]:[]),...(brush?[['material','BRUSH MATERIAL']]:[])] as [string,string][];
+  const go=(name:string,event:React.MouseEvent<HTMLButtonElement>)=>{
+    const scroll=event.currentTarget.closest('.property-scroll') as HTMLElement|null;
+    const anchor=scroll?.querySelector(`[data-inspector-anchor="${name}"]`) as HTMLElement|null;
+    if(!scroll||!anchor)return;
+    scroll.scrollTo({top:anchor.getBoundingClientRect().top-scroll.getBoundingClientRect().top+scroll.scrollTop-44,behavior:'smooth'});
+  };
+  return <nav className="ui3-inspector-nav" aria-label={t('Inspector sections')}>
+    {links.map(([id,title])=><button type="button" key={id} onClick={e=>go(id,e)}>{t(title)}</button>)}
+  </nav>;
+}
+function Color255Field({label,value,onChange}:{label:string,value:string,onChange:(value:string)=>void}){
+  const channels=value.trim().split(/\s+/).map(Number);
+  const hex=channels.length===3&&channels.every(n=>Number.isFinite(n)&&n>=0&&n<=255)?'#'+channels.map(n=>Math.round(n).toString(16).padStart(2,'0')).join(''):'#ffffff';
+  return <div className="ui3-fgd-color"><Field label={label} value={value} onChange={onChange}/>
+    <input type="color" aria-label={`${label} color`} value={hex} onChange={e=>{const raw=e.target.value;onChange([1,3,5].map(i=>String(parseInt(raw.slice(i,i+2),16))).join(' '))}}/></div>;
 }
 export function Properties(){
   const t=useT();
@@ -309,13 +400,14 @@ export function Properties(){
   return <div ref={propertyRoot} className="properties"><div className="panel-header"><span><Settings2 size={15}/> {t('Properties')}</span><span className="counter">{t(brush?'Brush':'Entity')}</span></div>
     <div className="property-scroll">
       <div className="property-object-header"><span className="property-avatar">{brush?<Box size={19}/>:<UserRound size={19}/>}</span><span><strong>{object.name}</strong><small>{point?.classname||brush?.primitive||''}</small></span></div>
-      <div className="property-group-title">{t('TRANSFORM')}</div>
+      <InspectorNavigation point={!!point} brush={!!brush}/>
+      <div className="property-group-title" data-inspector-anchor="transform">{t('TRANSFORM')}</div>
       <Field label={t('Name')} value={object.name} onChange={name=>change(object.id,{name,editorAlias:name})}/>
       <VectorFields label={t('Position')} value={object.position} onChange={position=>change(object.id,{position})}/>
       {brush&&<><VectorFields label={t('Rotation')} value={brush.rotation} onChange={rotation=>change(brush.id,{rotation})}/><VectorFields label={t('Scale')} value={brush.scale} onChange={scale=>change(brush.id,{scale})}/><VectorFields label={t('Dimensions (units)')} value={brushDimensions(brush)} onChange={size=>{try{setDimensions(brush.id,size)}catch(error){alert(String(error))}}}/></>}
-      <div className="property-group-title">{t('ORGANIZATION')}</div>
+      <div className="property-group-title" data-inspector-anchor="organization">{t('ORGANIZATION')}</div>
       <Field label={t('Layer')} value={object.layer||'Geometry'} onChange={layer=>setLayer(object.id,layer)}/>
-      {point&&<><div className="property-group-title">{t('ENTITY KEYVALUES')}</div><FgdLoadControl compact/><Field label="classname" value={point.classname} onChange={classname=>change(object.id,{classname})}/>
+      {point&&<><div className="property-group-title" data-inspector-anchor="behavior">{t('ENTITY KEYVALUES')}</div><FgdLoadControl compact/><Field label="classname" value={point.classname} onChange={classname=>change(object.id,{classname})}/>
         {point.classname==='info_player_start'&&<section className="spawn-facing-editor">
           <strong>{t('Start facing direction')}</strong>
           <p>{t('Set where the player looks when spawning. The direction arrow in the viewport updates immediately.')}</p>
@@ -354,7 +446,9 @@ export function Properties(){
             <input type="checkbox" checked={((Number(value)||0)&Number(option.value))!==0}
               onChange={e=>{const bit=Number(option.value)||0;const current=Number(value)||0;setProp(object.id,key,String(e.target.checked?(current|bit):(current&~bit)))}}/>{option.label}
           </label>)}</div>;
-          return <Field key={key} label={field.label||key} value={value} onChange={v=>setProp(object.id,key,v)}/>;
+          return <div key={key} className="ui3-fgd-field" title={`${key} · ${field.type}${field.defaultValue!==undefined?` · default: ${field.defaultValue}`:''}`}>
+            {field.type==='color255'?<Color255Field label={field.label||key} value={value} onChange={v=>setProp(object.id,key,v)}/>:
+            <Field label={field.label||key} type={['integer','float'].includes(field.type)?'number':'text'} value={value} onChange={v=>setProp(object.id,key,v)}/>}</div>;
         })}
         <div className="add-property"><input value={newKey} placeholder="key" onChange={e=>setNewKey(e.target.value)}/><input value={newValue} placeholder="value" onChange={e=>setNewValue(e.target.value)}/><button title="Add keyvalue" onClick={()=>{if(newKey.trim()){setProp(object.id,newKey.trim(),newValue);setNewKey('');setNewValue('')}}}><Plus size={14}/></button></div>
       </>}
@@ -373,7 +467,7 @@ export function Properties(){
         <p className="property-meta">{attachedBrushCount} {t('linked brushes')} · {point.classname}</p>
         <button disabled={!!point.locked} onClick={()=>tryDetach([point.id],true)}><Unlink size={14}/> {t('Convert linked brushes to worldspawn')}</button>
       </section>}
-      {brush&&<><ModelingPanel brush={brush}/><div className="property-group-title">{t('BRUSH MATERIAL')}</div>
+      {brush&&<><ModelingPanel brush={brush}/><div className="property-group-title" data-inspector-anchor="material">{t('BRUSH MATERIAL')}</div>
         <div className="property-meta">{t('Faces')}: {brush.faces.length} · {t('Vertices')}: {brush.vertices.length}</div>
         {faceMode&&selectedFace!==null&&brush.faces[selectedFace]?<>
           <div className="property-meta">{t('Editing Face')} #{selectedFace+1}</div>

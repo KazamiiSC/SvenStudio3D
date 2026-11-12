@@ -272,6 +272,13 @@ Object.assign(ko,{
 const en:Record<string,string>={};
 const zh:Record<string,string>={};
 const pt:Record<string,string>={};
+// BSP Editor HF2: grid/list controls and accessibility labels in all six locales.
+Object.assign(es,{'Model display mode':'Presentación de modelos'});
+Object.assign(ru,{'Model display mode':'Режим отображения моделей'});
+Object.assign(ko,{'Model display mode':'모델 표시 방식'});
+Object.assign(zh,{'Model display mode':'模型显示模式','List view':'列表视图','Grid thumbnails':'缩略图网格'});
+Object.assign(pt,{'Model display mode':'Modo de visualização dos modelos','List view':'Visualização em lista','Grid thumbnails':'Grade de miniaturas'});
+
 // v1.5.20: adaptive workspace presentation (not game entity/class identifiers).
 Object.assign(es,{
   'Adaptive layout / Windows display scaling':'Diseño adaptable / escala de pantalla de Windows',
@@ -656,6 +663,110 @@ Object.assign(ko,{
 Object.assign(es,{'Installed sky browser':'Explorador de cielos instalados','Search skies':'Buscar cielos','Scanning installed skies…':'Buscando cielos instalados…','Set the game directory to browse installed skies.':'Configurá la carpeta del juego para ver los cielos instalados.','sky collections found':'cielos encontrados','No skyboxes found in gfx/env.':'No se encontraron cielos en gfx/env.','Sky selected; save to worldspawn to apply.':'Cielo seleccionado; guardalo en worldspawn para aplicarlo.','Incomplete sky set: one or more of the six faces are missing.':'Cielo incompleto: faltan una o más de sus seis imágenes.'});
 Object.assign(ru,{'Installed sky browser':'Установленные скайбоксы','Search skies':'Поиск неба','Scanning installed skies…':'Поиск установленных небес…','Set the game directory to browse installed skies.':'Выберите папку игры, чтобы найти небо.','sky collections found':'наборов неба','No skyboxes found in gfx/env.':'Небо в gfx/env не найдено.','Sky selected; save to worldspawn to apply.':'Небо выбрано; сохраните в worldspawn.'});
 Object.assign(ko,{'Installed sky browser':'설치된 하늘 탐색기','Search skies':'하늘 검색','Scanning installed skies…':'설치된 하늘 검색 중…','Set the game directory to browse installed skies.':'하늘을 찾으려면 게임 폴더를 지정하세요.','sky collections found':'하늘 세트','No skyboxes found in gfx/env.':'gfx/env에 하늘이 없습니다.','Sky selected; save to worldspawn to apply.':'하늘을 선택했습니다. worldspawn에 저장하세요.'});
+
+// v1.8.2: route preview mode.
+Object.assign(es,{'Edit route':'Editar recorrido','3D geometry preview':'Vista previa 3D de geometría'});
+Object.assign(ru,{'Edit route':'Изменить маршрут','3D geometry preview':'3D-предпросмотр геометрии'});
+Object.assign(ko,{'Edit route':'경로 편집','3D geometry preview':'3D 지오메트리 미리보기'});
+Object.assign(zh,{'Edit route':'编辑路线','3D geometry preview':'3D 几何预览'});
+Object.assign(pt,{'Edit route':'Editar trajeto','3D geometry preview':'Prévia 3D da geometria'});
+// v1.8.2: Road Builder and industrial path profiles.
+Object.assign(es,{
+  'Road Builder · smooth road': 'Constructor de carreteras · curvas suaves',
+  'Elevated walkway': 'Pasarela elevada',
+  'Rectangular ventilation duct': 'Conducto rectangular de ventilación',
+  'Octagonal hollow pipe': 'Tubería octogonal hueca',
+  'Duct / pipe height': 'Altura de conducto / tubería',
+  'Sidewalk width': 'Ancho de veredas',
+  'Curb height': 'Altura del bordillo',
+  'Smooth curves (centripetal spline)': 'Curvas suaves (spline centrípeta)',
+  'Curve detail': 'Detalle de curvas',
+  'Selected point height': 'Altura del punto seleccionado',
+  'Insert midpoint': 'Insertar punto intermedio',
+  'Remove selected point': 'Eliminar punto seleccionado',
+  'Reset route': 'Restablecer recorrido',
+  'Draw and drag path control points': 'Dibujar y arrastrar puntos del recorrido',
+  'Draw the route with points, drag the orange handles to shape bends, then place the result in your map.': 'Dibujá el recorrido con puntos, arrastrá los controles naranjas para ajustar los giros y colocalo en el mapa.',
+  'Select a control point to change its height. Right-click a point to remove it.': 'Seleccioná un punto para cambiar su altura. Clic derecho sobre un punto para eliminarlo.',
+  'Route preview shows shared bend edges, not overlapping rectangles. Very sharp turns are rejected.': 'La vista previa muestra bordes conectados en las curvas, no rectángulos superpuestos. Se rechazan los giros excesivamente cerrados.',
+});
+Object.assign(ru,{
+  'Road Builder · smooth road': 'Конструктор дорог · плавные повороты',
+  'Elevated walkway': 'Надземная дорожка',
+  'Rectangular ventilation duct': 'Прямоугольный вентиляционный канал',
+  'Octagonal hollow pipe': 'Полая восьмиугольная труба',
+  'Duct / pipe height': 'Высота канала / трубы',
+  'Sidewalk width': 'Ширина тротуара',
+  'Curb height': 'Высота бордюра',
+  'Smooth curves (centripetal spline)': 'Плавные кривые (центростремительный сплайн)',
+  'Curve detail': 'Детализация кривой',
+  'Selected point height': 'Высота выбранной точки',
+  'Insert midpoint': 'Вставить промежуточную точку',
+  'Remove selected point': 'Удалить выбранную точку',
+  'Reset route': 'Сбросить маршрут',
+  'Draw and drag path control points': 'Рисуйте и перетаскивайте контрольные точки',
+  'Draw the route with points, drag the orange handles to shape bends, then place the result in your map.': 'Задайте маршрут точками, перемещайте оранжевые маркеры для настройки поворотов и разместите результат на карте.',
+  'Select a control point to change its height. Right-click a point to remove it.': 'Выберите точку, чтобы изменить высоту. Правый щелчок удаляет точку.',
+  'Route preview shows shared bend edges, not overlapping rectangles. Very sharp turns are rejected.': 'Предпросмотр использует общие границы на поворотах. Слишком резкие повороты запрещены.',
+});
+Object.assign(ko,{
+  'Road Builder · smooth road': '도로 빌더 · 부드러운 곡선',
+  'Elevated walkway': '높은 보행로',
+  'Rectangular ventilation duct': '직사각형 환기 덕트',
+  'Octagonal hollow pipe': '속이 빈 팔각형 파이프',
+  'Duct / pipe height': '덕트 / 파이프 높이',
+  'Sidewalk width': '보도 너비',
+  'Curb height': '연석 높이',
+  'Smooth curves (centripetal spline)': '부드러운 곡선 (구심 스플라인)',
+  'Curve detail': '곡선 세부 수준',
+  'Selected point height': '선택한 점 높이',
+  'Insert midpoint': '중간점 삽입',
+  'Remove selected point': '선택한 점 삭제',
+  'Reset route': '경로 초기화',
+  'Draw and drag path control points': '제어점을 그리고 드래그',
+  'Draw the route with points, drag the orange handles to shape bends, then place the result in your map.': '점을 찍어 경로를 만들고 주황색 핸들로 곡선을 조정한 뒤 맵에 배치하세요.',
+  'Select a control point to change its height. Right-click a point to remove it.': '점을 선택해 높이를 조절하세요. 마우스 오른쪽 버튼으로 삭제합니다.',
+  'Route preview shows shared bend edges, not overlapping rectangles. Very sharp turns are rejected.': '겹치는 직사각형 대신 곡선의 연결된 가장자리를 표시합니다. 지나치게 급한 회전은 거부됩니다.',
+});
+Object.assign(zh,{
+  'Road Builder · smooth road': '道路生成器 · 平滑弯道',
+  'Elevated walkway': '高架步道',
+  'Rectangular ventilation duct': '矩形通风管道',
+  'Octagonal hollow pipe': '中空八角管',
+  'Duct / pipe height': '管道高度',
+  'Sidewalk width': '人行道宽度',
+  'Curb height': '路缘高度',
+  'Smooth curves (centripetal spline)': '平滑曲线（向心样条）',
+  'Curve detail': '曲线细节',
+  'Selected point height': '所选点高度',
+  'Insert midpoint': '插入中点',
+  'Remove selected point': '删除选定点',
+  'Reset route': '重置路径',
+  'Draw and drag path control points': '绘制并拖动路径控制点',
+  'Draw the route with points, drag the orange handles to shape bends, then place the result in your map.': '通过点绘制路线，拖动橙色手柄调整弯道，再将结果放到地图中。',
+  'Select a control point to change its height. Right-click a point to remove it.': '选择控制点修改高度；右键单击点可删除。',
+  'Route preview shows shared bend edges, not overlapping rectangles. Very sharp turns are rejected.': '预览使用相连的弯道边缘，不会堆叠矩形。过急的转弯将被拒绝。',
+});
+Object.assign(pt,{
+  'Road Builder · smooth road': 'Construtor de estradas · curvas suaves',
+  'Elevated walkway': 'Passarela elevada',
+  'Rectangular ventilation duct': 'Duto de ventilação retangular',
+  'Octagonal hollow pipe': 'Tubo octogonal oco',
+  'Duct / pipe height': 'Altura do duto / tubo',
+  'Sidewalk width': 'Largura da calçada',
+  'Curb height': 'Altura do meio-fio',
+  'Smooth curves (centripetal spline)': 'Curvas suaves (spline centrípeta)',
+  'Curve detail': 'Detalhe das curvas',
+  'Selected point height': 'Altura do ponto selecionado',
+  'Insert midpoint': 'Inserir ponto intermediário',
+  'Remove selected point': 'Remover ponto selecionado',
+  'Reset route': 'Redefinir trajeto',
+  'Draw and drag path control points': 'Desenhe e arraste os pontos do trajeto',
+  'Draw the route with points, drag the orange handles to shape bends, then place the result in your map.': 'Desenhe o trajeto com pontos, arraste as alças laranja para ajustar curvas e posicione no mapa.',
+  'Select a control point to change its height. Right-click a point to remove it.': 'Selecione um ponto para alterar a altura. Clique com o botão direito para removê-lo.',
+  'Route preview shows shared bend edges, not overlapping rectangles. Very sharp turns are rejected.': 'A prévia mostra bordas conectadas nas curvas, sem retângulos sobrepostos. Curvas muito fechadas são recusadas.',
+});
+
 export function useT(){const locale=useEditor(s=>s.locale);return useCallback((key:string)=>translate(locale,key),[locale])}
 
 
@@ -3783,4 +3894,1837 @@ Object.assign(pt,{
  "Configure the Sven Co-op game folder if sky faces are missing.": "Configure a pasta do Sven Co-op se faltarem faces do céu.",
  "Geometry inspection is UNLIT and does not represent compiled lighting. ": "A inspeção da geometria NÃO TEM LUZ e não representa a iluminação compilada. ",
  "Compiled RGB samples from the BSP; fog and screen gamma are optional visual presentation only, and do not modify the bake. AO and PCF only appear if enabled during SDHLRAD compilation; lightmap filtering here is a display choice, not PCF. Engine gameplay triggers, player fog settings, palettes and lightstyle timing are not reproduced.": "Dados RGB compilados do BSP. Névoa e gama afetam apenas a visualização. AO e PCF exigem ativação na compilação SDHLRAD; filtro de lightmap não é PCF. Gatilhos e configurações do jogo não são simulados."
+});
+
+// Terrain planar-region optimization · new strings for all existing locales.
+Object.assign(es,{'Optimize planar terrain brushes':'Optimizar brushes coplanares del terreno','Merge coplanar cells into fewer closed convex brushes. Existing terrain keeps its original mode until you enable it.':'Uní celdas coplanares en menos brushes convexos cerrados. Los terrenos antiguos mantienen el modo original hasta activarlo.'});
+Object.assign(ru,{'Optimize planar terrain brushes':'Оптимизировать компланарные браши ландшафта','Merge coplanar cells into fewer closed convex brushes. Existing terrain keeps its original mode until you enable it.':'Объединяет ячейки в одной плоскости в меньшее число замкнутых выпуклых брашей. Старые ландшафты не меняются автоматически.'});
+Object.assign(ko,{'Optimize planar terrain brushes':'동일 평면 지형 브러시 최적화','Merge coplanar cells into fewer closed convex brushes. Existing terrain keeps its original mode until you enable it.':'같은 평면의 셀을 더 적은 닫힌 볼록 브러시로 병합합니다. 기존 지형은 직접 활성화하기 전까지 유지됩니다.'});
+Object.assign(zh,{'Optimize planar terrain brushes':'优化共面地形笔刷','Merge coplanar cells into fewer closed convex brushes. Existing terrain keeps its original mode until you enable it.':'将共面单元格合并为更少的封闭凸笔刷。旧地形在手动启用前保持原样。'});
+Object.assign(pt,{'Optimize planar terrain brushes':'Otimizar brushes coplanares do terreno','Merge coplanar cells into fewer closed convex brushes. Existing terrain keeps its original mode until you enable it.':'Une células coplanares em menos brushes convexos fechados. Terrenos antigos permanecem inalterados até ativar a opção.'});
+
+// Path & Structure MVP translations.
+Object.assign(es,{'Paths & Ventilation':'Caminos y ventilación','Click the top-down path preview to add control points. Apply creates editable convex brushes.':'Hacé clic en la vista superior para agregar puntos. Aplicar crea brushes convexos editables.','Structure type':'Tipo de estructura','Road / walkway':'Camino / pasarela','Hollow ventilation duct':'Conducto de ventilación hueco','Profile width':'Ancho del perfil','Duct height':'Altura del conducto','Wall / floor thickness':'Espesor de pared / suelo','Smooth curve (more brushes)':'Curva suave (más brushes)','Undo last point':'Deshacer último punto','Clear path':'Limpiar trayectoria','Click to add path points':'Clic para agregar puntos','Initial tool: open roads and rectangular ducts. Sharp joins may need manual inspection.':'Herramienta inicial: caminos abiertos y conductos rectangulares. Revisá manualmente las uniones cerradas.'});
+Object.assign(ru,{'Paths & Ventilation':'Дорожки и вентиляция','Click the top-down path preview to add control points. Apply creates editable convex brushes.':'Нажмите на вид сверху, чтобы добавить точки. Применение создаёт редактируемые выпуклые браши.','Structure type':'Тип конструкции','Road / walkway':'Дорога / проход','Hollow ventilation duct':'Полый вентиляционный канал','Profile width':'Ширина профиля','Duct height':'Высота канала','Wall / floor thickness':'Толщина стенки / пола','Smooth curve (more brushes)':'Плавная кривая (больше брашей)','Undo last point':'Удалить последнюю точку','Clear path':'Очистить путь','Click to add path points':'Добавить точки нажатием','Initial tool: open roads and rectangular ducts. Sharp joins may need manual inspection.':'Начальный инструмент: дороги и прямоугольные каналы. Проверяйте стыки вручную.'});
+Object.assign(ko,{'Paths & Ventilation':'경로와 환기','Click the top-down path preview to add control points. Apply creates editable convex brushes.':'상단 보기에서 클릭해 제어점을 추가하세요. 적용 시 편집 가능한 볼록 브러시가 생성됩니다.','Structure type':'구조 유형','Road / walkway':'도로 / 보행로','Hollow ventilation duct':'속이 빈 환기 덕트','Profile width':'프로파일 너비','Duct height':'덕트 높이','Wall / floor thickness':'벽 / 바닥 두께','Smooth curve (more brushes)':'부드러운 곡선 (브러시 증가)','Undo last point':'마지막 점 취소','Clear path':'경로 지우기','Click to add path points':'클릭하여 점 추가','Initial tool: open roads and rectangular ducts. Sharp joins may need manual inspection.':'초기 도구: 도로와 직사각형 덕트. 모서리 연결부를 확인하세요.'});
+Object.assign(zh,{'Paths & Ventilation':'路径与通风','Click the top-down path preview to add control points. Apply creates editable convex brushes.':'点击俯视预览添加控制点。应用后生成可编辑的凸笔刷。','Structure type':'结构类型','Road / walkway':'道路 / 步道','Hollow ventilation duct':'中空通风管道','Profile width':'截面宽度','Duct height':'管道高度','Wall / floor thickness':'墙 / 地板厚度','Smooth curve (more brushes)':'平滑曲线（更多笔刷）','Undo last point':'撤销最后一个点','Clear path':'清除路径','Click to add path points':'单击添加路径点','Initial tool: open roads and rectangular ducts. Sharp joins may need manual inspection.':'初始工具：开放道路和矩形通风管。请手动检查拐角连接。'});
+Object.assign(pt,{'Paths & Ventilation':'Caminhos e ventilação','Click the top-down path preview to add control points. Apply creates editable convex brushes.':'Clique na vista superior para adicionar pontos. Aplicar cria brushes convexos editáveis.','Structure type':'Tipo de estrutura','Road / walkway':'Estrada / passarela','Hollow ventilation duct':'Duto de ventilação oco','Profile width':'Largura do perfil','Duct height':'Altura do duto','Wall / floor thickness':'Espessura da parede / piso','Smooth curve (more brushes)':'Curva suave (mais brushes)','Undo last point':'Desfazer último ponto','Clear path':'Limpar caminho','Click to add path points':'Clique para adicionar pontos','Initial tool: open roads and rectangular ducts. Sharp joins may need manual inspection.':'Ferramenta inicial: caminhos e dutos retangulares. Verifique as junções manualmente.'});
+
+// Path elevation editor (v1.8.3)
+Object.assign(es,{'Elevation profile':'Perfil de elevación','Drag points vertically to raise or lower the path. The overhead view edits X/Y; this profile edits Z.':'Arrastrá los puntos verticalmente para subir o bajar el recorrido. La vista superior edita X/Y; este perfil edita Z.','Elevation profile control points':'Puntos de control de elevación'});
+Object.assign(ru,{'Elevation profile':'Профиль высоты','Drag points vertically to raise or lower the path. The overhead view edits X/Y; this profile edits Z.':'Перетаскивайте точки по вертикали, чтобы изменять высоту. Вид сверху меняет X/Y, профиль — Z.','Elevation profile control points':'Точки профиля высоты'});
+Object.assign(ko,{'Elevation profile':'고도 프로필','Drag points vertically to raise or lower the path. The overhead view edits X/Y; this profile edits Z.':'점을 위아래로 끌어 경로 높이를 조정합니다. 평면도는 X/Y, 이 프로필은 Z를 편집합니다.','Elevation profile control points':'고도 제어점'});
+
+Object.assign(zh,{'Elevation profile':'高度剖面','Drag points vertically to raise or lower the path. The overhead view edits X/Y; this profile edits Z.':'上下拖动控制点以调整路径高度。俯视图编辑 X/Y，此剖面编辑 Z。','Elevation profile control points':'高度控制点'});
+Object.assign(pt,{'Elevation profile':'Perfil de elevação','Drag points vertically to raise or lower the path. The overhead view edits X/Y; this profile edits Z.':'Arraste os pontos verticalmente para subir ou descer o percurso. A vista superior edita X/Y; este perfil edita Z.','Elevation profile control points':'Pontos de controle de elevação'});
+
+// v1.8.4 — Enlarged path editor and deliberate map placement; English fallback is the key.
+Object.assign(es, {"Route navigation": "Navegación del recorrido", "Wheel to zoom · Middle-drag or Shift-drag to pan": "Rueda: zoom · Botón central o Shift+arrastrar: desplazar", "Zoom out": "Alejar", "Zoom in": "Acercar", "Fit entire route": "Encuadrar todo el recorrido", "Fit route": "Encuadrar ruta", "Click to add point · Drag handles to edit": "Clic: agregar punto · Arrastrar controles: editar", "points": "puntos", "Restore editor size": "Restaurar tamaño del estudio", "Maximize route editor": "Ampliar editor de recorridos", "Show settings panel": "Mostrar ajustes", "Focus route editor": "Enfocar editor de recorridos", "Expand elevation profile": "Ampliar perfil de elevación", "Compact elevation profile": "Reducir perfil de elevación", "Choose the placement point in the MAP viewport. The route will not be created at world origin.": "Elegí el punto de colocación directamente en el visor MAP. El recorrido no se creará en el origen del mundo.", "Update existing terrain": "Actualizar terreno existente"});
+Object.assign(ru, {"Route navigation": "Навигация по маршруту", "Wheel to zoom · Middle-drag or Shift-drag to pan": "Колесо: масштаб · Средняя кнопка или Shift+перетаскивание: панорама", "Zoom out": "Отдалить", "Zoom in": "Приблизить", "Fit entire route": "Показать весь маршрут", "Fit route": "Вместить маршрут", "Click to add point · Drag handles to edit": "Щелчок: добавить точку · Перетащить: изменить", "points": "точек", "Restore editor size": "Восстановить размер", "Maximize route editor": "Развернуть редактор маршрута", "Show settings panel": "Показать настройки", "Focus route editor": "Скрыть настройки маршрута", "Expand elevation profile": "Развернуть профиль высоты", "Compact elevation profile": "Свернуть профиль высоты", "Choose the placement point in the MAP viewport. The route will not be created at world origin.": "Выберите место на карте щелчком. Маршрут не создаётся автоматически в начале координат.", "Update existing terrain": "Обновить существующий ландшафт"});
+Object.assign(ko, {"Route navigation": "경로 탐색", "Wheel to zoom · Middle-drag or Shift-drag to pan": "휠: 확대/축소 · 가운데 버튼 또는 Shift+드래그: 이동", "Zoom out": "축소", "Zoom in": "확대", "Fit entire route": "경로 전체 맞춤", "Fit route": "경로 맞춤", "Click to add point · Drag handles to edit": "클릭: 점 추가 · 핸들 드래그: 편집", "points": "개 점", "Restore editor size": "편집기 크기 복원", "Maximize route editor": "경로 편집기 최대화", "Show settings panel": "설정 표시", "Focus route editor": "경로 편집에 집중", "Expand elevation profile": "높이 프로필 확대", "Compact elevation profile": "높이 프로필 축소", "Choose the placement point in the MAP viewport. The route will not be created at world origin.": "MAP 뷰포트에서 배치 위치를 클릭하세요. 경로가 원점에 자동으로 생성되지 않습니다.", "Update existing terrain": "기존 지형 업데이트"});
+Object.assign(zh, {"Route navigation": "路径导航", "Wheel to zoom · Middle-drag or Shift-drag to pan": "滚轮缩放 · 中键拖动或 Shift+拖动平移", "Zoom out": "缩小", "Zoom in": "放大", "Fit entire route": "显示完整路径", "Fit route": "适应路径", "Click to add point · Drag handles to edit": "单击添加点 · 拖动控制柄编辑", "points": "个点", "Restore editor size": "恢复编辑器大小", "Maximize route editor": "最大化路径编辑器", "Show settings panel": "显示设置", "Focus route editor": "专注路径编辑", "Expand elevation profile": "展开高度曲线", "Compact elevation profile": "收起高度曲线", "Choose the placement point in the MAP viewport. The route will not be created at world origin.": "请在 MAP 视口中单击指定放置位置，路径不会自动生成在世界原点。", "Update existing terrain": "更新现有地形"});
+Object.assign(pt, {"Route navigation": "Navegação da rota", "Wheel to zoom · Middle-drag or Shift-drag to pan": "Roda: zoom · Botão central ou Shift+arrastar: mover", "Zoom out": "Afastar", "Zoom in": "Aproximar", "Fit entire route": "Enquadrar rota inteira", "Fit route": "Enquadrar rota", "Click to add point · Drag handles to edit": "Clique: adicionar ponto · Arraste: editar", "points": "pontos", "Restore editor size": "Restaurar tamanho do editor", "Maximize route editor": "Maximizar editor de rotas", "Show settings panel": "Mostrar configurações", "Focus route editor": "Focar no editor de rotas", "Expand elevation profile": "Expandir perfil de elevação", "Compact elevation profile": "Compactar perfil de elevação", "Choose the placement point in the MAP viewport. The route will not be created at world origin.": "Escolha a posição diretamente na vista MAP. A rota não será criada automaticamente na origem do mundo.", "Update existing terrain": "Atualizar terreno existente"});
+
+// v1.8.5 — shared route editing and construction controls in all six locales.
+Object.assign(es,{"Path & Structure Studio": "Estudio de recorridos y estructuras", "Edit route in 3D": "Editar recorrido en 3D", "Railway tracks & sleepers": "Vías de tren y durmientes", "Fence & barrier line": "Cercas y barreras", "Bridge & catwalk with supports": "Puente y pasarela con soportes", "Support / sleeper spacing": "Separación de soportes / durmientes", "Fence height": "Altura de la cerca", "Bridge support depth": "Profundidad de los soportes del puente", "3D point movement axis": "Eje de movimiento 3D", "Move selected point": "Mover punto seleccionado", "Drag orange handles to move; green diamonds insert control points. Undo with Ctrl+Z.": "Arrastrá los controles naranjas para mover; los rombos verdes insertan puntos. Deshacer con Ctrl+Z.", "Saved editable routes": "Recorridos editables guardados", "New route": "Recorrido nuevo", "This route is stored in the project. Edited or deleted source brushes cannot be replaced automatically.": "Este recorrido está guardado en el proyecto. No se pueden reemplazar automáticamente brushes modificados o eliminados.", "Route loaded for editing. Updating it will regenerate the original brushes.": "Recorrido cargado. Al actualizarlo, se regenerarán los brushes originales.", "Route updated. Undo in MAP Editor restores the previous geometry.": "Recorrido actualizado. Deshacer en el editor MAP restaura la geometría anterior.", "Update saved route": "Actualizar recorrido guardado"} );
+Object.assign(ru,{"Path & Structure Studio": "Студия путей и конструкций", "Edit route in 3D": "Редактировать путь в 3D", "Railway tracks & sleepers": "Рельсы и шпалы", "Fence & barrier line": "Заборы и ограждения", "Bridge & catwalk with supports": "Мост и переход с опорами", "Support / sleeper spacing": "Шаг опор / шпал", "Fence height": "Высота забора", "Bridge support depth": "Глубина опор моста", "3D point movement axis": "Ось перемещения точки в 3D", "Move selected point": "Переместить выбранную точку", "Drag orange handles to move; green diamonds insert control points. Undo with Ctrl+Z.": "Тяните оранжевые маркеры для перемещения, зелёные ромбы добавляют точки. Отмена: Ctrl+Z.", "Saved editable routes": "Сохранённые редактируемые пути", "New route": "Новый путь", "This route is stored in the project. Edited or deleted source brushes cannot be replaced automatically.": "Путь сохранён в проекте. Изменённые или удалённые браши нельзя автоматически заменить.", "Route loaded for editing. Updating it will regenerate the original brushes.": "Путь загружен. Обновление пересоздаст исходные браши.", "Route updated. Undo in MAP Editor restores the previous geometry.": "Путь обновлён. Отмена в MAP восстановит прежнюю геометрию.", "Update saved route": "Обновить сохранённый путь"} );
+Object.assign(ko,{"Path & Structure Studio": "경로 및 구조물 스튜디오", "Edit route in 3D": "3D에서 경로 편집", "Railway tracks & sleepers": "철도 레일과 침목", "Fence & barrier line": "울타리 및 장벽 경로", "Bridge & catwalk with supports": "교량 및 지지대가 있는 통로", "Support / sleeper spacing": "지지대 / 침목 간격", "Fence height": "울타리 높이", "Bridge support depth": "교량 지지대 깊이", "3D point movement axis": "3D 점 이동 축", "Move selected point": "선택한 점 이동", "Drag orange handles to move; green diamonds insert control points. Undo with Ctrl+Z.": "주황색 핸들을 드래그하여 이동하고 초록 마름모로 점을 추가합니다. Ctrl+Z로 실행 취소.", "Saved editable routes": "저장된 편집 가능한 경로", "New route": "새 경로", "This route is stored in the project. Edited or deleted source brushes cannot be replaced automatically.": "경로는 프로젝트에 저장됩니다. 수정하거나 삭제한 브러시는 자동 교체할 수 없습니다.", "Route loaded for editing. Updating it will regenerate the original brushes.": "편집할 경로를 불러왔습니다. 업데이트 시 기존 브러시가 재생성됩니다.", "Route updated. Undo in MAP Editor restores the previous geometry.": "경로 업데이트 완료. MAP 편집기에서 실행 취소하면 이전 지오메트리가 복원됩니다.", "Update saved route": "저장된 경로 업데이트"} );
+Object.assign(zh,{"Path & Structure Studio": "路径与结构工作室", "Edit route in 3D": "在 3D 中编辑路径", "Railway tracks & sleepers": "铁路轨道和枕木", "Fence & barrier line": "围栏与护栏路线", "Bridge & catwalk with supports": "带支撑的桥梁与栈道", "Support / sleeper spacing": "支撑 / 枕木间距", "Fence height": "围栏高度", "Bridge support depth": "桥梁支撑深度", "3D point movement axis": "3D 控制点移动轴", "Move selected point": "移动所选控制点", "Drag orange handles to move; green diamonds insert control points. Undo with Ctrl+Z.": "拖动橙色手柄移动，绿色菱形添加控制点。Ctrl+Z 撤销。", "Saved editable routes": "已保存的可编辑路径", "New route": "新建路径", "This route is stored in the project. Edited or deleted source brushes cannot be replaced automatically.": "此路径保存在项目中。已修改或删除的笔刷无法自动替换。", "Route loaded for editing. Updating it will regenerate the original brushes.": "已加载路径。更新将重新生成原始笔刷。", "Route updated. Undo in MAP Editor restores the previous geometry.": "路径已更新。可在 MAP 编辑器中撤销以恢复以前的几何体。", "Update saved route": "更新已保存路径"} );
+Object.assign(pt,{"Path & Structure Studio": "Estúdio de rotas e estruturas", "Edit route in 3D": "Editar rota em 3D", "Railway tracks & sleepers": "Trilhos e dormentes", "Fence & barrier line": "Cercas e barreiras", "Bridge & catwalk with supports": "Ponte e passarela com suportes", "Support / sleeper spacing": "Espaçamento de suportes / dormentes", "Fence height": "Altura da cerca", "Bridge support depth": "Profundidade dos suportes da ponte", "3D point movement axis": "Eixo de movimento 3D", "Move selected point": "Mover ponto selecionado", "Drag orange handles to move; green diamonds insert control points. Undo with Ctrl+Z.": "Arraste os controles laranja para mover; losangos verdes inserem pontos. Ctrl+Z desfaz.", "Saved editable routes": "Rotas editáveis salvas", "New route": "Nova rota", "This route is stored in the project. Edited or deleted source brushes cannot be replaced automatically.": "Esta rota está salva no projeto. Brushes modificados ou excluídos não podem ser substituídos automaticamente.", "Route loaded for editing. Updating it will regenerate the original brushes.": "Rota carregada. A atualização regerará os brushes originais.", "Route updated. Undo in MAP Editor restores the previous geometry.": "Rota atualizada. Desfazer no editor MAP restaura a geometria anterior.", "Update saved route": "Atualizar rota salva"} );
+
+Object.assign(es,{'Path & Structure Studio':'Estudio de recorridos y estructuras'});
+Object.assign(ru,{'Path & Structure Studio':'Студия путей и конструкций'});
+Object.assign(ko,{'Path & Structure Studio':'경로 및 구조물 스튜디오'});
+Object.assign(zh,{'Path & Structure Studio':'路径与结构工作室'});
+Object.assign(pt,{'Path & Structure Studio':'Estúdio de rotas e estruturas'});
+
+Object.assign(es,{"Edit saved route in MAP": "Editar recorrido en el visor MAP", "Finish route editing": "Terminar edición del recorrido"});
+Object.assign(ru,{"Edit saved route in MAP": "Редактировать путь в MAP", "Finish route editing": "Завершить редактирование пути"});
+Object.assign(ko,{"Edit saved route in MAP": "MAP에서 저장된 경로 편집", "Finish route editing": "경로 편집 종료"});
+Object.assign(zh,{"Edit saved route in MAP": "在 MAP 中编辑已保存的路径", "Finish route editing": "结束路径编辑"});
+Object.assign(pt,{"Edit saved route in MAP": "Editar rota salva no MAP", "Finish route editing": "Concluir edição da rota"});
+
+// v1.8.6 — Pipe/Ventilation XYZ Sweep and Cable & Wiring Builder.
+Object.assign(es,{
+  'Suspended cables (3D)':'Cables suspendidos (3D)','Cable diameter':'Diámetro del cable','Cable droop between anchors':'Caída del cable entre anclajes','Parallel cable strands':'Cables paralelos','Cable strand spacing':'Separación entre cables',
+  'Cable droop is simulated between anchor points. The finished cable uses closed, six-sided GoldSrc brushes.':'La caída se simula entre puntos de anclaje. El cable usa brushes GoldSrc cerrados de seis lados.',
+  '3D sweep: the duct profile rotates with the XYZ route. Tight bends may require convex brush subdivisions.':'Recorrido 3D: el perfil del conducto gira con la ruta XYZ. Los codos cerrados pueden requerir subdivisiones convexas.'
+});
+Object.assign(ru,{
+  'Suspended cables (3D)':'Подвесные кабели (3D)','Cable diameter':'Диаметр кабеля','Cable droop between anchors':'Провисание между опорами','Parallel cable strands':'Параллельные кабели','Cable strand spacing':'Расстояние между кабелями',
+  'Cable droop is simulated between anchor points. The finished cable uses closed, six-sided GoldSrc brushes.':'Провисание моделируется между точками крепления. Кабель состоит из замкнутых шестигранных брашей GoldSrc.',
+  '3D sweep: the duct profile rotates with the XYZ route. Tight bends may require convex brush subdivisions.':'3D-трасса: сечение поворачивается вдоль маршрута XYZ. На резких изгибах используются выпуклые сегменты.'
+});
+Object.assign(ko,{
+  'Suspended cables (3D)':'매달린 케이블 (3D)','Cable diameter':'케이블 지름','Cable droop between anchors':'고정점 사이 처짐','Parallel cable strands':'평행 케이블 수','Cable strand spacing':'케이블 사이 간격',
+  'Cable droop is simulated between anchor points. The finished cable uses closed, six-sided GoldSrc brushes.':'고정점 사이의 처짐을 근사 계산합니다. 케이블은 닫힌 육각형 GoldSrc 브러시로 생성됩니다.',
+  '3D sweep: the duct profile rotates with the XYZ route. Tight bends may require convex brush subdivisions.':'3D 경로: 덕트 단면이 XYZ 경로를 따라 회전합니다. 급회전에는 볼록 브러시 분할이 필요할 수 있습니다.'
+});
+Object.assign(zh,{
+  'Suspended cables (3D)':'悬挂电缆（3D）','Cable diameter':'电缆直径','Cable droop between anchors':'锚点间垂度','Parallel cable strands':'平行电缆数量','Cable strand spacing':'电缆间距',
+  'Cable droop is simulated between anchor points. The finished cable uses closed, six-sided GoldSrc brushes.':'在锚点之间模拟下垂。最终电缆使用封闭的六边形 GoldSrc 笔刷。',
+  '3D sweep: the duct profile rotates with the XYZ route. Tight bends may require convex brush subdivisions.':'3D 扫掠：管道截面沿 XYZ 路线旋转。急弯可能需要凸体细分。'
+});
+Object.assign(pt,{
+  'Suspended cables (3D)':'Cabos suspensos (3D)','Cable diameter':'Diâmetro do cabo','Cable droop between anchors':'Flecha entre ancoragens','Parallel cable strands':'Cabos paralelos','Cable strand spacing':'Distância entre cabos',
+  'Cable droop is simulated between anchor points. The finished cable uses closed, six-sided GoldSrc brushes.':'A curvatura é simulada entre pontos de ancoragem. Os cabos usam brushes GoldSrc fechados de seis lados.',
+  '3D sweep: the duct profile rotates with the XYZ route. Tight bends may require convex brush subdivisions.':'Extrusão 3D: o perfil acompanha o trajeto XYZ. Curvas fechadas podem exigir subdivisões convexas.'
+});
+
+// v1.8.7 — Railway Builder 2.0 native track network and station UI.
+Object.assign(es,{"Railway Builder 2.0": "Constructor ferroviario 2.0", "Create native Sven Co-op path_track links, stations, a basic turnout and an optional controllable train template.": "Generá conexiones path_track de Sven Co-op, estaciones, un desvío básico y una plantilla opcional de tren controlable.", "Generate railway gameplay network": "Generar red de entidades ferroviarias", "Unique railway ID": "Identificador único de la vía", "Generate a new network ID": "Generar otro identificador", "Parallel second track": "Segunda vía paralela", "Track separation": "Separación entre vías", "Branch / turnout": "Desvío ferroviario", "Turnout control point": "Punto del desvío", "Point": "Punto", "Branch direction": "Dirección del desvío", "A func_button toggles path_track.altpath. The visual turnout is experimental and must be checked in the game.": "Un func_button cambia path_track.altpath. El desvío visual es experimental y debe probarse en el juego.", "Add station platform": "Agregar andén", "Station control point": "Punto de estación", "Platform side": "Lado del andén", "Platform length": "Longitud del andén", "Platform width": "Ancho del andén", "Stop train at platform (newspeed 0)": "Detener tren en el andén (newspeed 0)", "Create func_tracktrain template": "Crear plantilla func_tracktrain", "Maximum train speed": "Velocidad máxima del tren", "Train length": "Longitud del tren", "Add player train controls": "Agregar controles de tren para jugadores", "Train starts stopped and uses an ORIGIN brush. Validate orientation and player controls in Sven Co-op.": "El tren comienza detenido y usa un brush ORIGIN. Comprobá orientación y controles en Sven Co-op.", "Generated railway entities": "Entidades ferroviarias generadas", "Editable with the saved route": "Editables junto con el recorrido", "Train movement preview (approximate)": "Vista previa del movimiento del tren (aproximada)", "Visual train preview does not simulate gameplay physics.": "La vista previa del tren no simula la física del juego."});
+Object.assign(ru,{"Railway Builder 2.0": "Конструктор железной дороги 2.0", "Create native Sven Co-op path_track links, stations, a basic turnout and an optional controllable train template.": "Создать связи path_track Sven Co-op, платформы, простой перевод стрелки и необязательный управляемый поезд.", "Generate railway gameplay network": "Создать железнодорожные игровые сущности", "Unique railway ID": "Уникальный ID железной дороги", "Generate a new network ID": "Создать новый ID сети", "Parallel second track": "Второй параллельный путь", "Track separation": "Расстояние между путями", "Branch / turnout": "Стрелочный перевод", "Turnout control point": "Точка стрелки", "Point": "Точка", "Branch direction": "Направление ответвления", "A func_button toggles path_track.altpath. The visual turnout is experimental and must be checked in the game.": "func_button переключает path_track.altpath. Визуальную стрелку необходимо проверить в игре.", "Add station platform": "Добавить платформу", "Station control point": "Точка станции", "Platform side": "Сторона платформы", "Platform length": "Длина платформы", "Platform width": "Ширина платформы", "Stop train at platform (newspeed 0)": "Остановить поезд на платформе (newspeed 0)", "Create func_tracktrain template": "Создать шаблон func_tracktrain", "Maximum train speed": "Максимальная скорость поезда", "Train length": "Длина поезда", "Add player train controls": "Добавить управление поездом", "Train starts stopped and uses an ORIGIN brush. Validate orientation and player controls in Sven Co-op.": "Поезд начинает стоя и использует браш ORIGIN. Проверьте ориентацию и управление в Sven Co-op.", "Generated railway entities": "Созданные железнодорожные сущности", "Editable with the saved route": "Редактируются вместе с маршрутом", "Train movement preview (approximate)": "Предпросмотр движения поезда (приблизительно)", "Visual train preview does not simulate gameplay physics.": "Предпросмотр не моделирует физику игры."});
+Object.assign(ko,{"Railway Builder 2.0": "철도 빌더 2.0", "Create native Sven Co-op path_track links, stations, a basic turnout and an optional controllable train template.": "Sven Co-op path_track 연결, 역 플랫폼, 기본 분기점 및 선택 가능한 운전 열차를 생성합니다.", "Generate railway gameplay network": "철도 게임 엔티티 생성", "Unique railway ID": "고유 철도 ID", "Generate a new network ID": "새 네트워크 ID 생성", "Parallel second track": "두 번째 평행 선로", "Track separation": "선로 간격", "Branch / turnout": "철도 분기점", "Turnout control point": "분기점 위치", "Point": "지점", "Branch direction": "분기 방향", "A func_button toggles path_track.altpath. The visual turnout is experimental and must be checked in the game.": "func_button으로 path_track.altpath를 전환합니다. 분기점 형태는 게임에서 테스트해야 합니다.", "Add station platform": "역 플랫폼 추가", "Station control point": "역 위치", "Platform side": "플랫폼 방향", "Platform length": "플랫폼 길이", "Platform width": "플랫폼 너비", "Stop train at platform (newspeed 0)": "역에서 열차 정지 (newspeed 0)", "Create func_tracktrain template": "func_tracktrain 템플릿 만들기", "Maximum train speed": "열차 최고 속도", "Train length": "열차 길이", "Add player train controls": "플레이어 열차 조종 추가", "Train starts stopped and uses an ORIGIN brush. Validate orientation and player controls in Sven Co-op.": "열차는 정지 상태로 시작하며 ORIGIN 브러시를 사용합니다. Sven Co-op에서 방향과 조종을 확인하세요.", "Generated railway entities": "생성된 철도 엔티티", "Editable with the saved route": "저장된 경로와 함께 편집 가능", "Train movement preview (approximate)": "열차 이동 미리보기 (근사)", "Visual train preview does not simulate gameplay physics.": "미리보기는 게임 물리 동작을 시뮬레이션하지 않습니다."});
+Object.assign(zh,{"Railway Builder 2.0": "铁路构建器 2.0", "Create native Sven Co-op path_track links, stations, a basic turnout and an optional controllable train template.": "生成 Sven Co-op path_track 连接、车站、基本道岔及可选的可驾驶列车模板。", "Generate railway gameplay network": "生成铁路游戏实体", "Unique railway ID": "铁路网络唯一 ID", "Generate a new network ID": "生成新的网络 ID", "Parallel second track": "第二条平行轨道", "Track separation": "轨道间距", "Branch / turnout": "道岔 / 分支", "Turnout control point": "道岔控制点", "Point": "控制点", "Branch direction": "分支方向", "A func_button toggles path_track.altpath. The visual turnout is experimental and must be checked in the game.": "func_button 用于切换 path_track.altpath。道岔外观为实验性功能，需在游戏中检查。", "Add station platform": "添加站台", "Station control point": "车站控制点", "Platform side": "站台侧面", "Platform length": "站台长度", "Platform width": "站台宽度", "Stop train at platform (newspeed 0)": "在站台停车 (newspeed 0)", "Create func_tracktrain template": "创建 func_tracktrain 模板", "Maximum train speed": "列车最高速度", "Train length": "列车长度", "Add player train controls": "添加玩家列车控制", "Train starts stopped and uses an ORIGIN brush. Validate orientation and player controls in Sven Co-op.": "列车初始停止并使用 ORIGIN 笔刷。请在 Sven Co-op 中检查方向和控制。", "Generated railway entities": "生成的铁路实体", "Editable with the saved route": "可随保存的路线编辑", "Train movement preview (approximate)": "列车运动预览（近似）", "Visual train preview does not simulate gameplay physics.": "预览不模拟游戏中的物理行为。"});
+Object.assign(pt,{"Railway Builder 2.0": "Construtor ferroviário 2.0", "Create native Sven Co-op path_track links, stations, a basic turnout and an optional controllable train template.": "Crie conexões path_track do Sven Co-op, estações, um desvio básico e um modelo opcional de trem controlável.", "Generate railway gameplay network": "Gerar rede ferroviária funcional", "Unique railway ID": "Identificador único da ferrovia", "Generate a new network ID": "Gerar novo identificador", "Parallel second track": "Segunda via paralela", "Track separation": "Distância entre trilhos", "Branch / turnout": "Desvio ferroviário", "Turnout control point": "Ponto do desvio", "Point": "Ponto", "Branch direction": "Direção do desvio", "A func_button toggles path_track.altpath. The visual turnout is experimental and must be checked in the game.": "Um func_button alterna path_track.altpath. O desvio visual é experimental e deve ser testado no jogo.", "Add station platform": "Adicionar plataforma de estação", "Station control point": "Ponto da estação", "Platform side": "Lado da plataforma", "Platform length": "Comprimento da plataforma", "Platform width": "Largura da plataforma", "Stop train at platform (newspeed 0)": "Parar trem na estação (newspeed 0)", "Create func_tracktrain template": "Criar modelo func_tracktrain", "Maximum train speed": "Velocidade máxima do trem", "Train length": "Comprimento do trem", "Add player train controls": "Adicionar controles do trem", "Train starts stopped and uses an ORIGIN brush. Validate orientation and player controls in Sven Co-op.": "O trem começa parado e usa um brush ORIGIN. Verifique orientação e controles no Sven Co-op.", "Generated railway entities": "Entidades ferroviárias geradas", "Editable with the saved route": "Editáveis com a rota salva", "Train movement preview (approximate)": "Prévia de movimento do trem (aproximada)", "Visual train preview does not simulate gameplay physics.": "A prévia não simula a física do jogo."});
+Object.assign(es,{"Visual turnout is experimental: inspect the shared junction rails and collision in Sven Co-op.": "El desvío visual es experimental: revisá los rieles de la unión y las colisiones en Sven Co-op.", "Station platform is a flat local platform; it does not automatically cut or raise surrounding terrain.": "El andén es una plataforma plana local; no corta ni eleva automáticamente el terreno cercano.", "Train is a starter brush template with an ORIGIN brush; verify player controls, orientation and clearances in Sven Co-op.": "El tren es una plantilla inicial con brush ORIGIN; verificá controles, orientación y espacio libre en Sven Co-op."});
+Object.assign(ru,{"Visual turnout is experimental: inspect the shared junction rails and collision in Sven Co-op.": "Визуальная стрелка экспериментальная: проверьте стыки рельсов и столкновения в Sven Co-op.", "Station platform is a flat local platform; it does not automatically cut or raise surrounding terrain.": "Платформа плоская; окружающий рельеф не изменяется автоматически.", "Train is a starter brush template with an ORIGIN brush; verify player controls, orientation and clearances in Sven Co-op.": "Поезд — начальный шаблон с брашем ORIGIN; проверьте управление, ориентацию и зазоры в Sven Co-op."});
+Object.assign(ko,{"Visual turnout is experimental: inspect the shared junction rails and collision in Sven Co-op.": "분기점 외형은 실험적입니다. Sven Co-op에서 선로 연결과 충돌을 확인하세요.", "Station platform is a flat local platform; it does not automatically cut or raise surrounding terrain.": "플랫폼은 평면 구조이며 주변 지형을 자동으로 변경하지 않습니다.", "Train is a starter brush template with an ORIGIN brush; verify player controls, orientation and clearances in Sven Co-op.": "열차는 ORIGIN 브러시가 포함된 시작 템플릿입니다. Sven Co-op에서 조종, 방향 및 공간을 확인하세요."});
+Object.assign(zh,{"Visual turnout is experimental: inspect the shared junction rails and collision in Sven Co-op.": "道岔外观为实验性功能，请在 Sven Co-op 中检查轨道连接和碰撞。", "Station platform is a flat local platform; it does not automatically cut or raise surrounding terrain.": "站台是平坦的局部平台，不会自动修改周围地形。", "Train is a starter brush template with an ORIGIN brush; verify player controls, orientation and clearances in Sven Co-op.": "列车为带有 ORIGIN 笔刷的初始模板；请在 Sven Co-op 中检查操控、方向和间隙。"});
+Object.assign(pt,{"Visual turnout is experimental: inspect the shared junction rails and collision in Sven Co-op.": "O desvio visual é experimental: confira a junção dos trilhos e as colisões no Sven Co-op.", "Station platform is a flat local platform; it does not automatically cut or raise surrounding terrain.": "A plataforma é plana e não altera automaticamente o terreno ao redor.", "Train is a starter brush template with an ORIGIN brush; verify player controls, orientation and clearances in Sven Co-op.": "O trem é um modelo inicial com brush ORIGIN; verifique controles, orientação e folgas no Sven Co-op."});
+
+// v1.8.16 — Map Packager: optional generated RES preview and packaging.
+Object.assign(es,{
+  'Generate optimized RES file automatically':'Generar archivo RES optimizado automáticamente',
+  'RES lists custom client downloads; server CFG and AngelScript are excluded. Existing RES is replaced only inside the new ZIP.':'El RES incluye descargas personalizadas; excluye CFG y AngelScript. El RES existente se reemplaza solo dentro del ZIP nuevo.',
+  'RES preview':'Vista previa RES','No custom client resources selected':'No hay recursos personalizados seleccionados','Replaced by generated RES in ZIP':'Reemplazado por RES generado dentro del ZIP'
+});
+Object.assign(ru,{
+  'Generate optimized RES file automatically':'Автоматически создавать оптимизированный RES',
+  'RES lists custom client downloads; server CFG and AngelScript are excluded. Existing RES is replaced only inside the new ZIP.':'RES перечисляет клиентские ресурсы, не CFG и AngelScript. Исходный RES заменяется только в новом ZIP.',
+  'RES preview':'Предпросмотр RES','No custom client resources selected':'Нет выбранных клиентских ресурсов','Replaced by generated RES in ZIP':'Заменяется созданным RES в ZIP'
+});
+Object.assign(ko,{
+  'Generate optimized RES file automatically':'최적화된 RES 파일 자동 생성',
+  'RES lists custom client downloads; server CFG and AngelScript are excluded. Existing RES is replaced only inside the new ZIP.':'RES에는 클라이언트 다운로드만 포함하며 CFG와 AngelScript는 제외합니다. 기존 RES는 새 ZIP 내에서만 교체됩니다.',
+  'RES preview':'RES 미리보기','No custom client resources selected':'선택한 사용자 리소스 없음','Replaced by generated RES in ZIP':'ZIP 안에서 새 RES로 교체'
+});
+Object.assign(zh,{
+  'Generate optimized RES file automatically':'自动生成优化后的 RES 文件',
+  'RES lists custom client downloads; server CFG and AngelScript are excluded. Existing RES is replaced only inside the new ZIP.':'RES 仅列出客户端下载资源，不包括 CFG 和 AngelScript。旧 RES 只会在新 ZIP 内替换。',
+  'RES preview':'RES 预览','No custom client resources selected':'未选择自定义客户端资源','Replaced by generated RES in ZIP':'在 ZIP 中替换为新生成的 RES'
+});
+Object.assign(pt,{
+  'Generate optimized RES file automatically':'Gerar arquivo RES otimizado automaticamente',
+  'RES lists custom client downloads; server CFG and AngelScript are excluded. Existing RES is replaced only inside the new ZIP.':'O RES lista recursos para clientes, sem CFG e AngelScript. O RES existente é substituído somente no novo ZIP.',
+  'RES preview':'Prévia RES','No custom client resources selected':'Nenhum recurso personalizado selecionado','Replaced by generated RES in ZIP':'Substituído pelo RES gerado no ZIP'
+});
+
+Object.assign(es,{'Landscape Generator':'Generador de paisajes','Editable relief · GoldSrc-compatible brushes':'Relieve editable · Brushes GoldSrc','Landscape type':'Tipo de paisaje','Flat':'Plano','Hills':'Colinas','Mountains':'Montañas','Valley':'Valle','Canyon':'Cañón','Island':'Isla','Crater':'Cráter','Dunes':'Dunas','Plateau':'Meseta','Elevation':'Altura máxima','Seed':'Semilla','Generate landscape preview':'Generar paisaje en vista previa','Only preview elevations are replaced. Your map stays unchanged until Apply or Place.':'Solo se reemplazan las alturas en la vista previa. El mapa no cambia hasta aplicar o colocar.','Heightmap (image)':'Mapa de altura (imagen)','Dark pixel elevation (u)':'Altura oscura (u)','Bright pixel elevation (u)':'Altura clara (u)','Invert bright and dark elevations':'Invertir alturas claras y oscuras','Import heightmap image':'Importar imagen de altura','Export terrain heightmap PNG':'Exportar mapa de altura PNG','Terrain Editing Tools':'Herramientas de relieve','Project remains unchanged until Apply':'El proyecto no cambia hasta aplicar','Smooth':'Suavizar','Terrace':'Crear terrazas','Center elevations':'Centrar alturas','Rotate 90°':'Rotar 90°','Mirror X':'Reflejar X','Mirror Y':'Reflejar Y','Terrace step':'Altura del escalón de terraza','Undo heights':'Deshacer relieve','Redo heights':'Rehacer relieve','Terrain Properties':'Propiedades del terreno','Group editing and placement':'Edición del grupo y colocación','u minimum':'u mínimo','u maximum':'u máximo','cells':'celdas'});
+
+Object.assign(ru,{'Landscape Generator':'Генератор ландшафта','Editable relief · GoldSrc-compatible brushes':'Редактируемый рельеф · браши GoldSrc','Landscape type':'Тип ландшафта','Flat':'Плоский','Hills':'Холмы','Mountains':'Горы','Valley':'Долина','Canyon':'Каньон','Island':'Остров','Crater':'Кратер','Dunes':'Дюны','Plateau':'Плато','Elevation':'Высота','Seed':'Сид','Generate landscape preview':'Создать предварительный рельеф','Only preview elevations are replaced. Your map stays unchanged until Apply or Place.':'Меняется только предпросмотр. Карта не изменится до применения.','Heightmap (image)':'Карта высот (изображение)','Dark pixel elevation (u)':'Высота тёмных пикселей','Bright pixel elevation (u)':'Высота светлых пикселей','Invert bright and dark elevations':'Инвертировать высоты','Import heightmap image':'Импортировать карту высот','Export terrain heightmap PNG':'Экспорт PNG карты высот','Terrain Editing Tools':'Инструменты рельефа','Project remains unchanged until Apply':'Проект не меняется до применения','Smooth':'Сгладить','Terrace':'Террасы','Center elevations':'Центрировать высоты','Rotate 90°':'Поворот на 90°','Mirror X':'Отразить X','Mirror Y':'Отразить Y','Terrace step':'Шаг террас','Undo heights':'Отменить высоты','Redo heights':'Повторить высоты','Terrain Properties':'Свойства ландшафта','Group editing and placement':'Редактирование и размещение','u minimum':'мин. ед.','u maximum':'макс. ед.','cells':'ячейки'});
+
+Object.assign(ko,{'Landscape Generator':'지형 생성기','Editable relief · GoldSrc-compatible brushes':'편집 가능한 지형 · GoldSrc 브러시','Landscape type':'지형 유형','Flat':'평지','Hills':'언덕','Mountains':'산','Valley':'계곡','Canyon':'협곡','Island':'섬','Crater':'분화구','Dunes':'사구','Plateau':'고원','Elevation':'높이','Seed':'시드','Generate landscape preview':'지형 미리보기 생성','Only preview elevations are replaced. Your map stays unchanged until Apply or Place.':'미리보기 높이만 바뀝니다. 적용 전 지도는 유지됩니다.','Heightmap (image)':'높이맵 이미지','Dark pixel elevation (u)':'어두운 픽셀 높이','Bright pixel elevation (u)':'밝은 픽셀 높이','Invert bright and dark elevations':'높이 반전','Import heightmap image':'높이맵 이미지 가져오기','Export terrain heightmap PNG':'PNG 높이맵 내보내기','Terrain Editing Tools':'지형 편집 도구','Project remains unchanged until Apply':'적용 전 프로젝트는 유지됩니다','Smooth':'부드럽게','Terrace':'테라스','Center elevations':'높이 중심 맞춤','Rotate 90°':'90° 회전','Mirror X':'X축 반전','Mirror Y':'Y축 반전','Terrace step':'테라스 간격','Undo heights':'높이 실행 취소','Redo heights':'높이 다시 실행','Terrain Properties':'지형 속성','Group editing and placement':'그룹 편집 및 배치','u minimum':'최소 u','u maximum':'최대 u','cells':'셀'});
+
+Object.assign(zh,{'Landscape Generator':'地形生成器','Editable relief · GoldSrc-compatible brushes':'可编辑地形 · GoldSrc 笔刷','Landscape type':'地形类型','Flat':'平地','Hills':'丘陵','Mountains':'山地','Valley':'山谷','Canyon':'峡谷','Island':'岛屿','Crater':'陨石坑','Dunes':'沙丘','Plateau':'高原','Elevation':'高度','Seed':'种子','Generate landscape preview':'生成地形预览','Only preview elevations are replaced. Your map stays unchanged until Apply or Place.':'仅改变预览高度；应用前地图不变。','Heightmap (image)':'高度图（图片）','Dark pixel elevation (u)':'暗色像素高度','Bright pixel elevation (u)':'亮色像素高度','Invert bright and dark elevations':'反转高度','Import heightmap image':'导入高度图','Export terrain heightmap PNG':'导出 PNG 高度图','Terrain Editing Tools':'地形编辑工具','Project remains unchanged until Apply':'应用前项目不变','Smooth':'平滑','Terrace':'台阶化','Center elevations':'高度居中','Rotate 90°':'旋转 90°','Mirror X':'沿 X 翻转','Mirror Y':'沿 Y 翻转','Terrace step':'台阶高度','Undo heights':'撤销高度','Redo heights':'重做高度','Terrain Properties':'地形属性','Group editing and placement':'组编辑与放置','u minimum':'最小单位','u maximum':'最大单位','cells':'单元格'});
+
+Object.assign(pt,{'Landscape Generator':'Gerador de paisagens','Editable relief · GoldSrc-compatible brushes':'Relevo editável · Brushes GoldSrc','Landscape type':'Tipo de paisagem','Flat':'Plano','Hills':'Colinas','Mountains':'Montanhas','Valley':'Vale','Canyon':'Cânion','Island':'Ilha','Crater':'Cratera','Dunes':'Dunas','Plateau':'Planalto','Elevation':'Elevação','Seed':'Semente','Generate landscape preview':'Gerar prévia da paisagem','Only preview elevations are replaced. Your map stays unchanged until Apply or Place.':'Só as alturas da prévia mudam; o mapa não é alterado até aplicar.','Heightmap (image)':'Mapa de altura (imagem)','Dark pixel elevation (u)':'Altura de pixel escuro','Bright pixel elevation (u)':'Altura de pixel claro','Invert bright and dark elevations':'Inverter alturas claras e escuras','Import heightmap image':'Importar imagem de altura','Export terrain heightmap PNG':'Exportar mapa de altura PNG','Terrain Editing Tools':'Ferramentas de relevo','Project remains unchanged until Apply':'O projeto permanece inalterado até aplicar','Smooth':'Suavizar','Terrace':'Criar terraços','Center elevations':'Centralizar alturas','Rotate 90°':'Girar 90°','Mirror X':'Espelhar X','Mirror Y':'Espelhar Y','Terrace step':'Altura do degrau','Undo heights':'Desfazer relevo','Redo heights':'Refazer relevo','Terrain Properties':'Propriedades do terreno','Group editing and placement':'Edição de grupo e posicionamento','u minimum':'u mínimo','u maximum':'u máximo','cells':'células'});
+
+// World Builder v1.9.1 — surface thickness modes.
+Object.assign(es, {"Terrain geometry mode": "Modo de geometría del terreno", "Thin surface": "Superficie delgada", "Solid base": "Base sólida", "Custom base": "Base personalizada", "Surface thickness (units)": "Espesor de superficie (unidades)", "Hide underside and sides with NULL texture": "Ocultar caras inferiores y laterales con textura NULL", "Only the top is visible in-game; each slope remains a closed convex brush for collision. Does not seal a map by itself.": "Solo se ve la parte superior en el juego. Cada pendiente conserva brushes cerrados con colisiones. No sella el mapa por sí sola.", "Base Z relative to placement (units)": "Z de la base respecto a la posición (unidades)", "The custom base must stay at least 8 units below the lowest terrain point.": "La base debe quedar al menos 8 unidades debajo del punto más bajo del terreno.", "Preview with underside": "Mostrar base en vista previa", "Preview top only": "Mostrar solo superficie en vista previa", "Lowest underside relative to placement Z": "Fondo mínimo respecto a Z de colocación", "Thin convex terrain slabs with collision.": "Capas delgadas de brushes convexos con colisiones."});
+Object.assign(ru, {"Terrain geometry mode": "Режим геометрии рельефа", "Thin surface": "Тонкая поверхность", "Solid base": "Сплошное основание", "Custom base": "Настраиваемое основание", "Surface thickness (units)": "Толщина поверхности (ед.)", "Hide underside and sides with NULL texture": "Скрыть нижние и боковые грани текстурой NULL", "Only the top is visible in-game; each slope remains a closed convex brush for collision. Does not seal a map by itself.": "В игре виден только верх. Каждый участок остаётся замкнутым выпуклым брашем с коллизией. Сам по себе не закрывает карту.", "Base Z relative to placement (units)": "Z основания относительно позиции (ед.)", "The custom base must stay at least 8 units below the lowest terrain point.": "Основание должно быть минимум на 8 ед. ниже нижней точки.", "Preview with underside": "Показать нижнюю часть", "Preview top only": "Показать только верх", "Lowest underside relative to placement Z": "Нижняя граница относительно Z", "Thin convex terrain slabs with collision.": "Тонкие выпуклые браши с коллизией."});
+Object.assign(ko, {"Terrain geometry mode": "지형 지오메트리 모드", "Thin surface": "얇은 표면", "Solid base": "솔리드 바닥", "Custom base": "사용자 지정 바닥", "Surface thickness (units)": "표면 두께 (단위)", "Hide underside and sides with NULL texture": "아래·측면에 NULL 텍스처 사용", "Only the top is visible in-game; each slope remains a closed convex brush for collision. Does not seal a map by itself.": "게임에서는 윗면만 보이며 충돌을 위한 닫힌 볼록 브러시를 유지합니다. 이 지형만으로 누수를 막지는 않습니다.", "Base Z relative to placement (units)": "배치 위치 기준 바닥 Z (단위)", "The custom base must stay at least 8 units below the lowest terrain point.": "바닥은 지형 최저점보다 최소 8단위 아래여야 합니다.", "Preview with underside": "아래쪽도 미리 보기", "Preview top only": "윗면만 미리 보기", "Lowest underside relative to placement Z": "배치 Z 기준 최하단", "Thin convex terrain slabs with collision.": "충돌이 있는 얇은 볼록 브러시입니다."});
+Object.assign(zh, {"Terrain geometry mode": "地形几何模式", "Thin surface": "薄表层", "Solid base": "实体底座", "Custom base": "自定义底座", "Surface thickness (units)": "表层厚度（单位）", "Hide underside and sides with NULL texture": "使用 NULL 纹理隐藏底面和侧面", "Only the top is visible in-game; each slope remains a closed convex brush for collision. Does not seal a map by itself.": "游戏中只显示顶面；每段坡面仍为具备碰撞的封闭凸笔刷。它本身不会封闭地图。", "Base Z relative to placement (units)": "相对于放置位置的底座 Z（单位）", "The custom base must stay at least 8 units below the lowest terrain point.": "底座必须比地形最低点至少低 8 单位。", "Preview with underside": "预览底面", "Preview top only": "仅预览顶面", "Lowest underside relative to placement Z": "相对于放置 Z 的最低底面", "Thin convex terrain slabs with collision.": "保留碰撞的薄凸笔刷。"});
+Object.assign(pt, {"Terrain geometry mode": "Modo de geometria do terreno", "Thin surface": "Superfície fina", "Solid base": "Base sólida", "Custom base": "Base personalizada", "Surface thickness (units)": "Espessura da superfície (unidades)", "Hide underside and sides with NULL texture": "Ocultar faces inferiores e laterais com textura NULL", "Only the top is visible in-game; each slope remains a closed convex brush for collision. Does not seal a map by itself.": "Apenas o topo é visível no jogo. Cada inclinação mantém brushes convexos fechados com colisão. Não veda o mapa sozinho.", "Base Z relative to placement (units)": "Z da base relativo à posição (unidades)", "The custom base must stay at least 8 units below the lowest terrain point.": "A base deve ficar pelo menos 8 unidades abaixo do ponto mais baixo do terreno.", "Preview with underside": "Prévia com parte inferior", "Preview top only": "Prévia somente do topo", "Lowest underside relative to placement Z": "Ponto inferior relativo à posição Z", "Thin convex terrain slabs with collision.": "Camadas finas de brushes convexos com colisão."});
+
+// v1.9.2 — World Builder Studio: complete naming and advanced editing controls, all locales.
+Object.assign(es,{"World Builder Studio": "Estudio de Construcción de Mundos", "Maximize World Builder Studio": "Maximizar World Builder Studio", "World Builder tools": "Herramientas de mundos", "Landscapes": "Paisajes", "Landforms": "Relieves", "Precision": "Precisión", "Textures": "Texturas", "Advanced landforms": "Formaciones avanzadas", "Flowing ridges, riverbeds and layered cliffs from the terrain guide": "Crestas, cauces y acantilados inspirados en la guía de terreno", "Landform type": "Tipo de formación", "Mountain ridge": "Cresta montañosa", "Riverbed / trench": "Cauce / zanja", "Escarpment / cliff": "Escarpe / acantilado", "Landform height": "Altura / profundidad", "Landform width": "Anchura de la formación", "Direction": "Dirección", "Add landform to preview": "Agregar formación a la vista previa", "Landform generated in preview.": "Relieve generado en la vista previa.", "Surface relief only. For walkable underground passages, use Cave Tunnel under Paths & Structures.": "Solo modifica el relieve superior. Para galerías transitables, usá Túnel de cueva en Recorridos y estructuras.", "Cave Tunnel": "Túnel de cueva", "Cave tunnel (walkable)": "Túnel de cueva transitable", "Cave Tunnel creates a convex hollow arched shell with a walkable flat floor. It does NOT automatically excavate surrounding world brushes. Connect portals manually and verify leaks, collisions and VIS in-game.": "Crea una cueva hueca de brushes convexos con suelo plano. NO excava los brushes del mapa: conectá las entradas manualmente y comprobá fugas, colisiones y VIS en el juego.", "Sculpt": "Esculpir", "Inspect": "Inspeccionar", "Flip diagonals": "Cambiar diagonales", "Show properties": "Mostrar propiedades", "Focus 3D workspace": "Ampliar área de trabajo 3D", "Camera views": "Vistas de cámara", "Perspective view": "Perspectiva", "Top view": "Vista superior", "Side view": "Vista lateral", "Frame terrain": "Encuadrar terreno", "Sculpt controls": "Controles de esculpido", "Vertex height (u)": "Altura del vértice (u)", "Drag large cyan handles vertically, or enter an exact height. Undo with Ctrl+Z.": "Arrastrá los puntos celestes verticalmente o escribí una altura exacta. Deshacé con Ctrl+Z.", "Left drag: sculpt · Right drag: orbit · Middle drag: pan · Wheel: zoom": "Izquierdo: esculpir · Derecho: orbitar · Medio: desplazar · Rueda: zoom", "Drag cyan points vertically to edit heights · Right drag: orbit": "Arrastrá puntos celestes para editar alturas · Derecho: orbitar", "Click a triangle cell to flip its diagonal · Right drag: orbit": "Hacé clic en una celda para cambiar la diagonal · Derecho: orbitar", "Left / right drag: orbit · Middle drag: pan · Wheel: zoom": "Izquierdo/derecho: orbitar · Medio: desplazar · Rueda: zoom"});
+Object.assign(ru,{"World Builder Studio": "Студия создания миров", "Maximize World Builder Studio": "Развернуть студию создания миров", "World Builder tools": "Инструменты мира", "Landscapes": "Ландшафты", "Landforms": "Формы рельефа", "Precision": "Точность", "Textures": "Текстуры", "Advanced landforms": "Сложные формы рельефа", "Flowing ridges, riverbeds and layered cliffs from the terrain guide": "Гряды, русла и уступы по руководству", "Landform type": "Тип рельефа", "Mountain ridge": "Горный хребет", "Riverbed / trench": "Русло / траншея", "Escarpment / cliff": "Уступ / обрыв", "Landform height": "Высота / глубина", "Landform width": "Ширина формы", "Direction": "Направление", "Add landform to preview": "Добавить форму на предпросмотр", "Landform generated in preview.": "Рельеф создан в предпросмотре.", "Surface relief only. For walkable underground passages, use Cave Tunnel under Paths & Structures.": "Меняется только поверхность. Для проходных пещер используйте Пещерный тоннель в путях и конструкциях.", "Cave Tunnel": "Пещерный тоннель", "Cave tunnel (walkable)": "Проходимый пещерный тоннель", "Cave Tunnel creates a convex hollow arched shell with a walkable flat floor. It does NOT automatically excavate surrounding world brushes. Connect portals manually and verify leaks, collisions and VIS in-game.": "Создаёт полый проход из выпуклых брашей с плоским полом. Не вырезает окружающие браши: входы нужно соединить вручную, проверить утечки, коллизии и VIS.", "Sculpt": "Лепить", "Inspect": "Осмотр", "Flip diagonals": "Перевернуть диагонали", "Show properties": "Показать свойства", "Focus 3D workspace": "Расширить рабочую область 3D", "Camera views": "Ракурсы камеры", "Perspective view": "Перспектива", "Top view": "Вид сверху", "Side view": "Вид сбоку", "Frame terrain": "Показать весь рельеф", "Sculpt controls": "Управление лепкой", "Vertex height (u)": "Высота вершины (ед.)", "Drag large cyan handles vertically, or enter an exact height. Undo with Ctrl+Z.": "Перетаскивайте голубые маркеры или вводите высоту точно. Ctrl+Z — отмена.", "Left drag: sculpt · Right drag: orbit · Middle drag: pan · Wheel: zoom": "ЛКМ: лепка · ПКМ: вращение · СКМ: сдвиг · Колесо: масштаб", "Drag cyan points vertically to edit heights · Right drag: orbit": "Тяните голубые точки для высоты · ПКМ: вращение", "Click a triangle cell to flip its diagonal · Right drag: orbit": "Нажмите ячейку, чтобы сменить диагональ · ПКМ: вращение", "Left / right drag: orbit · Middle drag: pan · Wheel: zoom": "ЛКМ/ПКМ: вращение · СКМ: сдвиг · Колесо: масштаб"});
+Object.assign(ko,{"World Builder Studio": "월드 빌더 스튜디오", "Maximize World Builder Studio": "월드 빌더 스튜디오 최대화", "World Builder tools": "월드 도구", "Landscapes": "풍경", "Landforms": "지형 지물", "Precision": "정밀 편집", "Textures": "텍스처", "Advanced landforms": "고급 지형", "Flowing ridges, riverbeds and layered cliffs from the terrain guide": "가이드 기반 능선, 강바닥, 절벽", "Landform type": "지형 종류", "Mountain ridge": "산등성이", "Riverbed / trench": "하천 바닥 / 도랑", "Escarpment / cliff": "급경사 / 절벽", "Landform height": "높이 / 깊이", "Landform width": "지형 폭", "Direction": "방향", "Add landform to preview": "미리 보기에 지형 추가", "Landform generated in preview.": "미리 보기에 지형 생성됨.", "Surface relief only. For walkable underground passages, use Cave Tunnel under Paths & Structures.": "표면 지형만 변경합니다. 통행 가능한 동굴은 경로 및 구조물의 동굴 터널을 사용하세요.", "Cave Tunnel": "동굴 터널", "Cave tunnel (walkable)": "걸어서 통과 가능한 동굴 터널", "Cave Tunnel creates a convex hollow arched shell with a walkable flat floor. It does NOT automatically excavate surrounding world brushes. Connect portals manually and verify leaks, collisions and VIS in-game.": "평평한 바닥의 빈 볼록 브러시 터널을 만듭니다. 주변 월드 브러시를 자동으로 굴착하지 않습니다. 입구를 수동으로 연결하고 누출, 충돌, VIS를 검사하세요.", "Sculpt": "조각", "Inspect": "살펴보기", "Flip diagonals": "대각선 전환", "Show properties": "속성 표시", "Focus 3D workspace": "3D 작업 공간 확대", "Camera views": "카메라 보기", "Perspective view": "원근 보기", "Top view": "윗면 보기", "Side view": "측면 보기", "Frame terrain": "지형 전체 보기", "Sculpt controls": "조각 컨트롤", "Vertex height (u)": "정점 높이 (u)", "Drag large cyan handles vertically, or enter an exact height. Undo with Ctrl+Z.": "청록색 핸들을 수직으로 드래그하거나 높이를 입력하세요. Ctrl+Z 실행 취소.", "Left drag: sculpt · Right drag: orbit · Middle drag: pan · Wheel: zoom": "왼쪽: 조각 · 오른쪽: 회전 · 가운데: 이동 · 휠: 확대", "Drag cyan points vertically to edit heights · Right drag: orbit": "청록색 점 드래그: 높이 편집 · 오른쪽: 회전", "Click a triangle cell to flip its diagonal · Right drag: orbit": "셀 클릭: 대각선 변경 · 오른쪽: 회전", "Left / right drag: orbit · Middle drag: pan · Wheel: zoom": "좌/우: 회전 · 가운데: 이동 · 휠: 확대"});
+Object.assign(zh,{"World Builder Studio": "世界构建工作室", "Maximize World Builder Studio": "最大化世界构建工作室", "World Builder tools": "世界构建工具", "Landscapes": "景观", "Landforms": "地形形态", "Precision": "精确编辑", "Textures": "纹理", "Advanced landforms": "高级地形", "Flowing ridges, riverbeds and layered cliffs from the terrain guide": "依照教程生成山脊、河床和断崖", "Landform type": "地形类型", "Mountain ridge": "山脊", "Riverbed / trench": "河床 / 沟渠", "Escarpment / cliff": "陡坎 / 悬崖", "Landform height": "高度 / 深度", "Landform width": "地形宽度", "Direction": "方向", "Add landform to preview": "将地形添加到预览", "Landform generated in preview.": "已在预览中生成地形。", "Surface relief only. For walkable underground passages, use Cave Tunnel under Paths & Structures.": "仅改变表面地形。可通行洞穴请使用路径与结构中的洞穴隧道。", "Cave Tunnel": "洞穴隧道", "Cave tunnel (walkable)": "可通行的洞穴隧道", "Cave Tunnel creates a convex hollow arched shell with a walkable flat floor. It does NOT automatically excavate surrounding world brushes. Connect portals manually and verify leaks, collisions and VIS in-game.": "创建带平整地面的凸笔刷空心通道。不会自动挖空周围世界笔刷。需要手动连接入口并验证泄漏、碰撞和 VIS。", "Sculpt": "雕刻", "Inspect": "检查", "Flip diagonals": "翻转对角线", "Show properties": "显示属性", "Focus 3D workspace": "扩大 3D 工作区", "Camera views": "相机视角", "Perspective view": "透视", "Top view": "俯视图", "Side view": "侧视图", "Frame terrain": "框选地形", "Sculpt controls": "雕刻控制", "Vertex height (u)": "顶点高度 (u)", "Drag large cyan handles vertically, or enter an exact height. Undo with Ctrl+Z.": "垂直拖动青色控制柄或输入精确高度。Ctrl+Z 撤销。", "Left drag: sculpt · Right drag: orbit · Middle drag: pan · Wheel: zoom": "左键：雕刻 · 右键：旋转 · 中键：平移 · 滚轮：缩放", "Drag cyan points vertically to edit heights · Right drag: orbit": "拖动青色点调整高度 · 右键：旋转", "Click a triangle cell to flip its diagonal · Right drag: orbit": "点击单元格翻转对角线 · 右键：旋转", "Left / right drag: orbit · Middle drag: pan · Wheel: zoom": "左/右键：旋转 · 中键：平移 · 滚轮：缩放"});
+Object.assign(pt,{"World Builder Studio": "Estúdio de Construção de Mundos", "Maximize World Builder Studio": "Maximizar World Builder Studio", "World Builder tools": "Ferramentas de mundos", "Landscapes": "Paisagens", "Landforms": "Formações", "Precision": "Precisão", "Textures": "Texturas", "Advanced landforms": "Formações avançadas", "Flowing ridges, riverbeds and layered cliffs from the terrain guide": "Cordilheiras, leitos e escarpas inspirados no guia", "Landform type": "Tipo de formação", "Mountain ridge": "Crista montanhosa", "Riverbed / trench": "Leito / trincheira", "Escarpment / cliff": "Escarpa / penhasco", "Landform height": "Altura / profundidade", "Landform width": "Largura da formação", "Direction": "Direção", "Add landform to preview": "Adicionar formação à prévia", "Landform generated in preview.": "Formação gerada na prévia.", "Surface relief only. For walkable underground passages, use Cave Tunnel under Paths & Structures.": "Modifica apenas a superfície. Para cavernas transitáveis, use Túnel de caverna em Rotas e estruturas.", "Cave Tunnel": "Túnel de caverna", "Cave tunnel (walkable)": "Túnel de caverna transitável", "Cave Tunnel creates a convex hollow arched shell with a walkable flat floor. It does NOT automatically excavate surrounding world brushes. Connect portals manually and verify leaks, collisions and VIS in-game.": "Cria passagem oca com piso plano usando brushes convexos. NÃO escava brushes ao redor: conecte entradas manualmente e teste vazamentos, colisões e VIS.", "Sculpt": "Esculpir", "Inspect": "Inspecionar", "Flip diagonals": "Alternar diagonais", "Show properties": "Mostrar propriedades", "Focus 3D workspace": "Ampliar área de trabalho 3D", "Camera views": "Vistas de câmera", "Perspective view": "Perspectiva", "Top view": "Vista superior", "Side view": "Vista lateral", "Frame terrain": "Enquadrar terreno", "Sculpt controls": "Controles de escultura", "Vertex height (u)": "Altura do vértice (u)", "Drag large cyan handles vertically, or enter an exact height. Undo with Ctrl+Z.": "Arraste os controles ciano na vertical ou digite a altura exata. Ctrl+Z desfaz.", "Left drag: sculpt · Right drag: orbit · Middle drag: pan · Wheel: zoom": "Esquerdo: esculpir · Direito: orbitar · Meio: mover · Roda: zoom", "Drag cyan points vertically to edit heights · Right drag: orbit": "Arraste pontos ciano para editar alturas · Direito: orbitar", "Click a triangle cell to flip its diagonal · Right drag: orbit": "Clique na célula para inverter a diagonal · Direito: orbitar", "Left / right drag: orbit · Middle drag: pan · Wheel: zoom": "Esquerdo/direito: orbitar · Meio: mover · Roda: zoom"});
+
+// v1.9.3 — Smart World Integration, all supported interface languages.
+Object.assign(es,{
+ 'Smart World Integration':'Integración inteligente del mundo',
+ 'Connect a NEW road or cave to a saved terrain. Geometry is previewed before one atomic MAP transaction.':'Conectá un camino o cueva NUEVOS con un terreno guardado. Se muestra una vista previa antes de guardar ambos en una sola operación MAP.',
+ 'Target saved terrain':'Terreno guardado de destino',
+ 'Manual route (no terrain changes)':'Recorrido manual (sin modificar terreno)',
+ 'Center new route on terrain':'Centrar recorrido nuevo en el terreno',
+ 'Terrain shoulder blend':'Transición lateral del terreno',
+ 'Road rise / cave roof clearance':'Elevación del camino / margen del techo de cueva',
+ 'Adjusted terrain vertices':'Vértices ajustados',
+ 'Opened surface cells':'Celdas de superficie abiertas',
+ 'Integrate terrain and path (one Undo)':'Integrar terreno y recorrido (un Deshacer)',
+ 'Integration blocked':'Integración bloqueada',
+ 'Terrain and path integrated. One MAP Editor Undo restores both.':'Terreno y recorrido integrados. Un solo Deshacer del editor MAP restaura ambos.',
+ 'Apply a World Builder terrain to the MAP editor first.':'Primero aplicá un terreno de World Builder al editor MAP.',
+ 'Cave portals only remove thin-surface terrain cells near entrances; surrounding solids are never subtracted. Test access, VIS, collisions and leaks.':'Los portales solo abren celdas de superficies delgadas cerca de las entradas; nunca restan otros sólidos. Comprobá accesos, VIS, colisiones y fugas.',
+ 'This route is linked to terrain. Editing only the route is blocked; create a new route for a new integration.':'Este recorrido está vinculado a un terreno. No se puede editar por separado; creá otro recorrido para una integración nueva.',
+ 'Terrain cells are wide compared with this route. Increase terrain resolution for cleaner edges.':'Las celdas del terreno son grandes respecto del recorrido. Aumentá la resolución para bordes más precisos.',
+ 'Steep road section detected. Check NPC movement and player traction in-game.':'Hay una pendiente pronunciada. Comprobá el movimiento de NPC y jugadores en el juego.',
+ 'No terrain vertices lie in the road corridor. Increase shoulder width or terrain resolution.':'No hay vértices del terreno dentro del corredor. Aumentá la transición lateral o la resolución.',
+ 'This terrain contains cave portals; inspect how the road crosses them.':'Este terreno tiene portales de cuevas; revisá cómo los atraviesa el camino.',
+ 'Surface portals open through thin terrain only. Stairs/ramps and BSP sealing must be checked in Sven Co-op.':'Los portales solo se abren en terreno delgado. Comprobá escaleras/rampas y el sellado BSP en Sven Co-op.',
+});
+Object.assign(ru,{
+ 'Smart World Integration':'Умное соединение мира','Connect a NEW road or cave to a saved terrain. Geometry is previewed before one atomic MAP transaction.':'Свяжите НОВУЮ дорогу или пещеру с сохранённым рельефом. Просмотрите геометрию до единого изменения MAP.',
+ 'Target saved terrain':'Сохранённый рельеф','Manual route (no terrain changes)':'Обычный маршрут (без изменений рельефа)',
+ 'Center new route on terrain':'Разместить маршрут по центру рельефа','Terrain shoulder blend':'Ширина плавного перехода',
+ 'Road rise / cave roof clearance':'Высота дороги / зазор над пещерой','Adjusted terrain vertices':'Изменено вершин','Opened surface cells':'Открыто ячеек',
+ 'Integrate terrain and path (one Undo)':'Соединить рельеф и путь (одна отмена)','Integration blocked':'Соединение заблокировано',
+ 'Terrain and path integrated. One MAP Editor Undo restores both.':'Рельеф и маршрут объединены. Одна отмена в редакторе MAP восстановит оба.',
+ 'Apply a World Builder terrain to the MAP editor first.':'Сначала добавьте рельеф World Builder в редактор MAP.',
+ 'Cave portals only remove thin-surface terrain cells near entrances; surrounding solids are never subtracted. Test access, VIS, collisions and leaks.':'Порталы удаляют только ячейки тонкого рельефа у входов. Другие твёрдые браши не изменяются. Проверьте доступ, VIS, коллизии и утечки.',
+ 'This route is linked to terrain. Editing only the route is blocked; create a new route for a new integration.':'Маршрут связан с рельефом. Отдельное изменение запрещено; создайте новый маршрут.',
+});
+Object.assign(ko,{
+ 'Smart World Integration':'스마트 월드 통합','Connect a NEW road or cave to a saved terrain. Geometry is previewed before one atomic MAP transaction.':'저장된 지형에 새 도로나 동굴을 연결합니다. MAP에 한 번에 적용하기 전에 미리 확인하세요.',
+ 'Target saved terrain':'연결할 저장 지형','Manual route (no terrain changes)':'수동 경로 (지형 변경 없음)',
+ 'Center new route on terrain':'새 경로를 지형 중앙에 배치','Terrain shoulder blend':'지형 연결 구간 폭',
+ 'Road rise / cave roof clearance':'도로 높이 / 동굴 천장 여유','Adjusted terrain vertices':'수정한 지형 정점','Opened surface cells':'열린 지형 셀',
+ 'Integrate terrain and path (one Undo)':'지형과 경로 통합 (한 번에 실행 취소)','Integration blocked':'통합할 수 없음',
+ 'Terrain and path integrated. One MAP Editor Undo restores both.':'지형과 경로를 통합했습니다. MAP 편집기에서 실행 취소 한 번으로 모두 복원할 수 있습니다.',
+ 'Apply a World Builder terrain to the MAP editor first.':'먼저 World Builder 지형을 MAP 편집기에 적용하세요.',
+ 'Cave portals only remove thin-surface terrain cells near entrances; surrounding solids are never subtracted. Test access, VIS, collisions and leaks.':'동굴 입구는 얇은 지형의 셀만 제거하며 다른 솔리드는 변경하지 않습니다. 출입, VIS, 충돌 및 누수를 확인하세요.',
+ 'This route is linked to terrain. Editing only the route is blocked; create a new route for a new integration.':'경로가 지형에 연결되어 있습니다. 경로만 수정할 수 없으며 새 경로를 만들어야 합니다.',
+});
+Object.assign(zh,{
+ 'Smart World Integration':'智能世界整合','Connect a NEW road or cave to a saved terrain. Geometry is previewed before one atomic MAP transaction.':'将新道路或洞穴连接到已保存的地形。先预览几何，再一次性提交到 MAP。',
+ 'Target saved terrain':'目标已保存地形','Manual route (no terrain changes)':'手动路径（不修改地形）',
+ 'Center new route on terrain':'将新路径置于地形中央','Terrain shoulder blend':'道路边缘过渡宽度',
+ 'Road rise / cave roof clearance':'道路高度／洞穴顶间隙','Adjusted terrain vertices':'已调整地形顶点','Opened surface cells':'已打开表面单元',
+ 'Integrate terrain and path (one Undo)':'整合地形与路径（一次撤销）','Integration blocked':'整合已阻止',
+ 'Terrain and path integrated. One MAP Editor Undo restores both.':'地形和路径已整合。在 MAP 编辑器中撤销一次即可同时恢复。',
+ 'Apply a World Builder terrain to the MAP editor first.':'请先在 MAP 编辑器中应用 World Builder 地形。',
+ 'Cave portals only remove thin-surface terrain cells near entrances; surrounding solids are never subtracted. Test access, VIS, collisions and leaks.':'洞穴入口仅移除薄地形表面的单元，不会切除其他实体。请测试通行、VIS、碰撞和泄漏。',
+ 'This route is linked to terrain. Editing only the route is blocked; create a new route for a new integration.':'该路径与地形关联，不能单独修改；请创建新路径。',
+});
+Object.assign(pt,{
+ 'Smart World Integration':'Integração Inteligente do Mundo','Connect a NEW road or cave to a saved terrain. Geometry is previewed before one atomic MAP transaction.':'Ligue uma NOVA estrada ou caverna ao terreno guardado. Pré-visualize antes de alterar ambos numa única operação MAP.',
+ 'Target saved terrain':'Terreno guardado de destino','Manual route (no terrain changes)':'Percurso manual (sem alterar o terreno)',
+ 'Center new route on terrain':'Centrar novo percurso no terreno','Terrain shoulder blend':'Largura de transição lateral',
+ 'Road rise / cave roof clearance':'Elevação da estrada / folga do teto','Adjusted terrain vertices':'Vértices ajustados','Opened surface cells':'Células de superfície abertas',
+ 'Integrate terrain and path (one Undo)':'Integrar terreno e percurso (um Desfazer)','Integration blocked':'Integração bloqueada',
+ 'Terrain and path integrated. One MAP Editor Undo restores both.':'Terreno e percurso integrados. Um Desfazer no editor MAP restaura ambos.',
+ 'Apply a World Builder terrain to the MAP editor first.':'Primeiro aplique um terreno World Builder ao editor MAP.',
+ 'Cave portals only remove thin-surface terrain cells near entrances; surrounding solids are never subtracted. Test access, VIS, collisions and leaks.':'Os portais removem apenas células de terreno fino perto das entradas, nunca outros sólidos. Verifique acesso, VIS, colisões e fugas.',
+ 'This route is linked to terrain. Editing only the route is blocked; create a new route for a new integration.':'Este percurso está ligado ao terreno. A edição isolada está bloqueada; crie um novo percurso.',
+});
+
+Object.assign(es,{'Resulting terrain brushes':'Brushes de terreno resultantes','Resulting path brushes':'Brushes del recorrido resultantes','Cave portal cells disable planar merging. Review resulting terrain brush count.':'Los portales desactivan la unión de celdas planas. Revisá la cantidad de brushes resultantes.'});
+Object.assign(ru,{'Resulting terrain brushes':'Браши рельефа после','Resulting path brushes':'Браши маршрута после'});
+Object.assign(ko,{'Resulting terrain brushes':'결과 지형 브러시','Resulting path brushes':'결과 경로 브러시'});
+Object.assign(zh,{'Resulting terrain brushes':'生成的地形笔刷','Resulting path brushes':'生成的路径笔刷'});
+Object.assign(pt,{'Resulting terrain brushes':'Brushes de terreno finais','Resulting path brushes':'Brushes de percurso finais'});
+
+// Universal Placement 3D — shared map editor panel; identifiers use English keys.
+Object.assign(es,{
+ 'Universal 3D Placement':'Colocación 3D universal','Placement mode':'Modo de colocación',
+ 'Placement: Surface':'Sobre superficie','Placement: Grid':'Sobre grilla','Placement: Free 3D':'Libre 3D',
+ 'Placement: Object snap':'Ajustar a objeto','Placement: Relative height':'Altura relativa',
+ 'Height offset':'Desnivel Z','Workplane Z':'Plano de trabajo Z','Manual coordinate':'Coordenada manual',
+ 'Lock exact XYZ':'Fijar XYZ exactos','Copy selected position':'Usar selección','Reset placement':'Restablecer',
+ 'Vertex snap radius (u)':'Radio de ajuste a vértices (u)',
+ 'Expand placement controls':'Ampliar controles','Collapse placement controls':'Contraer controles',
+ 'Placement uses one click in the 3D viewport. The grid is a guide; its level can be changed without moving existing objects.':'La colocación se confirma con un clic en el visor. La grilla es una guía y cambiar su altura no mueve los objetos existentes.',
+ 'Relative height adds Z to the selected surface; it does not modify the geometry underneath.':'El desnivel Z se suma a la superficie elegida y no modifica la geometría inferior.',
+ 'Wall openings and decals remain constrained to valid surfaces.':'Puertas, ventanas y decals conservan el ajuste a superficies válidas.'
+});
+Object.assign(ru,{
+ 'Universal 3D Placement':'Универсальное размещение 3D','Placement mode':'Режим размещения',
+ 'Placement: Surface':'На поверхности','Placement: Grid':'По сетке','Placement: Free 3D':'Свободное 3D',
+ 'Placement: Object snap':'Привязка к объекту','Placement: Relative height':'Относительная высота',
+ 'Height offset':'Смещение Z','Workplane Z':'Высота рабочей плоскости','Manual coordinate':'Точная координата',
+ 'Lock exact XYZ':'Фиксировать XYZ','Copy selected position':'К выделенному','Reset placement':'Сбросить',
+ 'Vertex snap radius (u)':'Радиус привязки к вершине',
+ 'Expand placement controls':'Развернуть настройки','Collapse placement controls':'Свернуть настройки',
+ 'Placement uses one click in the 3D viewport. The grid is a guide; its level can be changed without moving existing objects.':'Разместите объект щелчком по 3D-виду. Высоту сетки можно изменять, не перемещая существующие объекты.',
+ 'Relative height adds Z to the selected surface; it does not modify the geometry underneath.':'Относительная высота добавляется к выбранной поверхности без изменения геометрии.',
+ 'Wall openings and decals remain constrained to valid surfaces.':'Проёмы в стенах и декали привязаны к допустимым поверхностям.'
+});
+Object.assign(ko,{
+ 'Universal 3D Placement':'범용 3D 배치','Placement mode':'배치 모드',
+ 'Placement: Surface':'표면에 배치','Placement: Grid':'그리드에 배치','Placement: Free 3D':'자유 3D',
+ 'Placement: Object snap':'객체에 스냅','Placement: Relative height':'상대 높이',
+ 'Height offset':'Z 오프셋','Workplane Z':'작업 평면 Z','Manual coordinate':'수동 좌표',
+ 'Lock exact XYZ':'XYZ 위치 고정','Copy selected position':'선택 위치 복사','Reset placement':'초기화',
+ 'Vertex snap radius (u)':'정점 스냅 반경',
+ 'Expand placement controls':'배치 설정 펼치기','Collapse placement controls':'배치 설정 접기',
+ 'Placement uses one click in the 3D viewport. The grid is a guide; its level can be changed without moving existing objects.':'3D 뷰에서 클릭하여 배치합니다. 그리드 높이를 바꿔도 기존 객체는 이동하지 않습니다.',
+ 'Relative height adds Z to the selected surface; it does not modify the geometry underneath.':'상대 높이는 선택된 표면의 Z에 더하며 아래의 지오메트리는 변경하지 않습니다.',
+ 'Wall openings and decals remain constrained to valid surfaces.':'벽 개구부와 데칼은 유효한 표면에만 배치됩니다.'
+});
+Object.assign(zh,{
+ 'Universal 3D Placement':'通用三维放置','Placement mode':'放置模式',
+ 'Placement: Surface':'表面放置','Placement: Grid':'网格放置','Placement: Free 3D':'自由三维放置',
+ 'Placement: Object snap':'吸附到对象','Placement: Relative height':'相对高度',
+ 'Height offset':'高度偏移 Z','Workplane Z':'工作平面 Z','Manual coordinate':'手动坐标',
+ 'Lock exact XYZ':'锁定精确 XYZ','Copy selected position':'使用选中位置','Reset placement':'重置放置',
+ 'Vertex snap radius (u)':'顶点吸附半径',
+ 'Expand placement controls':'展开放置控制','Collapse placement controls':'收起放置控制',
+ 'Placement uses one click in the 3D viewport. The grid is a guide; its level can be changed without moving existing objects.':'单击三维视图完成放置。调整网格高度不会移动现有对象。',
+ 'Relative height adds Z to the selected surface; it does not modify the geometry underneath.':'相对高度增加表面 Z 值，不修改下方几何体。',
+ 'Wall openings and decals remain constrained to valid surfaces.':'墙体开孔和贴花仍限定在有效表面。'
+});
+Object.assign(pt,{
+ 'Universal 3D Placement':'Posicionamento 3D Universal','Placement mode':'Modo de posicionamento',
+ 'Placement: Surface':'Sobre superfície','Placement: Grid':'Sobre grade','Placement: Free 3D':'3D livre',
+ 'Placement: Object snap':'Ajustar a objeto','Placement: Relative height':'Altura relativa',
+ 'Height offset':'Deslocamento Z','Workplane Z':'Plano de trabalho Z','Manual coordinate':'Coordenada manual',
+ 'Lock exact XYZ':'Fixar XYZ exatos','Copy selected position':'Usar seleção','Reset placement':'Redefinir',
+ 'Vertex snap radius (u)':'Raio de ajuste ao vértice',
+ 'Expand placement controls':'Expandir controles','Collapse placement controls':'Recolher controles',
+ 'Placement uses one click in the 3D viewport. The grid is a guide; its level can be changed without moving existing objects.':'Clique na vista 3D para posicionar. A altura da grade pode mudar sem mover objetos existentes.',
+ 'Relative height adds Z to the selected surface; it does not modify the geometry underneath.':'A altura relativa soma Z à superfície selecionada sem alterar a geometria abaixo.',
+ 'Wall openings and decals remain constrained to valid surfaces.':'Aberturas de parede e decals continuam presos a superfícies válidas.'
+});
+
+Object.assign(es,{'Drawing uses its own XY/XZ/YZ plane. Workplane Z affects drawing in XY only.':'Dibujar usa su propio plano XY/XZ/YZ. El plano Z solo modifica el dibujo en XY.'});
+Object.assign(ru,{'Drawing uses its own XY/XZ/YZ plane. Workplane Z affects drawing in XY only.':'Рисование использует плоскости XY/XZ/YZ. Высота влияет только на XY.'});
+Object.assign(ko,{'Drawing uses its own XY/XZ/YZ plane. Workplane Z affects drawing in XY only.':'그리기는 XY/XZ/YZ 평면을 사용하며 작업 Z 높이는 XY에서만 적용됩니다.'});
+Object.assign(zh,{'Drawing uses its own XY/XZ/YZ plane. Workplane Z affects drawing in XY only.':'绘制工具使用 XY/XZ/YZ 平面。工作平面 Z 只影响 XY 绘制。'});
+Object.assign(pt,{'Drawing uses its own XY/XZ/YZ plane. Workplane Z affects drawing in XY only.':'Desenhar usa o plano XY/XZ/YZ. O Z de trabalho afeta apenas o desenho em XY.'});
+
+Object.assign(es,{'Saved workplanes':'Planos de trabajo guardados','Save workplane':'Guardar plano','Remove active workplane':'Quitar plano activo'});
+Object.assign(ru,{'Saved workplanes':'Сохранённые рабочие плоскости','Save workplane':'Сохранить плоскость','Remove active workplane':'Удалить активную плоскость'});
+Object.assign(ko,{'Saved workplanes':'저장된 작업 평면','Save workplane':'평면 저장','Remove active workplane':'현재 평면 제거'});
+Object.assign(zh,{'Saved workplanes':'已保存的工作平面','Save workplane':'保存平面','Remove active workplane':'删除当前平面'});
+Object.assign(pt,{'Saved workplanes':'Planos de trabalho guardados','Save workplane':'Guardar plano','Remove active workplane':'Remover plano ativo'});
+
+// v1.9.5 — fixed-position universal placement dock and discoverable cancellation.
+Object.assign(es,{
+ 'Advanced placement':'Opciones avanzadas','Cancel placement':'Cancelar colocación',
+ 'Left click to place':'Clic izquierdo: colocar','Right click or Esc to cancel':'Clic derecho / Esc: cancelar',
+ 'Lower placement':'Bajar altura','Raise placement':'Subir altura','Placement height':'Altura de colocación',
+ 'Placement preview stays visible while adjusting controls.':'La vista previa conserva su posición al ajustar los controles.'
+});
+Object.assign(ru,{
+ 'Advanced placement':'Дополнительные параметры','Cancel placement':'Отменить размещение',
+ 'Left click to place':'ЛКМ: разместить','Right click or Esc to cancel':'ПКМ / Esc: отменить',
+ 'Lower placement':'Опустить','Raise placement':'Поднять','Placement height':'Высота размещения',
+ 'Placement preview stays visible while adjusting controls.':'Предпросмотр сохраняет позицию при настройке.'
+});
+Object.assign(ko,{
+ 'Advanced placement':'고급 배치 옵션','Cancel placement':'배치 취소',
+ 'Left click to place':'왼쪽 클릭: 배치','Right click or Esc to cancel':'오른쪽 클릭 / Esc: 취소',
+ 'Lower placement':'높이 낮추기','Raise placement':'높이 올리기','Placement height':'배치 높이',
+ 'Placement preview stays visible while adjusting controls.':'설정을 조절해도 미리보기 위치가 유지됩니다.'
+});
+Object.assign(zh,{
+ 'Advanced placement':'高级放置选项','Cancel placement':'取消放置',
+ 'Left click to place':'左键：放置','Right click or Esc to cancel':'右键 / Esc：取消',
+ 'Lower placement':'降低高度','Raise placement':'提高高度','Placement height':'放置高度',
+ 'Placement preview stays visible while adjusting controls.':'调整控件时预览位置保持可见。'
+});
+Object.assign(pt,{
+ 'Advanced placement':'Opções avançadas','Cancel placement':'Cancelar posicionamento',
+ 'Left click to place':'Clique esquerdo: posicionar','Right click or Esc to cancel':'Clique direito / Esc: cancelar',
+ 'Lower placement':'Diminuir altura','Raise placement':'Aumentar altura','Placement height':'Altura de posicionamento',
+ 'Placement preview stays visible while adjusting controls.':'A prévia mantém a posição ao ajustar os controles.'
+});
+
+// v1.9.6 — Universal free-space placement and two-phase positioning.
+Object.assign(es,{"Distance from camera": "Distancia desde la cámara", "Alt + wheel adjusts camera depth": "Alt + rueda: acercar o alejar la posición", "Adjust before confirming": "Ajustar antes de confirmar", "Position fixed — adjust XYZ, then click again to confirm": "Posición provisional: ajustá XYZ y hacé otro clic para confirmar", "First click: position · Second click: create": "Primer clic: fijar · Segundo clic: crear", "RMB drag: look": "Arrastrar botón derecho: mirar"} );
+Object.assign(ru,{"Distance from camera": "Расстояние от камеры", "Alt + wheel adjusts camera depth": "Alt + колесо: изменить глубину", "Adjust before confirming": "Настроить перед подтверждением", "Position fixed — adjust XYZ, then click again to confirm": "Позиция зафиксирована: настройте XYZ и нажмите ещё раз", "First click: position · Second click: create": "Первый щелчок: выбрать · Второй: создать", "RMB drag: look": "Правая кнопка + перетаскивание: обзор"} );
+Object.assign(ko,{"Distance from camera": "카메라로부터 거리", "Alt + wheel adjusts camera depth": "Alt + 휠: 배치 거리 조절", "Adjust before confirming": "확정 전 위치 조정", "Position fixed — adjust XYZ, then click again to confirm": "임시 위치: XYZ 조정 후 다시 클릭하여 확정", "First click: position · Second click: create": "첫 클릭: 위치 고정 · 두 번째: 생성", "RMB drag: look": "오른쪽 드래그: 시점 회전"} );
+Object.assign(zh,{"Distance from camera": "距相机距离", "Alt + wheel adjusts camera depth": "Alt + 滚轮：调整放置深度", "Adjust before confirming": "放置前精确调整", "Position fixed — adjust XYZ, then click again to confirm": "位置已暂定：调整 XYZ，再单击确认", "First click: position · Second click: create": "第一次点击：定位 · 第二次点击：创建", "RMB drag: look": "右键拖动：观察"} );
+Object.assign(pt,{"Distance from camera": "Distância da câmera", "Alt + wheel adjusts camera depth": "Alt + roda: ajustar profundidade", "Adjust before confirming": "Ajustar antes de confirmar", "Position fixed — adjust XYZ, then click again to confirm": "Posição provisória: ajuste XYZ e clique novamente", "First click: position · Second click: create": "Primeiro clique: fixar · Segundo: criar", "RMB drag: look": "Arrastar botão direito: olhar"} );
+
+Object.assign(es,{'Placement: Plane':'Plano Z'});
+Object.assign(ru,{'Placement: Plane':'Плоскость Z'});
+Object.assign(ko,{'Placement: Plane':'Z 평면'});
+Object.assign(zh,{'Placement: Plane':'Z 平面'});
+Object.assign(pt,{'Placement: Plane':'Plano Z'});
+
+// v1.9.7 — Advanced Geometry and Brush Workshop (six locales).
+Object.assign(es, {
+ "Brush Workshop":"Taller de brushes",
+ "Edit selected face":"Editar cara seleccionada",
+ "Select a brush":"Seleccioná un brush",
+ "Draw directly on the selected face":"Dibujá sobre la cara seleccionada",
+ "Drag to mark the edit area":"Arrastrá para marcar el área",
+ "Draw with the left mouse button. Values can be adjusted precisely on the right.":"Dibujá con el botón izquierdo. Ajustá las medidas a la derecha.",
+ "Select an unlocked brush in the map, then reopen Brush Workshop.":"Seleccioná un brush desbloqueado del mapa y volvé a abrir el Taller.",
+ "Face editing canvas":"Área de edición de cara",
+ "Edit face":"Editar cara",
+ "Brush operation":"Operación de brush",
+ "Raised panel":"Panel sobresaliente",
+ "Recess":"Rebaje",
+ "Cut through":"Abrir hueco",
+ "Add frame":"Agregar marco",
+ "Opening + frame":"Hueco con marco",
+ "Frame border":"Grosor del marco",
+ "Exact offsets":"Desplazamientos exactos",
+ "Horizontal offset":"Desplazamiento horizontal",
+ "Vertical offset":"Desplazamiento vertical",
+ "Valid preview":"Vista previa válida",
+ "Apply changes":"Aplicar cambios",
+ "Geometry stays convex. Cutting may create multiple solids. Undo restores the original brush.":"La geometría sigue siendo convexa. Un corte puede crear varios sólidos. Deshacer restaura el brush original.",
+ "Smart Brush Fusion — all selected brushes":"Fusión inteligente — todos los brushes seleccionados",
+ "Fuse selection":"Fusionar selección",
+ "Make composite":"Crear objeto compuesto",
+ "Separate composite":"Separar objeto compuesto",
+ "Composite object":"Objeto compuesto",
+ "Expand composite":"Desplegar objeto compuesto",
+ "Select composite":"Seleccionar objeto compuesto",
+ "Advanced Geometry":"Geometría avanzada",
+ "Curved Geometry":"Geometría curva",
+ "Advanced Curved Geometry":"Geometría curva avanzada",
+ "Closed convex GoldSrc brushes · live preview and Undo":"Brushes convexos GoldSrc · vista previa y Deshacer",
+ "Curve plan":"Plano de la curva",
+ "Illustrative plan view; geometry is generated as convex brushes":"Vista orientativa; la geometría real usa brushes convexos",
+ "Curved ramp / bridge":"Rampa / puente curvo",
+ "Radial Array":"Repetición radial",
+ "Geometry type":"Tipo de geometría",
+ "Sweep angle":"Ángulo del arco",
+ "Elevation":"Desnivel",
+ "Start angle":"Ángulo inicial",
+ "Copies":"Copias",
+ "Segments":"Segmentos",
+ "Thickness":"Espesor",
+ "Radius":"Radio",
+ "Detach curve":"Desvincular curva",
+ "Update curve":"Actualizar curva",
+ "Generate geometry":"Generar geometría",
+ "A curved ramp is divided into two triangular prisms per segment to keep all faces planar.":"Cada segmento de rampa utiliza dos prismas triangulares para mantener las caras planas.",
+ "Radial Array makes rigid copies. Original brushes are not bent or deleted.":"La repetición radial crea copias rígidas. No curva ni elimina los brushes originales.",
+ "Editing a saved parametric curve. Manual changes are protected against overwrite.":"Editás una curva paramétrica guardada. Los cambios manuales están protegidos.",
+ "The project retains editable curve parameters. The exported MAP contains ordinary brushes.":"El proyecto conserva los parámetros de la curva; el MAP exporta brushes comunes."
+});
+Object.assign(ru, {
+ "Brush Workshop":"Мастерская брашей",
+ "Edit selected face":"Изменить выбранную грань",
+ "Select a brush":"Выберите браш",
+ "Draw directly on the selected face":"Рисование по грани",
+ "Drag to mark the edit area":"Перетащите для выделения области",
+ "Select an unlocked brush in the map, then reopen Brush Workshop.":"Выберите разблокированный браш и снова откройте мастерскую.",
+ "Face editing canvas":"Область редактирования грани",
+ "Edit face":"Изменить грань",
+ "Brush operation":"Операция с брашем",
+ "Raised panel":"Выступающая панель",
+ "Recess":"Углубление",
+ "Cut through":"Сквозное отверстие",
+ "Add frame":"Добавить рамку",
+ "Opening + frame":"Отверстие с рамкой",
+ "Frame border":"Толщина рамки",
+ "Exact offsets":"Точные смещения",
+ "Horizontal offset":"Горизонтальное смещение",
+ "Vertical offset":"Вертикальное смещение",
+ "Valid preview":"Корректный предпросмотр",
+ "Apply changes":"Применить",
+ "Smart Brush Fusion — all selected brushes":"Умное объединение выделенных брашей",
+ "Fuse selection":"Объединить выделенное",
+ "Make composite":"Создать составной объект",
+ "Separate composite":"Разделить составной объект",
+ "Composite object":"Составной объект",
+ "Expand composite":"Раскрыть объект",
+ "Select composite":"Выделить объект",
+ "Advanced Geometry":"Расширенная геометрия",
+ "Curved Geometry":"Криволинейная геометрия",
+ "Advanced Curved Geometry":"Расширенная криволинейная геометрия",
+ "Curve plan":"План кривой",
+ "Curved ramp / bridge":"Изогнутый пандус / мост",
+ "Radial Array":"Радиальный массив",
+ "Geometry type":"Тип геометрии",
+ "Sweep angle":"Угол дуги",
+ "Elevation":"Подъём",
+ "Start angle":"Начальный угол",
+ "Copies":"Копии",
+ "Segments":"Сегменты",
+ "Thickness":"Толщина",
+ "Radius":"Радиус",
+ "Detach curve":"Отсоединить кривую",
+ "Update curve":"Обновить кривую",
+ "Generate geometry":"Создать геометрию"
+});
+Object.assign(ko, {
+ "Brush Workshop":"브러시 작업실",
+ "Edit selected face":"선택한 면 편집",
+ "Select a brush":"브러시 선택",
+ "Draw directly on the selected face":"선택한 면 위에 그리기",
+ "Drag to mark the edit area":"드래그하여 영역 지정",
+ "Select an unlocked brush in the map, then reopen Brush Workshop.":"잠금 해제된 브러시를 선택하고 다시 여세요.",
+ "Face editing canvas":"면 편집 영역",
+ "Edit face":"면 편집",
+ "Brush operation":"브러시 작업",
+ "Raised panel":"돌출 패널",
+ "Recess":"오목하게 파기",
+ "Cut through":"관통 구멍",
+ "Add frame":"테두리 추가",
+ "Opening + frame":"구멍과 테두리",
+ "Frame border":"테두리 두께",
+ "Exact offsets":"정확한 이동 값",
+ "Horizontal offset":"가로 오프셋",
+ "Vertical offset":"세로 오프셋",
+ "Valid preview":"유효한 미리보기",
+ "Apply changes":"변경 적용",
+ "Smart Brush Fusion — all selected brushes":"선택한 브러시 스마트 병합",
+ "Fuse selection":"선택 병합",
+ "Make composite":"복합 오브젝트 만들기",
+ "Separate composite":"복합 오브젝트 분리",
+ "Composite object":"복합 오브젝트",
+ "Expand composite":"복합 오브젝트 펼치기",
+ "Select composite":"복합 오브젝트 선택",
+ "Advanced Geometry":"고급 지오메트리",
+ "Curved Geometry":"곡선 지오메트리",
+ "Advanced Curved Geometry":"고급 곡선 지오메트리",
+ "Curve plan":"곡선 계획",
+ "Curved ramp / bridge":"곡선 경사로 / 다리",
+ "Radial Array":"방사형 배열",
+ "Geometry type":"지오메트리 유형",
+ "Sweep angle":"호 각도",
+ "Elevation":"높이 변화",
+ "Start angle":"시작 각도",
+ "Copies":"복제 수",
+ "Segments":"세그먼트",
+ "Thickness":"두께",
+ "Radius":"반경",
+ "Detach curve":"곡선 연결 해제",
+ "Update curve":"곡선 업데이트",
+ "Generate geometry":"지오메트리 생성"
+});
+Object.assign(zh, {
+ "Brush Workshop":"笔刷精细编辑",
+ "Edit selected face":"编辑选定面",
+ "Select a brush":"选择笔刷",
+ "Draw directly on the selected face":"在选定面上绘制",
+ "Drag to mark the edit area":"拖动以标记编辑区域",
+ "Select an unlocked brush in the map, then reopen Brush Workshop.":"请选择未锁定的笔刷，再打开编辑器。",
+ "Face editing canvas":"面编辑画布",
+ "Edit face":"编辑面",
+ "Brush operation":"笔刷操作",
+ "Raised panel":"凸起面板",
+ "Recess":"凹槽",
+ "Cut through":"贯穿开孔",
+ "Add frame":"添加边框",
+ "Opening + frame":"开孔和边框",
+ "Frame border":"边框厚度",
+ "Exact offsets":"精确偏移",
+ "Horizontal offset":"水平偏移",
+ "Vertical offset":"垂直偏移",
+ "Valid preview":"有效预览",
+ "Apply changes":"应用更改",
+ "Smart Brush Fusion — all selected brushes":"智能融合所选笔刷",
+ "Fuse selection":"融合选择",
+ "Make composite":"创建组合对象",
+ "Separate composite":"拆分组合对象",
+ "Composite object":"组合对象",
+ "Expand composite":"展开组合对象",
+ "Select composite":"选择组合对象",
+ "Advanced Geometry":"高级几何",
+ "Curved Geometry":"曲线几何",
+ "Advanced Curved Geometry":"高级曲线几何",
+ "Curve plan":"曲线平面图",
+ "Curved ramp / bridge":"弯曲坡道 / 桥梁",
+ "Radial Array":"径向阵列",
+ "Geometry type":"几何类型",
+ "Sweep angle":"圆弧角度",
+ "Elevation":"高度变化",
+ "Start angle":"起始角",
+ "Copies":"复制数量",
+ "Segments":"分段",
+ "Thickness":"厚度",
+ "Radius":"半径",
+ "Detach curve":"解除曲线关联",
+ "Update curve":"更新曲线",
+ "Generate geometry":"生成几何"
+});
+Object.assign(pt, {
+ "Brush Workshop":"Oficina de Brushes",
+ "Edit selected face":"Editar face selecionada",
+ "Select a brush":"Selecione um brush",
+ "Draw directly on the selected face":"Desenhar sobre a face selecionada",
+ "Drag to mark the edit area":"Arraste para marcar a área",
+ "Select an unlocked brush in the map, then reopen Brush Workshop.":"Selecione um brush desbloqueado e reabra a oficina.",
+ "Face editing canvas":"Área de edição da face",
+ "Edit face":"Editar face",
+ "Brush operation":"Operação de brush",
+ "Raised panel":"Painel saliente",
+ "Recess":"Rebaixo",
+ "Cut through":"Abrir passagem",
+ "Add frame":"Adicionar moldura",
+ "Opening + frame":"Abertura com moldura",
+ "Frame border":"Espessura da moldura",
+ "Exact offsets":"Deslocamentos exatos",
+ "Horizontal offset":"Deslocamento horizontal",
+ "Vertical offset":"Deslocamento vertical",
+ "Valid preview":"Prévia válida",
+ "Apply changes":"Aplicar mudanças",
+ "Smart Brush Fusion — all selected brushes":"Fusão inteligente dos brushes selecionados",
+ "Fuse selection":"Fundir seleção",
+ "Make composite":"Criar objeto composto",
+ "Separate composite":"Separar objeto composto",
+ "Composite object":"Objeto composto",
+ "Expand composite":"Expandir objeto composto",
+ "Select composite":"Selecionar objeto composto",
+ "Advanced Geometry":"Geometria avançada",
+ "Curved Geometry":"Geometria curva",
+ "Advanced Curved Geometry":"Geometria curva avançada",
+ "Curve plan":"Planta da curva",
+ "Curved ramp / bridge":"Rampa / ponte curva",
+ "Radial Array":"Distribuição radial",
+ "Geometry type":"Tipo de geometria",
+ "Sweep angle":"Ângulo da curva",
+ "Elevation":"Elevação",
+ "Start angle":"Ângulo inicial",
+ "Copies":"Cópias",
+ "Segments":"Segmentos",
+ "Thickness":"Espessura",
+ "Radius":"Raio",
+ "Detach curve":"Desvincular curva",
+ "Update curve":"Atualizar curva",
+ "Generate geometry":"Gerar geometria"
+});
+// Additional on-screen explanations for the Advanced Geometry panels.
+Object.assign(es,{
+ 'Draw with the left mouse button. Values can be adjusted precisely on the right.':'Arrastrá con el botón izquierdo. Las medidas exactas están a la derecha.',
+ 'Draw a solid detail attached to the face.':'Dibujá un detalle sólido pegado a la cara.',
+ 'Remove a shallow volume from this brush.':'Recortá una cavidad poco profunda.',
+ 'Carve a complete opening through this brush.':'Abrí un hueco que atraviese el brush.',
+ 'Add four surface-mounted frame brushes.':'Agregá cuatro brushes como marco sobre la superficie.',
+ 'Carve a hole and place its frame in one Undo step.':'Abrí un hueco con marco en un solo paso de Deshacer.',
+ 'Select at least one brush in the editor.':'Seleccioná al menos un brush en el editor.',
+ 'Reduce copies: maximum 512 brushes.':'Reducí las copias: máximo 512 brushes.',
+ 'Choose between 2 and 64 copies.':'Elegí entre 2 y 64 copias.'
+});
+Object.assign(ru,{
+ 'Draw with the left mouse button. Values can be adjusted precisely on the right.':'Рисуйте левой кнопкой. Точные размеры задаются справа.',
+ 'Draw a solid detail attached to the face.':'Добавьте выпуклую деталь на выбранную грань.',
+ 'Remove a shallow volume from this brush.':'Сделайте неглубокую выемку.',
+ 'Carve a complete opening through this brush.':'Проделайте сквозной проём.',
+ 'Add four surface-mounted frame brushes.':'Добавьте рамку из четырёх брашей.',
+ 'Carve a hole and place its frame in one Undo step.':'Создайте проём с рамкой за одно действие.',
+ 'Select at least one brush in the editor.':'Выберите хотя бы один браш.',
+ 'Reduce copies: maximum 512 brushes.':'Уменьшите количество: максимум 512 брашей.',
+ 'Choose between 2 and 64 copies.':'Выберите от 2 до 64 копий.'
+});
+Object.assign(ko,{
+ 'Draw with the left mouse button. Values can be adjusted precisely on the right.':'왼쪽 버튼으로 그리세요. 오른쪽에서 정확한 크기를 입력할 수 있습니다.',
+ 'Draw a solid detail attached to the face.':'선택한 면에 돌출된 장식을 추가합니다.',
+ 'Remove a shallow volume from this brush.':'얕은 홈을 만듭니다.',
+ 'Carve a complete opening through this brush.':'브러시에 관통 구멍을 만듭니다.',
+ 'Add four surface-mounted frame brushes.':'네 개의 브러시로 테두리를 만듭니다.',
+ 'Carve a hole and place its frame in one Undo step.':'한 번의 작업으로 구멍과 테두리를 만듭니다.',
+ 'Select at least one brush in the editor.':'브러시를 하나 이상 선택하세요.',
+ 'Reduce copies: maximum 512 brushes.':'복제 수를 줄이세요. 최대 512개 브러시입니다.',
+ 'Choose between 2 and 64 copies.':'복제 수는 2~64개입니다.'
+});
+Object.assign(zh,{
+ 'Draw with the left mouse button. Values can be adjusted precisely on the right.':'用鼠标左键绘制，可在右侧精确输入尺寸。',
+ 'Draw a solid detail attached to the face.':'在选定面上添加凸起的实体细节。',
+ 'Remove a shallow volume from this brush.':'从笔刷上切出浅凹槽。',
+ 'Carve a complete opening through this brush.':'切出贯穿整个笔刷的开口。',
+ 'Add four surface-mounted frame brushes.':'用四个笔刷在表面创建边框。',
+ 'Carve a hole and place its frame in one Undo step.':'一次操作完成开孔与边框。',
+ 'Select at least one brush in the editor.':'请先选择至少一个笔刷。',
+ 'Reduce copies: maximum 512 brushes.':'请减少复制数量：最多 512 个笔刷。',
+ 'Choose between 2 and 64 copies.':'请选择 2 到 64 份。'
+});
+Object.assign(pt,{
+ 'Draw with the left mouse button. Values can be adjusted precisely on the right.':'Desenhe com o botão esquerdo. Ajuste as medidas à direita.',
+ 'Draw a solid detail attached to the face.':'Adicione um detalhe sólido sobre a face.',
+ 'Remove a shallow volume from this brush.':'Crie um rebaixo superficial no brush.',
+ 'Carve a complete opening through this brush.':'Abra um vão que atravesse todo o brush.',
+ 'Add four surface-mounted frame brushes.':'Adicione uma moldura de quatro brushes.',
+ 'Carve a hole and place its frame in one Undo step.':'Crie um vão e a moldura em uma única ação.',
+ 'Select at least one brush in the editor.':'Selecione pelo menos um brush no editor.',
+ 'Reduce copies: maximum 512 brushes.':'Reduza as cópias: máximo de 512 brushes.',
+ 'Choose between 2 and 64 copies.':'Escolha entre 2 e 64 cópias.'
+});
+
+// v1.9.7 Preview 2 — Brush Workshop 3D/orbit and multiple detailed shapes.
+Object.assign(es,{
+  "3D geometry preview": "Vista previa de geometría 3D",
+  "3D preview": "Vista previa 3D",
+  "Draw on face": "Dibujar en cara",
+  "Reset camera": "Reiniciar cámara",
+  "Face view": "Vista frontal de la cara",
+  "Top": "Superior",
+  "Side": "Lateral",
+  "Show original": "Mostrar original",
+  "Rotate, pan and zoom freely. Click a face to select it; switch to Draw on face to sketch.": "Rotá, desplazá y acercá libremente. Hacé clic en una cara para seleccionarla; usá Dibujar en cara para trazar formas.",
+  "Shape profile": "Forma del detalle",
+  "Rectangle": "Rectángulo",
+  "Circle": "Círculo",
+  "Ellipse": "Elipse",
+  "Regular polygon": "Polígono regular",
+  "Rounded rectangle": "Rectángulo redondeado",
+  "Diameter": "Diámetro",
+  "Curve detail / segments": "Detalle de curva / segmentos",
+  "Higher detail creates more GoldSrc brush faces and may compile more slowly.": "Más segmentos generan más caras GoldSrc y pueden aumentar el tiempo de compilación.",
+  "Add frame segments around the drawing.": "Agregá segmentos de marco alrededor de la forma."
+} );
+Object.assign(ru,{
+  "3D geometry preview": "3D-предпросмотр геометрии",
+  "3D preview": "3D-предпросмотр",
+  "Draw on face": "Рисование по грани",
+  "Reset camera": "Сбросить камеру",
+  "Face view": "Вид на грань",
+  "Top": "Сверху",
+  "Side": "Сбоку",
+  "Show original": "Показать оригинал",
+  "Rotate, pan and zoom freely. Click a face to select it; switch to Draw on face to sketch.": "Вращайте и перемещайте камеру, меняйте масштаб. Нажмите на грань для выбора; рисуйте на вкладке грани.",
+  "Shape profile": "Форма детали",
+  "Rectangle": "Прямоугольник",
+  "Circle": "Круг",
+  "Ellipse": "Эллипс",
+  "Regular polygon": "Правильный многоугольник",
+  "Rounded rectangle": "Скруглённый прямоугольник",
+  "Diameter": "Диаметр",
+  "Curve detail / segments": "Детализация / сегменты",
+  "Higher detail creates more GoldSrc brush faces and may compile more slowly.": "Больше сегментов создают больше граней GoldSrc и могут замедлить компиляцию.",
+  "Add frame segments around the drawing.": "Добавьте рамку вокруг нарисованной фигуры."
+} );
+Object.assign(ko,{
+  "3D geometry preview": "3D 지오메트리 미리보기",
+  "3D preview": "3D 미리보기",
+  "Draw on face": "면에 그리기",
+  "Reset camera": "카메라 초기화",
+  "Face view": "면 정면",
+  "Top": "위",
+  "Side": "측면",
+  "Show original": "원본 표시",
+  "Rotate, pan and zoom freely. Click a face to select it; switch to Draw on face to sketch.": "자유롭게 회전, 이동, 확대하세요. 면을 클릭해 선택하고 면 그리기에서 형상을 그리세요.",
+  "Shape profile": "도형 모양",
+  "Rectangle": "직사각형",
+  "Circle": "원",
+  "Ellipse": "타원",
+  "Regular polygon": "정다각형",
+  "Rounded rectangle": "둥근 사각형",
+  "Diameter": "지름",
+  "Curve detail / segments": "곡선 품질 / 세그먼트",
+  "Higher detail creates more GoldSrc brush faces and may compile more slowly.": "세그먼트가 많으면 GoldSrc 면 수가 증가하여 컴파일이 느려질 수 있습니다.",
+  "Add frame segments around the drawing.": "도형 주변에 테두리 세그먼트를 추가합니다."
+} );
+Object.assign(zh,{
+  "3D geometry preview": "3D 几何预览",
+  "3D preview": "3D 预览",
+  "Draw on face": "在表面绘制",
+  "Reset camera": "重置相机",
+  "Face view": "正对选定面",
+  "Top": "顶视图",
+  "Side": "侧视图",
+  "Show original": "显示原始笔刷",
+  "Rotate, pan and zoom freely. Click a face to select it; switch to Draw on face to sketch.": "自由旋转、平移和缩放。点击表面选择，再切换到表面绘制进行编辑。",
+  "Shape profile": "形状轮廓",
+  "Rectangle": "矩形",
+  "Circle": "圆形",
+  "Ellipse": "椭圆",
+  "Regular polygon": "正多边形",
+  "Rounded rectangle": "圆角矩形",
+  "Diameter": "直径",
+  "Curve detail / segments": "曲线精度 / 分段",
+  "Higher detail creates more GoldSrc brush faces and may compile more slowly.": "更多分段会产生更多 GoldSrc 面，并可能延长编译时间。",
+  "Add frame segments around the drawing.": "沿绘制形状添加边框。"
+} );
+Object.assign(pt,{
+  "3D geometry preview": "Prévia da geometria 3D",
+  "3D preview": "Prévia 3D",
+  "Draw on face": "Desenhar na face",
+  "Reset camera": "Reiniciar câmera",
+  "Face view": "Vista da face",
+  "Top": "Superior",
+  "Side": "Lateral",
+  "Show original": "Mostrar original",
+  "Rotate, pan and zoom freely. Click a face to select it; switch to Draw on face to sketch.": "Gire, mova e amplie livremente. Clique numa face para selecioná-la; use Desenhar na face para criar formas.",
+  "Shape profile": "Perfil da forma",
+  "Rectangle": "Retângulo",
+  "Circle": "Círculo",
+  "Ellipse": "Elipse",
+  "Regular polygon": "Polígono regular",
+  "Rounded rectangle": "Retângulo arredondado",
+  "Diameter": "Diâmetro",
+  "Curve detail / segments": "Detalhe da curva / segmentos",
+  "Higher detail creates more GoldSrc brush faces and may compile more slowly.": "Mais segmentos geram mais faces GoldSrc e podem aumentar o tempo de compilação.",
+  "Add frame segments around the drawing.": "Adicione segmentos de moldura ao redor do desenho."
+} );
+
+// v1.9.7 Preview 3: World Builder curve consolidation (no standalone Curve Studio).
+Object.assign(es,{
+  'Curves & Repetitions':'Curvas y repeticiones',
+  'World Builder · Curves':'World Builder · Curvas',
+  'Edit saved curved ramp':'Editar rampa curva guardada',
+  'For new curved roads, ramps, tunnels and bridges, use Routes & Structures in World Builder. Radial Array repeats selected brushes without deforming them.':'Para crear carreteras, rampas, túneles y puentes curvos usá Recorridos y estructuras de World Builder. Repetición radial copia los brushes seleccionados sin deformarlos.',
+  'Reuse points as a new structure':'Reutilizar recorrido en nueva estructura',
+  'Route copied. Choose a different structure type and place a new copy; the original route is unchanged.':'Recorrido copiado. Elegí otro tipo de estructura y colocá una copia nueva; la ruta original queda intacta.',
+  'One editable route can be reused for roads, walkways, tunnels, railways or bridges: load a saved route, copy its points, then choose a new type. Existing brushes stay untouched.':'Podés reutilizar los mismos puntos para caminos, pasarelas, túneles, vías o puentes: cargá una ruta guardada, copiá sus puntos y elegí otro tipo. Los brushes existentes no se modifican.'
+});
+Object.assign(ru,{
+  'Curves & Repetitions':'Кривые и повторы',
+  'World Builder · Curves':'World Builder · Кривые',
+  'Edit saved curved ramp':'Изменить сохранённый изогнутый пандус',
+  'For new curved roads, ramps, tunnels and bridges, use Routes & Structures in World Builder. Radial Array repeats selected brushes without deforming them.':'Для новых дорог, пандусов, туннелей и мостов используйте маршруты World Builder. Радиальный массив копирует выбранные браши без деформации.',
+  'Reuse points as a new structure':'Использовать точки для новой конструкции',
+  'Route copied. Choose a different structure type and place a new copy; the original route is unchanged.':'Маршрут скопирован. Выберите другой тип и разместите новую копию; исходный маршрут сохранён.',
+  'One editable route can be reused for roads, walkways, tunnels, railways or bridges: load a saved route, copy its points, then choose a new type. Existing brushes stay untouched.':'Сохранённый маршрут можно использовать для дорог, дорожек, туннелей, рельсов и мостов. Скопируйте точки и выберите новый тип; существующие браши не изменятся.'
+});
+Object.assign(ko,{
+  'Curves & Repetitions':'곡선 및 반복',
+  'World Builder · Curves':'월드 빌더 · 곡선',
+  'Edit saved curved ramp':'저장된 곡선 경사로 편집',
+  'For new curved roads, ramps, tunnels and bridges, use Routes & Structures in World Builder. Radial Array repeats selected brushes without deforming them.':'새 곡선 도로, 경사로, 터널, 다리는 월드 빌더의 경로와 구조물을 사용하세요. 방사형 배열은 브러시를 변형하지 않고 복제합니다.',
+  'Reuse points as a new structure':'새 구조물에 경로 점 재사용',
+  'Route copied. Choose a different structure type and place a new copy; the original route is unchanged.':'경로를 복사했습니다. 다른 구조물 유형을 선택해 새 복사본을 배치하세요. 원본은 그대로입니다.',
+  'One editable route can be reused for roads, walkways, tunnels, railways or bridges: load a saved route, copy its points, then choose a new type. Existing brushes stay untouched.':'저장된 경로의 점을 복사하여 도로, 통로, 터널, 철도 또는 다리를 생성하세요. 기존 브러시는 유지됩니다.'
+});
+Object.assign(zh,{
+  'Curves & Repetitions':'曲线与阵列',
+  'World Builder · Curves':'世界构建 · 曲线',
+  'Edit saved curved ramp':'编辑已保存的弯曲坡道',
+  'For new curved roads, ramps, tunnels and bridges, use Routes & Structures in World Builder. Radial Array repeats selected brushes without deforming them.':'创建新的弯曲道路、坡道、隧道和桥梁请使用世界构建的路径与结构；径向阵列只复制笔刷，不使其变形。',
+  'Reuse points as a new structure':'将路径点用于新结构',
+  'Route copied. Choose a different structure type and place a new copy; the original route is unchanged.':'路径已复制。选择新的结构类型并放置副本，原始路径不变。',
+  'One editable route can be reused for roads, walkways, tunnels, railways or bridges: load a saved route, copy its points, then choose a new type. Existing brushes stay untouched.':'同一路径可用于道路、步道、隧道、轨道和桥梁。载入路径并复制控制点，选择新类型；现有笔刷保持不变。'
+});
+Object.assign(pt,{
+  'Curves & Repetitions':'Curvas e repetições',
+  'World Builder · Curves':'World Builder · Curvas',
+  'Edit saved curved ramp':'Editar rampa curva salva',
+  'For new curved roads, ramps, tunnels and bridges, use Routes & Structures in World Builder. Radial Array repeats selected brushes without deforming them.':'Para novas estradas, rampas, túneis e pontes curvas, use Percursos e Estruturas do World Builder. A matriz radial repete brushes sem deformá-los.',
+  'Reuse points as a new structure':'Reutilizar pontos numa nova estrutura',
+  'Route copied. Choose a different structure type and place a new copy; the original route is unchanged.':'Percurso copiado. Escolha outro tipo e posicione uma nova cópia; o percurso original permanece intacto.',
+  'One editable route can be reused for roads, walkways, tunnels, railways or bridges: load a saved route, copy its points, then choose a new type. Existing brushes stay untouched.':'O mesmo percurso pode criar estradas, passagens, túneis, ferrovias ou pontes. Carregue um percurso, copie os pontos e escolha outro tipo, sem alterar os brushes existentes.'
+});
+
+// v1.9 release: ensure general 3D placement and Fusion names are localized in all UI languages.
+Object.assign(es,{
+ 'Universal Placement':'Colocación universal',
+ 'Free 3D':'Libre 3D',
+ 'Place in free 3D':'Colocar libremente en 3D',
+ 'Z Plane':'Plano Z',
+ 'Smart Brush Fusion':'Fusión inteligente de brushes'
+});
+Object.assign(ru,{
+ 'Universal Placement':'Универсальное размещение',
+ 'Free 3D':'Свободно 3D',
+ 'Place in free 3D':'Разместить свободно в 3D',
+ 'Z Plane':'Плоскость Z',
+ 'Smart Brush Fusion':'Умное объединение брашей'
+});
+Object.assign(ko,{
+ 'Universal Placement':'범용 배치',
+ 'Free 3D':'자유 3D',
+ 'Place in free 3D':'자유 3D 공간에 배치',
+ 'Z Plane':'Z 평면',
+ 'Smart Brush Fusion':'스마트 브러시 결합'
+});
+Object.assign(zh,{
+ 'Universal Placement':'通用放置',
+ 'Free 3D':'自由 3D',
+ 'Place in free 3D':'在 3D 空间自由放置',
+ 'Z Plane':'Z 平面',
+ 'Smart Brush Fusion':'智能笔刷融合'
+});
+Object.assign(pt,{
+ 'Universal Placement':'Posicionamento universal',
+ 'Free 3D':'Livre 3D',
+ 'Place in free 3D':'Colocar livremente em 3D',
+ 'Z Plane':'Plano Z',
+ 'Smart Brush Fusion':'Fusão inteligente de brushes'
+});
+
+
+// BSP composition: UI only, classnames and keyvalues remain untranslated.
+Object.assign(es,{"BSP composition": "Composición BSP", "BSP composition — point entities": "Composición BSP — entidades puntuales", "Import point entities from another BSP into this BSP. Geometry, brush models, lightmaps, PVS and collision data are NOT merged. Original files are never overwritten.": "Importá entidades puntuales desde otro BSP. NO se fusionan geometría, modelos sólidos, lightmaps, PVS ni colisiones. Los archivos originales no se sobrescriben.", "Source BSP": "BSP de origen", "Offset XYZ": "Desplazamiento XYZ", "Target prefix": "Prefijo de destinos", "Eligible point entities": "Entidades puntuales disponibles", "Skipped brush entities": "Entidades sólidas omitidas", "Import point entities": "Importar entidades puntuales", "Point entities imported. Export a new BSP copy to keep these changes.": "Entidades importadas. Exportá una copia BSP para guardar los cambios.", "Choose a BSP file.": "Elegí un archivo BSP.", "Enter three numeric coordinates.": "Ingresá tres coordenadas numéricas.", "Imported targetnames collide with destination targetnames. Use a unique prefix.": "Hay nombres de destino repetidos. Usá un prefijo único.", "Some point entities have nonnumeric origin values and cannot be moved safely.": "Algunas entidades tienen coordenadas inválidas y no se pueden mover con seguridad.", "Combined entity count exceeds the BSP safety limit.": "El total de entidades supera el límite de seguridad BSP.", "No prefix: connections may resolve to entities already present in the destination.": "Sin prefijo, algunas conexiones pueden apuntar a entidades que ya existen."});
+Object.assign(ru,{"BSP composition": "Композиция BSP", "BSP composition — point entities": "Композиция BSP — точечные сущности", "Import point entities from another BSP into this BSP. Geometry, brush models, lightmaps, PVS and collision data are NOT merged. Original files are never overwritten.": "Импорт точечных сущностей из другого BSP. Геометрия, модели, карты освещения, PVS и коллизии НЕ объединяются. Исходные файлы не изменяются.", "Source BSP": "Исходный BSP", "Offset XYZ": "Смещение XYZ", "Target prefix": "Префикс целей", "Eligible point entities": "Доступные точечные сущности", "Skipped brush entities": "Пропущенные brush-сущности", "Import point entities": "Импортировать точечные сущности", "Point entities imported. Export a new BSP copy to keep these changes.": "Сущности импортированы. Экспортируйте копию BSP для сохранения.", "Choose a BSP file.": "Выберите файл BSP.", "Enter three numeric coordinates.": "Введите три числовые координаты.", "Imported targetnames collide with destination targetnames. Use a unique prefix.": "Имена целей пересекаются с существующими. Используйте уникальный префикс.", "Some point entities have nonnumeric origin values and cannot be moved safely.": "Некоторые сущности имеют неверные координаты.", "Combined entity count exceeds the BSP safety limit.": "Превышен безопасный лимит сущностей BSP.", "No prefix: connections may resolve to entities already present in the destination.": "Без префикса связи могут указывать на существующие сущности."});
+Object.assign(ko,{"BSP composition": "BSP 구성", "BSP composition — point entities": "BSP 구성 — 점 엔티티", "Import point entities from another BSP into this BSP. Geometry, brush models, lightmaps, PVS and collision data are NOT merged. Original files are never overwritten.": "다른 BSP에서 점 엔티티를 가져옵니다. 지오메트리, 브러시 모델, 라이트맵, PVS, 충돌 데이터는 병합하지 않습니다. 원본 파일은 변경되지 않습니다.", "Source BSP": "원본 BSP", "Offset XYZ": "XYZ 이동값", "Target prefix": "대상 이름 접두사", "Eligible point entities": "가져올 점 엔티티", "Skipped brush entities": "제외된 브러시 엔티티", "Import point entities": "점 엔티티 가져오기", "Point entities imported. Export a new BSP copy to keep these changes.": "엔티티를 가져왔습니다. BSP 복사본을 내보내 저장하세요.", "Choose a BSP file.": "BSP 파일을 선택하세요.", "Enter three numeric coordinates.": "숫자 좌표 세 개를 입력하세요.", "Imported targetnames collide with destination targetnames. Use a unique prefix.": "대상 이름이 기존 이름과 충돌합니다. 고유한 접두사를 사용하세요.", "Some point entities have nonnumeric origin values and cannot be moved safely.": "일부 엔티티의 위치 값이 올바르지 않습니다.", "Combined entity count exceeds the BSP safety limit.": "BSP 엔티티 안전 한도를 초과했습니다.", "No prefix: connections may resolve to entities already present in the destination.": "접두사가 없으면 기존 엔티티에 연결될 수 있습니다."});
+Object.assign(zh,{"BSP composition": "BSP 组合", "BSP composition — point entities": "BSP 组合 — 点实体", "Import point entities from another BSP into this BSP. Geometry, brush models, lightmaps, PVS and collision data are NOT merged. Original files are never overwritten.": "从另一个 BSP 导入点实体。不会合并几何体、笔刷模型、光照贴图、PVS 或碰撞数据。原始文件不会被覆盖。", "Source BSP": "来源 BSP", "Offset XYZ": "XYZ 偏移", "Target prefix": "目标名称前缀", "Eligible point entities": "可导入点实体", "Skipped brush entities": "跳过笔刷实体", "Import point entities": "导入点实体", "Point entities imported. Export a new BSP copy to keep these changes.": "实体已导入。请导出新的 BSP 副本以保存更改。", "Choose a BSP file.": "请选择 BSP 文件。", "Enter three numeric coordinates.": "请输入三个数字坐标。", "Imported targetnames collide with destination targetnames. Use a unique prefix.": "目标名称与现有名称冲突。请使用唯一前缀。", "Some point entities have nonnumeric origin values and cannot be moved safely.": "部分实体的位置无效，无法安全移动。", "Combined entity count exceeds the BSP safety limit.": "实体数量超过 BSP 安全限制。", "No prefix: connections may resolve to entities already present in the destination.": "没有前缀时，连接可能指向已有实体。"});
+Object.assign(pt,{"BSP composition": "Composição BSP", "BSP composition — point entities": "Composição BSP — entidades pontuais", "Import point entities from another BSP into this BSP. Geometry, brush models, lightmaps, PVS and collision data are NOT merged. Original files are never overwritten.": "Importe entidades pontuais de outro BSP. Geometria, modelos de brush, lightmaps, PVS e colisões NÃO são mesclados. Arquivos originais não são sobrescritos.", "Source BSP": "BSP de origem", "Offset XYZ": "Deslocamento XYZ", "Target prefix": "Prefixo dos alvos", "Eligible point entities": "Entidades pontuais disponíveis", "Skipped brush entities": "Entidades de brush ignoradas", "Import point entities": "Importar entidades pontuais", "Point entities imported. Export a new BSP copy to keep these changes.": "Entidades importadas. Exporte uma cópia BSP para salvar as alterações.", "Choose a BSP file.": "Escolha um arquivo BSP.", "Enter three numeric coordinates.": "Digite três coordenadas numéricas.", "Imported targetnames collide with destination targetnames. Use a unique prefix.": "Os nomes dos alvos entram em conflito. Use um prefixo exclusivo.", "Some point entities have nonnumeric origin values and cannot be moved safely.": "Algumas entidades têm coordenadas inválidas.", "Combined entity count exceeds the BSP safety limit.": "A quantidade de entidades excede o limite seguro do BSP.", "No prefix: connections may resolve to entities already present in the destination.": "Sem prefixo, as conexões podem apontar para entidades existentes."});
+// BSP composition stage 2: reconstructed geometry workflow. GoldSrc keys stay untranslated.
+Object.assign(es,{
+ 'Geometry composition':'Composición de geometría',
+ 'Geometry composition — reconstructed MAP':'Composición de geometría — MAP reconstruido',
+ 'Recover geometry and brush entities from both BSP files, then create a combined editable MAP. This requires recompilation and does not preserve original baked lighting, PVS or collision data.':'Recuperá la geometría y las entidades sólidas de ambos BSP para crear un MAP combinado editable. Se necesita recompilar; no se conservan los lightmaps, PVS ni las colisiones compiladas originales.',
+ 'Choose a source BSP above and set its XYZ offset and target prefix. The conversion uses the configured SurfDecomp path below.':'Seleccioná arriba el BSP de origen y ajustá desplazamiento XYZ y prefijo de destinos. La conversión utiliza la ruta de SurfDecomp configurada abajo.',
+ 'Recovering both BSP maps...':'Recuperando ambos mapas BSP...', 'Create combined MAP':'Crear MAP combinado',
+ 'Download combined MAP':'Descargar MAP combinado', 'Open combined MAP in editor':'Abrir MAP combinado en el editor',
+ 'Combined MAP validation passed':'MAP combinado validado',
+ 'The MAP must be compiled again. Original lightmaps, visibility and collision data are not copied.':'El MAP se debe compilar otra vez. No se copian lightmaps, visibilidad ni colisiones originales.',
+ 'Check WADs, models, scripts, spawn points and gameplay triggers before using the map.':'Revisá WAD, modelos, scripts, puntos de aparición y triggers antes de utilizar el mapa.'
+});
+Object.assign(ru,{
+ 'Geometry composition':'Объединение геометрии','Geometry composition — reconstructed MAP':'Объединение геометрии — восстановленный MAP',
+ 'Recover geometry and brush entities from both BSP files, then create a combined editable MAP. This requires recompilation and does not preserve original baked lighting, PVS or collision data.':'Восстановите геометрию и brush-сущности двух BSP, чтобы создать редактируемый общий MAP. Требуется повторная компиляция; исходные lightmap, PVS и коллизии не сохраняются.',
+ 'Choose a source BSP above and set its XYZ offset and target prefix. The conversion uses the configured SurfDecomp path below.':'Выберите исходный BSP выше, задайте смещение XYZ и префикс целей. Используется путь SurfDecomp, указанный ниже.',
+ 'Recovering both BSP maps...':'Восстановление обоих BSP...','Create combined MAP':'Создать общий MAP',
+ 'Download combined MAP':'Скачать общий MAP','Open combined MAP in editor':'Открыть общий MAP в редакторе',
+ 'Combined MAP validation passed':'Проверка общего MAP пройдена',
+ 'The MAP must be compiled again. Original lightmaps, visibility and collision data are not copied.':'MAP нужно скомпилировать заново. Исходные lightmap, видимость и коллизии не копируются.',
+ 'Check WADs, models, scripts, spawn points and gameplay triggers before using the map.':'Перед использованием проверьте WAD, модели, скрипты, точки появления и игровые триггеры.'
+});
+Object.assign(ko,{
+ 'Geometry composition':'지오메트리 결합','Geometry composition — reconstructed MAP':'지오메트리 결합 — 복원된 MAP',
+ 'Recover geometry and brush entities from both BSP files, then create a combined editable MAP. This requires recompilation and does not preserve original baked lighting, PVS or collision data.':'두 BSP의 지오메트리와 브러시 엔티티를 복원해 편집 가능한 결합 MAP을 만듭니다. 재컴파일이 필요하며 원본 라이트맵, PVS, 충돌 데이터는 유지되지 않습니다.',
+ 'Choose a source BSP above and set its XYZ offset and target prefix. The conversion uses the configured SurfDecomp path below.':'위에서 원본 BSP, XYZ 이동값, 대상 접두사를 설정하세요. 아래 SurfDecomp 경로를 사용합니다.',
+ 'Recovering both BSP maps...':'두 BSP 복원 중...','Create combined MAP':'결합 MAP 만들기',
+ 'Download combined MAP':'결합 MAP 다운로드','Open combined MAP in editor':'편집기에서 결합 MAP 열기',
+ 'Combined MAP validation passed':'결합 MAP 검사 통과',
+ 'The MAP must be compiled again. Original lightmaps, visibility and collision data are not copied.':'MAP을 다시 컴파일해야 합니다. 원본 라이트맵, 가시성 및 충돌 데이터는 복사하지 않습니다.',
+ 'Check WADs, models, scripts, spawn points and gameplay triggers before using the map.':'사용 전 WAD, 모델, 스크립트, 스폰 지점, 게임 트리거를 확인하세요.'
+});
+Object.assign(zh,{
+ 'Geometry composition':'几何体组合','Geometry composition — reconstructed MAP':'几何体组合 — 重建 MAP',
+ 'Recover geometry and brush entities from both BSP files, then create a combined editable MAP. This requires recompilation and does not preserve original baked lighting, PVS or collision data.':'恢复两个 BSP 的几何体和笔刷实体，生成可编辑的组合 MAP。需要重新编译，不保留原始光照贴图、PVS 或碰撞数据。',
+ 'Choose a source BSP above and set its XYZ offset and target prefix. The conversion uses the configured SurfDecomp path below.':'在上方选择来源 BSP，设置 XYZ 偏移和目标前缀。转换使用下方配置的 SurfDecomp 路径。',
+ 'Recovering both BSP maps...':'正在恢复两个 BSP...','Create combined MAP':'创建组合 MAP',
+ 'Download combined MAP':'下载组合 MAP','Open combined MAP in editor':'在编辑器中打开组合 MAP',
+ 'Combined MAP validation passed':'组合 MAP 验证通过',
+ 'The MAP must be compiled again. Original lightmaps, visibility and collision data are not copied.':'必须重新编译 MAP。不复制原始光照贴图、可见性及碰撞数据。',
+ 'Check WADs, models, scripts, spawn points and gameplay triggers before using the map.':'使用前请检查 WAD、模型、脚本、出生点和游戏触发器。'
+});
+Object.assign(pt,{
+ 'Geometry composition':'Composição de geometria','Geometry composition — reconstructed MAP':'Composição de geometria — MAP reconstruído',
+ 'Recover geometry and brush entities from both BSP files, then create a combined editable MAP. This requires recompilation and does not preserve original baked lighting, PVS or collision data.':'Recupere geometria e entidades de brush dos dois BSPs para criar um MAP combinado editável. Requer recompilação; lightmaps, PVS e colisões originais não são preservados.',
+ 'Choose a source BSP above and set its XYZ offset and target prefix. The conversion uses the configured SurfDecomp path below.':'Selecione o BSP de origem acima e defina o deslocamento XYZ e o prefixo dos alvos. A conversão usa o SurfDecomp configurado abaixo.',
+ 'Recovering both BSP maps...':'Recuperando ambos os BSPs...','Create combined MAP':'Criar MAP combinado',
+ 'Download combined MAP':'Baixar MAP combinado','Open combined MAP in editor':'Abrir MAP combinado no editor',
+ 'Combined MAP validation passed':'Validação do MAP combinado concluída',
+ 'The MAP must be compiled again. Original lightmaps, visibility and collision data are not copied.':'O MAP precisa ser recompilado. Lightmaps, visibilidade e colisões originais não são copiados.',
+ 'Check WADs, models, scripts, spawn points and gameplay triggers before using the map.':'Verifique WADs, modelos, scripts, pontos de spawn e gatilhos antes de usar o mapa.'
+});
+
+// BSP Recovery workspace tabs / observable recovery phases.
+Object.assign(es,{'BSP recovery sections':'Secciones de recuperación BSP','Recovering primary BSP...':'Recuperando BSP principal...','Recovering source BSP...':'Recuperando BSP de origen...','Validating combined MAP...':'Validando MAP combinado...','BSP recovery timed out. Check SurfDecomp and try a smaller BSP.':'La recuperación excedió el tiempo máximo. Revisá SurfDecomp o probá un BSP más pequeño.'});
+Object.assign(ru,{'BSP recovery sections':'Разделы восстановления BSP','Recovering primary BSP...':'Восстановление основного BSP...','Recovering source BSP...':'Восстановление исходного BSP...','Validating combined MAP...':'Проверка объединённого MAP...','BSP recovery timed out. Check SurfDecomp and try a smaller BSP.':'Превышено время восстановления BSP. Проверьте SurfDecomp или попробуйте BSP меньшего размера.'});
+Object.assign(ko,{'BSP recovery sections':'BSP 복원 섹션','Recovering primary BSP...':'기본 BSP 복원 중...','Recovering source BSP...':'원본 BSP 복원 중...','Validating combined MAP...':'결합 MAP 검사 중...','BSP recovery timed out. Check SurfDecomp and try a smaller BSP.':'BSP 복원 시간이 초과되었습니다. SurfDecomp를 확인하거나 더 작은 BSP를 사용하세요.'});
+Object.assign(zh,{'BSP recovery sections':'BSP 恢复功能','Recovering primary BSP...':'正在恢复主 BSP...','Recovering source BSP...':'正在恢复来源 BSP...','Validating combined MAP...':'正在验证组合 MAP...','BSP recovery timed out. Check SurfDecomp and try a smaller BSP.':'BSP 恢复超时。请检查 SurfDecomp 或尝试更小的 BSP。'});
+Object.assign(pt,{'BSP recovery sections':'Seções de recuperação BSP','Recovering primary BSP...':'Recuperando BSP principal...','Recovering source BSP...':'Recuperando BSP de origem...','Validating combined MAP...':'Validando MAP combinado...','BSP recovery timed out. Check SurfDecomp and try a smaller BSP.':'A recuperação BSP excedeu o tempo limite. Verifique o SurfDecomp ou tente um BSP menor.'});
+
+// BSP recovery: cancel and explicit long-running external tool notice.
+Object.assign(es,{'Cancel recovery':'Cancelar recuperación','BSP recovery cancelled.':'Recuperación BSP cancelada.','External decompilation can take several minutes on large maps.':'La descompilación externa puede tardar varios minutos en mapas grandes.'});
+Object.assign(ru,{'Cancel recovery':'Отменить восстановление','BSP recovery cancelled.':'Восстановление BSP отменено.','External decompilation can take several minutes on large maps.':'Внешняя декомпиляция больших карт может занять несколько минут.'});
+Object.assign(ko,{'Cancel recovery':'복원 취소','BSP recovery cancelled.':'BSP 복원이 취소되었습니다.','External decompilation can take several minutes on large maps.':'큰 맵의 외부 디컴파일에는 몇 분이 걸릴 수 있습니다.'});
+Object.assign(zh,{'Cancel recovery':'取消恢复','BSP recovery cancelled.':'BSP 恢复已取消。','External decompilation can take several minutes on large maps.':'大型地图的外部反编译可能需要几分钟。'});
+Object.assign(pt,{'Cancel recovery':'Cancelar recuperação','BSP recovery cancelled.':'Recuperação BSP cancelada.','External decompilation can take several minutes on large maps.':'A descompilação externa de mapas grandes pode demorar vários minutos.'});
+
+Object.assign(es,{"Geometry recovery diagnostic":"Diagnóstico de recuperación de geometría", "Primary BSP":"BSP principal", "Source BSP":"BSP de origen", "Some MAP brushes cannot be reconstructed. This does not prove that SurfDecomp lost the original BSP geometry. Review the diagnostic before continuing.":"Algunos brushes del MAP no pueden reconstruirse. Esto no demuestra que SurfDecomp haya perdido geometría del BSP original. Revisá el diagnóstico antes de continuar.", "Download recovery diagnostic":"Descargar diagnóstico de recuperación", "I understand that unreconstructable brushes will be omitted from the partial MAP.":"Entiendo que los brushes no recuperables se omitirán del MAP parcial.", "Create partial MAP (geometry loss)":"Crear MAP parcial (pérdida de geometría)", "Partial MAP generated — inspect missing geometry":"MAP parcial generado — revisá la geometría faltante", "Partial recovery: omitted brushes":"Recuperación parcial: brushes omitidos"});
+
+Object.assign(en,{"Geometry recovery diagnostic":"Geometry recovery diagnostic", "Primary BSP":"Primary BSP", "Source BSP":"Source BSP", "Some MAP brushes cannot be reconstructed. This does not prove that SurfDecomp lost the original BSP geometry. Review the diagnostic before continuing.":"Some MAP brushes cannot be reconstructed. This does not prove that SurfDecomp lost the original BSP geometry. Review the diagnostic before continuing.", "Download recovery diagnostic":"Download recovery diagnostic", "I understand that unreconstructable brushes will be omitted from the partial MAP.":"I understand that unreconstructable brushes will be omitted from the partial MAP.", "Create partial MAP (geometry loss)":"Create partial MAP (geometry loss)", "Partial MAP generated — inspect missing geometry":"Partial MAP generated — inspect missing geometry", "Partial recovery: omitted brushes":"Partial recovery: omitted brushes"});
+
+Object.assign(ru,{"Geometry recovery diagnostic":"Диагностика восстановления геометрии", "Primary BSP":"Основной BSP", "Source BSP":"Исходный BSP", "Some MAP brushes cannot be reconstructed. This does not prove that SurfDecomp lost the original BSP geometry. Review the diagnostic before continuing.":"Некоторые браши MAP не удаётся восстановить. Это не доказывает потерю геометрии исходного BSP в SurfDecomp. Перед продолжением изучите отчёт.", "Download recovery diagnostic":"Скачать отчёт о восстановлении", "I understand that unreconstructable brushes will be omitted from the partial MAP.":"Я понимаю, что невосстановленные браши будут исключены из частичного MAP.", "Create partial MAP (geometry loss)":"Создать частичный MAP (потеря геометрии)", "Partial MAP generated — inspect missing geometry":"Частичный MAP создан — проверьте отсутствующую геометрию", "Partial recovery: omitted brushes":"Частичное восстановление: пропущено брашей"});
+
+Object.assign(ko,{"Geometry recovery diagnostic":"지오메트리 복원 진단", "Primary BSP":"기본 BSP", "Source BSP":"원본 BSP", "Some MAP brushes cannot be reconstructed. This does not prove that SurfDecomp lost the original BSP geometry. Review the diagnostic before continuing.":"일부 MAP 브러시를 복원할 수 없습니다. SurfDecomp가 원본 BSP 지오메트리를 잃었다는 증거는 아닙니다. 계속하기 전에 진단을 확인하세요.", "Download recovery diagnostic":"복원 진단 다운로드", "I understand that unreconstructable brushes will be omitted from the partial MAP.":"복원할 수 없는 브러시가 부분 MAP에서 제외됨을 이해했습니다.", "Create partial MAP (geometry loss)":"부분 MAP 생성 (지오메트리 손실)", "Partial MAP generated — inspect missing geometry":"부분 MAP 생성됨 — 누락된 지오메트리 확인", "Partial recovery: omitted brushes":"부분 복원: 누락된 브러시"});
+
+Object.assign(zh,{"Geometry recovery diagnostic":"几何恢复诊断", "Primary BSP":"主 BSP", "Source BSP":"来源 BSP", "Some MAP brushes cannot be reconstructed. This does not prove that SurfDecomp lost the original BSP geometry. Review the diagnostic before continuing.":"部分 MAP 笔刷无法重建。这并不能证明 SurfDecomp 丢失了原 BSP 几何。请先查看诊断报告。", "Download recovery diagnostic":"下载恢复诊断", "I understand that unreconstructable brushes will be omitted from the partial MAP.":"我了解无法重建的笔刷将从部分 MAP 中省略。", "Create partial MAP (geometry loss)":"创建部分 MAP（几何缺失）", "Partial MAP generated — inspect missing geometry":"部分 MAP 已生成 — 请检查缺失几何", "Partial recovery: omitted brushes":"部分恢复：省略的笔刷"});
+
+Object.assign(pt,{"Geometry recovery diagnostic":"Diagnóstico de recuperação da geometria", "Primary BSP":"BSP principal", "Source BSP":"BSP de origem", "Some MAP brushes cannot be reconstructed. This does not prove that SurfDecomp lost the original BSP geometry. Review the diagnostic before continuing.":"Alguns brushes do MAP não puderam ser reconstruídos. Isso não prova que o SurfDecomp perdeu geometria do BSP original. Examine o diagnóstico antes de continuar.", "Download recovery diagnostic":"Baixar diagnóstico de recuperação", "I understand that unreconstructable brushes will be omitted from the partial MAP.":"Entendo que os brushes não recuperáveis serão omitidos do MAP parcial.", "Create partial MAP (geometry loss)":"Criar MAP parcial (perda de geometria)", "Partial MAP generated — inspect missing geometry":"MAP parcial gerado — confira a geometria ausente", "Partial recovery: omitted brushes":"Recuperação parcial: brushes omitidos"});
+
+// BSP composition: preserve the original recovered MAP planes and report re-import failures.
+Object.assign(es,{'Combined MAP verification failed':'Falló la verificación del MAP combinado'});
+Object.assign(ru,{'Combined MAP verification failed':'Проверка объединённого MAP не пройдена'});
+Object.assign(ko,{'Combined MAP verification failed':'결합된 MAP 검사 실패'});
+Object.assign(zh,{'Combined MAP verification failed':'组合 MAP 验证失败'});
+Object.assign(pt,{'Combined MAP verification failed':'Falha na verificação do MAP combinado'});
+
+
+// BSP Composition 2.0 (true v1.9 base): localized recovery safety and large-map preview.
+Object.assign(es,{
+ 'Composition does not overwrite original BSP files. The reconstructed MAP needs recompilation; its original lightmaps, VIS and collisions are not transferred.':'La composición no sobrescribe los BSP originales. El MAP reconstruido necesita recompilarse; no se transfieren sus lightmaps, VIS ni colisiones originales.',
+ 'Use Large maps preview mode when opening a large composition':'Usar vista previa para mapas grandes al abrir una composición pesada',
+ 'For compositions of 2,500+ brushes, lower viewport preview costs automatically. MAP geometry, textures and export are unchanged. You can change this later in Workspace.':'Para composiciones de 2.500 brushes o más, reduce automáticamente el costo de la vista previa. La geometría, texturas y exportación MAP no cambian. Podés modificarlo luego en Área de trabajo.',
+ 'Opening combined MAP...':'Abriendo MAP combinado...'
+});
+Object.assign(en,{
+ 'Composition does not overwrite original BSP files. The reconstructed MAP needs recompilation; its original lightmaps, VIS and collisions are not transferred.':'Composition does not overwrite original BSP files. The reconstructed MAP needs recompilation; its original lightmaps, VIS and collisions are not transferred.',
+ 'Use Large maps preview mode when opening a large composition':'Use Large maps preview mode when opening a large composition',
+ 'For compositions of 2,500+ brushes, lower viewport preview costs automatically. MAP geometry, textures and export are unchanged. You can change this later in Workspace.':'For compositions of 2,500+ brushes, lower viewport preview costs automatically. MAP geometry, textures and export are unchanged. You can change this later in Workspace.',
+ 'Opening combined MAP...':'Opening combined MAP...'
+});
+Object.assign(ru,{
+ 'Composition does not overwrite original BSP files. The reconstructed MAP needs recompilation; its original lightmaps, VIS and collisions are not transferred.':'Объединение не перезаписывает исходные BSP. Восстановленный MAP необходимо перекомпилировать; исходные lightmap, VIS и коллизии не переносятся.',
+ 'Use Large maps preview mode when opening a large composition':'Использовать режим больших карт при открытии сложной композиции',
+ 'For compositions of 2,500+ brushes, lower viewport preview costs automatically. MAP geometry, textures and export are unchanged. You can change this later in Workspace.':'Для композиций от 2500 брашей автоматически снижается нагрузка предварительного просмотра. Геометрия, текстуры и экспорт MAP не меняются. Настройку можно изменить в рабочей области.',
+ 'Opening combined MAP...':'Открытие объединённого MAP...'
+});
+Object.assign(ko,{
+ 'Composition does not overwrite original BSP files. The reconstructed MAP needs recompilation; its original lightmaps, VIS and collisions are not transferred.':'BSP 원본 파일은 덮어쓰지 않습니다. 복원된 MAP을 다시 컴파일해야 하며 원래의 라이트맵, VIS, 충돌 데이터는 이전되지 않습니다.',
+ 'Use Large maps preview mode when opening a large composition':'대형 결합 맵을 열 때 대형 맵 미리보기 모드 사용',
+ 'For compositions of 2,500+ brushes, lower viewport preview costs automatically. MAP geometry, textures and export are unchanged. You can change this later in Workspace.':'브러시가 2,500개 이상인 결합 맵은 뷰포트 미리보기 부하를 자동으로 줄입니다. MAP 지오메트리, 텍스처, 내보내기는 변경되지 않으며 작업 영역에서 다시 설정할 수 있습니다.',
+ 'Opening combined MAP...':'결합 MAP 여는 중...'
+});
+Object.assign(zh,{
+ 'Composition does not overwrite original BSP files. The reconstructed MAP needs recompilation; its original lightmaps, VIS and collisions are not transferred.':'组合不会覆盖原始 BSP。重建的 MAP 需要重新编译；原有的光照贴图、VIS 和碰撞数据不会转移。',
+ 'Use Large maps preview mode when opening a large composition':'打开大型组合地图时使用大型地图预览模式',
+ 'For compositions of 2,500+ brushes, lower viewport preview costs automatically. MAP geometry, textures and export are unchanged. You can change this later in Workspace.':'当组合地图包含 2,500 个以上笔刷时自动降低视口预览负载。MAP 的几何体、纹理和导出内容均不变。之后可在工作区修改。',
+ 'Opening combined MAP...':'正在打开组合 MAP...'
+});
+Object.assign(pt,{
+ 'Composition does not overwrite original BSP files. The reconstructed MAP needs recompilation; its original lightmaps, VIS and collisions are not transferred.':'A composição não sobrescreve os BSP originais. O MAP reconstruído precisa ser recompilado; lightmaps, VIS e colisões originais não são transferidos.',
+ 'Use Large maps preview mode when opening a large composition':'Usar pré-visualização para mapas grandes ao abrir uma composição pesada',
+ 'For compositions of 2,500+ brushes, lower viewport preview costs automatically. MAP geometry, textures and export are unchanged. You can change this later in Workspace.':'Em composições com 2.500 ou mais brushes, reduz automaticamente o custo da pré-visualização. Geometria, texturas e exportação MAP permanecem inalteradas. É possível mudar depois na Área de trabalho.',
+ 'Opening combined MAP...':'Abrindo MAP combinado...'
+});
+
+// BSP Composition 2.1: native brush-model transfer, conservative and copy-only.
+Object.assign(es,{"BSP composition saves new copies. Reconstructed MAPs need recompilation. Binary submodel transfer keeps supported geometry and collision hulls, but does not merge world VIS.": "La composición crea copias nuevas. Los MAP reconstruidos necesitan recompilación. La transferencia binaria conserva la geometría y colisiones compatibles de submodelos, pero no combina la visibilidad global.", "Binary BSP model transfer": "Transferencia binaria de modelos BSP", "Binary BSP model transfer — compiled submodel": "Transferencia binaria BSP — submodelo compilado", "Transfer one compiled brush model (for example a door or platform) directly into a verified BSP copy. No MAP conversion. This operation does not move coordinates, merge worldspawn, import linked point entities, or rebuild world VIS.": "Transferí un modelo brush compilado (por ejemplo una puerta o plataforma) directamente a una copia BSP verificada. No convierte a MAP ni mueve coordenadas, combina worldspawn, importa entidades puntuales vinculadas o reconstruye la visibilidad global.", "Source BSP is selected above. XYZ offset and target prefix do not apply to binary model transfer. Source and destination BSP files stay untouched.": "El BSP de origen se selecciona arriba. El desplazamiento XYZ y el prefijo no se aplican a la transferencia binaria. Los archivos originales permanecen intactos.", "Compiled source model": "Modelo compilado de origen", "Validating compiled BSP model...": "Validando el modelo BSP compilado...", "Analyze and build verified BSP copy": "Analizar y crear copia BSP verificada", "The selected source BSP contains no compiled brush-model entities.": "El BSP de origen no contiene entidades con modelos brush compilados.", "Binary model validation passed": "Validación del modelo binario superada", "Planes": "Planos", "Collision clipnodes": "Nodos de colisión", "Imported embedded textures": "Texturas incrustadas importadas", "Copied lightmap bytes": "Bytes de iluminación copiados", "BSP nodes": "Nodos BSP", "Leaves": "Hojas", "Check the door or platform in Sven Co-op. World visibility, external dependencies, entity connections and multiplayer behavior are not validated in-game.": "Comprobá la puerta o plataforma en Sven Co-op. La visibilidad global, las dependencias externas, las conexiones de entidades y el multijugador no se validaron dentro del juego.", "I understand this is a new BSP copy with one submodel, not a full binary map merge.": "Entiendo que se genera una copia BSP con un submodelo, no una fusión binaria completa de mapas.", "Download verified BSP copy": "Descargar copia BSP verificada"});
+
+// BSP Composition 2.1: native brush-model transfer, conservative and copy-only.
+Object.assign(en,{"BSP composition saves new copies. Reconstructed MAPs need recompilation. Binary submodel transfer keeps supported geometry and collision hulls, but does not merge world VIS.": "BSP composition saves new copies. Reconstructed MAPs need recompilation. Binary submodel transfer keeps supported geometry and collision hulls, but does not merge world VIS.", "Binary BSP model transfer": "Binary BSP model transfer", "Binary BSP model transfer — compiled submodel": "Binary BSP model transfer — compiled submodel", "Transfer one compiled brush model (for example a door or platform) directly into a verified BSP copy. No MAP conversion. This operation does not move coordinates, merge worldspawn, import linked point entities, or rebuild world VIS.": "Transfer one compiled brush model (for example a door or platform) directly into a verified BSP copy. No MAP conversion. This operation does not move coordinates, merge worldspawn, import linked point entities, or rebuild world VIS.", "Source BSP is selected above. XYZ offset and target prefix do not apply to binary model transfer. Source and destination BSP files stay untouched.": "Source BSP is selected above. XYZ offset and target prefix do not apply to binary model transfer. Source and destination BSP files stay untouched.", "Compiled source model": "Compiled source model", "Validating compiled BSP model...": "Validating compiled BSP model...", "Analyze and build verified BSP copy": "Analyze and build verified BSP copy", "The selected source BSP contains no compiled brush-model entities.": "The selected source BSP contains no compiled brush-model entities.", "Binary model validation passed": "Binary model validation passed", "Planes": "Planes", "Collision clipnodes": "Collision clipnodes", "Imported embedded textures": "Imported embedded textures", "Copied lightmap bytes": "Copied lightmap bytes", "BSP nodes": "BSP nodes", "Leaves": "Leaves", "Check the door or platform in Sven Co-op. World visibility, external dependencies, entity connections and multiplayer behavior are not validated in-game.": "Check the door or platform in Sven Co-op. World visibility, external dependencies, entity connections and multiplayer behavior are not validated in-game.", "I understand this is a new BSP copy with one submodel, not a full binary map merge.": "I understand this is a new BSP copy with one submodel, not a full binary map merge.", "Download verified BSP copy": "Download verified BSP copy"});
+
+// BSP Composition 2.1: native brush-model transfer, conservative and copy-only.
+Object.assign(ru,{"BSP composition saves new copies. Reconstructed MAPs need recompilation. Binary submodel transfer keeps supported geometry and collision hulls, but does not merge world VIS.": "Объединение сохраняет новые копии. Восстановленные MAP требуют повторной компиляции. Бинарный перенос поддерживаемых подмоделей сохраняет геометрию и коллизии, но не объединяет видимость мира.", "Binary BSP model transfer": "Бинарный перенос моделей BSP", "Binary BSP model transfer — compiled submodel": "Бинарный перенос BSP — скомпилированная подмодель", "Transfer one compiled brush model (for example a door or platform) directly into a verified BSP copy. No MAP conversion. This operation does not move coordinates, merge worldspawn, import linked point entities, or rebuild world VIS.": "Перенос одной скомпилированной brush-модели (например, двери или платформы) в проверенную копию BSP без конвертации MAP. Позиции, worldspawn, связанные точечные сущности и VIS мира не переносятся.", "Source BSP is selected above. XYZ offset and target prefix do not apply to binary model transfer. Source and destination BSP files stay untouched.": "Исходный BSP выбран выше. Смещение XYZ и префикс не применяются. Исходные файлы не изменяются.", "Compiled source model": "Исходная скомпилированная модель", "Validating compiled BSP model...": "Проверка модели BSP...", "Analyze and build verified BSP copy": "Проверить и создать копию BSP", "The selected source BSP contains no compiled brush-model entities.": "В выбранном BSP отсутствуют сущности со скомпилированными brush-моделями.", "Binary model validation passed": "Проверка бинарной модели пройдена", "Planes": "Плоскости", "Collision clipnodes": "Узлы коллизий", "Imported embedded textures": "Импортированные встроенные текстуры", "Copied lightmap bytes": "Скопировано байтов освещения", "BSP nodes": "Узлы BSP", "Leaves": "Листья", "Check the door or platform in Sven Co-op. World visibility, external dependencies, entity connections and multiplayer behavior are not validated in-game.": "Проверьте дверь или платформу в Sven Co-op. VIS мира, внешние ресурсы, связи сущностей и сетевой режим не проверены в игре.", "I understand this is a new BSP copy with one submodel, not a full binary map merge.": "Я понимаю, что будет создана копия BSP с одной подмоделью, а не полноценное бинарное объединение карт.", "Download verified BSP copy": "Скачать проверенную копию BSP"});
+
+// BSP Composition 2.1: native brush-model transfer, conservative and copy-only.
+Object.assign(ko,{"BSP composition saves new copies. Reconstructed MAPs need recompilation. Binary submodel transfer keeps supported geometry and collision hulls, but does not merge world VIS.": "합성은 새 복사본을 만듭니다. 복원된 MAP은 재컴파일해야 합니다. 바이너리 하위 모델 전송은 지원되는 지오메트리와 충돌 정보를 보존하지만 월드 VIS는 병합하지 않습니다.", "Binary BSP model transfer": "BSP 모델 바이너리 전송", "Binary BSP model transfer — compiled submodel": "BSP 바이너리 전송 — 컴파일된 하위 모델", "Transfer one compiled brush model (for example a door or platform) directly into a verified BSP copy. No MAP conversion. This operation does not move coordinates, merge worldspawn, import linked point entities, or rebuild world VIS.": "문이나 플랫폼 같은 컴파일된 브러시 모델 하나를 검증된 BSP 복사본으로 직접 전송합니다. MAP 변환은 필요하지 않습니다. 좌표 이동, worldspawn 병합, 연결된 포인트 엔티티 가져오기, 월드 VIS 재구축은 지원하지 않습니다.", "Source BSP is selected above. XYZ offset and target prefix do not apply to binary model transfer. Source and destination BSP files stay untouched.": "원본 BSP는 위에서 선택합니다. XYZ 오프셋과 대상 접두사는 바이너리 전송에 적용되지 않습니다. 원본 파일은 변경되지 않습니다.", "Compiled source model": "원본 컴파일 모델", "Validating compiled BSP model...": "컴파일된 BSP 모델 검사 중...", "Analyze and build verified BSP copy": "검사 후 BSP 복사본 생성", "The selected source BSP contains no compiled brush-model entities.": "선택한 원본 BSP에 컴파일된 브러시 모델 엔티티가 없습니다.", "Binary model validation passed": "바이너리 모델 검사 통과", "Planes": "평면", "Collision clipnodes": "충돌 클립노드", "Imported embedded textures": "가져온 내장 텍스처", "Copied lightmap bytes": "복사된 라이트맵 바이트", "BSP nodes": "BSP 노드", "Leaves": "리프", "Check the door or platform in Sven Co-op. World visibility, external dependencies, entity connections and multiplayer behavior are not validated in-game.": "Sven Co-op에서 문이나 플랫폼을 확인하세요. 월드 가시성, 외부 의존성, 엔티티 연결 및 멀티플레이어 동작은 게임 내에서 검증되지 않았습니다.", "I understand this is a new BSP copy with one submodel, not a full binary map merge.": "전체 맵 바이너리 병합이 아닌 하위 모델 하나가 포함된 새 BSP 복사본임을 이해합니다.", "Download verified BSP copy": "검증된 BSP 복사본 다운로드"});
+
+// BSP Composition 2.1: native brush-model transfer, conservative and copy-only.
+Object.assign(zh,{"BSP composition saves new copies. Reconstructed MAPs need recompilation. Binary submodel transfer keeps supported geometry and collision hulls, but does not merge world VIS.": "合成操作会生成新副本。重建的 MAP 需要重新编译。二进制子模型迁移保留受支持的几何与碰撞结构，但不合并世界 VIS。", "Binary BSP model transfer": "BSP 模型二进制迁移", "Binary BSP model transfer — compiled submodel": "BSP 二进制迁移 — 已编译子模型", "Transfer one compiled brush model (for example a door or platform) directly into a verified BSP copy. No MAP conversion. This operation does not move coordinates, merge worldspawn, import linked point entities, or rebuild world VIS.": "将一个已编译笔刷模型（例如门或平台）直接迁移到经过验证的 BSP 副本，无需转换 MAP。不会移动坐标、合并 worldspawn、导入关联点实体或重建世界 VIS。", "Source BSP is selected above. XYZ offset and target prefix do not apply to binary model transfer. Source and destination BSP files stay untouched.": "在上方选择源 BSP。XYZ 偏移与目标前缀不适用于二进制迁移。源和目标 BSP 文件都不会被修改。", "Compiled source model": "源已编译模型", "Validating compiled BSP model...": "正在验证已编译 BSP 模型...", "Analyze and build verified BSP copy": "分析并创建已验证 BSP 副本", "The selected source BSP contains no compiled brush-model entities.": "所选源 BSP 不含已编译笔刷模型实体。", "Binary model validation passed": "二进制模型验证通过", "Planes": "平面", "Collision clipnodes": "碰撞裁剪节点", "Imported embedded textures": "导入的内嵌纹理", "Copied lightmap bytes": "复制的光照贴图字节", "BSP nodes": "BSP 节点", "Leaves": "叶节点", "Check the door or platform in Sven Co-op. World visibility, external dependencies, entity connections and multiplayer behavior are not validated in-game.": "请在 Sven Co-op 中测试门或平台。世界可见性、外部依赖、实体关联和多人游戏行为尚未在游戏中验证。", "I understand this is a new BSP copy with one submodel, not a full binary map merge.": "我明白这只是包含一个子模型的新 BSP 副本，而不是完整的地图二进制合并。", "Download verified BSP copy": "下载已验证 BSP 副本"});
+
+// BSP Composition 2.1: native brush-model transfer, conservative and copy-only.
+Object.assign(pt,{"BSP composition saves new copies. Reconstructed MAPs need recompilation. Binary submodel transfer keeps supported geometry and collision hulls, but does not merge world VIS.": "A composição cria novas cópias. Os MAP reconstruídos precisam ser recompilados. A transferência binária preserva geometria e colisão compatíveis de submodelos, mas não combina o VIS do mundo.", "Binary BSP model transfer": "Transferência binária de modelos BSP", "Binary BSP model transfer — compiled submodel": "Transferência binária BSP — submodelo compilado", "Transfer one compiled brush model (for example a door or platform) directly into a verified BSP copy. No MAP conversion. This operation does not move coordinates, merge worldspawn, import linked point entities, or rebuild world VIS.": "Transfira um modelo brush compilado (por exemplo porta ou plataforma) diretamente para uma cópia BSP validada. Sem conversão MAP. Não move coordenadas, combina worldspawn, importa entidades pontuais ligadas ou reconstrói o VIS do mundo.", "Source BSP is selected above. XYZ offset and target prefix do not apply to binary model transfer. Source and destination BSP files stay untouched.": "O BSP de origem é escolhido acima. O deslocamento XYZ e o prefixo não se aplicam à transferência binária. Os arquivos originais não são modificados.", "Compiled source model": "Modelo compilado de origem", "Validating compiled BSP model...": "Validando o modelo BSP compilado...", "Analyze and build verified BSP copy": "Analisar e criar cópia BSP validada", "The selected source BSP contains no compiled brush-model entities.": "O BSP de origem selecionado não contém entidades com modelos brush compilados.", "Binary model validation passed": "Validação binária do modelo concluída", "Planes": "Planos", "Collision clipnodes": "Nós de colisão", "Imported embedded textures": "Texturas incorporadas importadas", "Copied lightmap bytes": "Bytes de iluminação copiados", "BSP nodes": "Nós BSP", "Leaves": "Folhas", "Check the door or platform in Sven Co-op. World visibility, external dependencies, entity connections and multiplayer behavior are not validated in-game.": "Confira a porta ou plataforma no Sven Co-op. A visibilidade global, dependências externas, conexões de entidades e comportamento multijogador não foram validados no jogo.", "I understand this is a new BSP copy with one submodel, not a full binary map merge.": "Entendo que será criada uma cópia BSP com um submodelo, não uma fusão binária completa de mapas.", "Download verified BSP copy": "Baixar cópia BSP validada"});
+Object.assign(es,{"Transfer refused; no BSP file was created": "Transferencia rechazada; no se generó ningún archivo BSP"});
+Object.assign(en,{"Transfer refused; no BSP file was created": "Transfer refused; no BSP file was created"});
+Object.assign(ru,{"Transfer refused; no BSP file was created": "Перенос отклонён; файл BSP не создан"});
+Object.assign(ko,{"Transfer refused; no BSP file was created": "전송이 거부되어 BSP 파일을 만들지 않았습니다"});
+Object.assign(zh,{"Transfer refused; no BSP file was created": "已拒绝迁移；未生成 BSP 文件"});
+Object.assign(pt,{"Transfer refused; no BSP file was created": "Transferência recusada; nenhum arquivo BSP foi criado"});
+
+// BSP Composition 2.1.1: explicit local WAD3 texture resolution for binary transfer.
+Object.assign(es,{"WAD3 files for missing external textures (optional)": "Archivos WAD3 para texturas externas faltantes (opcional)", "Select the original halflife.wad or other WAD3 used when compiling the source map. This binary operation embeds only required missing textures in the new BSP copy; importing a WAD elsewhere in the editor does not supply its binary pixels here.": "Seleccioná halflife.wad u otro WAD3 original usado al compilar el mapa de origen. Esta operación incrusta solamente las texturas faltantes necesarias en la nueva copia BSP. Importar un WAD en otra sección del editor no proporciona aquí sus datos binarios.", "WAD3 files selected": "Archivos WAD3 seleccionados", "Textures resolved from WAD3": "Texturas recuperadas desde WAD3", "Missing external BSP texture": "Falta la textura externa del BSP", "Select the WAD3 file containing this texture below, then analyze again.": "Seleccioná abajo el archivo WAD3 que contenga esta textura y volvé a analizar.", "Texture not found in the selected WAD3 files. Select a WAD3 with this texture.": "La textura no aparece en los archivos WAD3 seleccionados. Elegí un WAD3 que la contenga.", "WAD3 selection limit: up to 8 files, 64 MiB each and 128 MiB total.": "Límite WAD3: hasta 8 archivos, 64 MiB por archivo y 128 MiB en total."});
+Object.assign(en,{"WAD3 files for missing external textures (optional)": "WAD3 files for missing external textures (optional)", "Select the original halflife.wad or other WAD3 used when compiling the source map. This binary operation embeds only required missing textures in the new BSP copy; importing a WAD elsewhere in the editor does not supply its binary pixels here.": "Select the original halflife.wad or other WAD3 used when compiling the source map. This binary operation embeds only required missing textures in the new BSP copy; importing a WAD elsewhere in the editor does not supply its binary pixels here.", "WAD3 files selected": "WAD3 files selected", "Textures resolved from WAD3": "Textures resolved from WAD3", "Missing external BSP texture": "Missing external BSP texture", "Select the WAD3 file containing this texture below, then analyze again.": "Select the WAD3 file containing this texture below, then analyze again.", "Texture not found in the selected WAD3 files. Select a WAD3 with this texture.": "Texture not found in the selected WAD3 files. Select a WAD3 with this texture.", "WAD3 selection limit: up to 8 files, 64 MiB each and 128 MiB total.": "WAD3 selection limit: up to 8 files, 64 MiB each and 128 MiB total."});
+Object.assign(ru,{"WAD3 files for missing external textures (optional)": "Файлы WAD3 для отсутствующих внешних текстур (необязательно)", "Select the original halflife.wad or other WAD3 used when compiling the source map. This binary operation embeds only required missing textures in the new BSP copy; importing a WAD elsewhere in the editor does not supply its binary pixels here.": "Выберите оригинальный halflife.wad или другой WAD3, использованный при компиляции исходной карты. В новую копию BSP будут встроены только необходимые отсутствующие текстуры. Импорт WAD в другом разделе редактора не предоставляет здесь его двоичные данные.", "WAD3 files selected": "Выбранные файлы WAD3", "Textures resolved from WAD3": "Текстуры, полученные из WAD3", "Missing external BSP texture": "Отсутствует внешняя текстура BSP", "Select the WAD3 file containing this texture below, then analyze again.": "Выберите ниже файл WAD3 с этой текстурой и повторите проверку.", "Texture not found in the selected WAD3 files. Select a WAD3 with this texture.": "Текстура не найдена в выбранных файлах WAD3. Выберите WAD3 с нужной текстурой.", "WAD3 selection limit: up to 8 files, 64 MiB each and 128 MiB total.": "Ограничение WAD3: до 8 файлов, 64 МиБ каждый и 128 МиБ суммарно."});
+Object.assign(ko,{"WAD3 files for missing external textures (optional)": "누락된 외부 텍스처용 WAD3 파일(선택)", "Select the original halflife.wad or other WAD3 used when compiling the source map. This binary operation embeds only required missing textures in the new BSP copy; importing a WAD elsewhere in the editor does not supply its binary pixels here.": "원본 맵을 컴파일할 때 사용한 halflife.wad 또는 다른 WAD3 파일을 선택하세요. 이 작업은 필요한 누락 텍스처만 새 BSP 사본에 포함합니다. 편집기의 다른 영역에서 가져온 WAD의 원본 이진 데이터는 여기서 사용되지 않습니다.", "WAD3 files selected": "선택된 WAD3 파일", "Textures resolved from WAD3": "WAD3에서 복원한 텍스처", "Missing external BSP texture": "외부 BSP 텍스처 누락", "Select the WAD3 file containing this texture below, then analyze again.": "아래에서 해당 텍스처가 포함된 WAD3 파일을 선택하고 다시 분석하세요.", "Texture not found in the selected WAD3 files. Select a WAD3 with this texture.": "선택한 WAD3 파일에 텍스처가 없습니다. 해당 텍스처가 들어 있는 WAD3를 선택하세요.", "WAD3 selection limit: up to 8 files, 64 MiB each and 128 MiB total.": "WAD3 선택 제한: 최대 8개 파일, 파일당 64 MiB, 총 128 MiB."});
+Object.assign(zh,{"WAD3 files for missing external textures (optional)": "用于补全缺失外部纹理的 WAD3 文件（可选）", "Select the original halflife.wad or other WAD3 used when compiling the source map. This binary operation embeds only required missing textures in the new BSP copy; importing a WAD elsewhere in the editor does not supply its binary pixels here.": "选择编译源地图时使用的原始 halflife.wad 或其他 WAD3 文件。此操作只会将缺少的必要纹理嵌入新的 BSP 副本。在编辑器其他位置导入的 WAD 不会在此提供原始二进制纹理数据。", "WAD3 files selected": "已选择的 WAD3 文件", "Textures resolved from WAD3": "从 WAD3 补全的纹理", "Missing external BSP texture": "缺少 BSP 外部纹理", "Select the WAD3 file containing this texture below, then analyze again.": "在下方选择包含此纹理的 WAD3 文件，然后重新分析。", "Texture not found in the selected WAD3 files. Select a WAD3 with this texture.": "所选 WAD3 文件中没有该纹理。请选择包含它的 WAD3 文件。", "WAD3 selection limit: up to 8 files, 64 MiB each and 128 MiB total.": "WAD3 文件限制：最多 8 个，每个 64 MiB，总计 128 MiB。"});
+Object.assign(pt,{"WAD3 files for missing external textures (optional)": "Arquivos WAD3 para texturas externas ausentes (opcional)", "Select the original halflife.wad or other WAD3 used when compiling the source map. This binary operation embeds only required missing textures in the new BSP copy; importing a WAD elsewhere in the editor does not supply its binary pixels here.": "Selecione o halflife.wad original ou outro WAD3 usado ao compilar o mapa de origem. Esta operação incorpora apenas as texturas ausentes necessárias à nova cópia BSP. Importar um WAD em outra parte do editor não disponibiliza aqui os seus dados binários.", "WAD3 files selected": "Arquivos WAD3 selecionados", "Textures resolved from WAD3": "Texturas recuperadas do WAD3", "Missing external BSP texture": "Textura externa do BSP ausente", "Select the WAD3 file containing this texture below, then analyze again.": "Selecione abaixo o arquivo WAD3 que contém a textura e analise novamente.", "Texture not found in the selected WAD3 files. Select a WAD3 with this texture.": "A textura não foi encontrada nos arquivos WAD3 selecionados. Escolha um WAD3 que a contenha.", "WAD3 selection limit: up to 8 files, 64 MiB each and 128 MiB total.": "Limite WAD3: até 8 arquivos, 64 MiB por arquivo e 128 MiB no total."});
+
+// BSP Composition 2.1.2 — unlit lightstyle compatibility and diagnostics.
+Object.assign(es, {
+ 'Invalid BSP lightstyles on source face':'Estilos de iluminación BSP inválidos en la cara de origen',
+ 'Non-contiguous lightstyles cannot be transferred safely.':'Los estilos de iluminación no consecutivos no se pueden transferir de forma segura.',
+ 'Unlit faces with unused lighting offsets normalized':'Caras sin lightmaps con offsets de iluminación inutilizados normalizados',
+});
+Object.assign(en, {
+ 'Invalid BSP lightstyles on source face':'Invalid BSP lightstyles on source face',
+ 'Non-contiguous lightstyles cannot be transferred safely.':'Non-contiguous lightstyles cannot be transferred safely.',
+ 'Unlit faces with unused lighting offsets normalized':'Unlit faces with unused lighting offsets normalized',
+});
+Object.assign(ru, {
+ 'Invalid BSP lightstyles on source face':'Недопустимые стили освещения BSP на исходной грани',
+ 'Non-contiguous lightstyles cannot be transferred safely.':'Непоследовательные стили освещения невозможно безопасно перенести.',
+ 'Unlit faces with unused lighting offsets normalized':'Нормализовано граней без освещения с неиспользуемыми смещениями',
+});
+Object.assign(ko, {
+ 'Invalid BSP lightstyles on source face':'원본 면의 BSP 조명 스타일이 올바르지 않습니다',
+ 'Non-contiguous lightstyles cannot be transferred safely.':'연속되지 않은 조명 스타일은 안전하게 전송할 수 없습니다.',
+ 'Unlit faces with unused lighting offsets normalized':'사용하지 않는 조명 오프셋을 정규화한 비조명 면',
+});
+Object.assign(zh, {
+ 'Invalid BSP lightstyles on source face':'源面上的 BSP 光照样式无效',
+ 'Non-contiguous lightstyles cannot be transferred safely.':'不连续的光照样式无法安全转移。',
+ 'Unlit faces with unused lighting offsets normalized':'已规范化带有未使用光照偏移的非光照面',
+});
+Object.assign(pt, {
+ 'Invalid BSP lightstyles on source face':'Estilos de iluminação BSP inválidos na face de origem',
+ 'Non-contiguous lightstyles cannot be transferred safely.':'Estilos de iluminação não contíguos não podem ser transferidos com segurança.',
+ 'Unlit faces with unused lighting offsets normalized':'Faces sem lightmaps com deslocamentos de iluminação não utilizados normalizados',
+});
+
+// BSP Visual Entity Editor — first incremental viewport editing stage.
+Object.assign(es, {
+  "Edit BSP entities": "Editar entidades BSP",
+  "End editing": "Terminar edición",
+  "Edit point entities directly in the 3D BSP viewport": "Editar entidades puntuales directamente en la escena BSP 3D",
+  "BSP entity editor": "Editor de entidades BSP",
+  "Live entity preview. Only point-entity keyvalues are changed; original BSP and compiled geometry are preserved.": "Vista previa inmediata de entidades puntuales. El BSP original y la geometría compilada se conservan.",
+  "Point entities and NPCs": "Entidades puntuales y NPC",
+  "G: move · R: yaw rotation · Ctrl+Z/Y: undo/redo. Export a new BSP copy to save.": "G: mover · R: giro horizontal · Ctrl+Z/Y: deshacer/rehacer. Exportá una copia BSP para guardar.",
+  "Export BSP copy": "Exportar copia BSP",
+  "Revert": "Restablecer",
+  "Light entities keep their original baked lighting. Brush-model (*n) geometry and transforms are locked.": "Las luces conservan la iluminación precalculada. No se pueden mover modelos sólidos compilados (*n).",
+  "BSP copy exported. Open it again to inspect the result.": "Copia BSP exportada. Abrila nuevamente para comprobar el resultado.",
+  "Discard all unsaved BSP entity edits?": "¿Descartar todos los cambios de entidades BSP sin exportar?",
+  "Cannot start BSP visual editing": "No se puede iniciar la edición visual BSP",
+  "Filter FGD point entities...": "Buscar entidades puntuales FGD...",
+  "Point entity class": "Clase de entidad puntual",
+  "Select a point entity": "Seleccioná una entidad puntual",
+  "Create point entity": "Crear entidad puntual",
+  "New entities appear at the selected entity or player spawn. Check their FGD properties before export.": "Las entidades nuevas aparecen junto a la selección o al spawn. Revisá sus propiedades FGD antes de exportar.",
+  "Choose a valid point entity from the FGD catalog.": "Elegí una entidad puntual válida del catálogo FGD.",
+  "Compiled brush entity: geometry and transforms are locked. Use native BSP Recovery for permitted keyvalues.": "Entidad sólida compilada: geometría y movimiento bloqueados. Usá Recuperación BSP para editar keyvalues permitidos.",
+  "Remove this point entity from the exported BSP?": "¿Eliminar esta entidad puntual de la copia BSP exportada?"
+});
+Object.assign(ru, {
+  "Edit BSP entities": "Редактировать сущности BSP",
+  "End editing": "Завершить редактирование",
+  "Edit point entities directly in the 3D BSP viewport": "Редактировать точечные сущности в 3D-виде BSP",
+  "BSP entity editor": "Редактор сущностей BSP",
+  "Live entity preview. Only point-entity keyvalues are changed; original BSP and compiled geometry are preserved.": "Предпросмотр точечных сущностей. Исходный BSP и геометрия не изменяются.",
+  "Point entities and NPCs": "Точечные сущности и NPC",
+  "G: move · R: yaw rotation · Ctrl+Z/Y: undo/redo. Export a new BSP copy to save.": "G: перемещение · R: поворот · Ctrl+Z/Y: отмена/повтор. Сохраните копию BSP.",
+  "Export BSP copy": "Экспортировать копию BSP",
+  "Revert": "Сбросить изменения",
+  "Light entities keep their original baked lighting. Brush-model (*n) geometry and transforms are locked.": "Запечённое освещение не обновляется. Модели-браши (*n) заблокированы.",
+  "BSP copy exported. Open it again to inspect the result.": "Копия BSP экспортирована. Откройте её для проверки.",
+  "Discard all unsaved BSP entity edits?": "Отменить все несохранённые изменения сущностей BSP?",
+  "Cannot start BSP visual editing": "Не удалось начать визуальное редактирование BSP",
+  "Filter FGD point entities...": "Поиск точечных сущностей FGD...",
+  "Point entity class": "Класс точечной сущности",
+  "Select a point entity": "Выберите точечную сущность",
+  "Create point entity": "Создать точечную сущность",
+  "New entities appear at the selected entity or player spawn. Check their FGD properties before export.": "Новые сущности появляются у выбранной сущности или точки появления. Проверьте FGD перед экспортом.",
+  "Choose a valid point entity from the FGD catalog.": "Выберите корректную точечную сущность из FGD.",
+  "Compiled brush entity: geometry and transforms are locked. Use native BSP Recovery for permitted keyvalues.": "Скомпилированная brush-сущность: геометрия и перемещение заблокированы. Используйте восстановление BSP для ключей.",
+  "Remove this point entity from the exported BSP?": "Удалить эту точечную сущность из экспортируемого BSP?"
+});
+Object.assign(ko, {
+  "Edit BSP entities": "BSP 엔티티 편집",
+  "End editing": "편집 종료",
+  "Edit point entities directly in the 3D BSP viewport": "3D BSP 화면에서 포인트 엔티티 직접 편집",
+  "BSP entity editor": "BSP 엔티티 편집기",
+  "Live entity preview. Only point-entity keyvalues are changed; original BSP and compiled geometry are preserved.": "포인트 엔티티 변경을 즉시 표시합니다. 원본 BSP와 컴파일된 지오메트리는 유지됩니다.",
+  "Point entities and NPCs": "포인트 엔티티와 NPC",
+  "G: move · R: yaw rotation · Ctrl+Z/Y: undo/redo. Export a new BSP copy to save.": "G: 이동 · R: 수평 회전 · Ctrl+Z/Y: 실행 취소/다시 실행. BSP 사본을 내보내 저장하세요.",
+  "Export BSP copy": "BSP 사본 내보내기",
+  "Revert": "되돌리기",
+  "Light entities keep their original baked lighting. Brush-model (*n) geometry and transforms are locked.": "베이크된 조명은 갱신되지 않습니다. 컴파일된 브러시 모델(*n)은 잠깁니다.",
+  "BSP copy exported. Open it again to inspect the result.": "BSP 사본을 내보냈습니다. 다시 열어 확인하세요.",
+  "Discard all unsaved BSP entity edits?": "내보내지 않은 BSP 엔티티 변경을 모두 취소할까요?",
+  "Cannot start BSP visual editing": "BSP 시각 편집을 시작할 수 없습니다",
+  "Filter FGD point entities...": "FGD 포인트 엔티티 검색...",
+  "Point entity class": "포인트 엔티티 클래스",
+  "Select a point entity": "포인트 엔티티 선택",
+  "Create point entity": "포인트 엔티티 생성",
+  "New entities appear at the selected entity or player spawn. Check their FGD properties before export.": "새 엔티티는 선택 위치 또는 시작 지점에 배치됩니다. 내보내기 전 FGD 속성을 확인하세요.",
+  "Choose a valid point entity from the FGD catalog.": "FGD 목록에서 올바른 포인트 엔티티를 선택하세요.",
+  "Compiled brush entity: geometry and transforms are locked. Use native BSP Recovery for permitted keyvalues.": "컴파일된 브러시 엔티티는 이동할 수 없습니다. 허용된 키값은 BSP 복구에서 편집하세요.",
+  "Remove this point entity from the exported BSP?": "내보낼 BSP 사본에서 이 포인트 엔티티를 삭제할까요?"
+});
+Object.assign(zh, {
+  "Edit BSP entities": "编辑 BSP 实体",
+  "End editing": "结束编辑",
+  "Edit point entities directly in the 3D BSP viewport": "在 BSP 三维视图直接编辑点实体",
+  "BSP entity editor": "BSP 实体编辑器",
+  "Live entity preview. Only point-entity keyvalues are changed; original BSP and compiled geometry are preserved.": "即时预览点实体；原 BSP 和已编译几何体保持不变。",
+  "Point entities and NPCs": "点实体与 NPC",
+  "G: move · R: yaw rotation · Ctrl+Z/Y: undo/redo. Export a new BSP copy to save.": "G：移动 · R：水平旋转 · Ctrl+Z/Y：撤销/重做。导出 BSP 副本保存。",
+  "Export BSP copy": "导出 BSP 副本",
+  "Revert": "恢复原状",
+  "Light entities keep their original baked lighting. Brush-model (*n) geometry and transforms are locked.": "烘焙光照不会更新；已编译刷子模型（*n）不可变换。",
+  "BSP copy exported. Open it again to inspect the result.": "已导出 BSP 副本。请重新打开以检查结果。",
+  "Discard all unsaved BSP entity edits?": "丢弃全部未导出的 BSP 实体更改？",
+  "Cannot start BSP visual editing": "无法开始 BSP 可视化编辑",
+  "Filter FGD point entities...": "搜索 FGD 点实体...",
+  "Point entity class": "点实体类型",
+  "Select a point entity": "选择点实体",
+  "Create point entity": "创建点实体",
+  "New entities appear at the selected entity or player spawn. Check their FGD properties before export.": "新实体出现在所选实体或玩家出生点；导出前检查 FGD 属性。",
+  "Choose a valid point entity from the FGD catalog.": "请从 FGD 目录选择有效点实体。",
+  "Compiled brush entity: geometry and transforms are locked. Use native BSP Recovery for permitted keyvalues.": "已编译刷子实体：几何与移动已锁定。请在 BSP 恢复中编辑允许的键值。",
+  "Remove this point entity from the exported BSP?": "从导出的 BSP 副本中删除此点实体？"
+});
+Object.assign(pt, {
+  "Edit BSP entities": "Editar entidades BSP",
+  "End editing": "Concluir edição",
+  "Edit point entities directly in the 3D BSP viewport": "Editar entidades pontuais na vista 3D BSP",
+  "BSP entity editor": "Editor de entidades BSP",
+  "Live entity preview. Only point-entity keyvalues are changed; original BSP and compiled geometry are preserved.": "Pré-visualização de entidades pontuais. BSP original e geometria compilada preservados.",
+  "Point entities and NPCs": "Entidades pontuais e NPCs",
+  "G: move · R: yaw rotation · Ctrl+Z/Y: undo/redo. Export a new BSP copy to save.": "G: mover · R: rotação horizontal · Ctrl+Z/Y: desfazer/refazer. Exporte cópia BSP para salvar.",
+  "Export BSP copy": "Exportar cópia BSP",
+  "Revert": "Reverter",
+  "Light entities keep their original baked lighting. Brush-model (*n) geometry and transforms are locked.": "A iluminação compilada não é atualizada. Modelos brush (*n) ficam bloqueados.",
+  "BSP copy exported. Open it again to inspect the result.": "Cópia BSP exportada. Abra novamente para conferir.",
+  "Discard all unsaved BSP entity edits?": "Descartar todas as edições de entidades BSP não exportadas?",
+  "Cannot start BSP visual editing": "Não foi possível iniciar a edição visual BSP",
+  "Filter FGD point entities...": "Pesquisar entidades pontuais FGD...",
+  "Point entity class": "Classe de entidade pontual",
+  "Select a point entity": "Selecione entidade pontual",
+  "Create point entity": "Criar entidade pontual",
+  "New entities appear at the selected entity or player spawn. Check their FGD properties before export.": "Novas entidades aparecem junto à seleção ou ao ponto de início. Verifique o FGD antes de exportar.",
+  "Choose a valid point entity from the FGD catalog.": "Selecione uma entidade pontual válida do catálogo FGD.",
+  "Compiled brush entity: geometry and transforms are locked. Use native BSP Recovery for permitted keyvalues.": "Entidade brush compilada: geometria e movimento bloqueados. Use Recuperação BSP para keyvalues permitidos.",
+  "Remove this point entity from the exported BSP?": "Remover esta entidade pontual da cópia BSP exportada?"
+});
+
+Object.assign(es, {'Unsaved BSP visual entity edits will be lost. Continue?':'Se perderán los cambios BSP sin exportar. ¿Continuar?'});
+Object.assign(ru, {'Unsaved BSP visual entity edits will be lost. Continue?':'Несохранённые изменения BSP будут потеряны. Продолжить?'});
+Object.assign(ko, {'Unsaved BSP visual entity edits will be lost. Continue?':'내보내지 않은 BSP 변경 사항이 사라집니다. 계속할까요?'});
+Object.assign(zh, {'Unsaved BSP visual entity edits will be lost. Continue?':'未导出的 BSP 修改将丢失。继续吗？'});
+Object.assign(pt, {'Unsaved BSP visual entity edits will be lost. Continue?':'As alterações BSP não exportadas serão perdidas. Continuar?'});
+
+// BSP Editor Preview 2 — compact workflow, surface placement and MDL library (ES/EN/RU/KO/ZH/PT).
+Object.assign(es,{
+  'BSP Editor':'Editor BSP','Edit BSP entities in 3D':'Editar entidades BSP en 3D',
+  'Tools':'Herramientas','View options':'Visualización','Camera':'Cámara','Model library':'Biblioteca de modelos',
+  'BSP model library':'Biblioteca de modelos BSP','MDL models installed in Sven Co-op':'Modelos MDL instalados en Sven Co-op',
+  'Search models by path or name':'Buscar modelos por nombre o ruta','Loading models...':'Cargando modelos...',
+  'No models match the current search.':'No se encontraron modelos.','Source':'Origen','Preview 3D model':'Previsualizar modelo 3D',
+  'Apply to selected point entity':'Asignar a entidad puntual seleccionada','Place model in BSP':'Colocar modelo en BSP',
+  'Select a model to preview, assign or place it.':'Seleccioná un modelo para verlo, asignarlo o colocarlo.',
+  'Original MDL files are read-only. A BSP stores model paths, not MDL file data.':'Los archivos MDL originales no se modifican. El BSP guarda rutas, no los archivos MDL.',
+  'Model placement uses item_generic. It must be supported by the loaded Sven Co-op FGD; verify its behavior in-game.':'La colocación usa item_generic. Requiere una FGD compatible; comprobá su funcionamiento dentro del juego.',
+  'Configure Sven Co-op game directory to load MDL models.':'Configurá la carpeta de Sven Co-op para cargar modelos MDL.',
+  'Place point entity':'Colocar entidad puntual','Click a surface to place':'Hacé clic en una superficie para colocar',
+  'Choose an entity and click a surface in the BSP viewport. Press Esc to cancel.':'Elegí una entidad y hacé clic en una superficie del BSP. Esc para cancelar.',
+  'Entity placed. Export a BSP copy to save your changes.':'Entidad colocada. Exportá una copia BSP para guardar los cambios.',
+  'Select an editable point entity before assigning a model.':'Seleccioná una entidad puntual editable antes de asignar un modelo.',
+  'Open BSP Editor first.':'Primero abrí el Editor BSP.'
+});
+Object.assign(ru,{
+  'BSP Editor':'Редактор BSP','Edit BSP entities in 3D':'Редактировать объекты BSP в 3D',
+  'Tools':'Инструменты','View options':'Отображение','Camera':'Камера','Model library':'Библиотека моделей',
+  'BSP model library':'Библиотека моделей BSP','MDL models installed in Sven Co-op':'Установленные модели MDL Sven Co-op',
+  'Search models by path or name':'Поиск моделей по имени или пути','Loading models...':'Загрузка моделей...',
+  'No models match the current search.':'Модели не найдены.','Source':'Источник','Preview 3D model':'Просмотр модели в 3D',
+  'Apply to selected point entity':'Назначить выбранному точечному объекту','Place model in BSP':'Разместить модель в BSP',
+  'Select a model to preview, assign or place it.':'Выберите модель для просмотра, назначения или размещения.',
+  'Original MDL files are read-only. A BSP stores model paths, not MDL file data.':'Исходные файлы MDL не изменяются. BSP хранит пути, а не сами модели.',
+  'Model placement uses item_generic. It must be supported by the loaded Sven Co-op FGD; verify its behavior in-game.':'Для размещения используется item_generic. Проверьте поддержку в FGD и работу в игре.',
+  'Configure Sven Co-op game directory to load MDL models.':'Укажите папку Sven Co-op для загрузки моделей MDL.',
+  'Place point entity':'Разместить точечный объект','Click a surface to place':'Нажмите на поверхность для размещения',
+  'Choose an entity and click a surface in the BSP viewport. Press Esc to cancel.':'Выберите объект и нажмите на поверхность BSP. Esc — отмена.',
+  'Entity placed. Export a BSP copy to save your changes.':'Объект размещён. Экспортируйте копию BSP для сохранения.',
+  'Select an editable point entity before assigning a model.':'Выберите редактируемый точечный объект для назначения модели.',
+  'Open BSP Editor first.':'Сначала откройте редактор BSP.'
+});
+Object.assign(ko,{
+  'BSP Editor':'BSP 편집기','Edit BSP entities in 3D':'3D에서 BSP 엔티티 편집',
+  'Tools':'도구','View options':'보기 설정','Camera':'카메라','Model library':'모델 라이브러리',
+  'BSP model library':'BSP 모델 라이브러리','MDL models installed in Sven Co-op':'Sven Co-op에 설치된 MDL 모델',
+  'Search models by path or name':'모델 이름 또는 경로 검색','Loading models...':'모델 불러오는 중...',
+  'No models match the current search.':'일치하는 모델이 없습니다.','Source':'출처','Preview 3D model':'3D 모델 미리 보기',
+  'Apply to selected point entity':'선택한 포인트 엔티티에 적용','Place model in BSP':'BSP에 모델 배치',
+  'Select a model to preview, assign or place it.':'미리 보기, 적용 또는 배치할 모델을 선택하세요.',
+  'Original MDL files are read-only. A BSP stores model paths, not MDL file data.':'원본 MDL 파일은 변경하지 않습니다. BSP는 모델 파일 대신 경로를 저장합니다.',
+  'Model placement uses item_generic. It must be supported by the loaded Sven Co-op FGD; verify its behavior in-game.':'모델 배치는 item_generic을 사용합니다. FGD 지원 여부와 게임 내 동작을 확인하세요.',
+  'Configure Sven Co-op game directory to load MDL models.':'MDL 모델을 불러오려면 Sven Co-op 폴더를 설정하세요.',
+  'Place point entity':'포인트 엔티티 배치','Click a surface to place':'표면을 클릭해 배치',
+  'Choose an entity and click a surface in the BSP viewport. Press Esc to cancel.':'엔티티를 선택하고 BSP 표면을 클릭하세요. Esc로 취소합니다.',
+  'Entity placed. Export a BSP copy to save your changes.':'엔티티를 배치했습니다. BSP 사본을 내보내 저장하세요.',
+  'Select an editable point entity before assigning a model.':'모델을 적용하려면 편집 가능한 포인트 엔티티를 선택하세요.',
+  'Open BSP Editor first.':'먼저 BSP 편집기를 여세요.'
+});
+Object.assign(zh,{
+  'BSP Editor':'BSP 编辑器','Edit BSP entities in 3D':'在 3D 中编辑 BSP 实体',
+  'Tools':'工具','View options':'显示选项','Camera':'摄像机','Model library':'模型库',
+  'BSP model library':'BSP 模型库','MDL models installed in Sven Co-op':'Sven Co-op 已安装 MDL 模型',
+  'Search models by path or name':'按路径或名称搜索模型','Loading models...':'正在加载模型...',
+  'No models match the current search.':'没有匹配的模型。','Source':'来源','Preview 3D model':'预览 3D 模型',
+  'Apply to selected point entity':'应用到选中的点实体','Place model in BSP':'在 BSP 中放置模型',
+  'Select a model to preview, assign or place it.':'选择模型以预览、应用或放置。',
+  'Original MDL files are read-only. A BSP stores model paths, not MDL file data.':'不会修改原始 MDL 文件。BSP 只保存模型路径。',
+  'Model placement uses item_generic. It must be supported by the loaded Sven Co-op FGD; verify its behavior in-game.':'模型放置使用 item_generic。请检查 FGD 是否支持并在游戏中验证。',
+  'Configure Sven Co-op game directory to load MDL models.':'请设置 Sven Co-op 游戏目录以加载 MDL 模型。',
+  'Place point entity':'放置点实体','Click a surface to place':'点击表面放置',
+  'Choose an entity and click a surface in the BSP viewport. Press Esc to cancel.':'选择实体，然后点击 BSP 表面。按 Esc 取消。',
+  'Entity placed. Export a BSP copy to save your changes.':'实体已放置。导出 BSP 副本以保存修改。',
+  'Select an editable point entity before assigning a model.':'请先选择可编辑的点实体再应用模型。',
+  'Open BSP Editor first.':'请先打开 BSP 编辑器。'
+});
+Object.assign(pt,{
+  'BSP Editor':'Editor BSP','Edit BSP entities in 3D':'Editar entidades BSP em 3D',
+  'Tools':'Ferramentas','View options':'Visualização','Camera':'Câmera','Model library':'Biblioteca de modelos',
+  'BSP model library':'Biblioteca de modelos BSP','MDL models installed in Sven Co-op':'Modelos MDL instalados no Sven Co-op',
+  'Search models by path or name':'Buscar modelos por nome ou caminho','Loading models...':'Carregando modelos...',
+  'No models match the current search.':'Nenhum modelo encontrado.','Source':'Origem','Preview 3D model':'Visualizar modelo 3D',
+  'Apply to selected point entity':'Aplicar à entidade pontual selecionada','Place model in BSP':'Posicionar modelo no BSP',
+  'Select a model to preview, assign or place it.':'Selecione um modelo para visualizar, aplicar ou posicionar.',
+  'Original MDL files are read-only. A BSP stores model paths, not MDL file data.':'Os arquivos MDL originais não são alterados. O BSP armazena caminhos, não arquivos MDL.',
+  'Model placement uses item_generic. It must be supported by the loaded Sven Co-op FGD; verify its behavior in-game.':'A colocação usa item_generic. Confira o suporte no FGD e teste dentro do jogo.',
+  'Configure Sven Co-op game directory to load MDL models.':'Configure a pasta do Sven Co-op para carregar modelos MDL.',
+  'Place point entity':'Posicionar entidade pontual','Click a surface to place':'Clique em uma superfície para posicionar',
+  'Choose an entity and click a surface in the BSP viewport. Press Esc to cancel.':'Escolha uma entidade e clique na superfície do BSP. Esc cancela.',
+  'Entity placed. Export a BSP copy to save your changes.':'Entidade posicionada. Exporte uma cópia BSP para salvar.',
+  'Select an editable point entity before assigning a model.':'Selecione uma entidade pontual editável antes de aplicar um modelo.',
+  'Open BSP Editor first.':'Abra o Editor BSP primeiro.'
+});
+
+Object.assign(es,{'Missing model paths':'Rutas de modelos faltantes','Set the Sven Co-op game folder in Build Configuration to preview MDL models.':'Configurá la carpeta de Sven Co-op en Configuración de compilación para ver los modelos MDL.'});
+Object.assign(ru,{'Missing model paths':'Отсутствующие пути моделей','Set the Sven Co-op game folder in Build Configuration to preview MDL models.':'Укажите папку Sven Co-op в настройках сборки для просмотра моделей MDL.'});
+Object.assign(ko,{'Missing model paths':'누락된 모델 경로','Set the Sven Co-op game folder in Build Configuration to preview MDL models.':'MDL 모델을 보려면 빌드 설정에서 Sven Co-op 폴더를 지정하세요.'});
+Object.assign(zh,{'Missing model paths':'缺失的模型路径','Set the Sven Co-op game folder in Build Configuration to preview MDL models.':'在编译设置中配置 Sven Co-op 游戏文件夹以预览 MDL 模型。'});
+Object.assign(pt,{'Missing model paths':'Caminhos dos modelos ausentes','Set the Sven Co-op game folder in Build Configuration to preview MDL models.':'Configure a pasta do Sven Co-op nas configurações de compilação para visualizar modelos MDL.'});
+
+// BSP Editor Visual Preview 3 — entity-distance culling, idle MDL and extra local folders.
+Object.assign(es,{
+  'Entity visibility distance':'Distancia de visibilidad de entidades',
+  'Hides distant markers and MDL previews; the selected entity remains visible. Does not modify the BSP.':'Oculta los marcadores y modelos MDL lejanos; la entidad seleccionada sigue visible. No modifica el BSP.',
+  'Import extra MDL folder':'Importar carpeta MDL adicional','extra models loaded':'rutas MDL adicionales',
+  'Session only: no files are copied to the game.':'Solo para esta sesión: no se copian archivos al juego.'
+});
+Object.assign(ru,{
+  'Entity visibility distance':'Дистанция видимости сущностей',
+  'Hides distant markers and MDL previews; the selected entity remains visible. Does not modify the BSP.':'Скрывает дальние маркеры и модели MDL; выбранная сущность остаётся видимой. BSP не меняется.',
+  'Import extra MDL folder':'Загрузить дополнительную папку MDL','extra models loaded':'дополнительных путей MDL',
+  'Session only: no files are copied to the game.':'Только на время сеанса: файлы не копируются в игру.'
+});
+Object.assign(ko,{
+  'Entity visibility distance':'엔티티 표시 거리',
+  'Hides distant markers and MDL previews; the selected entity remains visible. Does not modify the BSP.':'먼 엔티티 마커와 MDL 미리 보기를 숨깁니다. 선택한 엔티티는 표시되며 BSP는 변경되지 않습니다.',
+  'Import extra MDL folder':'추가 MDL 폴더 가져오기','extra models loaded':'추가 MDL 경로',
+  'Session only: no files are copied to the game.':'현재 세션에서만 사용하며 게임 파일은 복사하지 않습니다.'
+});
+Object.assign(zh,{
+  'Entity visibility distance':'实体可见距离',
+  'Hides distant markers and MDL previews; the selected entity remains visible. Does not modify the BSP.':'隐藏远处的实体标记和 MDL 预览，选中的实体保持可见；不会修改 BSP。',
+  'Import extra MDL folder':'导入额外 MDL 文件夹','extra models loaded':'额外 MDL 路径',
+  'Session only: no files are copied to the game.':'仅在当前会话使用，不会将文件复制到游戏中。'
+});
+Object.assign(pt,{
+  'Entity visibility distance':'Distância de visibilidade de entidades',
+  'Hides distant markers and MDL previews; the selected entity remains visible. Does not modify the BSP.':'Oculta marcadores e modelos MDL distantes; a entidade selecionada continua visível. Não modifica o BSP.',
+  'Import extra MDL folder':'Importar pasta MDL adicional','extra models loaded':'caminhos MDL adicionais',
+  'Session only: no files are copied to the game.':'Apenas nesta sessão: nenhum arquivo é copiado para o jogo.'
+});
+
+Object.assign(es,{
+  "models loaded this session":"modelos cargados esta sesión",
+  "unsupported files":"archivos incompatibles",
+  "Local folder":"Carpeta local",
+  "Folder contains too many MDL files (max 450). Choose a smaller model folder.":"Demasiados archivos MDL (máximo 450). Elegí una carpeta más pequeña.",
+  "Model folder is too large (max 256 MiB). Choose a smaller folder.":"Carpeta de modelos demasiado grande (máximo 256 MiB). Elegí otra más pequeña.",
+  "Too many independent models (max 90). Choose a smaller folder.":"Demasiados modelos independientes (máximo 90). Elegí una carpeta más pequeña."
+});
+
+Object.assign(ru,{
+  "models loaded this session":"моделей загружено за сеанс",
+  "unsupported files":"неподдерживаемых файлов",
+  "Local folder":"Локальная папка",
+  "Folder contains too many MDL files (max 450). Choose a smaller model folder.":"Слишком много MDL (максимум 450). Выберите меньшую папку.",
+  "Model folder is too large (max 256 MiB). Choose a smaller folder.":"Папка моделей слишком велика (максимум 256 МиБ). Выберите меньшую.",
+  "Too many independent models (max 90). Choose a smaller folder.":"Слишком много моделей (максимум 90). Выберите меньшую папку."
+});
+
+Object.assign(ko,{
+  "models loaded this session":"이번 세션에서 불러온 모델",
+  "unsupported files":"지원되지 않는 파일",
+  "Local folder":"로컬 폴더",
+  "Folder contains too many MDL files (max 450). Choose a smaller model folder.":"MDL 파일이 너무 많습니다(최대 450개). 작은 폴더를 선택하세요.",
+  "Model folder is too large (max 256 MiB). Choose a smaller folder.":"모델 폴더가 너무 큽니다(최대 256 MiB). 작은 폴더를 선택하세요.",
+  "Too many independent models (max 90). Choose a smaller folder.":"모델이 너무 많습니다(최대 90개). 작은 폴더를 선택하세요."
+});
+
+Object.assign(zh,{
+  "models loaded this session":"本次会话已加载的模型",
+  "unsupported files":"不支持的文件",
+  "Local folder":"本地文件夹",
+  "Folder contains too many MDL files (max 450). Choose a smaller model folder.":"MDL 文件过多（最多 450 个），请选择较小文件夹。",
+  "Model folder is too large (max 256 MiB). Choose a smaller folder.":"模型文件夹过大（最多 256 MiB），请选择较小文件夹。",
+  "Too many independent models (max 90). Choose a smaller folder.":"独立模型过多（最多 90 个），请选择较小文件夹。"
+});
+
+Object.assign(pt,{
+  "models loaded this session":"modelos carregados nesta sessão",
+  "unsupported files":"arquivos incompatíveis",
+  "Local folder":"Pasta local",
+  "Folder contains too many MDL files (max 450). Choose a smaller model folder.":"Há arquivos MDL demais (máximo 450). Escolha uma pasta menor.",
+  "Model folder is too large (max 256 MiB). Choose a smaller folder.":"Pasta de modelos muito grande (máximo 256 MiB). Escolha uma menor.",
+  "Too many independent models (max 90). Choose a smaller folder.":"Modelos demais (máximo 90). Escolha uma pasta menor."
+});
+
+Object.assign(es,{'Preview grounded NPCs on the floor':'Ajustar NPC al suelo en la vista previa'});
+
+Object.assign(ru,{'Preview grounded NPCs on the floor':'Выравнивать NPC по полу в предпросмотре'});
+
+Object.assign(ko,{'Preview grounded NPCs on the floor':'미리 보기에서 NPC를 바닥에 맞추기'});
+
+Object.assign(zh,{'Preview grounded NPCs on the floor':'预览时将 NPC 贴合地面'});
+
+Object.assign(pt,{'Preview grounded NPCs on the floor':'Alinhar NPCs ao chão na prévia'});
+
+// BSP Editor Preview 4 — resizable left/right dock labels (all six locales).
+Object.assign(es,{
+ 'Resize tools panel':'Cambiar ancho del panel de herramientas',
+ 'Resize inspector panel':'Cambiar ancho del inspector',
+ 'Drag panel divider to resize':'Arrastrá el separador para ajustar el ancho de los paneles.'
+});
+Object.assign(ru,{
+ 'Resize tools panel':'Изменить ширину панели инструментов',
+ 'Resize inspector panel':'Изменить ширину инспектора',
+ 'Drag panel divider to resize':'Перетащите разделитель, чтобы изменить ширину панелей.'
+});
+Object.assign(ko,{
+ 'Resize tools panel':'도구 패널 너비 조절',
+ 'Resize inspector panel':'검사기 패널 너비 조절',
+ 'Drag panel divider to resize':'구분선을 드래그하여 패널 너비를 조절하세요.'
+});
+Object.assign(zh,{
+ 'Resize tools panel':'调整工具面板宽度',
+ 'Resize inspector panel':'调整检查器面板宽度',
+ 'Drag panel divider to resize':'拖动分隔条可调整面板宽度。'
+});
+Object.assign(pt,{
+ 'Resize tools panel':'Redimensionar o painel de ferramentas',
+ 'Resize inspector panel':'Redimensionar o inspetor',
+ 'Drag panel divider to resize':'Arraste o divisor para ajustar a largura dos painéis.'
+});
+
+// BSP Editor Visual Preview 5 — FGD flags, target wiring and bulk editing.
+Object.assign(es,{
+ 'Connect entities':'Conectar entidades','Connection lines':'Líneas de conexiones','Entity connections':'Conexiones de entidades',
+ 'Connection property':'Propiedad de conexión','Choose destination in 3D':'Elegir destino en 3D','Cancel connection':'Cancelar conexión',
+ 'Click a destination entity in 3D or in the list. Esc cancels connecting.':'Hacé clic en la entidad de destino en 3D o en la lista. Esc cancela.',
+ 'Destination receives a unique targetname if it has none. Existing targetnames are preserved.':'Si el destino no tiene targetname, se genera uno único. Se respetan los ya existentes.',
+ 'Unresolved target':'Destino no encontrado','Connection saved in the BSP entity lump. Export a copy.':'Conexión guardada en las entidades BSP. Exportá una copia.',
+ 'entities selected':'entidades seleccionadas','Ctrl+click to add or remove':'Ctrl+clic para añadir o quitar','Clear multi-selection':'Quitar selección múltiple',
+ 'Batch edit point entities':'Edición masiva de entidades puntuales','The operation is atomic and undoable. Compiled brush entities cannot be batch edited.':'La operación se puede deshacer en un paso. No se editan entidades sólidas compiladas.',
+ 'Apply to selected entities':'Aplicar a seleccionadas','Property key':'Clave de propiedad','FGD options and spawnflags':'Opciones FGD y spawnflags','Custom value':'Valor personalizado',
+ 'Choose an editable point entity as the connection source and a valid destination.':'Elegí una entidad puntual editable como origen y un destino válido.',
+ 'Unsupported entity connection key.':'Propiedad de conexión no compatible.','Could not allocate a unique targetname.':'No se pudo generar un targetname único.',
+ 'Select 1–256 editable point entities.':'Seleccioná entre 1 y 256 entidades puntuales editables.',
+ 'Bulk editing this field could invalidate compiled models, positions, or entity names.':'Editar masivamente esta propiedad podría invalidar modelos, posiciones o nombres.',
+ 'Invalid group displacement.':'Desplazamiento del grupo inválido.','Invalid FGD spawnflag bit.':'Bit de spawnflags FGD inválido.',
+ 'Spawnflags must be a signed 32-bit or unsigned 32-bit integer.':'Los spawnflags deben ser un entero no negativo.','Invalid spawnflags value.':'Valor de spawnflags inválido.'
+});
+Object.assign(ru,{
+ 'Connect entities':'Связать сущности','Connection lines':'Линии связей','Entity connections':'Связи сущностей',
+ 'Connection property':'Ключ связи','Choose destination in 3D':'Выбрать цель в 3D','Cancel connection':'Отменить связь',
+ 'Click a destination entity in 3D or in the list. Esc cancels connecting.':'Нажмите на сущность назначения в 3D или списке. Esc отменяет.',
+ 'Destination receives a unique targetname if it has none. Existing targetnames are preserved.':'При отсутствии targetname создаётся уникальный; существующие имена сохраняются.',
+ 'Unresolved target':'Цель не найдена','Connection saved in the BSP entity lump. Export a copy.':'Связь записана в сущности BSP. Экспортируйте копию.',
+ 'entities selected':'сущностей выбрано','Ctrl+click to add or remove':'Ctrl+щелчок для выбора','Clear multi-selection':'Сбросить множественный выбор',
+ 'Batch edit point entities':'Групповое редактирование точечных сущностей','The operation is atomic and undoable. Compiled brush entities cannot be batch edited.':'Операция отменяется одним действием. Скомпилированные brush-сущности не редактируются группой.',
+ 'Apply to selected entities':'Применить к выбранным','Property key':'Ключ свойства','FGD options and spawnflags':'Опции FGD и spawnflags','Custom value':'Пользовательское значение',
+ 'Choose an editable point entity as the connection source and a valid destination.':'Выберите редактируемую точечную сущность и допустимую цель.',
+ 'Unsupported entity connection key.':'Неподдерживаемый ключ связи.','Could not allocate a unique targetname.':'Не удалось создать уникальный targetname.',
+ 'Select 1–256 editable point entities.':'Выберите от 1 до 256 редактируемых точечных сущностей.',
+ 'Bulk editing this field could invalidate compiled models, positions, or entity names.':'Групповое изменение поля может повредить модели, позиции или имена.',
+ 'Invalid group displacement.':'Недопустимое групповое смещение.','Invalid FGD spawnflag bit.':'Недопустимый бит spawnflags FGD.',
+ 'Spawnflags must be a signed 32-bit or unsigned 32-bit integer.':'Spawnflags должен быть неотрицательным целым.','Invalid spawnflags value.':'Недопустимое значение spawnflags.'
+});
+Object.assign(ko,{
+ 'Connect entities':'엔티티 연결','Connection lines':'연결선','Entity connections':'엔티티 연결',
+ 'Connection property':'연결 속성','Choose destination in 3D':'3D에서 대상 선택','Cancel connection':'연결 취소',
+ 'Click a destination entity in 3D or in the list. Esc cancels connecting.':'3D 또는 목록에서 대상 엔티티를 클릭하세요. Esc로 취소합니다.',
+ 'Destination receives a unique targetname if it has none. Existing targetnames are preserved.':'대상에 targetname이 없으면 고유한 이름을 생성하며 기존 이름은 보존합니다.',
+ 'Unresolved target':'찾을 수 없는 대상','Connection saved in the BSP entity lump. Export a copy.':'BSP 엔티티에 연결이 저장되었습니다. 사본을 내보내세요.',
+ 'entities selected':'개 엔티티 선택','Ctrl+click to add or remove':'Ctrl+클릭하여 추가/해제','Clear multi-selection':'다중 선택 해제',
+ 'Batch edit point entities':'포인트 엔티티 일괄 편집','The operation is atomic and undoable. Compiled brush entities cannot be batch edited.':'한 번에 실행 취소할 수 있습니다. 컴파일된 브러시 엔티티는 일괄 수정할 수 없습니다.',
+ 'Apply to selected entities':'선택 항목에 적용','Property key':'속성 키','FGD options and spawnflags':'FGD 옵션 및 spawnflags','Custom value':'사용자 지정 값',
+ 'Choose an editable point entity as the connection source and a valid destination.':'편집 가능한 포인트 엔티티와 유효한 대상을 선택하세요.',
+ 'Unsupported entity connection key.':'지원되지 않는 연결 키입니다.','Could not allocate a unique targetname.':'고유한 targetname을 생성할 수 없습니다.',
+ 'Select 1–256 editable point entities.':'편집 가능한 포인트 엔티티 1~256개를 선택하세요.',
+ 'Bulk editing this field could invalidate compiled models, positions, or entity names.':'이 속성의 일괄 변경은 모델, 위치 또는 이름을 손상시킬 수 있습니다.',
+ 'Invalid group displacement.':'잘못된 그룹 이동 값입니다.','Invalid FGD spawnflag bit.':'잘못된 FGD spawnflag 비트입니다.',
+ 'Spawnflags must be a signed 32-bit or unsigned 32-bit integer.':'spawnflags는 음수가 아닌 정수여야 합니다.','Invalid spawnflags value.':'잘못된 spawnflags 값입니다.'
+});
+Object.assign(zh,{
+ 'Connect entities':'连接实体','Connection lines':'连接线','Entity connections':'实体连接',
+ 'Connection property':'连接属性','Choose destination in 3D':'在 3D 中选择目标','Cancel connection':'取消连接',
+ 'Click a destination entity in 3D or in the list. Esc cancels connecting.':'在 3D 或列表中点击目标实体。按 Esc 取消。',
+ 'Destination receives a unique targetname if it has none. Existing targetnames are preserved.':'若目标没有 targetname，将创建唯一名称；保留已有名称。',
+ 'Unresolved target':'未找到目标','Connection saved in the BSP entity lump. Export a copy.':'连接已写入 BSP 实体数据。请导出副本。',
+ 'entities selected':'个实体已选中','Ctrl+click to add or remove':'按住 Ctrl 点击可增删选择','Clear multi-selection':'清除多选',
+ 'Batch edit point entities':'批量编辑点实体','The operation is atomic and undoable. Compiled brush entities cannot be batch edited.':'此操作可一次撤销。不能批量编辑已编译的实体笔刷。',
+ 'Apply to selected entities':'应用到所选实体','Property key':'属性键','FGD options and spawnflags':'FGD 选项与 spawnflags','Custom value':'自定义值',
+ 'Choose an editable point entity as the connection source and a valid destination.':'请选择可编辑的点实体作为来源，并选择有效目标。',
+ 'Unsupported entity connection key.':'不支持的实体连接属性。','Could not allocate a unique targetname.':'无法创建唯一的 targetname。',
+ 'Select 1–256 editable point entities.':'请选择 1 至 256 个可编辑的点实体。',
+ 'Bulk editing this field could invalidate compiled models, positions, or entity names.':'批量编辑该属性可能使模型、位置或实体名称无效。',
+ 'Invalid group displacement.':'无效的组移动偏移。','Invalid FGD spawnflag bit.':'无效的 FGD spawnflag 位。',
+ 'Spawnflags must be a signed 32-bit or unsigned 32-bit integer.':'spawnflags 必须是非负整数。','Invalid spawnflags value.':'无效的 spawnflags 数值。'
+});
+Object.assign(pt,{
+ 'Connect entities':'Conectar entidades','Connection lines':'Linhas de conexão','Entity connections':'Conexões de entidades',
+ 'Connection property':'Propriedade de conexão','Choose destination in 3D':'Escolher destino em 3D','Cancel connection':'Cancelar conexão',
+ 'Click a destination entity in 3D or in the list. Esc cancels connecting.':'Clique na entidade de destino em 3D ou na lista. Esc cancela.',
+ 'Destination receives a unique targetname if it has none. Existing targetnames are preserved.':'O destino recebe um targetname único quando necessário. Nomes existentes são preservados.',
+ 'Unresolved target':'Destino não encontrado','Connection saved in the BSP entity lump. Export a copy.':'Conexão gravada nas entidades BSP. Exporte uma cópia.',
+ 'entities selected':'entidades selecionadas','Ctrl+click to add or remove':'Ctrl+clique para adicionar/remover','Clear multi-selection':'Limpar seleção múltipla',
+ 'Batch edit point entities':'Edição em lote de entidades pontuais','The operation is atomic and undoable. Compiled brush entities cannot be batch edited.':'A operação pode ser desfeita de uma vez. Entidades brush compiladas não podem ser editadas em lote.',
+ 'Apply to selected entities':'Aplicar às selecionadas','Property key':'Chave da propriedade','FGD options and spawnflags':'Opções FGD e spawnflags','Custom value':'Valor personalizado',
+ 'Choose an editable point entity as the connection source and a valid destination.':'Escolha uma entidade pontual editável como origem e um destino válido.',
+ 'Unsupported entity connection key.':'Chave de conexão não suportada.','Could not allocate a unique targetname.':'Não foi possível gerar um targetname único.',
+ 'Select 1–256 editable point entities.':'Selecione entre 1 e 256 entidades pontuais editáveis.',
+ 'Bulk editing this field could invalidate compiled models, positions, or entity names.':'A edição em lote deste campo pode invalidar modelos, posições ou nomes.',
+ 'Invalid group displacement.':'Deslocamento do grupo inválido.','Invalid FGD spawnflag bit.':'Bit de spawnflags FGD inválido.',
+ 'Spawnflags must be a signed 32-bit or unsigned 32-bit integer.':'Spawnflags deve ser um inteiro não negativo.','Invalid spawnflags value.':'Valor de spawnflags inválido.'
+});
+
+// Editor BSP Preview 5 HF1 — discoverable selection and quick actions.
+Object.assign(es,{
+ 'Search entities':'Buscar entidades','Place entity':'Colocar entidad','Multi-select':'Selección múltiple',
+ 'Click entities to add or remove':'Hacé clic en entidades para agregarlas o quitarlas',
+ 'Ground NPCs and pickups in preview':'Ajustar NPC y objetos al suelo en la vista previa'
+});
+Object.assign(ru,{
+ 'Search entities':'Поиск сущностей','Place entity':'Разместить сущность','Multi-select':'Множественный выбор',
+ 'Click entities to add or remove':'Нажмите на сущности, чтобы добавить или исключить их',
+ 'Ground NPCs and pickups in preview':'Выравнивать NPC и предметы по полу в предпросмотре'
+});
+Object.assign(ko,{
+ 'Search entities':'엔티티 검색','Place entity':'엔티티 배치','Multi-select':'다중 선택',
+ 'Click entities to add or remove':'엔티티를 클릭하여 선택에 추가하거나 제외하세요',
+ 'Ground NPCs and pickups in preview':'미리 보기에서 NPC와 아이템을 바닥에 맞추기'
+});
+Object.assign(zh,{
+ 'Search entities':'搜索实体','Place entity':'放置实体','Multi-select':'多选',
+ 'Click entities to add or remove':'点击实体可添加或移除选择',
+ 'Ground NPCs and pickups in preview':'预览时将 NPC 和物品贴合地面'
+});
+Object.assign(pt,{
+ 'Search entities':'Buscar entidades','Place entity':'Colocar entidade','Multi-select':'Seleção múltipla',
+ 'Click entities to add or remove':'Clique nas entidades para adicionar ou remover da seleção',
+ 'Ground NPCs and pickups in preview':'Alinhar NPCs e itens ao chão na prévia'
+});
+
+// Editor BSP Preview 5 HF3 — explicit native model placement behavior, six UI languages.
+Object.assign(es,{
+  'Placement behavior': 'Comportamiento al colocar',
+  'Decoration': 'Decoración',
+  'Solid prop': 'Objeto sólido',
+  'NPC': 'NPC',
+  'Hit-test model': 'Modelo reactivo',
+  'Decorative item_generic: visual model, no player collision or monster AI.': 'item_generic decorativo: modelo visual sin colisiones con jugadores ni IA.',
+  'Solid item_generic: blocks passage using the specified hull; not an NPC.': 'item_generic sólido: bloquea el paso usando el hull indicado; no es un NPC.',
+  'Cycler: reacts to bullet hits by changing animation; no combat AI or normal monster health.': 'Cycler: cambia de animación al recibir disparos; no tiene IA de combate ni salud normal de NPC.',
+  'NPC class determines AI, collision, damage and available animations. The MDL alone does not create AI.': 'La clase NPC determina IA, colisiones, daño y animaciones. Un MDL por sí solo no agrega IA.',
+  'NPC engine class': 'Clase de NPC del motor',
+  'Health (0 = engine default)': 'Salud (0 = valor del motor)',
+  'Player ally': 'Aliado de jugadores',
+  'Monster roaming': 'Movimiento autónomo',
+  'Map default': 'Predeterminado del mapa',
+  'Never roam': 'No deambular',
+  'Always roam': 'Permitir deambular',
+  'Spawnflags (decimal)': 'Spawnflags (decimal)',
+  'Weapon loadout (class specific)': 'Armas (según la clase)',
+  'Disable monster AI': 'Desactivar IA del NPC',
+  'In-game display name': 'Nombre visible en juego',
+  'monster_generic is primarily scripted; native NPC classes need compatible animation sequences. G-Man is normally noncombat/invulnerable.': 'monster_generic es principalmente para escenas guionadas. Las clases con IA necesitan animaciones compatibles; G-Man normalmente es invulnerable y no combate.',
+  'Hull minimum (X Y Z)': 'Mínimo del hull (X Y Z)',
+  'Hull maximum (X Y Z)': 'Máximo del hull (X Y Z)',
+  'Solid collisions are computed in Sven Co-op from the hull, not automatically from the MDL mesh.': 'El juego usa el hull configurado para las colisiones, no la malla MDL automáticamente.',
+  'Model scale': 'Escala del modelo',
+  'Idle sequence name (optional)': 'Secuencia idle (opcional)',
+  'Sequence index (optional)': 'Índice de secuencia (opcional)',
+  'Skin': 'Skin',
+  'Bodygroup': 'Bodygroup',
+  'Targetname (optional)': 'Targetname (opcional)',
+  'Place configured model in 3D': 'Colocar modelo configurado en 3D',
+  'Convert selected model entity': 'Convertir entidad seleccionada',
+  'Convert the selected point model entity to this behavior? The change can be undone.': '¿Convertir la entidad seleccionada a este comportamiento? Podrás deshacer el cambio.',
+  'Converting preserves the selected entity position and connections, but resets mode-specific keys. Inspect before export.': 'La conversión conserva posición y conexiones, pero restablece propiedades propias del modo anterior. Revisá antes de exportar.',
+  'This monster class is not available in your loaded FGD. Import Sven Co-op FGD first.': 'Esta clase NPC no figura en el FGD cargado. Importá primero el FGD de Sven Co-op.',
+  'Model behavior updated. Export a BSP copy to save.': 'Comportamiento actualizado. Exportá una copia BSP para guardarlo.',
+});
+Object.assign(en,{
+  'Placement behavior': 'Placement behavior',
+  'Decoration': 'Decoration',
+  'Solid prop': 'Solid prop',
+  'NPC': 'NPC',
+  'Hit-test model': 'Hit-test model',
+  'Decorative item_generic: visual model, no player collision or monster AI.': 'Decorative item_generic: visual model, no player collision or monster AI.',
+  'Solid item_generic: blocks passage using the specified hull; not an NPC.': 'Solid item_generic: blocks passage using the specified hull; not an NPC.',
+  'Cycler: reacts to bullet hits by changing animation; no combat AI or normal monster health.': 'Cycler: reacts to bullet hits by changing animation; no combat AI or normal monster health.',
+  'NPC class determines AI, collision, damage and available animations. The MDL alone does not create AI.': 'NPC class determines AI, collision, damage and available animations. The MDL alone does not create AI.',
+  'NPC engine class': 'NPC engine class',
+  'Health (0 = engine default)': 'Health (0 = engine default)',
+  'Player ally': 'Player ally',
+  'Monster roaming': 'Monster roaming',
+  'Map default': 'Map default',
+  'Never roam': 'Never roam',
+  'Always roam': 'Always roam',
+  'Spawnflags (decimal)': 'Spawnflags (decimal)',
+  'Weapon loadout (class specific)': 'Weapon loadout (class specific)',
+  'Disable monster AI': 'Disable monster AI',
+  'In-game display name': 'In-game display name',
+  'monster_generic is primarily scripted; native NPC classes need compatible animation sequences. G-Man is normally noncombat/invulnerable.': 'monster_generic is primarily scripted; native NPC classes need compatible animation sequences. G-Man is normally noncombat/invulnerable.',
+  'Hull minimum (X Y Z)': 'Hull minimum (X Y Z)',
+  'Hull maximum (X Y Z)': 'Hull maximum (X Y Z)',
+  'Solid collisions are computed in Sven Co-op from the hull, not automatically from the MDL mesh.': 'Solid collisions are computed in Sven Co-op from the hull, not automatically from the MDL mesh.',
+  'Model scale': 'Model scale',
+  'Idle sequence name (optional)': 'Idle sequence name (optional)',
+  'Sequence index (optional)': 'Sequence index (optional)',
+  'Skin': 'Skin',
+  'Bodygroup': 'Bodygroup',
+  'Targetname (optional)': 'Targetname (optional)',
+  'Place configured model in 3D': 'Place configured model in 3D',
+  'Convert selected model entity': 'Convert selected model entity',
+  'Convert the selected point model entity to this behavior? The change can be undone.': 'Convert the selected point model entity to this behavior? The change can be undone.',
+  'Converting preserves the selected entity position and connections, but resets mode-specific keys. Inspect before export.': 'Converting preserves the selected entity position and connections, but resets mode-specific keys. Inspect before export.',
+  'This monster class is not available in your loaded FGD. Import Sven Co-op FGD first.': 'This monster class is not available in your loaded FGD. Import Sven Co-op FGD first.',
+  'Model behavior updated. Export a BSP copy to save.': 'Model behavior updated. Export a BSP copy to save.',
+});
+Object.assign(ru,{
+  'Placement behavior': 'Поведение при размещении',
+  'Decoration': 'Декорация',
+  'Solid prop': 'Твёрдый объект',
+  'NPC': 'NPC',
+  'Hit-test model': 'Реакция на попадания',
+  'Decorative item_generic: visual model, no player collision or monster AI.': 'Декоративный item_generic: без столкновений с игроком и ИИ.',
+  'Solid item_generic: blocks passage using the specified hull; not an NPC.': 'Твёрдый item_generic: блокирует проход заданным коллайдером, но не является NPC.',
+  'Cycler: reacts to bullet hits by changing animation; no combat AI or normal monster health.': 'Cycler: меняет анимацию при попадании, но без боевого ИИ и обычного здоровья NPC.',
+  'NPC class determines AI, collision, damage and available animations. The MDL alone does not create AI.': 'Класс NPC определяет ИИ, столкновения, урон и анимации. Одного MDL недостаточно.',
+  'NPC engine class': 'Класс NPC в движке',
+  'Health (0 = engine default)': 'Здоровье (0 = по умолчанию)',
+  'Player ally': 'Союзник игроков',
+  'Monster roaming': 'Свободное передвижение',
+  'Map default': 'По умолчанию карты',
+  'Never roam': 'Не бродить',
+  'Always roam': 'Всегда бродить',
+  'Spawnflags (decimal)': 'Флаги (десятичные)',
+  'Weapon loadout (class specific)': 'Оружие (для класса)',
+  'Disable monster AI': 'Отключить ИИ NPC',
+  'In-game display name': 'Имя в игре',
+  'monster_generic is primarily scripted; native NPC classes need compatible animation sequences. G-Man is normally noncombat/invulnerable.': 'monster_generic в основном для сценариев. Нужны совместимые анимации; G-Man обычно бессмертен и не сражается.',
+  'Hull minimum (X Y Z)': 'Мин. размер коллизии (X Y Z)',
+  'Hull maximum (X Y Z)': 'Макс. размер коллизии (X Y Z)',
+  'Solid collisions are computed in Sven Co-op from the hull, not automatically from the MDL mesh.': 'Коллизии создаются по заданному коллайдеру, а не по сетке MDL.',
+  'Model scale': 'Масштаб модели',
+  'Idle sequence name (optional)': 'Имя idle-анимации (необяз.)',
+  'Sequence index (optional)': 'Индекс анимации (необяз.)',
+  'Skin': 'Скин',
+  'Bodygroup': 'Группа частей модели',
+  'Targetname (optional)': 'Targetname (необяз.)',
+  'Place configured model in 3D': 'Разместить настроенную модель в 3D',
+  'Convert selected model entity': 'Преобразовать выбранную модель',
+  'Convert the selected point model entity to this behavior? The change can be undone.': 'Преобразовать выбранную точечную сущность? Изменение можно отменить.',
+  'Converting preserves the selected entity position and connections, but resets mode-specific keys. Inspect before export.': 'Позиция и связи сохраняются; параметры старого режима сбрасываются. Проверьте перед экспортом.',
+  'This monster class is not available in your loaded FGD. Import Sven Co-op FGD first.': 'Этого класса NPC нет в FGD. Импортируйте Sven Co-op FGD.',
+  'Model behavior updated. Export a BSP copy to save.': 'Поведение модели обновлено. Экспортируйте копию BSP.',
+});
+Object.assign(ko,{
+  'Placement behavior': '배치 동작',
+  'Decoration': '장식',
+  'Solid prop': '충돌 오브젝트',
+  'NPC': 'NPC',
+  'Hit-test model': '피격 반응 모델',
+  'Decorative item_generic: visual model, no player collision or monster AI.': '장식용 item_generic: 플레이어 충돌이나 AI가 없습니다.',
+  'Solid item_generic: blocks passage using the specified hull; not an NPC.': '고체 item_generic: 지정한 충돌 영역으로 이동을 막지만 NPC는 아닙니다.',
+  'Cycler: reacts to bullet hits by changing animation; no combat AI or normal monster health.': 'Cycler: 피격 시 애니메이션 변경. 전투 AI나 일반 NPC 체력은 없습니다.',
+  'NPC class determines AI, collision, damage and available animations. The MDL alone does not create AI.': 'NPC 클래스에 따라 AI·충돌·피해·애니메이션이 결정됩니다. MDL만으로는 AI가 생기지 않습니다.',
+  'NPC engine class': '엔진 NPC 클래스',
+  'Health (0 = engine default)': '체력 (0 = 기본값)',
+  'Player ally': '플레이어 아군',
+  'Monster roaming': '자유 이동',
+  'Map default': '맵 기본값',
+  'Never roam': '이동 안 함',
+  'Always roam': '자유 이동',
+  'Spawnflags (decimal)': '스폰 플래그 (10진수)',
+  'Weapon loadout (class specific)': '무장 (클래스별)',
+  'Disable monster AI': 'NPC AI 비활성화',
+  'In-game display name': '게임 내 표시 이름',
+  'monster_generic is primarily scripted; native NPC classes need compatible animation sequences. G-Man is normally noncombat/invulnerable.': 'monster_generic은 주로 스크립트용입니다. 호환 애니메이션이 필요하며 G-Man은 보통 무적입니다.',
+  'Hull minimum (X Y Z)': '충돌 최소값 (X Y Z)',
+  'Hull maximum (X Y Z)': '충돌 최대값 (X Y Z)',
+  'Solid collisions are computed in Sven Co-op from the hull, not automatically from the MDL mesh.': '충돌은 MDL 메시가 아닌 지정한 충돌 크기로 계산됩니다.',
+  'Model scale': '모델 크기',
+  'Idle sequence name (optional)': '대기 애니메이션 이름 (선택)',
+  'Sequence index (optional)': '애니메이션 번호 (선택)',
+  'Skin': '스킨',
+  'Bodygroup': '바디그룹',
+  'Targetname (optional)': 'Targetname (선택)',
+  'Place configured model in 3D': '설정된 모델을 3D에 배치',
+  'Convert selected model entity': '선택 모델 엔티티 변환',
+  'Convert the selected point model entity to this behavior? The change can be undone.': '선택한 포인트 엔티티를 이 동작으로 변환할까요? 실행 취소할 수 있습니다.',
+  'Converting preserves the selected entity position and connections, but resets mode-specific keys. Inspect before export.': '위치와 연결은 유지되지만 기존 모드 설정은 초기화됩니다. 내보내기 전에 확인하세요.',
+  'This monster class is not available in your loaded FGD. Import Sven Co-op FGD first.': '로드된 FGD에 이 NPC 클래스가 없습니다. Sven Co-op FGD를 가져오세요.',
+  'Model behavior updated. Export a BSP copy to save.': '모델 동작이 변경됐습니다. BSP 사본을 내보내세요.',
+});
+Object.assign(zh,{
+  'Placement behavior': '放置行为',
+  'Decoration': '装饰',
+  'Solid prop': '实体物件',
+  'NPC': 'NPC',
+  'Hit-test model': '受击演示模型',
+  'Decorative item_generic: visual model, no player collision or monster AI.': '装饰性 item_generic：没有玩家碰撞或 NPC AI。',
+  'Solid item_generic: blocks passage using the specified hull; not an NPC.': '实体 item_generic：使用指定碰撞盒阻挡通行，但不是 NPC。',
+  'Cycler: reacts to bullet hits by changing animation; no combat AI or normal monster health.': 'Cycler：受弹击时切换动画，不具备战斗 AI 或普通 NPC 生命值。',
+  'NPC class determines AI, collision, damage and available animations. The MDL alone does not create AI.': 'NPC 类决定 AI、碰撞、伤害与动画。仅使用 MDL 不会产生 AI。',
+  'NPC engine class': '引擎 NPC 类',
+  'Health (0 = engine default)': '生命值（0 = 默认）',
+  'Player ally': '玩家盟友',
+  'Monster roaming': 'NPC 自由移动',
+  'Map default': '地图默认',
+  'Never roam': '不游荡',
+  'Always roam': '始终游荡',
+  'Spawnflags (decimal)': '生成标志（十进制）',
+  'Weapon loadout (class specific)': '武器装备（依实体类）',
+  'Disable monster AI': '禁用 NPC AI',
+  'In-game display name': '游戏内显示名称',
+  'monster_generic is primarily scripted; native NPC classes need compatible animation sequences. G-Man is normally noncombat/invulnerable.': 'monster_generic 主要用于脚本表演。NPC 动画需兼容；G-Man 通常无敌且不战斗。',
+  'Hull minimum (X Y Z)': '碰撞盒最小值 (X Y Z)',
+  'Hull maximum (X Y Z)': '碰撞盒最大值 (X Y Z)',
+  'Solid collisions are computed in Sven Co-op from the hull, not automatically from the MDL mesh.': '碰撞根据所设碰撞盒计算，不会自动使用 MDL 网格。',
+  'Model scale': '模型缩放',
+  'Idle sequence name (optional)': '待机序列名（可选）',
+  'Sequence index (optional)': '动画序列索引（可选）',
+  'Skin': '皮肤',
+  'Bodygroup': '模型部件组',
+  'Targetname (optional)': 'Targetname（可选）',
+  'Place configured model in 3D': '在 3D 中放置已配置模型',
+  'Convert selected model entity': '转换已选模型实体',
+  'Convert the selected point model entity to this behavior? The change can be undone.': '将选中的点实体转换为此行为？可撤销。',
+  'Converting preserves the selected entity position and connections, but resets mode-specific keys. Inspect before export.': '转换保留位置与连接，但会重置旧模式专用字段。导出前请检查。',
+  'This monster class is not available in your loaded FGD. Import Sven Co-op FGD first.': '当前 FGD 没有此 NPC 类。请先导入 Sven Co-op FGD。',
+  'Model behavior updated. Export a BSP copy to save.': '模型行为已更新。请导出 BSP 副本保存。',
+});
+Object.assign(pt,{
+  'Placement behavior': 'Comportamento ao posicionar',
+  'Decoration': 'Decoração',
+  'Solid prop': 'Objeto sólido',
+  'NPC': 'NPC',
+  'Hit-test model': 'Modelo reativo',
+  'Decorative item_generic: visual model, no player collision or monster AI.': 'item_generic decorativo: sem colisão com jogadores nem IA.',
+  'Solid item_generic: blocks passage using the specified hull; not an NPC.': 'item_generic sólido: bloqueia passagem usando o hull definido, mas não é NPC.',
+  'Cycler: reacts to bullet hits by changing animation; no combat AI or normal monster health.': 'Cycler: muda a animação com disparos; sem IA de combate ou vida normal de NPC.',
+  'NPC class determines AI, collision, damage and available animations. The MDL alone does not create AI.': 'A classe NPC define IA, colisões, dano e animações. O MDL sozinho não cria IA.',
+  'NPC engine class': 'Classe de NPC do motor',
+  'Health (0 = engine default)': 'Vida (0 = padrão do motor)',
+  'Player ally': 'Aliado dos jogadores',
+  'Monster roaming': 'Movimento do monstro',
+  'Map default': 'Padrão do mapa',
+  'Never roam': 'Não patrulhar',
+  'Always roam': 'Sempre patrulhar',
+  'Spawnflags (decimal)': 'Spawnflags (decimal)',
+  'Weapon loadout (class specific)': 'Armas (dependendo da classe)',
+  'Disable monster AI': 'Desativar IA do NPC',
+  'In-game display name': 'Nome visível no jogo',
+  'monster_generic is primarily scripted; native NPC classes need compatible animation sequences. G-Man is normally noncombat/invulnerable.': 'monster_generic é principalmente roteirizado. Classes nativas exigem animações compatíveis; G-Man costuma ser invulnerável.',
+  'Hull minimum (X Y Z)': 'Mínimo do hull (X Y Z)',
+  'Hull maximum (X Y Z)': 'Máximo do hull (X Y Z)',
+  'Solid collisions are computed in Sven Co-op from the hull, not automatically from the MDL mesh.': 'O jogo usa o hull configurado para colisão, não a malha MDL automaticamente.',
+  'Model scale': 'Escala do modelo',
+  'Idle sequence name (optional)': 'Nome da animação idle (opcional)',
+  'Sequence index (optional)': 'Índice de sequência (opcional)',
+  'Skin': 'Skin',
+  'Bodygroup': 'Bodygroup',
+  'Targetname (optional)': 'Targetname (opcional)',
+  'Place configured model in 3D': 'Colocar modelo configurado em 3D',
+  'Convert selected model entity': 'Converter entidade selecionada',
+  'Convert the selected point model entity to this behavior? The change can be undone.': 'Converter a entidade selecionada? É possível desfazer.',
+  'Converting preserves the selected entity position and connections, but resets mode-specific keys. Inspect before export.': 'A conversão preserva posição e conexões, mas redefine propriedades do modo anterior. Revise antes de exportar.',
+  'This monster class is not available in your loaded FGD. Import Sven Co-op FGD first.': 'Essa classe NPC não está no FGD. Importe o FGD do Sven Co-op.',
+  'Model behavior updated. Export a BSP copy to save.': 'Comportamento atualizado. Exporte uma cópia BSP para salvar.',
+});
+
+Object.assign(es,{'Custom NPC collision hull':'Hull de colisión personalizado para NPC'});
+
+Object.assign(en,{'Custom NPC collision hull':'Custom NPC collision hull'});
+
+Object.assign(ru,{'Custom NPC collision hull':'Свой коллайдер NPC'});
+
+Object.assign(ko,{'Custom NPC collision hull':'NPC 사용자 지정 충돌 영역'});
+
+Object.assign(zh,{'Custom NPC collision hull':'NPC 自定义碰撞盒'});
+
+Object.assign(pt,{'Custom NPC collision hull':'Hull personalizado para NPC'});
+
+Object.assign(es,{'Assignment only changes the model path. Use Convert to change behavior.':'Asignar solo cambia el modelo. Usá Convertir para cambiar el comportamiento.'});
+
+Object.assign(en,{'Assignment only changes the model path. Use Convert to change behavior.':'Assignment only changes the model path. Use Convert to change behavior.'});
+
+Object.assign(ru,{'Assignment only changes the model path. Use Convert to change behavior.':'Назначение меняет только путь модели. Для изменения поведения используйте «Преобразовать».'});
+
+Object.assign(ko,{'Assignment only changes the model path. Use Convert to change behavior.':'할당은 모델 경로만 변경합니다. 동작 변경은 변환을 사용하세요.'});
+
+Object.assign(zh,{'Assignment only changes the model path. Use Convert to change behavior.':'分配只更改模型路径。若要改变行为，请使用“转换”。'});
+
+Object.assign(pt,{'Assignment only changes the model path. Use Convert to change behavior.':'Atribuir só altera o caminho do modelo. Use Converter para alterar o comportamento.'});
+
+// BSP Editor Preview 5 HF4 — FGD tabs/import, context menu and NPC class guidance.
+Object.assign(es, {"Import additional FGD": "Importar FGD adicionales", "FGD classes": "clases FGD", "additional files": "archivos adicionales", "Clear additional FGD": "Quitar FGD adicionales", "Additional FGDs affect this editor session only. They describe entity properties; they do not install NPC AI.": "Las FGD adicionales son para esta sesión. Describen propiedades; no instalan IA de NPC.", "FGD property editor": "Editor de propiedades FGD", "Attributes": "Atributos", "Flags": "Flags", "Raw edit": "Edición RAW", "No class definition found in the loaded FGDs. Use Raw edit to edit keyvalues.": "No se encontró esta clase en las FGD cargadas. Usá Edición RAW.", "Use Raw edit for properties not defined in the FGD.": "Usá Edición RAW para propiedades no definidas en la FGD.", "Unknown flag bits are preserved.": "Los bits de flags desconocidos se conservan.", "Compiled brush entities cannot be deleted in visual mode.": "No se pueden eliminar entidades brush compiladas en modo visual.", "Delete the selected entities? This can be undone.": "¿Eliminar las entidades seleccionadas? Podés deshacerlo.", "Choose up to 8 FGD files, each no larger than 2 MB.": "Seleccioná hasta 8 archivos FGD, de máximo 2 MB cada uno.", "Additional FGD files exceed the safety limit.": "Los archivos FGD adicionales superan el límite de seguridad.", "No supported PointClass or SolidClass definitions found.": "No se encontraron definiciones PointClass o SolidClass compatibles.", "Recommended native AI class": "Clase de IA nativa recomendada", "Use recommended class": "Usar clase recomendada", "monster_generic is scripted and does not automatically fight. Choose a native combat class matching this model.": "monster_generic es para guiones y no combate automáticamente. Elegí una clase nativa de combate compatible con el modelo.", "Right-click an entity for actions · Click empty space to clear selection · Del deletes selected point entities": "Clic derecho sobre entidad: acciones · Clic en vacío: deseleccionar · Supr: eliminar entidades puntuales"});
+Object.assign(ru, {"Import additional FGD": "Импорт дополнительных FGD", "FGD classes": "классов FGD", "additional files": "доп. файлов", "Clear additional FGD": "Убрать доп. FGD", "Additional FGDs affect this editor session only. They describe entity properties; they do not install NPC AI.": "Дополнительные FGD действуют только в этой сессии. Они описывают свойства, но не добавляют ИИ NPC.", "FGD property editor": "Редактор свойств FGD", "Attributes": "Атрибуты", "Flags": "Флаги", "Raw edit": "RAW-редактор", "No class definition found in the loaded FGDs. Use Raw edit to edit keyvalues.": "Класс не найден в FGD. Используйте RAW-редактор.", "Use Raw edit for properties not defined in the FGD.": "Для свойств вне FGD используйте RAW-редактор.", "Unknown flag bits are preserved.": "Неизвестные биты флагов сохраняются.", "Compiled brush entities cannot be deleted in visual mode.": "Нельзя удалять скомпилированные браш-сущности в визуальном режиме.", "Delete the selected entities? This can be undone.": "Удалить выбранные сущности? Действие можно отменить.", "Choose up to 8 FGD files, each no larger than 2 MB.": "Выберите до 8 файлов FGD не более 2 МБ каждый.", "Additional FGD files exceed the safety limit.": "Превышен лимит дополнительных FGD.", "No supported PointClass or SolidClass definitions found.": "Поддерживаемые PointClass и SolidClass не найдены.", "Recommended native AI class": "Рекомендуемый класс ИИ", "Use recommended class": "Применить рекомендацию", "monster_generic is scripted and does not automatically fight. Choose a native combat class matching this model.": "monster_generic — сценарный класс без автоматического боя. Выберите боевой класс, совместимый с моделью.", "Right-click an entity for actions · Click empty space to clear selection · Del deletes selected point entities": "ПКМ по сущности: действия · Щелчок в пустоте: снять выделение · Del: удалить сущности"});
+Object.assign(ko, {"Import additional FGD": "추가 FGD 가져오기", "FGD classes": "FGD 클래스", "additional files": "추가 파일", "Clear additional FGD": "추가 FGD 제거", "Additional FGDs affect this editor session only. They describe entity properties; they do not install NPC AI.": "추가 FGD는 이번 편집 세션에만 적용됩니다. 속성을 설명하며 NPC AI를 설치하지 않습니다.", "FGD property editor": "FGD 속성 편집기", "Attributes": "속성", "Flags": "플래그", "Raw edit": "RAW 편집", "No class definition found in the loaded FGDs. Use Raw edit to edit keyvalues.": "로드된 FGD에 클래스가 없습니다. RAW 편집을 사용하세요.", "Use Raw edit for properties not defined in the FGD.": "FGD에 없는 속성은 RAW 편집을 사용하세요.", "Unknown flag bits are preserved.": "알 수 없는 플래그 비트는 유지됩니다.", "Compiled brush entities cannot be deleted in visual mode.": "비주얼 모드에서는 컴파일된 브러시 엔티티를 삭제할 수 없습니다.", "Delete the selected entities? This can be undone.": "선택한 엔티티를 삭제할까요? 실행 취소할 수 있습니다.", "Choose up to 8 FGD files, each no larger than 2 MB.": "각각 최대 2MB인 FGD 파일 8개까지 선택하세요.", "Additional FGD files exceed the safety limit.": "추가 FGD 파일이 안전 제한을 초과했습니다.", "No supported PointClass or SolidClass definitions found.": "지원되는 PointClass 또는 SolidClass 정의가 없습니다.", "Recommended native AI class": "추천 네이티브 AI 클래스", "Use recommended class": "추천 클래스 사용", "monster_generic is scripted and does not automatically fight. Choose a native combat class matching this model.": "monster_generic은 스크립트용이며 자동으로 전투하지 않습니다. 모델과 호환되는 전투 클래스를 선택하세요.", "Right-click an entity for actions · Click empty space to clear selection · Del deletes selected point entities": "엔티티 우클릭: 작업 · 빈 공간 클릭: 선택 해제 · Del: 엔티티 삭제"});
+Object.assign(zh, {"Import additional FGD": "导入额外 FGD", "FGD classes": "FGD 类", "additional files": "额外文件", "Clear additional FGD": "移除额外 FGD", "Additional FGDs affect this editor session only. They describe entity properties; they do not install NPC AI.": "额外 FGD 仅影响当前编辑会话，只描述属性，不会安装 NPC AI。", "FGD property editor": "FGD 属性编辑器", "Attributes": "属性", "Flags": "标志位", "Raw edit": "原始编辑", "No class definition found in the loaded FGDs. Use Raw edit to edit keyvalues.": "已加载的 FGD 中找不到该类。请使用原始编辑。", "Use Raw edit for properties not defined in the FGD.": "FGD 中未定义的属性请使用原始编辑。", "Unknown flag bits are preserved.": "未知标志位将被保留。", "Compiled brush entities cannot be deleted in visual mode.": "可视模式无法删除已编译的实体刷。", "Delete the selected entities? This can be undone.": "删除所选实体？此操作可以撤销。", "Choose up to 8 FGD files, each no larger than 2 MB.": "最多选择 8 个 FGD 文件，每个不超过 2 MB。", "Additional FGD files exceed the safety limit.": "额外 FGD 文件超出安全限制。", "No supported PointClass or SolidClass definitions found.": "未找到支持的 PointClass 或 SolidClass 定义。", "Recommended native AI class": "推荐的原生 AI 类", "Use recommended class": "使用推荐类", "monster_generic is scripted and does not automatically fight. Choose a native combat class matching this model.": "monster_generic 是脚本类，不会自动战斗。请选择与模型匹配的原生战斗类。", "Right-click an entity for actions · Click empty space to clear selection · Del deletes selected point entities": "右键实体：操作 · 单击空白处：取消选择 · Delete：删除实体"});
+Object.assign(pt, {"Import additional FGD": "Importar FGD adicionais", "FGD classes": "classes FGD", "additional files": "arquivos adicionais", "Clear additional FGD": "Remover FGD adicionais", "Additional FGDs affect this editor session only. They describe entity properties; they do not install NPC AI.": "As FGD adicionais valem apenas nesta sessão. Descrevem propriedades; não instalam IA de NPC.", "FGD property editor": "Editor de propriedades FGD", "Attributes": "Atributos", "Flags": "Flags", "Raw edit": "Edição RAW", "No class definition found in the loaded FGDs. Use Raw edit to edit keyvalues.": "Classe não encontrada nas FGD carregadas. Use Edição RAW.", "Use Raw edit for properties not defined in the FGD.": "Use Edição RAW para propriedades não definidas na FGD.", "Unknown flag bits are preserved.": "Os bits desconhecidos de flags são preservados.", "Compiled brush entities cannot be deleted in visual mode.": "Entidades brush compiladas não podem ser excluídas no modo visual.", "Delete the selected entities? This can be undone.": "Excluir as entidades selecionadas? Você pode desfazer.", "Choose up to 8 FGD files, each no larger than 2 MB.": "Selecione até 8 FGD de no máximo 2 MB cada.", "Additional FGD files exceed the safety limit.": "As FGD adicionais excedem o limite de segurança.", "No supported PointClass or SolidClass definitions found.": "Não foram encontradas definições PointClass ou SolidClass compatíveis.", "Recommended native AI class": "Classe de IA nativa recomendada", "Use recommended class": "Usar classe recomendada", "monster_generic is scripted and does not automatically fight. Choose a native combat class matching this model.": "monster_generic é para scripts e não luta automaticamente. Escolha uma classe de combate nativa compatível com o modelo.", "Right-click an entity for actions · Click empty space to clear selection · Del deletes selected point entities": "Botão direito na entidade: ações · Clicar no vazio: desfazer seleção · Del: excluir entidades"});
+
+// BSP Editor Preview 5 HF5 — entity browser and persistent floating inspector.
+Object.assign(es,{'Entity properties':'Propiedades de entidad','Entity categories':'Categorías de entidades','All':'Todas','NPCs':'NPC','Items':'Objetos','Weapons':'Armas','Triggers':'Activadores','Logic / spawns':'Lógica / apariciones','Lights / effects':'Luces / efectos','Brush entities':'Entidades sólidas','Other':'Otros','results':'resultados','No matching entities':'No hay entidades coincidentes','Show more':'Mostrar más'});
+Object.assign(ru,{'Entity properties':'Свойства сущности','Entity categories':'Категории сущностей','All':'Все','NPCs':'NPC','Items':'Предметы','Weapons':'Оружие','Triggers':'Триггеры','Logic / spawns':'Логика / спавны','Lights / effects':'Свет / эффекты','Brush entities':'Браш-сущности','Other':'Другое','results':'результатов','No matching entities':'Нет подходящих сущностей','Show more':'Показать ещё'});
+Object.assign(ko,{'Entity properties':'엔티티 속성','Entity categories':'엔티티 범주','All':'전체','NPCs':'NPC','Items':'아이템','Weapons':'무기','Triggers':'트리거','Logic / spawns':'로직 / 스폰','Lights / effects':'조명 / 효과','Brush entities':'브러시 엔티티','Other':'기타','results':'결과','No matching entities':'일치하는 엔티티 없음','Show more':'더 보기'});
+Object.assign(zh,{'Entity properties':'实体属性','Entity categories':'实体类别','All':'全部','NPCs':'NPC','Items':'物品','Weapons':'武器','Triggers':'触发器','Logic / spawns':'逻辑 / 出生点','Lights / effects':'灯光 / 特效','Brush entities':'实体固体','Other':'其他','results':'条结果','No matching entities':'没有匹配的实体','Show more':'显示更多'});
+Object.assign(pt,{'Entity properties':'Propriedades da entidade','Entity categories':'Categorias de entidades','All':'Todas','NPCs':'NPC','Items':'Itens','Weapons':'Armas','Triggers':'Gatilhos','Logic / spawns':'Lógica / spawns','Lights / effects':'Luzes / efeitos','Brush entities':'Entidades sólidas','Other':'Outros','results':'resultados','No matching entities':'Nenhuma entidade encontrada','Show more':'Mostrar mais'});
+
+Object.assign(es,{'Drag to move properties':'Arrastrá para mover las propiedades'});
+Object.assign(ru,{'Drag to move properties':'Перетащите, чтобы переместить свойства'});
+Object.assign(ko,{'Drag to move properties':'드래그하여 속성 창 이동'});
+Object.assign(zh,{'Drag to move properties':'拖动以移动属性窗口'});
+Object.assign(pt,{'Drag to move properties':'Arraste para mover as propriedades'});
+
+// BSP Editor HF8: floating inspector resize affordance in all supported languages.
+Object.assign(es,{'Drag to resize properties':'Arrastrá para cambiar el tamaño de las propiedades'});
+Object.assign(ru,{'Drag to resize properties':'Перетащите, чтобы изменить размер окна свойств'});
+Object.assign(ko,{'Drag to resize properties':'드래그하여 속성 창 크기 변경'});
+Object.assign(zh,{'Drag to resize properties':'拖动以调整属性窗口大小'});
+Object.assign(pt,{'Drag to resize properties':'Arraste para redimensionar as propriedades'});
+
+// BSP Editor Etapa 6A — surface selection and read-only compiled-face diagnostics.
+Object.assign(es, {"BSP selection mode": "Modo de selección BSP", "BSP face inspector": "Inspector de caras BSP", "Read-only BSP face diagnostics. No UV, texture or BSP binary edits are performed.": "Diagnóstico de caras BSP en solo lectura. No se editan UV, texturas ni datos binarios del BSP.", "Click a BSP surface to inspect its face · Ctrl/Shift+click to multi-select · Esc clears selection": "Clic en una superficie BSP para inspeccionar su cara · Ctrl/Mayús+clic: selección múltiple · Esc: limpiar selección", "Compiled BSP surfaces": "Superficies BSP compiladas", "Select a visible surface in the viewport. Original BSP face IDs are preserved across triangle batches.": "Seleccioná una superficie visible. Los ID originales de las caras BSP se conservan aunque se agrupen triángulos.", "faces selected": "caras seleccionadas", "No face selected. Click a visible polygon in the BSP.": "Sin cara seleccionada. Hacé clic en un polígono visible del BSP.", "BSP face": "Cara BSP", "Clear face selection": "Limpiar selección de caras", "Texture dimensions": "Dimensiones de textura", "External WAD": "WAD externo", "Embedded": "Incorporada", "faces share texinfo": "caras comparten texinfo", "Plane / side": "Plano / lado", "Normal": "Normal", "UV bounds": "Límites UV", "Lightmap": "Mapa de luz", "Available": "Disponible", "Unavailable": "No disponible", "Last selected face shown. All selected faces are highlighted.": "Se muestra la última cara seleccionada. Todas las caras seleccionadas se resaltan.", "Stage 6A: diagnostics only. Texture/UV changes and BSP copy export require separate binary and lightmap validation.": "Etapa 6A: solo diagnóstico. La edición de texturas/UV y exportación BSP requieren validación binaria y de mapas de luz."} );
+Object.assign(ru, {"BSP selection mode": "Режим выбора BSP", "BSP face inspector": "Инспектор граней BSP", "Read-only BSP face diagnostics. No UV, texture or BSP binary edits are performed.": "Диагностика граней BSP только для чтения. UV, текстуры и бинарные данные BSP не изменяются.", "Click a BSP surface to inspect its face · Ctrl/Shift+click to multi-select · Esc clears selection": "Нажмите на поверхность BSP для проверки · Ctrl/Shift+клик — множественный выбор · Esc — сброс", "Compiled BSP surfaces": "Скомпилированные поверхности BSP", "Select a visible surface in the viewport. Original BSP face IDs are preserved across triangle batches.": "Выберите видимую поверхность. Исходные ID граней BSP сохраняются после объединения треугольников.", "faces selected": "выбрано граней", "No face selected. Click a visible polygon in the BSP.": "Грань не выбрана. Нажмите на видимый полигон BSP.", "BSP face": "Грань BSP", "Clear face selection": "Сбросить выбор граней", "Texture dimensions": "Размер текстуры", "External WAD": "Внешний WAD", "Embedded": "Встроенная", "faces share texinfo": "граней используют texinfo", "Plane / side": "Плоскость / сторона", "Normal": "Нормаль", "UV bounds": "Границы UV", "Lightmap": "Карта освещения", "Available": "Есть", "Unavailable": "Нет", "Last selected face shown. All selected faces are highlighted.": "Показана последняя выбранная грань. Все выбранные грани подсвечены.", "Stage 6A: diagnostics only. Texture/UV changes and BSP copy export require separate binary and lightmap validation.": "Этап 6A: только диагностика. Изменение UV/текстур и экспорт BSP требуют отдельной проверки бинарных данных и карт освещения."} );
+Object.assign(ko, {"BSP selection mode": "BSP 선택 모드", "BSP face inspector": "BSP 면 검사기", "Read-only BSP face diagnostics. No UV, texture or BSP binary edits are performed.": "BSP 면을 읽기 전용으로 진단합니다. UV, 텍스처 및 BSP 바이너리는 변경하지 않습니다.", "Click a BSP surface to inspect its face · Ctrl/Shift+click to multi-select · Esc clears selection": "BSP 표면 클릭: 면 검사 · Ctrl/Shift+클릭: 다중 선택 · Esc: 선택 해제", "Compiled BSP surfaces": "컴파일된 BSP 표면", "Select a visible surface in the viewport. Original BSP face IDs are preserved across triangle batches.": "보이는 표면을 선택하세요. 삼각형을 합쳐도 원본 BSP 면 ID가 유지됩니다.", "faces selected": "선택한 면", "No face selected. Click a visible polygon in the BSP.": "선택한 면이 없습니다. 보이는 BSP 다각형을 클릭하세요.", "BSP face": "BSP 면", "Clear face selection": "면 선택 해제", "Texture dimensions": "텍스처 크기", "External WAD": "외부 WAD", "Embedded": "내장됨", "faces share texinfo": "개 면이 texinfo 공유", "Plane / side": "평면 / 방향", "Normal": "법선", "UV bounds": "UV 범위", "Lightmap": "라이트맵", "Available": "사용 가능", "Unavailable": "사용 불가", "Last selected face shown. All selected faces are highlighted.": "마지막에 선택한 면을 표시합니다. 선택한 모든 면을 강조합니다.", "Stage 6A: diagnostics only. Texture/UV changes and BSP copy export require separate binary and lightmap validation.": "6A 단계: 진단 전용. UV/텍스처 변경 및 BSP 사본 내보내기에는 별도의 바이너리 및 라이트맵 검증이 필요합니다."} );
+Object.assign(zh, {"BSP selection mode": "BSP 选择模式", "BSP face inspector": "BSP 面检查器", "Read-only BSP face diagnostics. No UV, texture or BSP binary edits are performed.": "BSP 面只读诊断。不修改 UV、纹理或 BSP 二进制数据。", "Click a BSP surface to inspect its face · Ctrl/Shift+click to multi-select · Esc clears selection": "点击 BSP 表面检查面 · Ctrl/Shift+点击多选 · Esc 清除选择", "Compiled BSP surfaces": "已编译的 BSP 表面", "Select a visible surface in the viewport. Original BSP face IDs are preserved across triangle batches.": "选择可见表面。即使三角形合批，仍保留原始 BSP 面 ID。", "faces selected": "个面已选择", "No face selected. Click a visible polygon in the BSP.": "尚未选择面。点击可见的 BSP 多边形。", "BSP face": "BSP 面", "Clear face selection": "清除面选择", "Texture dimensions": "纹理尺寸", "External WAD": "外部 WAD", "Embedded": "内嵌", "faces share texinfo": "个面共享 texinfo", "Plane / side": "平面 / 侧面", "Normal": "法线", "UV bounds": "UV 范围", "Lightmap": "光照贴图", "Available": "可用", "Unavailable": "不可用", "Last selected face shown. All selected faces are highlighted.": "显示最后选中的面，所有选中面均会高亮。", "Stage 6A: diagnostics only. Texture/UV changes and BSP copy export require separate binary and lightmap validation.": "阶段 6A：仅限诊断。修改纹理/UV 及导出 BSP 副本需要单独验证二进制数据和光照贴图。"} );
+Object.assign(pt, {"BSP selection mode": "Modo de seleção BSP", "BSP face inspector": "Inspetor de faces BSP", "Read-only BSP face diagnostics. No UV, texture or BSP binary edits are performed.": "Diagnóstico de faces BSP somente leitura. Não altera UV, texturas nem dados binários do BSP.", "Click a BSP surface to inspect its face · Ctrl/Shift+click to multi-select · Esc clears selection": "Clique em uma superfície BSP para inspecionar · Ctrl/Shift+clique: seleção múltipla · Esc: limpar seleção", "Compiled BSP surfaces": "Superfícies BSP compiladas", "Select a visible surface in the viewport. Original BSP face IDs are preserved across triangle batches.": "Selecione uma superfície visível. Os IDs originais das faces BSP são mantidos entre os lotes de triângulos.", "faces selected": "faces selecionadas", "No face selected. Click a visible polygon in the BSP.": "Nenhuma face selecionada. Clique em um polígono visível do BSP.", "BSP face": "Face BSP", "Clear face selection": "Limpar seleção de faces", "Texture dimensions": "Dimensões da textura", "External WAD": "WAD externo", "Embedded": "Incorporada", "faces share texinfo": "faces compartilham texinfo", "Plane / side": "Plano / lado", "Normal": "Normal", "UV bounds": "Limites UV", "Lightmap": "Mapa de luz", "Available": "Disponível", "Unavailable": "Indisponível", "Last selected face shown. All selected faces are highlighted.": "A última face selecionada é exibida. Todas as faces selecionadas são realçadas.", "Stage 6A: diagnostics only. Texture/UV changes and BSP copy export require separate binary and lightmap validation.": "Etapa 6A: apenas diagnóstico. Alterações de textura/UV e exportação BSP exigem validação binária e dos mapas de luz."} );
+
+// BSP Editor stage 6B — safe compiled-surface editing (ES/EN/RU/KO/ZH/PT).
+Object.assign(es,{"BSP surface edits are validated before export; unsupported operations are rejected.": "Las modificaciones de superficies BSP se validan antes de exportar; las operaciones incompatibles se rechazan.", "Unsaved BSP edits (entities or surfaces) will be lost. Continue?": "Se perderán los cambios de entidades o superficies BSP sin exportar. ¿Continuar?", "No surface changes to apply.": "No hay cambios de superficie para aplicar.", "Surface changes staged. Export a BSP copy to save.": "Cambios de superficie preparados. Exportá una copia BSP para guardarlos.", "Edit compiled surface": "Editar superficie compilada", "Replace with an existing BSP texture of the same dimensions; special textures are locked.": "Usá una textura existente del BSP con idénticas dimensiones. Las texturas especiales están protegidas.", "Replacement texture": "Textura de reemplazo", "Keep current texture": "Conservar textura actual", "UV shift U (pixels)": "Desplazar UV U (píxeles)", "UV shift V (pixels)": "Desplazar UV V (píxeles)", "UV rotation (degrees)": "Rotación UV (grados)", "UV scale U": "Escala UV U", "UV scale V": "Escala UV V", "Baked lightmaps: UV shifts must be multiples of 16 pixels; rotation and scale require recompilation.": "Con lightmaps compilados, el desplazamiento UV debe ser múltiplo de 16 píxeles. Para girar o escalar es necesario recompilar.", "This selection uses special or unsupported textures and cannot be edited safely.": "La selección contiene texturas especiales o no admitidas; no puede editarse con seguridad.", "Apply to selected faces": "Aplicar a las caras seleccionadas", "faces with pending edits": "caras con cambios pendientes", "Discard pending surface edits?": "¿Descartar los cambios de superficies pendientes?", "Revert surfaces": "Restablecer superficies", "Exports a new BSP copy. Existing BSP textures only; geometry, VIS, collisions and lightmaps are not rebuilt.": "Exporta una copia BSP nueva. Solo texturas ya existentes; no modifica geometría, VIS, colisiones ni reconstruye lightmaps."});
+Object.assign(ru,{"BSP surface edits are validated before export; unsupported operations are rejected.": "Изменения поверхностей BSP проверяются перед экспортом; небезопасные операции запрещены.", "Unsaved BSP edits (entities or surfaces) will be lost. Continue?": "Несохранённые изменения сущностей и поверхностей BSP будут потеряны. Продолжить?", "No surface changes to apply.": "Нет изменений поверхности для применения.", "Surface changes staged. Export a BSP copy to save.": "Изменения подготовлены. Экспортируйте копию BSP для сохранения.", "Edit compiled surface": "Изменить скомпилированную поверхность", "Replace with an existing BSP texture of the same dimensions; special textures are locked.": "Выберите уже существующую текстуру BSP того же размера. Специальные текстуры защищены.", "Replacement texture": "Новая текстура", "Keep current texture": "Оставить текущую текстуру", "UV shift U (pixels)": "Смещение UV U (пиксели)", "UV shift V (pixels)": "Смещение UV V (пиксели)", "UV rotation (degrees)": "Поворот UV (градусы)", "UV scale U": "Масштаб UV U", "UV scale V": "Масштаб UV V", "Baked lightmaps: UV shifts must be multiples of 16 pixels; rotation and scale require recompilation.": "При запечённом освещении UV можно сдвигать только на кратное 16 пикселям; поворот и масштаб требуют перекомпиляции.", "This selection uses special or unsupported textures and cannot be edited safely.": "Выбраны специальные или неподдерживаемые текстуры; редактирование запрещено.", "Apply to selected faces": "Применить к выбранным граням", "faces with pending edits": "граней с изменениями", "Discard pending surface edits?": "Отменить изменения поверхностей?", "Revert surfaces": "Сбросить поверхности", "Exports a new BSP copy. Existing BSP textures only; geometry, VIS, collisions and lightmaps are not rebuilt.": "Экспортирует новую копию BSP. Только существующие текстуры; геометрия, VIS, коллизии и карты освещения не пересчитываются."});
+Object.assign(ko,{"BSP surface edits are validated before export; unsupported operations are rejected.": "BSP 표면 편집은 내보내기 전에 검증되며 안전하지 않은 작업은 거부합니다.", "Unsaved BSP edits (entities or surfaces) will be lost. Continue?": "저장하지 않은 BSP 엔티티 및 표면 변경 사항이 사라집니다. 계속할까요?", "No surface changes to apply.": "적용할 표면 변경 사항이 없습니다.", "Surface changes staged. Export a BSP copy to save.": "표면 변경 사항을 준비했습니다. BSP 사본을 내보내 저장하세요.", "Edit compiled surface": "컴파일된 표면 편집", "Replace with an existing BSP texture of the same dimensions; special textures are locked.": "같은 크기의 기존 BSP 텍스처만 교체할 수 있습니다. 특수 텍스처는 잠겨 있습니다.", "Replacement texture": "교체 텍스처", "Keep current texture": "현재 텍스처 유지", "UV shift U (pixels)": "UV U 이동 (픽셀)", "UV shift V (pixels)": "UV V 이동 (픽셀)", "UV rotation (degrees)": "UV 회전 (도)", "UV scale U": "UV U 배율", "UV scale V": "UV V 배율", "Baked lightmaps: UV shifts must be multiples of 16 pixels; rotation and scale require recompilation.": "베이크된 라이트맵에서는 UV를 16픽셀 단위로만 이동할 수 있습니다. 회전과 배율 변경에는 재컴파일이 필요합니다.", "This selection uses special or unsupported textures and cannot be edited safely.": "선택한 면에 특수 또는 지원되지 않는 텍스처가 있어 안전하게 편집할 수 없습니다.", "Apply to selected faces": "선택한 면에 적용", "faces with pending edits": "변경 대기 중인 면", "Discard pending surface edits?": "표면 변경 사항을 취소할까요?", "Revert surfaces": "표면 원복", "Exports a new BSP copy. Existing BSP textures only; geometry, VIS, collisions and lightmaps are not rebuilt.": "새 BSP 사본을 내보냅니다. 기존 텍스처만 사용하며 지오메트리, VIS, 충돌, 라이트맵을 다시 빌드하지 않습니다."});
+Object.assign(zh,{"BSP surface edits are validated before export; unsupported operations are rejected.": "导出前会验证 BSP 表面修改，不安全的操作将被拒绝。", "Unsaved BSP edits (entities or surfaces) will be lost. Continue?": "尚未导出的 BSP 实体或表面修改将丢失。是否继续？", "No surface changes to apply.": "没有可应用的表面修改。", "Surface changes staged. Export a BSP copy to save.": "已暂存表面修改，请导出 BSP 副本以保存。", "Edit compiled surface": "编辑已编译表面", "Replace with an existing BSP texture of the same dimensions; special textures are locked.": "只能替换为 BSP 中已有且尺寸相同的纹理。特殊纹理已锁定。", "Replacement texture": "替换纹理", "Keep current texture": "保留当前纹理", "UV shift U (pixels)": "UV U 偏移（像素）", "UV shift V (pixels)": "UV V 偏移（像素）", "UV rotation (degrees)": "UV 旋转（度）", "UV scale U": "UV U 缩放", "UV scale V": "UV V 缩放", "Baked lightmaps: UV shifts must be multiples of 16 pixels; rotation and scale require recompilation.": "对于已烘焙的光照贴图，UV 只能以 16 像素的倍数偏移；旋转和缩放需要重新编译。", "This selection uses special or unsupported textures and cannot be edited safely.": "所选表面含特殊或不支持的纹理，无法安全编辑。", "Apply to selected faces": "应用到所选面", "faces with pending edits": "个面有待保存的修改", "Discard pending surface edits?": "放弃待保存的表面修改？", "Revert surfaces": "还原表面", "Exports a new BSP copy. Existing BSP textures only; geometry, VIS, collisions and lightmaps are not rebuilt.": "导出新的 BSP 副本。仅支持已有纹理，不重建几何、VIS、碰撞或光照贴图。"});
+Object.assign(pt,{"BSP surface edits are validated before export; unsupported operations are rejected.": "As alterações de superfícies BSP são validadas antes da exportação; operações inseguras são recusadas.", "Unsaved BSP edits (entities or surfaces) will be lost. Continue?": "As alterações não exportadas de entidades ou superfícies BSP serão perdidas. Continuar?", "No surface changes to apply.": "Não há alterações de superfície para aplicar.", "Surface changes staged. Export a BSP copy to save.": "Alterações preparadas. Exporte uma cópia BSP para salvar.", "Edit compiled surface": "Editar superfície compilada", "Replace with an existing BSP texture of the same dimensions; special textures are locked.": "Use uma textura existente no BSP com as mesmas dimensões. Texturas especiais ficam bloqueadas.", "Replacement texture": "Textura substituta", "Keep current texture": "Manter textura atual", "UV shift U (pixels)": "Deslocamento UV U (pixels)", "UV shift V (pixels)": "Deslocamento UV V (pixels)", "UV rotation (degrees)": "Rotação UV (graus)", "UV scale U": "Escala UV U", "UV scale V": "Escala UV V", "Baked lightmaps: UV shifts must be multiples of 16 pixels; rotation and scale require recompilation.": "Com lightmaps compilados, o deslocamento UV deve ser múltiplo de 16 pixels; rotação e escala exigem recompilar.", "This selection uses special or unsupported textures and cannot be edited safely.": "A seleção contém texturas especiais ou incompatíveis e não pode ser editada com segurança.", "Apply to selected faces": "Aplicar às faces selecionadas", "faces with pending edits": "faces com alterações pendentes", "Discard pending surface edits?": "Descartar alterações pendentes das superfícies?", "Revert surfaces": "Restaurar superfícies", "Exports a new BSP copy. Existing BSP textures only; geometry, VIS, collisions and lightmaps are not rebuilt.": "Exporta uma nova cópia BSP. Apenas texturas existentes; geometria, VIS, colisões e lightmaps não são reconstruídos."});
+Object.assign(es,{"Pending change: this face will receive independent texinfo on export.": "Cambio pendiente: esta cara tendrá un texinfo independiente al exportar."});
+Object.assign(ru,{"Pending change: this face will receive independent texinfo on export.": "Изменение подготовлено: при экспорте этой грани будет назначен отдельный texinfo."});
+Object.assign(ko,{"Pending change: this face will receive independent texinfo on export.": "변경 대기 중: 내보낼 때 이 면에 독립적인 texinfo가 생성됩니다."});
+Object.assign(zh,{"Pending change: this face will receive independent texinfo on export.": "修改待保存：导出时将为此面分配独立的 texinfo。"});
+Object.assign(pt,{"Pending change: this face will receive independent texinfo on export.": "Alteração pendente: esta face receberá um texinfo independente ao exportar."});
+
+// BSP Editor 6C — consolidated Texture Studio / WAD3 and advanced UV panels.
+Object.assign(es,{'Open Texture Studio':'Abrir Texture Studio','Hide Texture Studio':'Ocultar Texture Studio','Advanced numeric UV controls':'Controles UV numéricos avanzados','Replace with a compatible ordinary BSP or imported WAD3 texture; special textures are locked.':'Usá texturas normales del BSP o de un WAD3 importado; las especiales están protegidas.','Exports a new BSP copy. Imported WAD3 textures can be embedded; geometry, VIS, collisions and lightmaps are not rebuilt.':'Exporta una copia BSP nueva. Las texturas WAD3 importadas pueden incluirse; no se reconstruyen geometría, VIS, colisiones ni lightmaps.'});
+Object.assign(en,{'Open Texture Studio':'Open Texture Studio','Hide Texture Studio':'Hide Texture Studio','Advanced numeric UV controls':'Advanced numeric UV controls','Replace with a compatible ordinary BSP or imported WAD3 texture; special textures are locked.':'Use compatible ordinary BSP or imported WAD3 textures; special textures are protected.','Exports a new BSP copy. Imported WAD3 textures can be embedded; geometry, VIS, collisions and lightmaps are not rebuilt.':'Exports a new BSP copy. Imported WAD3 textures can be embedded; geometry, VIS, collisions and lightmaps are not rebuilt.'});
+Object.assign(ru,{'Open Texture Studio':'Открыть Texture Studio','Hide Texture Studio':'Скрыть Texture Studio','Advanced numeric UV controls':'Дополнительные настройки UV','Replace with a compatible ordinary BSP or imported WAD3 texture; special textures are locked.':'Обычные текстуры BSP или импортированного WAD3; специальные защищены.','Exports a new BSP copy. Imported WAD3 textures can be embedded; geometry, VIS, collisions and lightmaps are not rebuilt.':'Экспортирует новую копию BSP. Текстуры WAD3 можно встроить; геометрия, VIS, коллизии и lightmaps не пересчитываются.'});
+Object.assign(ko,{'Open Texture Studio':'Texture Studio 열기','Hide Texture Studio':'Texture Studio 숨기기','Advanced numeric UV controls':'고급 UV 수치 제어','Replace with a compatible ordinary BSP or imported WAD3 texture; special textures are locked.':'일반 BSP 또는 가져온 WAD3 텍스처를 사용합니다. 특수 텍스처는 보호됩니다.','Exports a new BSP copy. Imported WAD3 textures can be embedded; geometry, VIS, collisions and lightmaps are not rebuilt.':'BSP 사본을 내보냅니다. 가져온 WAD3 텍스처는 포함할 수 있으며 지오메트리, VIS, 충돌, 라이트맵은 다시 빌드하지 않습니다.'});
+Object.assign(zh,{'Open Texture Studio':'打开 Texture Studio','Hide Texture Studio':'隐藏 Texture Studio','Advanced numeric UV controls':'高级 UV 数值控制','Replace with a compatible ordinary BSP or imported WAD3 texture; special textures are locked.':'支持普通 BSP 纹理和导入的 WAD3 纹理；特殊纹理受到保护。','Exports a new BSP copy. Imported WAD3 textures can be embedded; geometry, VIS, collisions and lightmaps are not rebuilt.':'导出新的 BSP 副本。可嵌入导入的 WAD3 纹理，不重新构建几何、VIS、碰撞和光照贴图。'});
+Object.assign(pt,{'Open Texture Studio':'Abrir Texture Studio','Hide Texture Studio':'Ocultar Texture Studio','Advanced numeric UV controls':'Controles UV numéricos avançados','Replace with a compatible ordinary BSP or imported WAD3 texture; special textures are locked.':'Use texturas comuns do BSP ou de WAD3 importado; as especiais estão protegidas.','Exports a new BSP copy. Imported WAD3 textures can be embedded; geometry, VIS, collisions and lightmaps are not rebuilt.':'Exporta uma nova cópia BSP. As texturas WAD3 importadas podem ser incorporadas; geometria, VIS, colisões e lightmaps não são reconstruídos.'});
+
+// BSP Editor 6D — low-latency GPU UV updates and guarded lightmap RGB reprojection.
+Object.assign(es,{"Exports a BSP copy. Imported WAD3 textures are embedded when used; baked lightmaps are reprojected if UVs change, without recalculating shadows. Geometry, VIS and collisions stay unchanged.":"Exporta una copia BSP. Incluye las texturas WAD3 importadas usadas y reproyecta los lightmaps al editar UV, sin recalcular sombras. Geometría, VIS y colisiones no cambian.","Lit surfaces: UV transformations resample existing lightmap RGB on export. Shadows are not recalculated; review the result in game.":"En superficies iluminadas, la exportación reproyecta el RGB del lightmap. No recalcula sombras; revisá el resultado en Sven Co-op."});
+Object.assign(en,{"Exports a BSP copy. Imported WAD3 textures are embedded when used; baked lightmaps are reprojected if UVs change, without recalculating shadows. Geometry, VIS and collisions stay unchanged.":"Exports a BSP copy. Imported WAD3 textures are embedded when used; baked lightmaps are reprojected if UVs change, without recalculating shadows. Geometry, VIS and collisions stay unchanged.","Lit surfaces: UV transformations resample existing lightmap RGB on export. Shadows are not recalculated; review the result in game.":"Lit surfaces: UV transformations resample existing lightmap RGB on export. Shadows are not recalculated; review the result in game."});
+Object.assign(ru,{"Exports a BSP copy. Imported WAD3 textures are embedded when used; baked lightmaps are reprojected if UVs change, without recalculating shadows. Geometry, VIS and collisions stay unchanged.":"Экспортирует копию BSP. Используемые текстуры WAD3 встраиваются; при изменении UV существующие lightmap пересчитываются без новых теней. Геометрия, VIS и коллизии неизменны.","Lit surfaces: UV transformations resample existing lightmap RGB on export. Shadows are not recalculated; review the result in game.":"Для освещённых граней существующие RGB lightmap пересчитываются при экспорте. Новые тени не создаются; проверьте результат в Sven Co-op."});
+Object.assign(ko,{"Exports a BSP copy. Imported WAD3 textures are embedded when used; baked lightmaps are reprojected if UVs change, without recalculating shadows. Geometry, VIS and collisions stay unchanged.":"BSP 사본을 내보냅니다. 사용한 WAD3 텍스처를 포함하고 UV 변경 시 라이트맵 RGB를 재샘플링하지만 새 그림자는 계산하지 않습니다. 지오메트리, VIS 및 충돌은 유지됩니다.","Lit surfaces: UV transformations resample existing lightmap RGB on export. Shadows are not recalculated; review the result in game.":"조명된 면은 내보낼 때 라이트맵 RGB를 재샘플링합니다. 새로운 그림자는 계산하지 않으니 Sven Co-op에서 확인하세요."});
+Object.assign(zh,{"Exports a BSP copy. Imported WAD3 textures are embedded when used; baked lightmaps are reprojected if UVs change, without recalculating shadows. Geometry, VIS and collisions stay unchanged.":"导出 BSP 副本。嵌入已使用的 WAD3 纹理，UV 更改时重新采样原有光照贴图，不重新计算阴影。几何、VIS、碰撞不变。","Lit surfaces: UV transformations resample existing lightmap RGB on export. Shadows are not recalculated; review the result in game.":"已烘焙光照的表面在导出时重新采样光照贴图 RGB，不重新计算阴影；请在 Sven Co-op 中检查。"});
+Object.assign(pt,{"Exports a BSP copy. Imported WAD3 textures are embedded when used; baked lightmaps are reprojected if UVs change, without recalculating shadows. Geometry, VIS and collisions stay unchanged.":"Exporta uma cópia BSP. Incorpora as texturas WAD3 usadas e reamostra os lightmaps quando os UV mudam, sem gerar sombras novas. Geometria, VIS e colisões continuam intactos.","Lit surfaces: UV transformations resample existing lightmap RGB on export. Shadows are not recalculated; review the result in game.":"Em faces iluminadas, a exportação reamostra o RGB dos lightmaps. Não recalcula sombras; confira o resultado no Sven Co-op."});
+
+// v2.0 localization audit: new translations for the most-used UI strings.
+Object.assign(es,{"Drag to reorder toolbar sections":"Arrastrá para reordenar las secciones de la barra","Visibility":"Visibilidad","Gameplay":"Jugabilidad","Package":"Paquete","Refresh":"Actualizar","MDL placement behavior":"Comportamiento al colocar MDL","Unsaved BSP edits (entities, surfaces or lightmaps) will be lost. Continue?":"Se perderán los cambios BSP no exportados (entidades, superficies o lightmaps). ¿Continuar?","Model":"Modelo","Toolbar sections":"Secciones de la barra","Drag the section label on the classic toolbar, or use the arrows below to change its order.":"Arrastrá la etiqueta de la sección en la barra clásica o utilizá las flechas para cambiar el orden.","Move left":"Mover a la izquierda","Move right":"Mover a la derecha","files":"archivos","NPC routes require a supported monster_ class or squadmaker.":"Las rutas de NPC necesitan una clase monster_ compatible o squadmaker.","Custom NPC spawner support requires testing in Sven Co-op.":"Los generadores personalizados de NPC deben probarse en Sven Co-op."});
+Object.assign(ru,{"Drag to reorder toolbar sections":"Перетащите, чтобы изменить порядок разделов панели","Visibility":"Видимость","Gameplay":"Игровой процесс","Package":"Пакет","Light RGB (required)":"RGB света (обязательно)","Override texture color (_texcolor)":"Цвет текстуры (_texcolor)","Dark gap in front of surface (_texlightgap)":"Тёмный зазор перед поверхностью (_texlightgap)","Face filter max distance (_frange, optional)":"Макс. дистанция для граней (_frange, необязательно)","Update selected surface light":"Обновить свет выбранной поверхности","Appearance (style)":"Внешний вид (стиль)","Custom light pattern (a–z, 1–64 characters)":"Свой световой шаблон (a–z, 1–64 символа)","Geometry stays convex. Cutting may create multiple solids. Undo restores the original brush.":"Геометрия остаётся выпуклой. Разрезание может создать несколько тел. Отмена восстановит исходный браш.","Refresh":"Обновить","MDL placement behavior":"Поведение размещения MDL","Warning: the recovered MAP contains fewer entities than the original BSP. Review before importing.":"Восстановленный MAP содержит меньше сущностей, чем исходный BSP. Проверьте перед импортом.","Leave blank if you placed surfdecomp.exe in the tools folder of SvenStudio 3D. Only run decompilers you trust.":"Оставьте пустым, если surfdecomp.exe расположен в tools. Запускайте только доверенные декомпиляторы.","Skipped brush locations":"Расположение пропущенных брашей","Convert BSP to MAP":"Конвертировать BSP в MAP","Reconstruct an editable .map with your own SurfDecomp installation. The original BSP stays unchanged. Decompilation cannot recover the exact original brushes, groups, or baked lighting.":"Восстановите редактируемый .map с собственным SurfDecomp. Исходный BSP не изменяется. Исходные браши, группы и запечённый свет нельзя восстановить точно.","MAP requires manual inspection":"Требуется ручная проверка MAP","Recovered entities":"Восстановленные сущности","Importing this MAP would lose geometry. Review the report and confirm explicitly before replacing your current project.":"Импорт этого MAP приведёт к потере геометрии. Проверьте отчёт и явно подтвердите замену проекта.","Textures from external WADs and compiled lightmaps may not be recoverable; load the corresponding WADs if necessary.":"Внешние текстуры WAD и скомпилированные lightmaps могут не восстановиться; загрузите нужные WAD.","Decompiler output":"Вывод декомпилятора","Unsaved BSP edits (entities, surfaces or lightmaps) will be lost. Continue?":"Несохранённые изменения BSP (сущности, поверхности, lightmaps) будут потеряны. Продолжить?","Model":"Модель","Closed convex GoldSrc brushes · live preview and Undo":"Замкнутые выпуклые браши GoldSrc · предпросмотр и отмена","Illustrative plan view; geometry is generated as convex brushes":"Иллюстративный план; геометрия создаётся из выпуклых брашей","A curved ramp is divided into two triangular prisms per segment to keep all faces planar.":"Изогнутая рампа делится на две треугольные призмы в сегменте, чтобы все грани были плоскими.","Radial Array makes rigid copies. Original brushes are not bent or deleted.":"Радиальный массив создаёт жёсткие копии. Исходные браши не изгибаются и не удаляются.","Editing a saved parametric curve. Manual changes are protected against overwrite.":"Редактирование сохранённой параметрической кривой. Ручные изменения защищены.","The project retains editable curve parameters. The exported MAP contains ordinary brushes.":"Параметры кривых остаются редактируемыми. MAP содержит обычные браши.","Toolbar sections":"Разделы панели","Drag the section label on the classic toolbar, or use the arrows below to change its order.":"Перетащите подпись раздела или используйте стрелки для изменения порядка.","Move left":"Влево","Move right":"Вправо","files":"файлы","NPC routes require a supported monster_ class or squadmaker.":"Маршруты NPC требуют поддерживаемого monster_ или squadmaker.","Custom NPC spawner support requires testing in Sven Co-op.":"Пользовательские спавнеры NPC требуют проверки в Sven Co-op.","Choose a shape and size it before placing it with the mouse.":"Выберите форму и размер перед размещением мышью.","Right click or Esc to cancel drawing.":"Правая кнопка или Esc — отменить рисование.","Loaded terrain for editing. Existing geometry will be checked before replacement.":"Рельеф загружен для редактирования. Перед заменой будет проверена геометрия.","convex brushes added or safely updated. Use Undo to revert.":"Добавлены или безопасно обновлены выпуклые браши. Используйте Отмену для возврата.","Select an object in the map first.":"Сначала выберите объект на карте.","Placement position copied from selection.":"Позиция размещения скопирована из выделения.","Convex rock brushes with a reproducible seed. No models or Source displacements.":"Выпуклые каменные браши с воспроизводимым seed. Без моделей и смещений Source.","rocks":"камни","Hidden and previously hidden objects remain listed. Focus shows hidden brushes as ghosts without unhiding them.":"Скрытые объекты остаются в списке. Фокус отображает их призраками без раскрытия."});
+Object.assign(ko,{"Drag to reorder toolbar sections":"드래그하여 툴바 섹션 순서 변경","Visibility":"가시성","Gameplay":"게임플레이","Package":"패키지","Light RGB (required)":"조명 RGB (필수)","Override texture color (_texcolor)":"텍스처 색상 (_texcolor)","Dark gap in front of surface (_texlightgap)":"표면 앞의 어두운 간격 (_texlightgap)","Face filter max distance (_frange, optional)":"면 필터 최대 거리 (_frange, 선택)","Update selected surface light":"선택한 표면 조명 업데이트","Appearance (style)":"모양 (스타일)","Custom light pattern (a–z, 1–64 characters)":"사용자 조명 패턴 (a–z, 1–64자)","Geometry stays convex. Cutting may create multiple solids. Undo restores the original brush.":"형상은 볼록하게 유지됩니다. 자르기로 여러 솔리드가 생길 수 있습니다. 실행 취소는 원래 브러시를 복원합니다.","Refresh":"새로 고침","MDL placement behavior":"MDL 배치 동작","Warning: the recovered MAP contains fewer entities than the original BSP. Review before importing.":"복구된 MAP의 엔티티 수가 원본 BSP보다 적습니다. 가져오기 전에 확인하세요.","Leave blank if you placed surfdecomp.exe in the tools folder of SvenStudio 3D. Only run decompilers you trust.":"surfdecomp.exe를 SvenStudio 3D의 tools 폴더에 두었다면 비워 두세요. 신뢰할 수 있는 디컴파일러만 실행하세요.","Skipped brush locations":"생략된 브러시 위치","Convert BSP to MAP":"BSP를 MAP으로 변환","Reconstruct an editable .map with your own SurfDecomp installation. The original BSP stays unchanged. Decompilation cannot recover the exact original brushes, groups, or baked lighting.":"별도로 설치한 SurfDecomp로 편집 가능한 .map을 복구합니다. 원본 BSP는 변경되지 않습니다. 원래 브러시, 그룹 및 베이크 조명은 정확히 복구되지 않습니다.","MAP requires manual inspection":"MAP을 수동으로 확인해야 합니다","Recovered entities":"복구된 엔티티","Importing this MAP would lose geometry. Review the report and confirm explicitly before replacing your current project.":"이 MAP을 가져오면 지오메트리가 손실됩니다. 프로젝트 교체 전에 보고서를 확인하고 명시적으로 승인하세요.","Textures from external WADs and compiled lightmaps may not be recoverable; load the corresponding WADs if necessary.":"외부 WAD 텍스처와 컴파일된 라이트맵이 복구되지 않을 수 있으니 해당 WAD를 불러오세요.","Decompiler output":"디컴파일러 출력","Unsaved BSP edits (entities, surfaces or lightmaps) will be lost. Continue?":"저장하지 않은 BSP 수정(엔티티, 표면, 라이트맵)이 사라집니다. 계속할까요?","Model":"모델","Closed convex GoldSrc brushes · live preview and Undo":"닫힌 볼록 GoldSrc 브러시 · 실시간 미리보기 및 실행 취소","Illustrative plan view; geometry is generated as convex brushes":"설명용 평면도; 실제 지오메트리는 볼록 브러시로 생성","A curved ramp is divided into two triangular prisms per segment to keep all faces planar.":"곡선 경사로는 모든 면을 평면으로 유지하기 위해 구간당 삼각기둥 2개로 나뉩니다.","Radial Array makes rigid copies. Original brushes are not bent or deleted.":"방사형 배열은 강체 복사본을 만듭니다. 원래 브러시는 구부리거나 삭제하지 않습니다.","Editing a saved parametric curve. Manual changes are protected against overwrite.":"저장한 파라메트릭 곡선을 편집 중입니다. 수동 변경은 보호됩니다.","The project retains editable curve parameters. The exported MAP contains ordinary brushes.":"프로젝트에 편집 가능한 곡선 매개변수가 유지됩니다. MAP에는 일반 브러시가 포함됩니다.","Toolbar sections":"툴바 섹션","Drag the section label on the classic toolbar, or use the arrows below to change its order.":"클래식 툴바의 섹션 이름을 드래그하거나 아래 화살표로 순서를 바꾸세요.","Move left":"왼쪽으로 이동","Move right":"오른쪽으로 이동","files":"파일","NPC routes require a supported monster_ class or squadmaker.":"NPC 경로에는 지원되는 monster_ 클래스 또는 squadmaker가 필요합니다.","Custom NPC spawner support requires testing in Sven Co-op.":"커스텀 NPC 스포너는 Sven Co-op에서 테스트해야 합니다.","Choose a shape and size it before placing it with the mouse.":"마우스로 배치하기 전에 형태와 크기를 선택하세요.","Right click or Esc to cancel drawing.":"오른쪽 클릭 또는 Esc로 그리기 취소.","Loaded terrain for editing. Existing geometry will be checked before replacement.":"편집할 지형을 불러왔습니다. 교체 전에 기존 형상을 검사합니다.","convex brushes added or safely updated. Use Undo to revert.":"볼록 브러시가 추가되거나 안전하게 업데이트되었습니다. 실행 취소로 되돌리세요.","Select an object in the map first.":"먼저 맵에서 오브젝트를 선택하세요.","Placement position copied from selection.":"선택한 오브젝트의 배치 위치를 복사했습니다.","Convex rock brushes with a reproducible seed. No models or Source displacements.":"재현 가능한 시드로 볼록 바위 브러시 생성. 모델 또는 Source 변위 없음.","rocks":"바위","Hidden and previously hidden objects remain listed. Focus shows hidden brushes as ghosts without unhiding them.":"숨긴 오브젝트는 목록에 남습니다. 집중 보기에서는 숨김을 해제하지 않고 유령으로 표시합니다."});
+Object.assign(zh,{"Gizmo / Transform":"变换操纵器","Fly / Walk mode":"飞行 / 行走模式","Flashlight":"手电筒","Front view":"正视图","Right view":"右视图","Orthographic / Perspective":"正交 / 透视","Navigation preset":"导航预设","Blender — MMB orbit · Shift+MMB pan · Ctrl+MMB zoom":"中键环绕 · Shift+中键平移 · Ctrl+中键缩放","Classic — RMB orbit · MMB zoom · LMB pan":"经典模式 · 右键环绕 · 中键缩放 · 左键平移","Wheel: zoom. Blender preset uses WASD only in Fly/Walk mode; Classic keeps WASD always available. Esc exits Fly or the active transform tool.":"滚轮：缩放。环绕预设仅在飞行/行走模式下使用 WASD；经典模式始终可用 WASD。Esc 退出飞行或当前变换工具。","G starts mouse-follow Move. R and C toggle the Rotate and Scale gizmos; press again to return to Select. Drag a gizmo handle to edit the brush.":"G 启动跟随鼠标的移动；R 和 C 切换旋转与缩放操纵器，再次按下返回选择。拖动手柄编辑笔刷。","Invert orbit rotation":"反转环绕方向","Advanced camera options":"高级相机设置","Smooth camera motion":"平滑相机移动","Zoom toward mouse cursor":"缩放至鼠标位置","These options affect only the editor camera. They do not change map geometry or the BSP.":"这些选项只影响编辑器相机，不会改变 MAP 几何或 BSP。","Mouse transform modifiers":"鼠标变换修饰键","G uses mouse-follow Move with Shift/Ctrl/Alt and X/Y/Z axis constraints. R/C show gizmos: drag a handle to rotate/scale, or press the shortcut again to select normally.":"G 使用 Shift/Ctrl/Alt 与 X/Y/Z 轴限制进行跟随移动。R/C 显示操纵器；拖动手柄旋转或缩放，再按快捷键返回选择。","Alt + mouse: Move = world height (Z), Rotate = two-axis trackball, Scale = temporarily use center pivot. Ctrl works with the gizmo too.":"Alt + 鼠标：移动时调整世界高度 Z；旋转时双轴轨迹球；缩放时临时使用中心枢轴。Ctrl 也可与操纵器组合。","Gizmo orientation":"操纵器方向","Global / World":"全局 / 世界","Local / Object":"局部 / 对象","Translate uses the Grid / Snap controls in the editor toolbar. Rotation and scale snaps are optional. Multi-selection pivots use World axes.":"移动使用工具栏的网格/吸附设置。旋转及缩放吸附可选。多选以世界坐标为中心。","Custom keyboard shortcuts":"自定义快捷键","Click a shortcut and press your preferred key combination. Backspace clears it; Esc cancels. Conflicting shortcuts are automatically unassigned.":"点击快捷键并按新的组合。Backspace 清除，Esc 取消；重复绑定会自动解除。","Press a key combination…":"按下组合键…","Shortcut recording cancelled.":"快捷键录制已取消。","This shortcut is reserved by your browser or operating system. Choose another key.":"此组合键被浏览器或系统保留，请选择其他键。","Press a key…":"按下按键…","Unassigned":"未分配","Changes are saved automatically in this browser.":"更改会自动保存到此浏览器。","Blender controls restored.":"已恢复默认环绕控制。","Reset to Blender defaults":"恢复默认环绕控制","Done":"完成","Sven Studio guide":"SvenStudio 指南","Project credits":"项目致谢","This project was made with the help of GPT-6 Astra.":"本项目在 GPT-6 Astra 的协助下制作。","Editor summary":"编辑器概览","Building...":"编译中…","Clear":"清除","Open Map Doctor":"打开 Map Doctor","Drag to reorder toolbar sections":"拖动调整工具栏分组顺序","MAP import would skip {lost} of {total} brushes. The source file is unchanged. Import the incomplete map anyway?":"导入 MAP 会跳过 {total} 个笔刷中的 {lost} 个。源文件不会更改。仍要导入不完整地图吗？","Opening this file replaces the current map. Save your work first. Continue?":"打开此文件会替换当前地图。请先保存工作。是否继续？","The current map could not be backed up locally. Continue without a recovery checkpoint?":"无法在本地备份当前地图。没有恢复检查点仍要继续吗？","Import failed":"导入失败","Unable to open BSP":"无法打开 BSP","Compiled BSP unavailable":"编译后的 BSP 不可用","Start a new project? Save existing work first.":"新建项目？请先保存当前工作。","Open .BSP (read-only)":"打开 .BSP（只读）","Open compiled BSP":"打开编译后的 BSP","No earlier recovery snapshot is available.":"没有更早的恢复快照。","Restore the previous locally saved project? Your current work will be replaced.":"恢复之前在本地保存的项目？当前工作将被替换。","Restore previous autosave":"恢复上次自动保存","Workspace layout":"工作区布局","Visibility":"可见性","Entity visuals":"实体显示","Project display name":"项目显示名称","Autosave failed; export a project backup.":"自动保存失败，请导出项目备份。","Autosave is stored in this browser. Export a project file for a portable backup.":"自动保存在此浏览器中。请导出项目文件以便携式备份。","Autosave error":"自动保存错误","Autosaved":"已自动保存","Session recovered":"已恢复会话","Toggle wireframe":"切换线框","Grid visibility":"显示网格","Geometry editing":"几何编辑","Snap to grid":"吸附网格","Height of new blocks in Svengine units":"新方块的高度（Svengine 单位）","Layout":"布局","Gameplay":"玩法","Package":"打包","entities":"实体","Fly ON":"飞行开启","Light RGB (required)":"光照 RGB（必填）","Override texture color (_texcolor)":"覆盖纹理颜色 (_texcolor)","Dark gap in front of surface (_texlightgap)":"表面前方的暗间隙 (_texlightgap)","Face filter max distance (_frange, optional)":"表面过滤最大距离 (_frange，可选)","Update selected surface light":"更新所选表面光照","Appearance (style)":"外观（样式）","Custom light pattern (a–z, 1–64 characters)":"自定义灯光图案（a–z，1–64 字符）","Create architecture":"创建建筑","Converted successfully":"转换成功","Configure the game directory in Build Settings first.":"请先在编译设置中指定游戏目录。","Installed in Sven Co-op":"已安装到 Sven Co-op","Audio Converter":"音频转换器","Convert audio inside Sven Studio · no external application required":"在 SvenStudio 中转换音频，无需其他应用","Select an audio file":"选择音频文件","as supported by your browser":"取决于浏览器的支持","Output preset":"输出预设","Output filename":"输出文件名","Include WAV loop cue point for looping sound effects":"为循环音效添加 WAV 循环提示点","The browser must be able to decode the source format. For best compatibility, use mono PCM WAV for effects and NPC voices. For long music tracks, Svengine also supports OGG/MP3 directly.":"浏览器必须能解码源格式。音效和 NPC 语音建议使用单声道 PCM WAV，长音乐可直接使用 OGG/MP3。","Listen to the converted WAV before installing":"安装前试听转换后的 WAV","If this preview sounds wrong, do not install the file.":"如果预览声音异常，请不要安装。","Converting...":"转换中…","Convert to WAV":"转换为 WAV","Download WAV":"下载 WAV","Install in Sven Co-op":"安装到 Sven Co-op","Install saves to svencoop_addon/sound/svenstudio_imports/ without overwriting files. New sounds appear in Sound Browser after Refresh. Converted files can be used by ambient_generic or ambient_music.":"安装到 svencoop_addon/sound/svenstudio_imports/，不覆盖现有文件。刷新后新声音会显示在声音浏览器中，可由 ambient_generic 或 ambient_music 使用。","Width":"宽度","Depth":"深度","Geometry stays convex. Cutting may create multiple solids. Undo restores the original brush.":"几何保持凸体。切割可能生成多个实体。撤销可恢复原笔刷。","Refresh":"刷新","MDL placement behavior":"MDL 放置行为","Warning: the recovered MAP contains fewer entities than the original BSP. Review before importing.":"恢复的 MAP 实体比原 BSP 少，导入前请检查。","Search entities...":"搜索实体…","Faces":"表面","Vertices":"顶点","Leave blank if you placed surfdecomp.exe in the tools folder of SvenStudio 3D. Only run decompilers you trust.":"如果将 surfdecomp.exe 放在 SvenStudio 3D 的 tools 文件夹中则留空。只运行可信的反编译器。","Skipped brush locations":"跳过的笔刷位置","Convert BSP to MAP":"将 BSP 转换为 MAP","Reconstruct an editable .map with your own SurfDecomp installation. The original BSP stays unchanged. Decompilation cannot recover the exact original brushes, groups, or baked lighting.":"使用自行安装的 SurfDecomp 重建可编辑 .map。原 BSP 保持不变；无法准确还原原始笔刷、组或烘焙光照。"});
+Object.assign(pt,{"Gizmo / Transform":"Gizmo / Transformação","Fly / Walk mode":"Modo Voar / Caminhar","Flashlight":"Lanterna","Front view":"Vista frontal","Right view":"Vista direita","Orthographic / Perspective":"Ortográfica / Perspectiva","Navigation preset":"Predefinição de navegação","Blender — MMB orbit · Shift+MMB pan · Ctrl+MMB zoom":"Órbita com botão central · Shift+central desloca · Ctrl+central aproxima","Classic — RMB orbit · MMB zoom · LMB pan":"Clássico · botão direito orbita · central aproxima · esquerdo desloca","Wheel: zoom. Blender preset uses WASD only in Fly/Walk mode; Classic keeps WASD always available. Esc exits Fly or the active transform tool.":"Roda: zoom. No modo de órbita, WASD funciona apenas em Voar/Caminhar; no Clássico fica sempre disponível. Esc sai do voo ou da transformação ativa.","G starts mouse-follow Move. R and C toggle the Rotate and Scale gizmos; press again to return to Select. Drag a gizmo handle to edit the brush.":"G inicia Mover seguindo o mouse. R e C alternam os gizmos de rotação e escala; pressione novamente para voltar a Selecionar. Arraste as alças para editar o brush.","Invert orbit rotation":"Inverter órbita","Advanced camera options":"Opções avançadas de câmera","Smooth camera motion":"Movimento suave de câmera","Zoom toward mouse cursor":"Zoom em direção ao cursor","These options affect only the editor camera. They do not change map geometry or the BSP.":"Essas opções afetam apenas a câmera do editor, sem alterar a geometria MAP ou o BSP.","Mouse transform modifiers":"Modificadores do mouse","G uses mouse-follow Move with Shift/Ctrl/Alt and X/Y/Z axis constraints. R/C show gizmos: drag a handle to rotate/scale, or press the shortcut again to select normally.":"G usa Mover com Shift/Ctrl/Alt e restrições X/Y/Z. R/C mostra os gizmos: arraste uma alça para girar ou escalar, ou pressione novamente para selecionar.","Alt + mouse: Move = world height (Z), Rotate = two-axis trackball, Scale = temporarily use center pivot. Ctrl works with the gizmo too.":"Alt + mouse: Mover ajusta altura Z; Girar usa trackball de dois eixos; Escalar usa temporariamente o pivô central. Ctrl também funciona com o gizmo.","Gizmo orientation":"Orientação do gizmo","Global / World":"Global / Mundo","Local / Object":"Local / Objeto","Translate uses the Grid / Snap controls in the editor toolbar. Rotation and scale snaps are optional. Multi-selection pivots use World axes.":"Mover usa os controles Grade / Snap da barra. Snap de rotação e escala são opcionais. A seleção múltipla usa eixos do mundo.","Custom keyboard shortcuts":"Atalhos personalizados","Click a shortcut and press your preferred key combination. Backspace clears it; Esc cancels. Conflicting shortcuts are automatically unassigned.":"Clique em um atalho e pressione a combinação desejada. Backspace limpa, Esc cancela e conflitos são removidos automaticamente.","Press a key combination…":"Pressione uma combinação…","Shortcut recording cancelled.":"Gravação do atalho cancelada.","This shortcut is reserved by your browser or operating system. Choose another key.":"Este atalho é reservado pelo navegador ou sistema operacional. Escolha outro.","Press a key…":"Pressione uma tecla…","Unassigned":"Não atribuído","Changes are saved automatically in this browser.":"As alterações são salvas automaticamente neste navegador.","Blender controls restored.":"Controles de órbita restaurados.","Reset to Blender defaults":"Restaurar controles padrão de órbita","Done":"Concluído","Sven Studio guide":"Guia do SvenStudio","Project credits":"Créditos do projeto","This project was made with the help of GPT-6 Astra.":"Este projeto foi desenvolvido com ajuda do GPT-6 Astra.","Editor summary":"Resumo do editor","Building...":"Compilando…","Clear":"Limpar","Open Map Doctor":"Abrir Map Doctor","Drag to reorder toolbar sections":"Arraste para reorganizar as seções da barra","MAP import would skip {lost} of {total} brushes. The source file is unchanged. Import the incomplete map anyway?":"A importação MAP pularia {lost} de {total} brushes. O arquivo de origem não é alterado. Importar o mapa incompleto assim mesmo?","Opening this file replaces the current map. Save your work first. Continue?":"Abrir esse arquivo substitui o mapa atual. Salve o trabalho primeiro. Continuar?","The current map could not be backed up locally. Continue without a recovery checkpoint?":"Não foi possível fazer backup local do mapa atual. Continuar sem ponto de recuperação?","Import failed":"Falha na importação","Unable to open BSP":"Não foi possível abrir o BSP","Compiled BSP unavailable":"BSP compilado indisponível","Start a new project? Save existing work first.":"Criar novo projeto? Salve seu trabalho primeiro.","Open .BSP (read-only)":"Abrir .BSP (somente leitura)","Open compiled BSP":"Abrir BSP compilado","No earlier recovery snapshot is available.":"Não há um instantâneo anterior disponível.","Restore the previous locally saved project? Your current work will be replaced.":"Restaurar o projeto salvo localmente? O trabalho atual será substituído.","Restore previous autosave":"Restaurar último autosave","Workspace layout":"Layout da área de trabalho","Visibility":"Visibilidade","Entity visuals":"Aparência das entidades","Project display name":"Nome exibido do projeto","Autosave failed; export a project backup.":"O salvamento automático falhou; exporte um backup.","Autosave is stored in this browser. Export a project file for a portable backup.":"O autosave fica neste navegador. Exporte um arquivo de projeto para backup portátil.","Autosave error":"Erro no autosave","Autosaved":"Salvo automaticamente","Session recovered":"Sessão recuperada","Toggle wireframe":"Alternar wireframe","Grid visibility":"Exibir grade","Geometry editing":"Edição de geometria","Snap to grid":"Ajustar à grade","Height of new blocks in Svengine units":"Altura de novos blocos em unidades Svengine","Layout":"Layout","Gameplay":"Jogabilidade","Package":"Pacote","entities":"entidades","Fly ON":"Voo ativo","Light RGB (required)":"RGB da luz (obrigatório)","Override texture color (_texcolor)":"Substituir cor da textura (_texcolor)","Dark gap in front of surface (_texlightgap)":"Intervalo escuro diante da superfície (_texlightgap)","Face filter max distance (_frange, optional)":"Distância máxima do filtro de faces (_frange, opcional)","Update selected surface light":"Atualizar luz da superfície selecionada","Appearance (style)":"Aparência (estilo)","Custom light pattern (a–z, 1–64 characters)":"Padrão de luz personalizado (a–z, 1–64 caracteres)","Create architecture":"Criar arquitetura","Converted successfully":"Convertido com sucesso","Configure the game directory in Build Settings first.":"Configure primeiro o diretório do jogo nos ajustes de compilação.","Installed in Sven Co-op":"Instalado no Sven Co-op","Audio Converter":"Conversor de áudio","Convert audio inside Sven Studio · no external application required":"Converter áudio no SvenStudio sem aplicativo externo","Select an audio file":"Selecionar arquivo de áudio","as supported by your browser":"conforme suporte do navegador","Output preset":"Perfil de saída","Output filename":"Nome do arquivo de saída","Include WAV loop cue point for looping sound effects":"Incluir ponto de loop WAV para efeitos repetidos","The browser must be able to decode the source format. For best compatibility, use mono PCM WAV for effects and NPC voices. For long music tracks, Svengine also supports OGG/MP3 directly.":"O navegador precisa decodificar o formato original. Para efeitos e vozes de NPC, prefira WAV PCM mono; para músicas longas, Svengine também aceita OGG/MP3.","Listen to the converted WAV before installing":"Ouça o WAV convertido antes de instalar","If this preview sounds wrong, do not install the file.":"Se a prévia parecer errada, não instale o arquivo.","Converting...":"Convertendo…","Convert to WAV":"Converter para WAV","Download WAV":"Baixar WAV","Install in Sven Co-op":"Instalar no Sven Co-op","Install saves to svencoop_addon/sound/svenstudio_imports/ without overwriting files. New sounds appear in Sound Browser after Refresh. Converted files can be used by ambient_generic or ambient_music.":"A instalação usa svencoop_addon/sound/svenstudio_imports/ sem sobrescrever arquivos. Após Atualizar, os sons aparecem no navegador e podem ser usados por ambient_generic ou ambient_music.","Width":"Largura","Depth":"Profundidade","Geometry stays convex. Cutting may create multiple solids. Undo restores the original brush.":"A geometria permanece convexa. Cortes podem criar vários sólidos. Desfazer restaura o brush original.","Refresh":"Atualizar","MDL placement behavior":"Comportamento de colocação de MDL","Warning: the recovered MAP contains fewer entities than the original BSP. Review before importing.":"O MAP recuperado possui menos entidades que o BSP original. Revise antes de importar.","Search entities...":"Pesquisar entidades…","Faces":"Faces","Vertices":"Vértices","Leave blank if you placed surfdecomp.exe in the tools folder of SvenStudio 3D. Only run decompilers you trust.":"Deixe em branco se surfdecomp.exe estiver em tools do SvenStudio 3D. Execute apenas descompiladores confiáveis.","Skipped brush locations":"Locais dos brushes omitidos","Convert BSP to MAP":"Converter BSP em MAP","Reconstruct an editable .map with your own SurfDecomp installation. The original BSP stays unchanged. Decompilation cannot recover the exact original brushes, groups, or baked lighting.":"Reconstrua um .map editável com SurfDecomp instalado por você. O BSP original fica intacto; brushes, grupos e luz assada não podem ser recuperados exatamente."});
+
+// Preview UI 3 — localized workspace, pinned tools, resource and entity workflows.
+Object.assign(es,{
+  'Pin or unpin toolbar group':'Fijar o desfijar grupo de herramientas',
+  'Previous toolbar groups':'Grupos anteriores','Next toolbar groups':'Grupos siguientes',
+  'Pin the most-used toolbar groups to the front. The others stay available.':'Fijá los grupos más usados al principio. Los demás siguen disponibles.',
+  'Construction workspace':'Construcción','Entities workspace':'Entidades','BSP workspace':'BSP',
+  'BSP viewport inspector layout only':'Solo distribución de paneles; no abre el visor BSP',
+  'Workspace preset':'Distribución de trabajo','Saved workspaces':'Distribuciones guardadas',
+  'Workspace name':'Nombre de distribución','Save workspace':'Guardar distribución',
+  'No saved workspaces':'Todavía no hay distribuciones guardadas','Apply':'Aplicar',
+  'Place multiple':'Colocar varias','Recent textures':'Texturas recientes','Inspector sections':'Secciones de propiedades'
+});
+Object.assign(ru,{
+  'Pin or unpin toolbar group':'Закрепить или открепить группу инструментов',
+  'Previous toolbar groups':'Предыдущие группы','Next toolbar groups':'Следующие группы',
+  'Pin the most-used toolbar groups to the front. The others stay available.':'Закрепите нужные группы впереди. Остальные остаются доступными.',
+  'Construction workspace':'Строительство','Entities workspace':'Сущности','BSP workspace':'BSP',
+  'BSP viewport inspector layout only':'Только расположение панелей; BSP-просмотрщик не открывается',
+  'Workspace preset':'Профиль рабочего пространства','Saved workspaces':'Сохраненные рабочие пространства',
+  'Workspace name':'Имя рабочего пространства','Save workspace':'Сохранить',
+  'No saved workspaces':'Нет сохраненных рабочих пространств','Apply':'Применить',
+  'Place multiple':'Разместить несколько','Recent textures':'Недавние текстуры','Inspector sections':'Разделы свойств'
+});
+Object.assign(ko,{
+  'Pin or unpin toolbar group':'도구 그룹 고정 또는 해제',
+  'Previous toolbar groups':'이전 도구 그룹','Next toolbar groups':'다음 도구 그룹',
+  'Pin the most-used toolbar groups to the front. The others stay available.':'자주 사용하는 그룹을 앞에 고정합니다. 다른 그룹도 사용할 수 있습니다.',
+  'Construction workspace':'건축','Entities workspace':'엔티티','BSP workspace':'BSP',
+  'BSP viewport inspector layout only':'패널 배치만 변경하며 BSP 뷰어는 열지 않습니다',
+  'Workspace preset':'작업 공간 프리셋','Saved workspaces':'저장된 작업 공간',
+  'Workspace name':'작업 공간 이름','Save workspace':'작업 공간 저장',
+  'No saved workspaces':'저장된 작업 공간 없음','Apply':'적용',
+  'Place multiple':'연속 배치','Recent textures':'최근 텍스처','Inspector sections':'속성 섹션'
+});
+Object.assign(zh,{
+  'Pin or unpin toolbar group':'固定或取消固定工具组',
+  'Previous toolbar groups':'上一组工具','Next toolbar groups':'下一组工具',
+  'Pin the most-used toolbar groups to the front. The others stay available.':'将常用工具组固定到前面，其余工具仍然可用。',
+  'Construction workspace':'建造','Entities workspace':'实体','BSP workspace':'BSP',
+  'BSP viewport inspector layout only':'仅调整面板布局，不会打开 BSP 查看器',
+  'Workspace preset':'工作区预设','Saved workspaces':'已保存的工作区',
+  'Workspace name':'工作区名称','Save workspace':'保存工作区',
+  'No saved workspaces':'暂无保存的工作区','Apply':'应用',
+  'Place multiple':'连续放置','Recent textures':'最近纹理','Inspector sections':'属性分区'
+});
+Object.assign(pt,{
+  'Pin or unpin toolbar group':'Fixar ou soltar grupo de ferramentas',
+  'Previous toolbar groups':'Grupos anteriores','Next toolbar groups':'Próximos grupos',
+  'Pin the most-used toolbar groups to the front. The others stay available.':'Fixe os grupos mais usados à frente. Os outros continuam disponíveis.',
+  'Construction workspace':'Construção','Entities workspace':'Entidades','BSP workspace':'BSP',
+  'BSP viewport inspector layout only':'Somente layout de painéis; não abre o visualizador BSP',
+  'Workspace preset':'Perfil de área de trabalho','Saved workspaces':'Áreas de trabalho salvas',
+  'Workspace name':'Nome da área de trabalho','Save workspace':'Salvar área de trabalho',
+  'No saved workspaces':'Nenhuma área de trabalho salva','Apply':'Aplicar',
+  'Place multiple':'Colocar várias','Recent textures':'Texturas recentes','Inspector sections':'Seções de propriedades'
 });

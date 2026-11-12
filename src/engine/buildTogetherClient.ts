@@ -106,7 +106,7 @@ export function setBuildTogetherViewCones(show:boolean){useBuildTogether.setStat
 
 // An explicit allowlist prevents imported project extensions from sending
 // local paths or unrelated application state over a multiplayer connection.
-const sharedProjectKeys=new Set(['version','name','world','wadNames','target','graphPositions','cinematicPreviewSpeeds','terrainGroups','architectureLayouts','architectureAssemblies','architectureOpenings','customNpcs','surfaceSounds']);
+const sharedProjectKeys=new Set(['version','name','world','wadNames','target','graphPositions','cinematicPreviewSpeeds','terrainGroups','pathGroups','architectureLayouts','architectureAssemblies','architectureOpenings','customNpcs','surfaceSounds']);
 function normalizedEndpoint(input:string){
  const raw=input.trim().replace(/^https?:\/\//i,'').replace(/^wss?:\/\//i,'').replace(/\/.*$/,'');
  if(!/^(?:\[[a-f\d:]+\]|[a-z\d.-]+)(?::\d{1,5})?$/i.test(raw))throw Error('Enter a server address, such as 192.168.1.10:49178.');

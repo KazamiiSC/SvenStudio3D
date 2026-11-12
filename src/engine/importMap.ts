@@ -89,7 +89,7 @@ function reconstruct(planes:Plane[],flipped=false,tolerance=.1):{verts:Vec3[];fa
   if(faces.length<4)return null;
   return {verts:candidates.map(rawVec),faces};
 }
-export type MapImportReport={totalBrushes:number; importedBrushes:number; skippedBrushes:number; skippedLocations:string[]};
+export type MapImportReport={totalBrushes:number; importedBrushes:number; skippedBrushes:number; skippedLocations:string[]; skippedDetails?:Array<{entity:number;brush:number;classname:string;reason:string}>};
 export type MapImportResult={project:Project;report:MapImportReport; importedBrushes: Array<{sourceBrushIndex:number;brush:Brush}>};
 /** Always report skipped brushes. Callers must explicitly confirm partial imports. */
 export function inspectMapImport(contents:string,fileName='Imported Map'):MapImportResult{
@@ -98,6 +98,7 @@ export function inspectMapImport(contents:string,fileName='Imported Map'):MapImp
   if(!entities.length)throw Error('No entities found in .map file.');
   let world:Record<string,string>={classname:'worldspawn'};let missing=0,totalBrushes=0;
   const skippedLocations:string[]=[];
+  const skippedDetails:Array<{entity:number;brush:number;classname:string;reason:string}>=[];
   const importedBrushes: Array<{sourceBrushIndex:number;brush:Brush}>=[];
   entities.forEach((part,index)=>{
     const childBlocks=blocks(part);
@@ -125,6 +126,7 @@ export function inspectMapImport(contents:string,fileName='Imported Map'):MapImp
       // producing non-planar/open solids that only failed at compile time.
       // Try stricter reconstruction, and never import an invalid solid silently.
       let brush:Brush|null=null;
+      let failureReason=lines.length!==planes.length ? `Invalid MAP face syntax (${planes.length}/${lines.length} planes parsed)` : 'Plane intersection could not form a valid convex solid';
       if(lines.length===planes.length){
         for(const tolerance of [.1,.025,.006]){
           for(const flip of [true,false]){
@@ -133,14 +135,17 @@ export function inspectMapImport(contents:string,fileName='Imported Map'):MapImp
             const center=new THREE.Vector3();built.verts.forEach(v=>center.add(vec(v)));center.divideScalar(built.verts.length);
             const position=rawVec(center),vertices=built.verts.map(v=>rawVec(vec(v).sub(center)));
             const candidate:Brush={id:uid(),kind:'brush',name:`Imported Brush ${objects.length+1}`,primitive:'poly',position,rotation:[0,0,0],scale:[1,1,1],vertices,faces:orientFaces(vertices,built.faces),layer:'Geometry',...(classname!=='worldspawn'?{entityId:objId}:{})};
-            if(validateBrush(candidate).length===0){brush=candidate;break;}
+            const issues=validateBrush(candidate);
+            if(issues.length===0){brush=candidate;break;}
+            failureReason=`Geometry validation: ${issues.slice(0,2).join('; ')}`;
           }
           if(brush)break;
         }
       }
       if(!brush){
         missing++;
-        if(skippedLocations.length<25)skippedLocations.push(`${classname}, entity ${index+1}, brush ${brushIndex+1} (invalid or unreconstructable solid)`);
+        if(skippedLocations.length<100)skippedLocations.push(`${classname}, entity ${index+1}, brush ${brushIndex+1}: ${failureReason}`);
+        if(skippedDetails.length<100)skippedDetails.push({classname,entity:index+1,brush:brushIndex+1,reason:failureReason});
         continue;
       }
       importedBrushes.push({sourceBrushIndex:totalBrushes-1,brush});
@@ -158,7 +163,7 @@ export function inspectMapImport(contents:string,fileName='Imported Map'):MapImp
   });
   const wadNames=(world.wad||'').split(';').filter(Boolean).map(p=>p.split(/[\\/]/).at(-1)||p);
   return {project:{version:1,target:'svengine',name:fileName.replace(/\.map$/i,''),objects,world,wadNames},
-    report:{totalBrushes,importedBrushes:totalBrushes-missing,skippedBrushes:missing,skippedLocations},importedBrushes};
+    report:{totalBrushes,importedBrushes:totalBrushes-missing,skippedBrushes:missing,skippedLocations,skippedDetails},importedBrushes};
 }
 /** Safe default: do not allow silent geometry loss through the public importer. */
 export function importMap(contents:string,fileName='Imported Map'):Project{

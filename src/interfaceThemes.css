@@ -1,0 +1,155 @@
+/* SvenStudio Themes — visual styling only. Never select the WebGL canvas, 3D
+   textures, BSP lighting or user-provided image assets. Theme values are
+   inherited by document.body portals (top menus, floating UV panels). */
+:root[data-sven-theme]{
+  --ui-ink:var(--theme-text);--ui-muted:var(--theme-muted);
+  --theme-disabled-bg:var(--theme-panel2);--theme-disabled-ink:var(--theme-muted);
+  --theme-shadow-color:#0005;
+  --theme-warning-bg:#43351e;--theme-warning-ink:#ffdc98;
+  --theme-danger-bg:#45272b;--theme-danger-ink:#ffc4c4;
+  --theme-success-bg:#203c30;--theme-success-ink:#b6efc8;
+  --theme-window:#101b2c;--theme-panel:#182a40;--theme-panel2:#21344e;
+  --theme-header:#233751;--theme-header-text:#f3f7ff;
+  --theme-control:#263c55;--theme-control-hover:#345271;
+  --theme-input:#0f2134;--theme-line:#45617d;--theme-text:#eaf3ff;
+  --theme-muted:#c5d2e3;--theme-selection:#255876;--theme-title:#1a314b;
+  --theme-shadow:0 16px 36px #0008;--theme-radius:9px;
+  --theme-modal-backdrop:#040b17c9;--theme-accent:#57cdeb;
+  --theme-highlight-text:#ffffff;--theme-canvas-line:#48698b;
+  color-scheme:dark;
+}
+:root[data-sven-accent="nebula"]{--theme-accent:#9295fa}
+:root[data-sven-accent="ice"]{--theme-accent:#62d4ef}
+:root[data-sven-accent="ember"]{--theme-accent:#f3a174}
+:root[data-sven-accent="mint"]{--theme-accent:#58d9b8}
+:root[data-sven-accent="orchid"]{--theme-accent:#ca8aee}
+:root[data-sven-accent="gold"]{--theme-accent:#ebc078}
+:root[data-sven-theme="win98"]{
+  --theme-warning-bg:#fff0cc;--theme-warning-ink:#624000;
+  --theme-danger-bg:#ffe4e4;--theme-danger-ink:#8a1717;
+  --theme-success-bg:#dfefdc;--theme-success-ink:#22531f;
+  --theme-window:#c0c0c0;--theme-panel:#d4d0c8;--theme-panel2:#d4d0c8;
+  --theme-header:#000080;--theme-header-text:#ffffff;
+  --theme-control:#d4d0c8;--theme-control-hover:#e8e8e8;
+  --theme-input:#ffffff;--theme-line:#808080;--theme-text:#111111;
+  --theme-muted:#333333;--theme-selection:#b8cce9;--theme-title:#000080;
+  --theme-shadow:2px 2px 0 #555555;--theme-radius:0px;
+  --theme-modal-backdrop:#1b243cbd;--theme-highlight-text:#ffffff;
+  --theme-canvas-line:#777777;color-scheme:light;
+}
+:root[data-sven-theme="cyber"]{
+  --theme-window:#06131f;--theme-panel:#092334;--theme-panel2:#0f3042;
+  --theme-header:#072c3a;--theme-header-text:#e9feff;
+  --theme-control:#0f3547;--theme-control-hover:#15536a;
+  --theme-input:#051c2c;--theme-line:#158499;--theme-text:#e1faff;
+  --theme-muted:#a5d3dc;--theme-selection:#0b5164;--theme-title:#062939;
+  --theme-shadow:0 14px 36px #000a,0 0 14px #00dcfb39;
+  --theme-radius:8px;--theme-modal-backdrop:#01111de3;
+  --theme-highlight-text:#ffffff;--theme-canvas-line:#008f9c;
+}
+:root[data-sven-theme="goldsrc"]{
+  --theme-window:#232923;--theme-panel:#303a30;--theme-panel2:#3a4638;
+  --theme-header:#465543;--theme-header-text:#f3f7e9;
+  --theme-control:#394939;--theme-control-hover:#52654d;
+  --theme-input:#1f291f;--theme-line:#72846b;--theme-text:#e5eddb;
+  --theme-muted:#e0ead5;--theme-selection:#536b48;--theme-title:#374938;
+  --theme-shadow:0 8px 20px #0009;--theme-radius:3px;
+  --theme-modal-backdrop:#0b110bd4;--theme-highlight-text:#ffffff;
+  --theme-canvas-line:#748569;
+}
+:root[data-sven-theme="xp"]{
+  --theme-warning-bg:#fff0cc;--theme-warning-ink:#624000;
+  --theme-danger-bg:#ffe4e4;--theme-danger-ink:#8a1717;
+  --theme-success-bg:#dfefdc;--theme-success-ink:#22531f;
+  --theme-window:#b7d0f0;--theme-panel:#e5efff;--theme-panel2:#c8daf6;
+  --theme-header:#2760ae;--theme-header-text:#ffffff;
+  --theme-control:#d7e7fe;--theme-control-hover:#f2f7ff;
+  --theme-input:#ffffff;--theme-line:#7392c0;--theme-text:#172744;
+  --theme-muted:#3e5475;--theme-selection:#a7caef;--theme-title:#2c65b3;
+  --theme-shadow:0 15px 35px #13345b77;--theme-radius:9px;
+  --theme-modal-backdrop:#152b50c6;--theme-highlight-text:#ffffff;
+  --theme-canvas-line:#648db8;color-scheme:light;
+}
+:root[data-sven-theme="midnight"]{
+  --theme-window:#090c11;--theme-panel:#131922;--theme-panel2:#1b2430;
+  --theme-header:#1b222b;--theme-header-text:#f0f1f3;
+  --theme-control:#222c38;--theme-control-hover:#34404e;
+  --theme-input:#0b121a;--theme-line:#48515e;--theme-text:#e9eef5;
+  --theme-muted:#acb9c9;--theme-selection:#344554;--theme-title:#141a24;
+  --theme-shadow:0 13px 33px #000b;--theme-radius:4px;
+  --theme-modal-backdrop:#020307e6;--theme-highlight-text:#ffffff;
+  --theme-canvas-line:#46505c;
+}
+
+/* Theme picker: semantic buttons, accessible labels and previews; never a
+   screenshot or extra duplicate appearance panel. */
+.studio-theme-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:8px 0 16px;}
+.studio-theme-grid .studio-theme-card{min-width:0;min-height:80px;display:flex;align-items:center;gap:10px;position:relative;text-align:left;padding:9px;border:1px solid var(--theme-line);border-radius:var(--theme-radius);background:var(--theme-control);color:var(--theme-text);cursor:pointer;}
+.studio-theme-grid .studio-theme-card:hover,.studio-theme-grid .studio-theme-card:focus-visible{border-color:var(--theme-accent);background:var(--theme-control-hover);}
+.studio-theme-grid .studio-theme-card.chosen{outline:2px solid var(--theme-accent);outline-offset:-2px;border-color:var(--theme-accent);background:var(--theme-selection);}
+.studio-theme-miniature{width:61px;height:48px;flex:none;padding:4px;display:flex;flex-direction:column;gap:4px;background:var(--preview-bg);border:1px solid var(--preview-highlight);border-radius:3px;overflow:hidden;}
+.studio-theme-miniature-title{height:9px;display:block;flex:none;background:var(--preview-highlight);}
+.studio-theme-miniature-body{display:flex;gap:3px;min-height:0;flex:1;}
+.studio-theme-miniature-body i:first-child{width:13px;flex:none;background:var(--preview-panel);border:1px solid var(--preview-highlight);}
+.studio-theme-miniature-body i:nth-child(2){flex:1;background:var(--preview-bg);border:1px solid var(--preview-panel);}
+.studio-theme-miniature-body i:nth-child(3){width:10px;flex:none;background:var(--preview-panel);}
+.studio-theme-card-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:5px;}
+.studio-theme-card-copy strong{font-size:11px;line-height:1.25;color:var(--theme-text);}
+.studio-theme-card-copy small{font-size:10px;line-height:1.3;color:var(--theme-muted);overflow-wrap:anywhere;}
+.studio-theme-selected{flex:none;color:var(--theme-accent);position:absolute;right:7px;top:6px;}
+@media(max-width:560px){.studio-theme-grid{grid-template-columns:minmax(0,1fr)}.studio-theme-grid .studio-theme-card{min-height:60px}.studio-theme-miniature{width:53px;height:42px}}
+
+
+/* Shared roles. These are the only skin-level component rules. Original
+   component styles own layout and consume the tokens above. Body portals inherit
+   the same palette as the editor. Scene colors never inherit these UI roles. */
+:root[data-sven-theme] {background:var(--theme-window);color:var(--theme-text);}
+body {color:var(--theme-text);background:var(--theme-window);}
+:is(button,input,select,textarea) {--ui-ink:var(--theme-text);--ui-muted:var(--theme-muted);}
+:is(button,input,select,textarea):disabled {
+ opacity:1;color:var(--theme-disabled-ink);background-color:var(--theme-disabled-bg);
+ cursor:not-allowed;filter:none;text-shadow:none;
+}
+:is(input,textarea)::placeholder {color:var(--theme-muted);opacity:1;}
+:is(input,select,textarea,button):focus-visible {outline:2px solid var(--theme-accent);outline-offset:2px;}
+:is(input[type=checkbox],input[type=radio],input[type=range]) {accent-color:var(--theme-accent);}
+select option {background:var(--theme-input);color:var(--theme-text);}
+:root[data-sven-theme] :is(.titlebar,.dock-pane-titlebar,.modal-title,.gs-topbar,.bp-head,.npc-top,.cine-header,.terrain-header,.sb-header,.mp-header,.pfstudio-head,.texture-studio-head,.bsp-floating-inspector-header,.bsp-lightmap-studio-header,.bsp-viewer-header,.sound-studio-header,.lighting-header,.material-head,.me-header,.cpz-head,.enc-header,.converter-header) {
+ --ui-ink:var(--theme-header-text);--ui-muted:var(--theme-header-text);
+ background:var(--theme-header);color:var(--theme-header-text);
+}
+:root[data-sven-theme] :is(.top-compile,.primary-action,.sb-primary,.bp-primary) {
+ --ui-ink:var(--theme-highlight-text);--ui-muted:var(--theme-highlight-text);
+ background:var(--theme-accent);color:var(--theme-highlight-text);border-color:var(--theme-accent);
+}
+:root[data-sven-theme] :is(button,input,select,textarea):disabled {
+ --ui-ink:var(--theme-disabled-ink);--ui-muted:var(--theme-disabled-ink);
+ opacity:1;background:var(--theme-disabled-bg);color:var(--theme-disabled-ink);box-shadow:none;
+}
+:root[data-sven-accent] {--theme-highlight-text:#17202b;}
+:root[data-sven-theme="win98"] {--theme-radius:0px;}
+:root[data-sven-theme="win98"] .app-shell {font-family:Tahoma,"MS Sans Serif",Arial,sans-serif;}
+:root[data-sven-theme="xp"] .app-shell {font-family:Tahoma,"Trebuchet MS",Arial,sans-serif;}
+:root[data-sven-theme="goldsrc"] .app-shell {font-family:Verdana,"Segoe UI",Arial,sans-serif;}
+:root[data-sven-theme="win98"] :is(button,input,select,textarea,.dock-pane,.modal-card,.topbar-floating-menu) {border-radius:0;}
+:root[data-sven-theme="win98"] button:not(:disabled) {box-shadow:inset 1px 1px #fff,inset -1px -1px #555;}
+:root[data-sven-theme="win98"] button:active:not(:disabled) {box-shadow:inset 1px 1px #555,inset -1px -1px #fff;}
+:root[data-sven-theme="xp"] :is(.titlebar,.dock-pane-titlebar,.modal-title) {background:linear-gradient(#2d70c2,#194e9d);}
+:root[data-sven-theme="cyber"] :is(.dock-pane,.modal-card,.topbar-floating-menu) {box-shadow:var(--theme-shadow);}
+:root[data-sven-theme="midnight"] :is(.ribbon-group,.tool-button,.dock-pane) {box-shadow:none;}
+.topbar-floating-menu {max-height:calc(100dvh - var(--menu-top,60px) - 8px);overflow:auto;overscroll-behavior:contain;z-index:1000;}
+:root[data-sven-theme] :is(.modal-card,.layout-modal,.mdl-modal,.gs-shell,.gs-v3-shell,.gs-v31-shell,.bp-shell,.npc-shell,.cine-shell,.enc-shell,.cpz-shell,.custom-npc-shell,.mp-shell,.sb-shell,.terrain-shell,.world-builder-shell,.bw-dialog,.pfstudio-dialog,.lighting-studio,.material-studio,.sound-studio,.audio-converter,.bsp-recovery) {
+ min-width:0;max-width:calc(100vw - 16px);max-height:calc(100dvh - 16px);
+}
+:root[data-sven-theme] :is(.modal-title,.npc-top,.pfstudio-head,.sound-studio-header,.lighting-header,.material-head,.terrain-header) {flex-shrink:0;}
+:root[data-sven-theme] :is(.modal-card,.layout-modal,.lighting-studio,.material-studio) {overflow:auto;}
+@media(prefers-reduced-motion:reduce) {.studio-theme-card {transition:none;}}
+:root[data-sven-theme] .titlebar button {background:var(--theme-control);color:var(--theme-text);}
+:root[data-sven-theme] .titlebar .top-compile {background:var(--theme-accent);color:var(--theme-highlight-text);}
+:root[data-sven-theme="win98"] {--skin-radius:0px;}
+:root[data-sven-theme] :is(.modal-title,.gs-topbar,.bp-head,.npc-top,.cine-header,.terrain-header,.sb-header,.mp-header,.pfstudio-head,.texture-studio-head,.bsp-floating-inspector-header,.sound-studio-header,.lighting-header,.material-head,.me-header,.cpz-head,.enc-header,.converter-header) button {
+ background:var(--theme-control);color:var(--theme-text);
+}
+
+
+

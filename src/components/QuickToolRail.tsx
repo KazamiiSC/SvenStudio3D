@@ -4,6 +4,8 @@ import {useEditor} from '../store';
 import {useStudioLayout} from '../layout';
 import {useHudLayout} from '../hudLayout';
 import {useT} from '../i18n';
+import {previewFusion} from '../engine/brushFusion';
+import type {Brush} from '../engine/types';
 import {requestRouteFocus} from '../engine/uiNavigation';
 import type {PlaceableShape} from '../engine/types';
 
@@ -21,9 +23,12 @@ export function QuickToolRail(){
     const obj=editor.project.objects.find(o=>o.id===id);
     return obj?.kind==='brush'&&!obj.locked;
   });
+  const allBrushes=editor.selectedIds.map(id=>editor.project.objects.find((o):o is Brush=>o.id===id&&o.kind==='brush'));
+  const fusionReady=allBrushes.length>1&&allBrushes.every(Boolean);
+  const fusionPreview=(()=>{if(!fusionReady)return '';try{return previewFusion(allBrushes as Brush[]).reason}catch(error){return String(error)}})();
   const faceReady=!!selectedBrush&&!selectedBrush.locked&&editor.geometryMode==='face'&&editor.selectedFace!==null;
   const edgeReady=!!selectedBrush&&!selectedBrush.locked&&editor.geometryMode==='edge'&&editor.editIndices.length===2;
-  const activate=(resource:'objects'|'textures'|'models'|'sounds'|'entities'|'npcs'|'layers')=>{
+  const activate=(resource:'objects'|'textures'|'models'|'sounds'|'entities'|'npcs')=>{
     editor.setResourceView(resource);if(!layout.visible.assets)layout.setVisible('assets',true);setMenu(null);
   };
   const launch=(type:'sound'|'npc'|'gameplay'|'doctor')=>{document.dispatchEvent(new CustomEvent('svenstudio:open-studio',{detail:type}));setMenu(null)};
@@ -66,6 +71,12 @@ export function QuickToolRail(){
         <div className="quick-flyout-grid quick-modeling-modes">{(['object','vertex','edge','face'] as const).map(mode=><button type="button" key={mode} className={editor.geometryMode===mode?'active':''} aria-pressed={editor.geometryMode===mode} onClick={()=>{editor.setGeometryMode(mode);setOperationMessage('')}}>{mode==='face'?'▱':mode==='edge'?'╱':mode==='vertex'?'•':'▣'} {t(mode[0].toUpperCase()+mode.slice(1))}</button>)}</div>
         <div className="quick-modeling-caption">{t('CSG · select 2 overlapping brushes (first = target)')}</div>
         <div className="quick-flyout-grid">{(['union','subtract','intersect'] as const).map(operation=><button type="button" key={operation} disabled={!twoBrushes} title={t('Select two unlocked brushes with Ctrl/Shift + click')} onClick={()=>apply(operation,()=>editor.booleanSelected(operation))}>{t(operation[0].toUpperCase()+operation.slice(1))}</button>)}</div>
+        <div className="quick-modeling-caption">{t('Smart Brush Fusion — all selected brushes')}</div>
+        <div className="quick-flyout-grid"><button type="button" disabled={!fusionReady} onClick={()=>apply('Smart Brush Fusion',()=>editor.fuseSelection('auto'))}>{t('Fuse selection')}</button><button type="button" disabled={!fusionReady} onClick={()=>apply('Composite',()=>editor.fuseSelection('composite'))}>{t('Make composite')}</button></div>
+        <button type="button" disabled={!editor.project.brushComposites?.some(r=>r.memberIds.some(id=>editor.selectedIds.includes(id)))} onClick={()=>apply('Separate',editor.separateSelectedComposite)}>{t('Separate composite')}</button>
+        {fusionPreview&&<p className="quick-modeling-caption" role="status">{t(fusionPreview)}</p>}
+        <div className="quick-modeling-caption">{t('Advanced Geometry')}</div>
+        <div className="quick-flyout-grid"><button type="button" disabled={!selectedBrush||!!selectedBrush.locked} onClick={()=>{document.dispatchEvent(new CustomEvent('svenstudio:open-studio',{detail:'workshop'}));setMenu(null)}}>{t('Brush Workshop')}</button><button type="button" onClick={()=>{document.dispatchEvent(new CustomEvent('svenstudio:open-studio',{detail:'curves'}));setMenu(null)}}>{t('World Builder · Curves')}</button></div>
         <div className="quick-modeling-caption">{t('Face / Edge tools · select an unlocked brush and a face or edge')}</div>
         <label className="quick-modeling-input">{t('Extrude distance')} <input aria-label={t('Extrude distance')} type="number" min="0.01" value={distance} onChange={e=>setDistance(Number(e.target.value))}/></label>
         <button type="button" disabled={!faceReady||!(distance>0)} title={t('Face mode: select a face first')} onClick={()=>apply('Extrude',()=>editor.extrudeSelected(distance))}>{t('Extrude face')}</button>
@@ -78,7 +89,7 @@ export function QuickToolRail(){
       </div>}
       {menu==='shapes'&&<div className="quick-flyout-grid">{(['box','wedge','cylinder','arch','vault','cone','pyramid','icosphere','stairs','pipe'] as PlaceableShape[]).map(shape=>
         <button key={shape} className={editor.placementShape===shape?'active':''} onClick={()=>{editor.setPlacementShape(editor.placementShape===shape?null:shape);setMenu(null)}}><Box size={17}/>{t(shape[0].toUpperCase()+shape.slice(1))}</button>)}</div>}
-      {menu==='assets'&&<div className="quick-flyout-list">{([['entities','Entities',Settings2],['textures','Texture Browser',Paintbrush],['models','Model Browser',Layers],['npcs','NPC Browser',Skull],['sounds','Sound Browser',Headphones],['layers','Layers',Layers]] as const).map(([id,title,Icon])=><button key={id} onClick={()=>activate(id)}><Icon size={16}/>{t(title)}</button>)}
+      {menu==='assets'&&<div className="quick-flyout-list">{([['entities','Entities',Settings2],['textures','Texture Browser',Paintbrush],['models','Model Browser',Layers],['npcs','NPC Browser',Skull],['sounds','Sound Browser',Headphones]] as const).map(([id,title,Icon])=><button key={id} onClick={()=>activate(id)}><Icon size={16}/>{t(title)}</button>)}
         <div className="quick-divider"/><button onClick={()=>launch('npc')}><Skull size={16}/>{t('NPC & AI Studio')}</button><button onClick={()=>launch('gameplay')}><GitBranch size={16}/>{t('Gameplay Studio')}</button><button onClick={()=>launch('sound')}><Headphones size={16}/>{t('Sound & Atmosphere Studio')}</button></div>}
       {menu==='scene'&&<div className="quick-flyout-list">{([['explorer','Explorer',FolderTree],['properties','Properties',SlidersHorizontal],['assets','Asset Library',PanelLeft],['console','Output',Terminal]] as const).map(([id,title,Icon])=><button key={id} onClick={()=>{if(id==='console')document.dispatchEvent(new CustomEvent('svenstudio:open-studio',{detail:'output'}));else layout.setVisible(id,!layout.visible[id]);setMenu(null)}}><Icon size={16}/>{t(title)} {id!=='console'&&<span>{layout.visible[id]?'✓':'+'}</span>}</button>)}</div>}
     </div>}

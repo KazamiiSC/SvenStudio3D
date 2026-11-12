@@ -4,12 +4,29 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
+import {validateExternalRoots,locateExternalResource} from './externalResources.js';
 
 const MAX_BYTES=220*1024*1024,MAX_FILE=128*1024*1024,MAX_ITEMS=480;
 const SAFE_ROOTS=['maps/','models/','sound/','sprites/','gfx/','scripts/maps/','events/'];
 const GAME_LAYERS=['svencoop_addon','svencoop_downloads','svencoop'];
 const MAP_NAME=/^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/;
 const SKY_SIDES=['bk','dn','ft','lf','rt','up'];
+/** Sven Co-op RES lists client-downloadable resources, NOT server scripts/CFG/BSP. */
+export function isResDownloadable(name){
+  const p=cleanRelative(name).toLowerCase();
+  return /^[^/]+\.wad$/.test(p)
+    || /^models\/.+\.(?:mdl|bmp)$/.test(p)
+    || /^sound\/.+\.(?:wav|mp3|ogg)$/.test(p)
+    || /^sound\/.+_materials\.txt$/.test(p)
+    || /^sprites\/.+\.(?:spr|txt)$/.test(p)
+    || /^gfx\/.+\.(?:tga|bmp)$/.test(p);
+}
+/** Deterministic, limited manifest: only present/selected addon resources. */
+export function resManifest(entries,selectedPaths){
+  const chosen=selectedPaths?new Set([...selectedPaths].map(x=>cleanRelative(x).toLowerCase())):null;
+  return [...new Set(entries.filter(x=>x.status==='ready'&&isResDownloadable(x.path)&&(!chosen||chosen.has(x.path.toLowerCase()))).map(x=>x.path))]
+    .sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase(),'en'));
+}
 export function cleanRelative(raw){
   if(typeof raw!=='string')throw Error('Resource path must be text.');
   const name=raw.replaceAll('\\','/').trim();
@@ -57,16 +74,51 @@ async function gameRoots(gameDir){
   return roots;
 }
 async function locate(roots,rel){
+  // Prefer exact case across all layers before trying case-insensitive fallback.
+  // This avoids accidentally choosing an alternative skin from a different layer.
   for(const r of roots){
     const candidate=path.join(r.root,...rel.split('/'));
     try{
       const real=await fs.realpath(candidate);
       if(!real.startsWith(r.root+path.sep))continue;
       const st=await fs.stat(real);if(!st.isFile())continue;
-      return {full:real,layer:r.layer,size:st.size};
+      const actual=path.relative(r.root,real).split(path.sep).join('/');
+      return {full:real,layer:r.layer,size:st.size,actual,caseMismatch:actual!==rel};
     }catch{/* missing */}
   }
+  // Case-insensitive lookup is diagnostic and read-only. The archive uses the
+  // BSP reference's exact path so that Linux servers can find it after install.
+  for(const r of roots){
+    try{
+      let current=r.root;const actualParts=[];
+      for(const segment of rel.split('/')){
+        const names=await fs.readdir(current);
+        const exact=names.find(x=>x===segment);
+        const matching=names.filter(x=>x.toLowerCase()===segment.toLowerCase());
+        if(!exact&&matching.length!==1)throw Error('Missing or ambiguous case');
+        const part=exact||matching[0];actualParts.push(part);current=path.join(current,part);
+      }
+      const real=await fs.realpath(current);
+      if(!real.startsWith(r.root+path.sep))continue;
+      const st=await fs.stat(real);if(!st.isFile())continue;
+      const actual=actualParts.join('/');
+      return {full:real,layer:r.layer,size:st.size,actual,caseMismatch:actual!==rel};
+    }catch{/* missing or ambiguous */}
+  }
   return null;
+}
+/** Exact installed files take precedence, but incompatible external copies are
+ * surfaced as explicit conflicts instead of silently shipping the wrong model. */
+async function locateWithExternal(game,external,rel){
+ const installed=await locate(game,rel),outside=await locateExternalResource(external,rel);
+ if(outside?.conflict)return {conflict:outside.conflict};
+ if(installed&&outside){
+  if(installed.size>128*1024*1024||outside.size>128*1024*1024)return {conflict:`${rel}: resource exceeds 128 MiB limit.`};
+  if(installed.size!==outside.size)return {conflict:`${rel}: installed game file differs from selected external source (${outside.actual}).`};
+  const [a,b]=await Promise.all([fs.readFile(installed.full),fs.readFile(outside.full)]);
+  if(!a.equals(b))return {conflict:`${rel}: installed game file differs from selected external source (${outside.actual}).`};
+ }
+ return installed||outside||null;
 }
 function refCandidates(entities){
   const refs=new Map(),warn=[];
@@ -136,22 +188,38 @@ function virtualFiles(input){
   }return map;
 }
 /** User-provided manual paths and source scripts never reach arbitrary file reads. */
+// Internal compiler-only source. HTTP packager endpoints strip this field.
+async function stagedBsp(source){
+ const full=await fs.realpath(source),stat=await fs.stat(full);
+ return stat.isFile()?{full,layer:'isolated build',size:stat.size}:null;
+}
+function binaryInputs(input){
+ const map=new Map(),entries=input.inlineBinaryFiles||[];
+ if(!Array.isArray(entries)||entries.length>16)throw Error('Too many staged binary dependencies.');
+ for(const file of entries){
+  const relative=cleanRelative(file?.path),key=relative.toLowerCase();
+  if(!Buffer.isBuffer(file?.bytes)||file.bytes.length>MAX_FILE||map.has(key))throw Error('Invalid staged dependency.');
+  map.set(key,{path:relative,data:file.bytes});
+ }
+ return map;
+}
 export async function inspectMapPackage(input={}){
   const {gameDir,mapName}=input;
   if(typeof mapName!=='string'||!MAP_NAME.test(mapName))throw Error('Invalid map name. Use letters, numbers, - or _.');
-  const roots=await gameRoots(gameDir),manual=input.manualPaths||[];
+  const roots=await gameRoots(gameDir),externalRoots=await validateExternalRoots(input.resourceRoots||[]),manual=input.manualPaths||[];
   if(!Array.isArray(manual)||manual.length>120)throw Error('Too many manual resources.');
-  const virtual=virtualFiles(input.inlineFiles||[]);
-  const mapPath=`maps/${mapName}.bsp`,bspFile=await locate(roots,mapPath);
+  const virtual=virtualFiles(input.inlineFiles||[]),binary=binaryInputs(input);
+  const mapPath=`maps/${mapName}.bsp`,bspFile=input.compiledBspPath?await stagedBsp(input.compiledBspPath):await locate(roots,mapPath);
   if(!bspFile||bspFile.size<124||bspFile.size>MAX_FILE)throw Error(`Compiled BSP not found or too large: ${mapPath}. Compile this map first.`);
   const bsp=await fs.readFile(bspFile.full);const entities=bspEntities(bsp),{refs,warn,add}=refCandidates(entities);
   const warnings=[...warn];refs.delete(mapPath.toLowerCase());
   const put=(p,reason,required=false)=>add(p,reason,required);
   for(const p of manual)put(cleanRelative(p),'Manual resource',true);
   for(const p of [`maps/${mapName}.cfg`,`maps/${mapName}.gmr`,`maps/${mapName}.gsr`,`maps/${mapName}.res`]){
-    if(await locate(roots,p))put(p,'Companion map file');
+    if(await locateWithExternal(roots,externalRoots,p))put(p,'Companion map file');
   }
   for(const f of virtual.values())put(f.path,'Custom NPC Importer script');
+  for(const f of binary.values())put(f.path,'Build-generated resource',true);
   // Remove compiler-era WAD paths if textures are already embedded in the BSP.
   const external=externalTextures(bsp);if(!external){for(const [k,r] of refs)if(r.reason==='worldspawn.wad (review)'&&!r.required)refs.delete(k)}
   else if([...refs.values()].some(r=>r.reason==='worldspawn.wad (review)'))warnings.push('BSP contains external texture references. Review WAD requirements; source wad paths may be compiler-only.');
@@ -162,7 +230,9 @@ export async function inspectMapPackage(input={}){
   for(let i=0;i<queue.length&&i<MAX_ITEMS;i++){
     let ref=queue[i],key=ref.path.toLowerCase();if(seen.has(key))continue;seen.add(key);
     if(key===mapPath.toLowerCase())continue;
-    let virtualFile=virtual.get(key),found=await locate(roots,ref.path);
+    let virtualFile=virtual.get(key)||binary.get(key),found=await locateWithExternal(roots,externalRoots,ref.path);
+    if(binary.has(key))found=null; // staged exact bytes are authoritative, never mixed with game copies
+    if(found?.conflict){warnings.push(found.conflict);pushEntry({...ref,status:'conflict',size:0,layer:'external conflict'});continue;}
     if(virtualFile&&found){
       const stored=await fs.readFile(found.full);
       if(!stored.equals(virtualFile.data)){
@@ -172,10 +242,12 @@ export async function inspectMapPackage(input={}){
       }
     }
     if(!found&&!virtualFile&&/gfx\/env\/.*\.tga$/i.test(ref.path)){
-      const alt=ref.path.slice(0,-4)+'.bmp';found=await locate(roots,alt);
+      const alt=ref.path.slice(0,-4)+'.bmp';found=await locateWithExternal(roots,externalRoots,alt);
       if(found){ref={...ref,path:alt};key=alt.toLowerCase();if(seen.has(key))continue;seen.add(key)}
     }
     if(!found&&!virtualFile){pushEntry({...ref,status:'missing',size:0,layer:''});continue}
+    if(found?.warning)warnings.push(found.warning);
+    if(found?.caseMismatch)warnings.push(`${ref.path}: file on disk is ${found.actual}; ZIP will use the referenced spelling (Linux-safe).`);
     const size=virtualFile?.data.length??found.size;
     if(size>MAX_FILE){warnings.push(`${ref.path}: file exceeds per-file limit.`);pushEntry({...ref,status:'oversize',size,layer:found?.layer||'project'});continue}
     const isBase=found?.layer==='svencoop';
@@ -187,13 +259,14 @@ export async function inspectMapPackage(input={}){
     }
     if(/\.mdl$/i.test(ref.path)&&!isBase){
       const base=ref.path.slice(0,-4);for(const extra of [`${base}T.mdl`,`${base}01.mdl`]){
-        if(await locate(roots,extra)&&!seen.has(extra.toLowerCase()))queue.push({path:extra,reason:`Auxiliary model for ${ref.path}`});
+        if(await locateWithExternal(roots,externalRoots,extra)&&!seen.has(extra.toLowerCase()))queue.push({path:extra,reason:`Auxiliary model for ${ref.path}`});
       }
     }
   }
   const missing=entries.filter(e=>['missing','conflict','oversize'].includes(e.status)).length;
   const warningsUnique=[...new Set(warnings)].slice(0,120);
-  return {mapName,entities:entities.length,externalTextures:external,entries,warnings:warningsUnique,missing,ready:entries.filter(e=>e.status==='ready').length,builtin:entries.filter(e=>e.status==='builtin').length};
+  const resPreview=resManifest(entries);
+  return {mapName,entities:entities.length,externalTextures:external,entries,warnings:warningsUnique,missing,ready:entries.filter(e=>e.status==='ready').length,builtin:entries.filter(e=>e.status==='builtin').length,resPreview,resCount:resPreview.length};
 }
 
 const crcTable=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xedb88320^(c>>>1):c>>>1;crcTable[n]=c>>>0}
@@ -212,17 +285,29 @@ function archiveZip(files){
 export async function createMapPackage(input={}){
   const inventory=await inspectMapPackage(input);
   if(inventory.missing&&!input.acknowledgeMissing)throw Error(`${inventory.missing} resources missing. Confirm the warning before packaging.`);
-  const roots=await gameRoots(input.gameDir),virtual=virtualFiles(input.inlineFiles||[]);
+  const roots=await gameRoots(input.gameDir),externalRoots=await validateExternalRoots(input.resourceRoots||[]),virtual=virtualFiles(input.inlineFiles||[]),binary=binaryInputs(input);
   const included=Array.isArray(input.selectedPaths)?new Set(input.selectedPaths.map(cleanRelative).map(p=>p.toLowerCase())):null;
   const files=[],checked=new Set();let size=0;
   for(const entry of inventory.entries){
     if(entry.status!=='ready')continue;
-    const name=entry.path,key=name.toLowerCase();if(key!==`maps/${inventory.mapName}.bsp`.toLowerCase()&&included&&!included.has(key))continue;
+    const name=entry.path,key=name.toLowerCase();
+    if(input.generateRes!==false&&key===`maps/${inventory.mapName}.res`.toLowerCase())continue; // replace stale RES
+    if(key!==`maps/${inventory.mapName}.bsp`.toLowerCase()&&included&&!included.has(key))continue;
     if(checked.has(key))throw Error(`Duplicate archive member: ${name}`);checked.add(key);
-    let bytes=virtual.get(key)?.data;
-    if(!bytes){const candidate=await locate(roots,name);if(!candidate||candidate.size>MAX_FILE||candidate.layer==='svencoop'&&key!==`maps/${inventory.mapName}.bsp`.toLowerCase())throw Error(`File changed while preparing ZIP: ${name}`);bytes=await fs.readFile(candidate.full)}
+    let bytes=virtual.get(key)?.data||binary.get(key)?.data;
+    if(key===`maps/${inventory.mapName}.bsp`.toLowerCase()&&input.compiledBspPath)bytes=await fs.readFile(input.compiledBspPath);
+    if(!bytes){const candidate=key===`maps/${inventory.mapName}.bsp`.toLowerCase()?await locate(roots,name):await locateWithExternal(roots,externalRoots,name);if(!candidate||candidate.conflict||candidate.size>MAX_FILE||candidate.layer==='svencoop'&&key!==`maps/${inventory.mapName}.bsp`.toLowerCase())throw Error(`File changed while preparing ZIP: ${name}`);bytes=await fs.readFile(candidate.full)}
     size+=bytes.length;if(size>MAX_BYTES)throw Error('Package exceeds 220 MB uncompressed. Reduce resources.');
     files.push({path:name,bytes});
+  }
+  // A generated RES contains only files actually included in the final ZIP,
+  // never a BSP, server CFG, AngelScript, a missing asset or a base-game file.
+  const generatedRes=input.generateRes!==false?resManifest(files.map(f=>({path:f.path,status:'ready'}))):[];
+  if(generatedRes.length){
+    const content=`// Generated by SvenStudio 3D — custom client downloads only\n${generatedRes.join('\n')}\n`;
+    const bytes=Buffer.from(content,'utf8');size+=bytes.length;
+    if(size>MAX_BYTES)throw Error('Package exceeds 220 MB uncompressed.');
+    files.push({path:`maps/${inventory.mapName}.res`,bytes});
   }
   const missing=inventory.entries.filter(e=>['missing','conflict','oversize'].includes(e.status)).map(e=>e.path);
   const requestedLines=input.scriptLines||[];
@@ -232,8 +317,8 @@ export async function createMapPackage(input={}){
     const setup=`SvenStudio 3D — Custom NPC script setup\n\nThe scripts are included as source files, but Sven Co-op must load them from a map CFG.\nEdit your EXISTING maps/${inventory.mapName}.cfg (or create it manually if needed) and add any lines not already present:\n\n${scriptLines.join('\n')}\n\nDo not replace an existing map CFG or run unknown AngelScript without inspecting it first.\n`;
     files.push({path:'SVENSTUDIO_CUSTOM_NPC_SETUP.txt',bytes:Buffer.from(setup)});
   }
-  const guide=`SVENSTUDIO 3D — MAP PACKAGER\nMap: ${inventory.mapName}\n\nExtract the archive contents into Sven Co-op/svencoop_addon/ (folder names are at ZIP root).\nDo not extract third-party assets into svencoop/.\nVerify third-party licenses before redistributing models, sounds, WADs or AngelScript.\nMissing references detected: ${missing.length}\n${missing.join('\n')}\n\nDetected by static scanning of BSP, CFG and selected resources.\nAngelScript dynamic dependencies and in-game runtime behavior cannot be guaranteed.\nMap configurations and scripts have not been edited.\n`;
+  const guide=`SVENSTUDIO 3D — MAP PACKAGER\nMap: ${inventory.mapName}\nGenerated RES entries: ${generatedRes.length} (${input.generateRes===false?'disabled':'enabled'})\n\nExtract the archive contents into Sven Co-op/svencoop_addon/ (folder names are at ZIP root).\nDo not extract third-party assets into svencoop/.\nVerify third-party licenses before redistributing models, sounds, WADs or AngelScript.\nMissing references detected: ${missing.length}\n${missing.join('\n')}\n\nDetected by static scanning of BSP, CFG and selected resources.\nAngelScript dynamic dependencies and in-game runtime behavior cannot be guaranteed.\nMap configurations and scripts have not been edited.\n`;
   files.push({path:'SVENSTUDIO_PACKAGING_REPORT.txt',bytes:Buffer.from(guide)});
   const hash=createHash('sha256');for(const f of files){hash.update(f.path).update(f.bytes)}
-  return {zip:archiveZip(files),count:files.length,checksum:hash.digest('hex'),inventory};
+  return {zip:archiveZip(files),count:files.length,checksum:hash.digest('hex'),inventory,generatedRes,...(input.returnFiles===true?{files}:{} )};
 }

@@ -27,7 +27,7 @@ export function loadModelPreview(gameDir:string,model:ModelFile):Promise<StudioP
       const companionPath=model.path.replace(/\.mdl$/i,'T.mdl');
       // Svengine searches virtual game folders by precedence. A model may
       // override a base model while reusing the base texture companion.
-      for(const source of [model.source,'svencoop_addon','svencoop_downloads','svencoop']){
+      for(const source of [model.source,'svencoop_addon','svencoop_downloads','svencoop','svencoop_hd','valve']){
         try{companion=await fetchBinary(gameDir,source,companionPath);break}catch{/*Try the next game resource folder.*/}
       }
     }
@@ -39,7 +39,7 @@ export function loadModelPreview(gameDir:string,model:ModelFile):Promise<StudioP
     if(count>1&&count<=32){
       for(let group=1;group<Math.min(count,16);group++){
         const groupPath=model.path.replace(/\.mdl$/i,`${String(group).padStart(2,'0')}.mdl`);
-        for(const source of [model.source,'svencoop_addon','svencoop_downloads','svencoop']){
+        for(const source of [model.source,'svencoop_addon','svencoop_downloads','svencoop','svencoop_hd','valve']){
           try{groups[group]=await fetchBinary(gameDir,source,groupPath);break}catch{/* Optional demand-loaded animation group. */}
         }
       }
@@ -52,7 +52,7 @@ export function loadModelPreview(gameDir:string,model:ModelFile):Promise<StudioP
 export async function loadModelByPath(gameDir:string,modelPath:string):Promise<StudioPreview>{
   if(!/^models\/[\w\-./ ]+\.mdl$/i.test(modelPath)||modelPath.includes('..'))throw Error('Unsupported model path.');
   let last:unknown;
-  for(const source of ['svencoop_addon','svencoop_downloads','svencoop']){
+  for(const source of ['svencoop_addon','svencoop_downloads','svencoop','svencoop_hd','valve']){
     try{return await loadModelPreview(gameDir,{source,path:modelPath,name:modelPath.split('/').at(-1)!})}catch(error){last=error}
   }
   throw last||Error('Model not found in Sven Co-op folders.');
@@ -148,23 +148,39 @@ function AutoFrame({data}:{data:StudioPreview}){
     camera.lookAt(center);camera.updateProjectionMatrix();},[camera,data]);
   return null;
 }
-export function ModelPreviewModal({file,gameDir,onClose,onAssign}:{file:ModelFile;gameDir:string;onClose:()=>void;onAssign:()=>void}){
+export function ModelPreviewModal({file,gameDir,onClose,onAssign,assignDisabled=false,initialData}:{file:ModelFile;gameDir:string;onClose:()=>void;onAssign:()=>void;assignDisabled?:boolean;initialData?:StudioPreview}){
   const t=useT();
   const [model,setModel]=useState<StudioPreview|null>(null),[error,setError]=useState('');
   const [seq,setSeq]=useState(0),[frame,setFrame]=useState(0),[playing,setPlaying]=useState(false),[rate,setRate]=useState(1);
   const [skin,setSkin]=useState(0),[bodySelection,setBodySelection]=useState<number[]>([]);
   useEffect(()=>{let active=true;setModel(null);setError('');setPlaying(false);setFrame(0);
+    if(initialData){setModel(initialData);setBodySelection(initialData.bodyparts.map(()=>0));setSeq(0);setSkin(0);return()=>{active=false}}
     loadModelPreview(gameDir,file).then(v=>{if(active){setModel(v);setBodySelection(v.bodyparts.map(()=>0));setSeq(0);setSkin(0);}})
-    .catch(e=>{if(active)setError(String(e))});return()=>{active=false};},[file,gameDir]);
+    .catch(e=>{if(active)setError(String(e))});return()=>{active=false};},[file,gameDir,initialData]);
   const sequence=model?.sequences[seq];
-  useEffect(()=>{if(!playing||!sequence?.available||sequence.frames<=1)return;
-    const interval=window.setInterval(()=>setFrame(previous=>{
-      const next=previous+(sequence.fps||24)*rate*.05;
-      if(next>=sequence.frames-1){if(sequence.loop)return next%(sequence.frames-1);setPlaying(false);return sequence.frames-1;}
-      return next;
-    }),50);
-    return()=>window.clearInterval(interval);
+  // Match the animated 3D previews to real elapsed time. The old 50ms
+  // interval limited playback to 20 visible updates per second and jittered
+  // when the browser delayed timers during a heavy map render.
+  useEffect(()=>{
+    if(!playing||!sequence?.available||sequence.frames<=1)return;
+    let animation=0,last=0,accumulator=0,active=true;
+    const step=(now:number)=>{
+      if(!active)return;
+      if(last)accumulator+=Math.min((now-last)/1000,.1);
+      last=now;
+      if(accumulator>=1/30){
+        const elapsed=accumulator;accumulator=0;
+        setFrame(previous=>{
+          const next=previous+elapsed*Math.max(1,sequence.fps||24)*rate;
+          return sequence.loop?next%Math.max(1,sequence.frames-1):Math.min(next,sequence.frames-1);
+        });
+      }
+      animation=window.requestAnimationFrame(step);
+    };
+    animation=window.requestAnimationFrame(step);
+    return()=>{active=false;window.cancelAnimationFrame(animation)};
   },[playing,sequence,rate]);
+  useEffect(()=>{if(playing&&sequence&&!sequence.loop&&frame>=sequence.frames-1)setPlaying(false)},[playing,sequence,frame]);
   const selections=useMemo(()=>bodySelection,[bodySelection]);
   return <div className="modal-backdrop" onMouseDown={onClose}><div className="mdl-modal mdl-modal-advanced" onMouseDown={e=>e.stopPropagation()}>
     <header><strong>SVENGINE MODEL STUDIO · 0.5.2.1</strong><span>{file.path}</span><button onClick={onClose} aria-label="Close">×</button></header>
@@ -201,9 +217,9 @@ export function ModelPreviewModal({file,gameDir,onClose,onAssign}:{file:ModelFil
       </aside>
     </div>
     <footer><span>{model?`${model.triangles.toLocaleString()} triangles · ${model.textures.length} textures · ${model.sequences.length} sequences · ${model.skins.length} skins`:'GoldSrc/Svengine MDL v10'}</span>
-      <button onClick={onAssign} disabled={!model}><Check size={14}/> {t('Apply model to selected entity')}</button></footer>
+      <button onClick={onAssign} disabled={!model||assignDisabled}><Check size={14}/> {t('Apply model to selected entity')}</button></footer>
     {model&&<div className="mdl-note">{t('Model preview only; skin and bodygroup choices do not modify the map. Advanced Svengine animation may differ in-game.')}
-      {model.warnings.length>0&&<p style={{color:'#f5c687'}}>{model.warnings.join(' ')}</p>}</div>}
+      {model.warnings.length>0&&<p style={{color:'var(--theme-warning-ink)'}}>{model.warnings.join(' ')}</p>}</div>}
   </div></div>;
 }
 
@@ -258,12 +274,12 @@ function snapshot(data:StudioPreview):string{
   }
 }
 
-function thumbnail(gameDir:string,file:ModelFile){
+function thumbnail(gameDir:string,file:ModelFile,initialData?:StudioPreview){
   const key=`${gameDir}|${file.source}|${file.path}`;
   if(thumbs.has(key))return Promise.resolve(thumbs.get(key)!);
   if(thumbJobs.has(key))return thumbJobs.get(key)!;
   const job=thumbQueue.then(async()=>{
-    const data=await loadModelPreview(gameDir,file);
+    const data=initialData||await loadModelPreview(gameDir,file);
     const url=snapshot(data);thumbs.set(key,url);
     while(thumbs.size>100)thumbs.delete(thumbs.keys().next().value!);
     return url;
@@ -273,19 +289,19 @@ function thumbnail(gameDir:string,file:ModelFile){
   void job.finally(()=>thumbJobs.delete(key)).catch(()=>{});
   return job;
 }
-function ModelThumb({file,gameDir}:{file:ModelFile;gameDir:string}){
+export function ModelThumb({file,gameDir,initialData,scrollRoot='.model-results'}:{file:ModelFile;gameDir:string;initialData?:StudioPreview;scrollRoot?:string}){
   const t=useT();
   const target=useRef<HTMLSpanElement>(null),[url,setUrl]=useState(''),[failed,setFailed]=useState(false);
   useEffect(()=>{
-    let active=true;setUrl('');setFailed(false);const element=target.current;if(!element||!gameDir)return;
+    let active=true;setUrl('');setFailed(false);const element=target.current;if(!element||(!gameDir&&!initialData))return;
     const observer=new IntersectionObserver(entries=>{
       if(!entries.some(e=>e.isIntersecting))return;
       observer.disconnect();
-      void thumbnail(gameDir,file).then(result=>{if(active)setUrl(result)}).catch(()=>{if(active)setFailed(true)});
-    },{root:element.closest('.model-results'),rootMargin:'65px',threshold:.01});
+      void thumbnail(gameDir,file,initialData).then(result=>{if(active)setUrl(result)}).catch(()=>{if(active)setFailed(true)});
+    },{root:element.closest(scrollRoot),rootMargin:'65px',threshold:.01});
     observer.observe(element);
     return()=>{active=false;observer.disconnect()};
-  },[gameDir,file.path,file.source]);
+  },[gameDir,file.path,file.source,initialData,scrollRoot]);
   return <span ref={target} className={`model-thumb ${failed?'model-thumb-failed':''}`}>{url?<img src={url} loading="lazy" alt=""/>:failed?<span className="model-thumb-fallback"><Box size={18}/>{t('Preview unavailable')}</span>:<Box size={22}/>}</span>;
 }
 function readFavorites(){
@@ -364,3 +380,4 @@ export function ModelBrowser(){
     {focused&&<ModelPreviewModal file={focused} gameDir={gameDir} onClose={()=>setFocused(null)} onAssign={()=>apply(focused)}/>}
   </div>;
 }
+

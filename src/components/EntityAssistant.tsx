@@ -59,7 +59,7 @@ function NativeSounds({entity,definition,update,locale}:{entity:PointEntity;defi
 export function EntityAssistant({entity,definition,initiallyOpen=false,compact=false,showDoorControls=true}:{entity:PointEntity|null;definition?:FgdClass;initiallyOpen?:boolean;compact?:boolean;showDoorControls?:boolean}){
  const locale=useEditor(s=>s.locale) as Locale,tx=strings[locale]||strings.en;
  const updateStore=useEditor(s=>s.setObjectProp),connect=useEditor(s=>s.connectGameplay),objects=useEditor(s=>s.project.objects);
- const [opened,setOpened]=useState(initiallyOpen),[showAdvanced,setShowAdvanced]=useState(false),[targetQuery,setTargetQuery]=useState('');
+ const [opened,setOpened]=useState(initiallyOpen),[showAdvanced,setShowAdvanced]=useState(!compact),[keySearch,setKeySearch]=useState(''),[targetQuery,setTargetQuery]=useState('');
  useEffect(()=>setTargetQuery(''),[entity?.id]);
  const classname=entity?.classname||definition?.name||'';
  const guide=useMemo(()=>localizedGuideForClass(classname,definition,locale),[classname,definition,locale]);
@@ -73,7 +73,7 @@ export function EntityAssistant({entity,definition,initiallyOpen=false,compact=f
  return <section className={`entity-assistant ${compact?'ea-compact':''}`}>
   <button type="button" className="ea-toggle" aria-expanded={opened} onClick={()=>setOpened(v=>!v)}><BookOpen size={15}/><strong>{tx.title}</strong><span>{classname}</span>{opened?<ChevronUp size={14}/>:<ChevronDown size={14}/>}</button>
   {opened&&<div className="ea-content">
-   <div className="ea-section"><h5>{tx.use}</h5><p>{definition?.description&&definition.description!==classname?definition.description:guide.summary}</p>{definition?.description&&definition.description!==classname&&<p>{guide.summary}</p>}</div>
+   <div className="ea-section"><h5>{tx.use}</h5><p>{guide.summary}</p></div>
    {capabilities.length>0&&<div className="ea-section"><h5>{tx.settings}</h5><ul className="ea-capabilities">{capabilities.map(x=><li key={x}>{x}</li>)}</ul></div>}
    <div className="ea-section"><h5>{tx.how}</h5><ol>{guide.steps.map((s,i)=><li key={i}>{s}</li>)}</ol><p className="ea-example"><strong>{tx.example}: </strong><code>{guide.example}</code></p></div>
    {!!entity&&<div className="ea-section"><h5>{tx.quick}</h5>
@@ -90,8 +90,17 @@ export function EntityAssistant({entity,definition,initiallyOpen=false,compact=f
     {definition?.props.sounds?.options?.length? <Field entity={entity} field="sounds" definition={definition} update={update}/>:null}
     <NativeSounds entity={entity} definition={definition} update={update} locale={locale}/>
    </div>}
-   {!entity&&<div className="ea-section"><h5>{tx.fgd}</h5><p>{definition?`${Object.keys(definition.props).length} keyvalues: ${Object.keys(definition.props).slice(0,14).join(', ')}${Object.keys(definition.props).length>14?'…':''}`:tx.unknown}</p></div>}
-   {!!entity&&definition&&<div className="ea-section"><button className="ea-advanced" onClick={()=>setShowAdvanced(v=>!v)}>{showAdvanced?tx.close:tx.more} ({Object.keys(definition.props).length})</button>{showAdvanced&&<div className="ea-fgd-keys">{Object.entries(definition.props).map(([k,f])=><div key={k}><code>{k}</code> — {f.label}</div>)}</div>}</div>}
+   {definition&&<div className="ea-section"><button type="button" className="ea-advanced" onClick={()=>setShowAdvanced(v=>!v)} aria-expanded={showAdvanced}>{tx.fgd} · {Object.keys(definition.props).length} {tx.more} {showAdvanced?'▴':'▾'}</button>
+      {showAdvanced&&<><input className="ea-guide-filter" aria-label={locale==='es'?'Buscar parámetro FGD':'Search FGD property'} placeholder={locale==='es'?'Buscar keyvalue, descripción o tipo…':'Search property, label or type…'} value={keySearch} onChange={e=>setKeySearch(e.target.value)} onKeyDown={e=>e.stopPropagation()}/>
+        <div className="ea-fgd-keys ea-fgd-detailed">{Object.entries(definition.props).filter(([k,f])=>`${k} ${f.label} ${f.type}`.toLowerCase().includes(keySearch.toLowerCase())).map(([k,f])=><div key={k}><strong><code>{k}</code> — {f.label}</strong><small>{f.type}{f.defaultValue!==undefined?` · ${locale==='es'?'Predeterminado':'Default'}: ${f.defaultValue}`:''}</small>{!!f.options?.length&&<small>{f.options.slice(0,28).map(o=>`${o.value}: ${o.label}`).join(' · ')}{f.options.length>28?' …':''}</small>}</div>)}</div>
+      </>}
+    </div>}
+   {!definition&&<div className="ea-section"><h5>{tx.fgd}</h5><p>{tx.unknown}</p></div>}
+   <div className="ea-section ea-reference-links"><h5>{locale==='es'?'Documentación y verificación':'Reference documentation'}</h5>
+      <p>{locale==='es'?'Las propiedades se toman del FGD cargado. La referencia externa describe el comportamiento del juego; algunas entidades y scripts personalizados pueden diferir.':'Properties come from the loaded FGD. External documentation describes game behavior; custom entities may differ.'}</p>
+      <a href="https://www.svenmanor.com/entity-guide" target="_blank" rel="noopener noreferrer">Sven Co-op Manor · Entity Guide</a>
+      <a href="https://wiki.svencoop.com/Mapping/Sven_Co-op_FGD" target="_blank" rel="noopener noreferrer">Sven Co-op Wiki · FGD</a>
+    </div>
    {!!warnings.length&&<div className="ea-section ea-warning"><h5><AlertTriangle size={13}/>{tx.note}</h5>{warnings.map((w,i)=><p key={i}>{w}</p>)}</div>}
    {guide.caution&&<p className="ea-caution">{guide.caution}</p>}
   </div>}

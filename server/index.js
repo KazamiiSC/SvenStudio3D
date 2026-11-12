@@ -10,20 +10,26 @@ import {installConvertedSound} from './audioConvertInstall.js';
 import {inspectSoundReference} from './soundDiagnostics.js';
 import {listSkies,skyFace} from './skyAssets.js';
 import {findBspWadTextures} from './bspWadAssets.js';
-import {prepareCompileWads} from './compileWads.js';
+import {prepareCompileWads,patchWorldWads} from './compileWads.js';
+import {planSmartWadBuild} from './smartWadBuild.js';
+import {installPrefabWad} from './prefabWadInstall.js';
 import {resolveCompilerProfile} from './sdhltCompiler.js';
 import {inspectBspFile} from './bspAudit.js';
 import {createHash} from 'node:crypto';
 import {readBuildLeakPointfile} from './leakPointfile.js';
 import {inspectMapPackage,createMapPackage} from './mapPackager.js';
+import {writeDistribution} from './compiledDistribution.js';
+import {validateExternalRoots,externalWadSearchFolders} from './externalResources.js';
+import {validateBuildDestination,writeIsolatedBuild,compileOutputMode} from './isolatedBuild.js';
+import {makePortableBsp} from './portableBsp.js';
 import {decompileBspToMap} from './surfDecompile.js';
 import {lightTestSettings,lightTestRadArgs} from './lightingTest.js';
 import {attachBuildTogether} from './buildTogether.js';
 import {mountedRoots,discoverInstallations,browseLocalFolder,verifyLocalInstall} from './installationDiscovery.js';
 import {createLightingPreviewRecord,isPreviewCompile,lightingPreviewAvailable} from './lightingPreviewBuild.js';
 
-const app=express();app.use(express.json({limit:'20mb'}));
-const PORT=49177;let active=null;let lastLightingPreview=null;
+const app=express();app.use(express.json({limit:'36mb'}));
+const PORT=49177;let active=null;let lastLightingPreview=null;let lastCompiledOutput=null;
 const stages=['CSG','BSP','VIS','RAD'];
 const validMapName=s=>typeof s==='string'&&/^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/.test(s);
 const isDir=async p=>{try{return (await fs.stat(p)).isDirectory()}catch{return false}};
@@ -55,7 +61,7 @@ app.post('/api/bsp/compiled',async(req,res)=>{
   if(!validMapName(mapName)||typeof gameDir!=='string'||gameDir.length>1024||!(await isDir(gameDir)))
     return res.status(400).json({error:'Configure the game directory and valid map name first.'});
   try{
-    const file=path.join(gameDir,'maps',`${mapName}.bsp`);
+    const file=lastCompiledOutput?.mapName===mapName&&lastCompiledOutput.gameDir===path.resolve(gameDir)?lastCompiledOutput.file:path.join(gameDir,'maps',`${mapName}.bsp`);
     const stat=await fs.stat(file);
     if(!stat.isFile()||stat.size<124||stat.size>256*1024*1024)
       return res.status(400).json({error:'BSP file is empty or exceeds 256 MB.'});
@@ -77,12 +83,12 @@ app.post('/api/lighting-preview/bsp',async(req,res)=>{
 });
 // Read-only packaging of a compiled BSP and Sven Co-op addon dependencies.
 app.post('/api/packager/scan',async(req,res)=>{
-  try{return res.json(await inspectMapPackage(req.body||{}));}
+  try{const {compiledBspPath,inlineBinaryFiles,...safe}=req.body||{};const recent=lastCompiledOutput?.mapName===safe.mapName&&lastCompiledOutput?.gameDir===path.resolve(safe.gameDir||'')?lastCompiledOutput:null;return res.json(await inspectMapPackage({...safe,...(recent?{compiledBspPath:recent.file,inlineBinaryFiles:recent.inlineBinaryFiles}: {})}));}
   catch(error){return res.status(400).json({error:String(error?.message||error)});}
 });
 app.post('/api/packager/download',async(req,res)=>{
   try{
-    const {zip}=await createMapPackage(req.body||{});
+    const {compiledBspPath,inlineBinaryFiles,...safe}=req.body||{};const recent=lastCompiledOutput?.mapName===safe.mapName&&lastCompiledOutput?.gameDir===path.resolve(safe.gameDir||'')?lastCompiledOutput:null;const {zip}=await createMapPackage({...safe,...(recent?{compiledBspPath:recent.file,inlineBinaryFiles:recent.inlineBinaryFiles}: {})});
     return res.setHeader('Content-Disposition','attachment; filename="svenstudio-map-package.zip"')
       .setHeader('Cache-Control','no-store').type('application/zip').send(zip);
   }catch(error){return res.status(400).json({error:String(error?.message||error)});}
@@ -93,6 +99,35 @@ app.post('/api/cancel',(_req,res)=>{
     else active.child.kill('SIGTERM');
   }return res.json({cancelled:true});}
   return res.json({cancelled:false});
+});
+// Post-build actions use ONLY the last output produced by this server process.
+// Re-installing an already compiled map never executes SC-CSG/BSP/VIS/RAD.
+app.post('/api/compile/install-last',async(req,res)=>{
+ if(active)return res.status(409).json({error:'Wait until the current build finishes.'});
+ const last=lastCompiledOutput;
+ if(!last||req.body?.confirm!==true||req.body?.mapName!==last.mapName||
+    req.body?.gameDir!==last.gameDir)return res.status(400).json({error:'Confirm installation of the last compiled map first.'});
+ try{
+  const resourceRoots=await validateExternalRoots(req.body?.resourceRoots||last.resourceRoots||[]);
+  const result=await writeDistribution({gameDir:last.gameDir,mapName:last.mapName,destinationDir:last.gameDir,format:'install',resourceRoots,
+    compiledBspPath:last.file,inlineBinaryFiles:last.inlineBinaryFiles||[]});
+  return res.json({installed:true,destination:result.destination,files:result.files});
+ }catch(error){return res.status(400).json({error:`Installation rejected: ${error.message||error}`})}
+});
+app.post('/api/compile/open-output',async(req,res)=>{
+ const last=lastCompiledOutput;
+ if(!last||req.body?.mapName!==last.mapName||req.body?.gameDir!==last.gameDir)
+   return res.status(400).json({error:'No matching compiled output in this session.'});
+ const folder=last.destination;
+ try{
+  if(!(await isDir(folder)))throw Error('Output folder is missing.');
+  if(process.platform==='win32'){
+   const child=spawn('explorer.exe',[folder],{detached:true,stdio:'ignore',windowsHide:true});
+   child.on('error',()=>{});child.unref();
+   return res.json({opened:true,destination:folder});
+  }
+  return res.json({opened:false,destination:folder});
+ }catch(error){return res.status(400).json({error:String(error.message||error)})}
 });
 // Sven Co-op-only FGD discovery (user-selected game directory, localhost API).
 app.post('/api/svengine/fgd',async(req,res)=>{
@@ -183,15 +218,38 @@ app.post('/api/bsp/decompile-map',express.raw({type:'application/octet-stream',l
   try{
     if(!Buffer.isBuffer(req.body))return res.status(400).json({error:'Expected binary BSP upload.'});
     const toolPath=decodeURIComponent(String(req.headers['x-sven-decompiler']||''));
-    const result=await decompileBspToMap({bsp:req.body,toolPath});
+    const job=new AbortController();
+    // When a user cancels a long geometry recovery, stop SurfDecomp as well.
+    const onDisconnect=()=>{if(!res.writableEnded)job.abort()};
+    res.once('close',onDisconnect);
+    let result;
+    try{result=await decompileBspToMap({bsp:req.body,toolPath,signal:job.signal})}
+    finally{res.off('close',onDisconnect)}
     res.setHeader('Cache-Control','no-store');
     return res.json(result);
   }catch(error){return res.status(400).json({error:String(error?.message||error)});}
 });
+// An explicit user action installs the companion WAD for a BSP prefab.
+// Raw bytes (not arbitrary server paths); only a validated game overlay is writable.
+app.post('/api/prefab-wad/install',express.raw({type:'application/octet-stream',limit:'24mb'}),async(req,res)=>{
+  try{
+    const encoded=String(req.headers['x-sven-game-dir']||'');
+    if(encoded.length>3072)throw Error('Invalid game directory.');
+    const gameDir=decodeURIComponent(encoded),name=req.headers['x-sven-wad-name'];
+    const result=await installPrefabWad(gameDir,name,req.body);
+    return res.json(result);
+  }catch(error){return res.status(400).json({error:String(error?.message||error)})}
+});
+
 app.post('/api/compile',async(req,res)=>{
   if(active)return res.status(409).json({error:'Another compile is already running.'});
-  const {mapName:requestedMapName,mapData,compilerDir,gameDir,wadPaths,fullVis=true,extraRad=true,radAmbientTest='off',previewOnly=false,compilerEngine='sc',sdhltDir='',sdhltAO=false,sdhltPCF='off'}=req.body||{};
+  const {mapName:requestedMapName,mapData,compilerDir,gameDir,wadPaths,fullVis=true,extraRad=true,radAmbientTest='off',previewOnly=false,compilerEngine='sc',sdhltDir='',sdhltAO=false,sdhltPCF='off',smartWadMode='off',browserWads=[],distributionDir='',distributionFormat='off',resourceRoots=[]}=req.body||{};
   if(previewOnly!==false&&!isPreviewCompile(previewOnly))return res.status(400).json({error:'Invalid previewOnly flag.'});
+  if(!['off','embed','external'].includes(smartWadMode))return res.status(400).json({error:'Invalid Smart WAD mode.'});
+  if(!['off','build','folder','folder_zip','install'].includes(distributionFormat)||typeof distributionDir!=='string'||distributionDir.length>1024)return res.status(400).json({error:'Invalid distribution settings.'});
+  let externalRoots;try{externalRoots=await validateExternalRoots(resourceRoots)}catch(error){return res.status(400).json({error:String(error.message||error)})}
+  const outputMode=compileOutputMode(distributionFormat);
+  if(!previewOnly&&['folder','folder_zip'].includes(outputMode)){try{await validateBuildDestination(distributionDir,gameDir)}catch(error){return res.status(400).json({error:String(error.message||error)})}}
   let plan;
   try{plan=lightTestSettings(requestedMapName,radAmbientTest);}catch(error){return res.status(400).json({error:String(error.message||error)});}
   let {name:mapName,ambient:lightAmbient}=plan;
@@ -220,40 +278,73 @@ app.post('/api/compile',async(req,res)=>{
   catch(e){return res.status(500).json({error:`Cannot create build folder: ${e.message}`});}
   const mapBase=path.join(workDir,mapName);
   const builtInWad=path.resolve('public','svstudio.wad');
-  let source=mapData, wadPlan;
+  let source=mapData, wadPlan, smartPlan=null,smartExternalPath=null;const stagedExtras=[];
   try{
-    wadPlan=await prepareCompileWads(source,{gameDir,compilerDir:profile.dir,builtInWad,configuredWadPaths:[...(Array.isArray(wadPaths)?wadPaths:[]),...(profile.engine==='sdhlt'&&existsSync(profile.requiredWad)?[profile.requiredWad]:[])]});
+    // The browser may hold an imported prefab WAD in IndexedDB without a matching
+    // disk file. Save it ONLY into this isolated temporary build directory.
+    const injectedWads=[];
+    if(smartWadMode!=='off'){
+      if(!Array.isArray(browserWads)||browserWads.length>20)throw Error('Too many browser WADs for one build.');
+      let total=0;const names=new Set();
+      for(const wad of browserWads){
+        if(typeof wad?.name!=='string'||!(/^[a-z0-9_.+~()-]{1,100}\.wad$/i.test(wad.name))||typeof wad.base64!=='string'||wad.base64.length>18_000_000||!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(wad.base64))throw Error('Invalid browser WAD payload.');
+        const key=wad.name.toLowerCase();if(names.has(key))throw Error(`Duplicate browser WAD name: ${wad.name}`);names.add(key);
+        const bytes=Buffer.from(wad.base64,'base64');total+=bytes.length;
+        if(total>20*1024*1024||bytes.length<12||bytes.toString('ascii',0,4)!=='WAD3')throw Error(`Browser WAD exceeds safety limits or is not WAD3: ${wad.name}`);
+        // Never shadow a different WAD already installed in the game or
+        // explicitly configured by the user. Preview may have a stale version.
+        const configured=Array.isArray(wadPaths)?wadPaths:[];
+        const gameRoot=['svencoop','svencoop_addon','svencoop_downloads'].includes(path.basename(path.resolve(gameDir)).toLowerCase())?path.dirname(path.resolve(gameDir)):path.resolve(gameDir);
+        const candidates=[...configured.filter(p=>typeof p==='string'&&path.win32.basename(p.replaceAll('\\','/')).toLowerCase()===key),
+          ...['svencoop','svencoop_addon','svencoop_downloads'].map(layer=>path.join(gameRoot,layer,wad.name))];
+        for(const candidate of candidates){
+          if(existsSync(candidate)&&!(await fs.readFile(candidate)).equals(bytes))throw Error(`WAD conflict: ${wad.name} differs between the browser and disk. Resolve it in the prefab resources before compiling.`);
+        }
+        const dir=path.join(workDir,'browser-wads');await fs.mkdir(dir,{recursive:true});
+        const file=path.join(dir,wad.name);await fs.writeFile(file,bytes,{flag:'wx'});injectedWads.push(file);
+      }
+    }
+    wadPlan=await prepareCompileWads(source,{gameDir,compilerDir:profile.dir,builtInWad,configuredWadPaths:[...(Array.isArray(wadPaths)?wadPaths:[]),...externalWadSearchFolders(externalRoots),...injectedWads,...(profile.engine==='sdhlt'&&existsSync(profile.requiredWad)?[profile.requiredWad]:[])]});
     source=wadPlan.map;
-    if(wadPlan.missingWads.length){
+    if(wadPlan.missingWads.length&&smartWadMode==='off'){
       throw new Error(`Missing WAD files: ${wadPlan.missingWads.join(', ')}. Set full local WAD paths in Settings (WAD paths) or install the WAD files in svencoop_addon/ or svencoop/. The compiler must be able to read the WAD files. The project and its textures were not modified.`);
     }
-    // Only install the bundled WAD when it actually provides map textures.
-    if(!previewOnly&&wadPlan.wadList.some(x=>path.win32.basename(x.replaceAll('\\','/')).toLowerCase()==='svstudio.wad') && existsSync(builtInWad)){
-      const runtimeWad=path.join(gameDir,'svstudio.wad');
-      if(!existsSync(runtimeWad))await fs.copyFile(builtInWad,runtimeWad);
+    if(smartWadMode!=='off'){
+      smartPlan=await planSmartWadBuild(source,wadPlan.resolvedWadList,{workDir,mapName,mode:smartWadMode});
+      source=smartPlan.map;
+      if(smartPlan.mode==='external'){
+        // Compiler reads the temporary WAD. Never install anything in the game
+        // unless the user explicitly selected the installation output mode.
+        stagedExtras.push({path:smartPlan.basename,bytes:smartPlan.buffer});
+      }
     }
-  // Only install the two original bundled demo WAVs when a map references
-  // them. Never overwrite user content. Real Sven Co-op sounds stay in place.
-  for(const sample of ['studio_hum.wav','studio_chime.wav']){
-    if(previewOnly||!source.includes(`"message" "svstudio/${sample}"`))continue;
-    const bundled=path.resolve('public','starter-sounds','svstudio',sample);
-    if(!existsSync(bundled))continue;
-    const demoDir=path.join(gameDir,'sound','svstudio');
-    await fs.mkdir(demoDir,{recursive:true});
-    const destination=path.join(demoDir,sample);
-    if(!existsSync(destination))await fs.copyFile(bundled,destination);
-  }
+    if(!previewOnly&&!smartPlan&&wadPlan.wadList.some(x=>path.win32.basename(x.replaceAll('\\','/')).toLowerCase()==='svstudio.wad')&&existsSync(builtInWad)){
+      stagedExtras.push({path:'svstudio.wad',bytes:await fs.readFile(builtInWad)});
+    }
+    // HF10: no game writes here. Source textures, bundled WAD and demo sounds
+    // are compiler inputs only; runtime resources must be packaged explicitly.
+    for(const sample of ['studio_hum.wav','studio_chime.wav']){
+      if(previewOnly||!source.includes(`"message" "svstudio/${sample}"`))continue;
+      const bundled=path.resolve('public','starter-sounds','svstudio',sample);
+      if(existsSync(bundled))stagedExtras.push({path:`sound/svstudio/${sample}`,bytes:await fs.readFile(bundled)});
+    }
   await fs.writeFile(`${mapBase}.map`,source,'utf8');
   }catch(e){return res.status(500).json({error:`Cannot prepare build files: ${e.message}`});}
   res.status(200);res.setHeader('Content-Type','application/x-ndjson; charset=utf-8');
   res.setHeader('Cache-Control','no-cache');res.setHeader('X-Accel-Buffering','no');
   active={child:null,cancelled:false};const task=active;
+  const buildLogLines=[];
+  // Keep a capped, self-contained log for the isolated output.
+  const logBuild=(line)=>{if(buildLogLines.length<12000)buildLogLines.push(line)};
   send(res,'info',`Working directory: ${workDir}`);
   send(res,'info',`Compiler engine: ${profile.engine==='sc'?'Sven Co-op SDK':'SDHLT (experimental)'}; selected directory: ${profile.dir}`);
   if(profile.engine==='sdhlt')send(res,'warning','SDHLT targets Half-Life GoldSrc. Compiled maps must be checked in Sven Co-op; use the SC toolchain if SDHLT fails or produces incompatible BSPs.');
   if(lightAmbient!==null)send(res,'warning',`SC-RAD LIGHT TEST ONLY: -ambient ${lightAmbient} ${lightAmbient} ${lightAmbient}. Output ${mapName}.bsp; base BSP ${requestedMapName}.bsp remains untouched. Lighting is diagnostic, not a restoration of original lightmaps.`);
   send(res,'info',`MAP SHA-256: ${createHash('sha256').update(source).digest('hex')}`);
   send(res,'info',`Resolved WADs used for THIS build: ${wadPlan.resolvedWadList.join('; ')||'(none)'}`);
+  if(smartPlan?.toolResolved?.length)send(res,'info',`Compiler tool materials (${smartPlan.toolResolved.join(', ')}) selected from a trusted WAD source; cosmetic name differences do not block this build.`);
+  if(smartPlan)send(res,'info',`Smart WAD (${smartPlan.mode}): ${smartPlan.textureCount} textures (${smartPlan.extraFrames} extra animation frames), ${smartPlan.sourceCount} source WADs → ${smartPlan.basename}. SHA-256 prefix ${smartPlan.hash}; original WADs unchanged.`);
+  if(smartPlan?.mode==='external')send(res,'info',`External Smart WAD staged in isolated compiler workspace: ${smartPlan.basename}. No game files touched.`);
   for(const warning of wadPlan.warnings)send(res,'warning',`WAD/SKY: ${warning}`);
   if(Array.isArray(wadPaths))send(res,'info',`WAD search paths: ${wadPaths.join(';')}`);
   let leakSent=false;
@@ -268,7 +359,7 @@ app.post('/api/compile',async(req,res)=>{
     for(let i=0;i<stages.length;i++){
       if(task.cancelled)throw new Error('Build cancelled by user.');
       const stage=stages[i];
-      const args=[mapBase];if(stage==='VIS'&&fullVis)args.push('-full');if(stage==='RAD'&&extraRad)args.push('-extra');
+      const args=[...(stage==='CSG'&&smartPlan?smartPlan.csgArgs:[]),mapBase];if(stage==='VIS'&&fullVis)args.push('-full');if(stage==='RAD'&&extraRad)args.push('-extra');
       if(stage==='RAD'){args.push(...lightTestRadArgs(lightAmbient));args.push(...profile.radArgs);}
       send(res,'stage',`Starting ${profile.engine==='sc'?'SC':'SDHLT'}-${stage}...`,{stage});
       let illegalBrush=false;
@@ -281,10 +372,10 @@ app.post('/api/compile',async(req,res)=>{
             pending+=chunk.toString();const lines=pending.split(/\r?\n/);pending=lines.pop()??'';
             for(const line of lines)if(line.trim()){
               if(stage==='CSG'&&/Illegal Brush|plane with no normal|has a coplanar plane/i.test(line))illegalBrush=true;
-              send(res,'log',line);
+              logBuild(`[${stage}] ${line}`);send(res,'log',line);
             }
           });
-          stream.on('end',()=>{if(pending.trim())send(res,'log',pending)});
+          stream.on('end',()=>{if(pending.trim()){logBuild(`[${stage}] ${pending}`);send(res,'log',pending)}});
         };
         push(child.stdout);push(child.stderr);
         child.on('error',reject);
@@ -308,7 +399,7 @@ app.post('/api/compile',async(req,res)=>{
       send(res,'info',`BSP SKY audit: skyname=${audit.skyname||'(unset)'}, SKY faces=${audit.skyFaces}, special=${audit.skySpecialFaces}, CONTENTS_SKY leaves=${audit.skyLeaves}, SKY lightmapped=${audit.lightmappedSkyFaces}`);
       send(res,'info',`BSP embedded WAD references: ${audit.worldWads.join('; ')||'(none)'}`);
       for(const warning of audit.warnings)send(res,'warning',warning);
-      const plannedWads=[...new Set(wadPlan.wadList.map(x=>path.win32.basename(x.replaceAll('\\','/')).toLowerCase()))];
+      const plannedWads=smartPlan?[smartPlan.basename.toLowerCase()]:[...new Set(wadPlan.wadList.map(x=>path.win32.basename(x.replaceAll('\\','/')).toLowerCase()))];
       const extras=audit.worldWads.filter(x=>!plannedWads.includes(x));
       if(extras.length)send(res,'warning',`BSP contains WAD references not present in the prepared MAP: ${extras.join('; ')}. Inspect compiler configuration and source MAP.`);
       if(wadPlan.usesSky&&audit.skyFaces===0)throw new Error('SKY exists in MAP but no SKY faces survived SC-CSG/BSP. Verify SKY brushes and compiler options.');
@@ -323,10 +414,40 @@ app.post('/api/compile',async(req,res)=>{
       send(res,'complete',`${profile.engine==='sc'?'SC-RAD':'SDHLT RAD'} preview ready: ${mapName}.bsp (not installed in the game).`,{previewId:lastLightingPreview.id});
       return;
     }
-    const mapsDir=path.join(gameDir,'maps');await fs.mkdir(mapsDir,{recursive:true});
-    const output=path.join(mapsDir,`${mapName}.bsp`);
-    await fs.copyFile(`${mapBase}.bsp`,output);
-    send(res,'complete',`BSP successfully copied to ${output}`,{output});
+    // Make runtime WAD reference portable; the compiler-only absolute temp
+    // path must not leak into the delivered BSP.
+    const compiledBsp=`${mapBase}.bsp`;
+    if(smartPlan){
+      const bytes=await fs.readFile(compiledBsp);
+      await fs.writeFile(compiledBsp,makePortableBsp(bytes,smartPlan.mode==='external'?smartPlan.basename:''));
+    }
+    let saved;
+    const originalMapPath=path.join(workDir,`${mapName}_source.map`);
+    await fs.writeFile(originalMapPath,mapData,'utf8');
+    const compiledLog=buildLogLines.join('\n')+'\n';
+    if(outputMode==='install'){
+      // Installation is the ONLY mode authorized to modify Sven Co-op.
+      const installed=await writeDistribution({gameDir,mapName,destinationDir:gameDir,format:'install',resourceRoots:externalRoots,
+        compiledBspPath:compiledBsp,inlineBinaryFiles:stagedExtras,manualPaths:smartPlan?.mode==='external'?[smartPlan.basename]:[]});
+      saved={destination:installed.destination,output:path.join(installed.destination,'maps',`${mapName}.bsp`),files:installed.files,missing:0};
+      send(res,'info',`Explicit installation completed in ${saved.destination}.`);
+    }else{
+      const target=outputMode==='build'?null:distributionDir;
+      try{
+        saved=await writeIsolatedBuild({gameDir,mapName,compiledBspPath:compiledBsp,sourceMapPath:originalMapPath,buildLog:compiledLog,
+          destinationDir:target,format:outputMode,resourceRoots:externalRoots,inlineBinaryFiles:stagedExtras,
+          writeDistribution});
+        send(res,'info',`Isolated output created in ${saved.destination}. Sven Co-op files were not modified.`);
+        for(const warning of (saved.warnings||[]).slice(0,8))send(res,'warning',`Packaging: ${warning}`);
+      }catch(packageError){
+        send(res,'warning',`Full package unavailable: ${packageError.message||String(packageError)}. Preserving compiled BSP and available generated WAD in isolated output.`);
+        saved=await writeIsolatedBuild({gameDir,mapName,compiledBspPath:compiledBsp,sourceMapPath:originalMapPath,buildLog:compiledLog,
+          destinationDir:target,format:'build',resourceRoots:externalRoots,inlineBinaryFiles:stagedExtras});
+      }
+    }
+    lastCompiledOutput={mapName,gameDir:path.resolve(gameDir),file:saved.output,destination:saved.destination,resourceRoots:externalRoots,inlineBinaryFiles:stagedExtras};
+    send(res,'package',`Build saved: ${saved.destination}`,{destination:saved.destination,files:saved.files});
+    send(res,'complete',`BSP compiled: ${saved.output}`,{output:saved.output,installed:outputMode==='install'});
   }catch(e){
     try{await sendLeak()}catch{/* diagnostic is best-effort; preserve the compiler error */}
     send(res,'error',e.message||String(e));

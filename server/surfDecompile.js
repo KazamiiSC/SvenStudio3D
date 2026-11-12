@@ -32,7 +32,7 @@ function normalizedToolPath(candidate,root){
   if(!path.isAbsolute(selected))throw Error('Provide the absolute path to surfdecomp.exe on the local PC.');
   return selected;
 }
-export async function decompileBspToMap({bsp,toolPath='',root=process.cwd()}){
+export async function decompileBspToMap({bsp,toolPath='',root=process.cwd(),signal}){
   validateBsp(bsp);
   const executable=normalizedToolPath(toolPath,root);
   let stat;
@@ -45,10 +45,10 @@ export async function decompileBspToMap({bsp,toolPath='',root=process.cwd()}){
     let stdout='',stderr='';
     try{
       const result=await execFileAsync(executable,['decompile',source,'-o',output],{
-        cwd:work,timeout:120_000,maxBuffer:1024*1024,windowsHide:true,encoding:'utf8',shell:false
+        cwd:work,timeout:120_000,maxBuffer:4*1024*1024,windowsHide:true,encoding:'utf8',shell:false,signal
       });stdout=result.stdout||'';stderr=result.stderr||'';
     }catch(error){
-      const summary=[error.killed?'Decompilation timed out.':`SurfDecomp failed: ${error.message}`,error.stderr?.slice(-2000)].filter(Boolean).join('\n');
+      const summary=[signal?.aborted?'Decompilation cancelled.':error.killed||error.code==='ETIMEDOUT'?'SurfDecomp exceeded the 120-second limit for this BSP.':`SurfDecomp failed: ${error.message}`,error.stderr?.slice(-2000),error.stdout?.slice(-1500)].filter(Boolean).join('\n');
       throw Error(summary);
     }
     const resultStat=await fs.stat(output).catch(()=>null);

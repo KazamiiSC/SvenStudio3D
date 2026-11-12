@@ -7,9 +7,9 @@ export async function modelRoots(gameDir) {
   if (typeof gameDir !== 'string' || !gameDir || gameDir.length > 1024) throw new Error('Configure the Sven Co-op game directory in Build Settings.');
   const resolved=path.resolve(gameDir);
   const base=path.basename(resolved).toLowerCase();
-  const parent=['svencoop','svencoop_addon','svencoop_downloads'].includes(base)?path.dirname(resolved):resolved;
+  const parent=['svencoop','svencoop_addon','svencoop_downloads','svencoop_hd'].includes(base)?path.dirname(resolved):resolved;
   const roots=[];
-  for(const folder of ['svencoop_addon','svencoop_downloads','svencoop']){
+  for(const folder of ['svencoop_addon','svencoop_downloads','svencoop','svencoop_hd','valve']){
     const root=path.join(parent,folder,'models');
     try{if((await fs.stat(root)).isDirectory())roots.push({folder,root:await fs.realpath(root)})}catch{}
   }

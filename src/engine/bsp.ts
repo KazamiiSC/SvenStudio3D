@@ -5,6 +5,8 @@ export interface BspTexture {name:string;width:number;height:number;rgba?:Uint8A
 export interface BspEntity {classname:string;origin?:Vec3;properties:Record<string,string>}
 export interface BspFace {
   texture:number; flags:number; model:number; points:Vec3[];
+  /** Stable source indices in BSP30 lumps. Never use the filtered array index for writes. */
+  bspFaceIndex?:number;texinfoIndex?:number;planeIndex?:number;planeSide?:number;lightmapOffset?:number;
   texels:[number,number][]; normal:Vec3;
   /** Raw compiled texinfo axes and shifts for loss-minimizing MAP recovery. */
   sTexinfo?:[number,number,number,number];tTexinfo?:[number,number,number,number];
@@ -115,7 +117,7 @@ export function parseBsp(buffer:ArrayBuffer,name='map.bsp'):BspMap{
   let lightmappedFaces=0,skipped=0;
   for(let index=0;index<faceCount;index++){
     const p=lumps[7].start+index*20,first=v.getInt32(p+4,true),n=v.getUint16(p+8,true);
-    const info=infos[v.getUint16(p+10,true)];
+    const texinfoIndex=v.getUint16(p+10,true),info=infos[texinfoIndex];
     if(!info||n<3||n>512||first<0||first+n>surfedges.length){skipped++;continue}
     const points:Vec3[]=[];
     for(let i=0;i<n;i++){
@@ -149,7 +151,7 @@ export function parseBsp(buffer:ArrayBuffer,name='map.bsp'):BspMap{
       lightmappedFaces++;
     }
     const model=Math.max(0,models.findIndex(m=>index>=m.first&&index<m.first+m.count));
-    faces.push({texture:info.index,flags:info.flags,model,points,texels,normal,sTexinfo:info.s,tTexinfo:info.t,lightWidth,lightHeight,lightRgb,lightStyles,lightLayers,lightMin:[minU,minV]});
+    faces.push({bspFaceIndex:index,texinfoIndex,planeIndex:planeId,planeSide:side,lightmapOffset:offset,texture:info.index,flags:info.flags,model,points,texels,normal,sTexinfo:info.s,tTexinfo:info.t,lightWidth,lightHeight,lightRgb,lightStyles,lightLayers,lightMin:[minU,minV]});
   }
   if(skipped)warnings.push(`${skipped} malformed faces were skipped.`);
   const entitiesText=new TextDecoder('latin1').decode(new Uint8Array(buffer,lumps[0].start,lumps[0].size));

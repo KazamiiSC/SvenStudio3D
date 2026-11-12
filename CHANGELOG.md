@@ -1,3 +1,563 @@
+## 2026-11-12 — SvenStudio 3D v2.0.0 · consolidación de HF10
+
+- Base intacta: v1.9 Etapa 8A HF10, Smart Build 3.0 con compilación aislada, recursos externos, Smart WAD y salida por carpeta/ZIP o instalación explícita. No cambia algoritmos de geometría, colisiones ni iluminación.
+- Actualización de metadatos a semver 2.0.0, consola BAT, lanzador en ES/EN/RU/KO/ZH/PT, identidad superior y Ayuda. Se conserva la compatibilidad de `.svenstudio.json` y la estructura de configuración anterior.
+- Ayuda, guía de novedades y resúmenes de estudios renovados en los seis idiomas con reglas actuales de salida sin escribir en Sven Co-op y límites de BSP/prefabs.
+- Revisión de traducciones: completadas las cadenas de `t()` faltantes en español, ruso y coreano dentro del inventario estático; ampliadas chino y portugués. Quedan fallbacks históricos documentados en `AUDITORIA_TRADUCCIONES_V2_0.md`.
+- Portable preparado reutilizando `node_modules` Windows x64 verificados de la versión HF9, cuyas dependencias son idénticas al lockfile de HF10 (salvo semver de raíz). Descarga verificada de Node 22.16 en primer inicio.
+- Pruebas y limitaciones: ver `VALIDACION_V2_0.md`. Primera ejecución Windows limpia y compilación real SC siguen pendientes.
+
+## 2026-11-11 — Editor BSP · Etapa 8A HF3 · Extracción aproximada tolerante
+
+- Reordena cíclicamente los primeros vértices de paneles BSP válidos para evitar falsos planos degenerados al construir Valve 220, respetando textura, ejes UV y orientación.
+- En la opción explícita de exportación **aproximada**, omite caras sin polígono MAP válido y conserva sus IDs/rechazos en `recovery.skippedFaces` del `.svprefab`.
+- **Confirma antes de guardar** si hay pérdidas; marca el archivo `_PARCIAL_N` y muestra el número de caras omitidas en Estudio de Prefabricados. No exporta selecciones vacías. La recuperación exacta de sólidos cerrados no cambia.
+- Validación: 234/234 pruebas BSP repartidas en dos grupos, 3 pruebas nuevas de paneles; TypeScript y sintaxis del servidor correctas. Pendiente comprobar con `BlackMesaEPF.bsp` real y Sven Co-op.
+- Guía: `docs/EDITOR_BSP_8A_HF3_PANELES_TOLERANTES_ES.md`.
+
+## 2026-11-11 — Editor BSP · Etapa 6E · Exportación compacta y gestión de WAD importados
+
+- Exportación compacta automática de los 15 lumps activos de BSP30, sin retener copias append-only obsoletas; verificación byte a byte de cada lump y reimportación con parser.
+- Biblioteca de texturas BSP: «Quitar WAD importados», con botón por archivo WAD3; eliminación de la sesión únicamente, sin tocar archivos físicos ni referencias originales de `worldspawn`.
+- Protección de WAD utilizados por ediciones actuales o estados de Undo/Redo, con remapeo de índices temporales del resto de texturas.
+- Se preservan RGB, lightstyles, VIS, clipnodes, MDL, geometría y modelos sin reconstruir RAD. La Etapa 6D fue probada en el juego por el usuario; la exportación compacta 6E requiere nueva prueba real.
+- Documentación: `docs/BSP_EDITOR_ETAPA_6E_EXPORTACION_COMPACTA_GESTION_WAD_ES.md`.
+
+## 2026-11-11 — Editor BSP · Etapa 6D · UV continuos y lightmaps
+
+- Conserva el visor GPU durante gestos UV en caras BSP para evitar reconstrucción de mallas, texturas y atlas de luz por cada movimiento.
+- Rotación y escala de materiales en superficies iluminadas con reproyección aproximada de los lightmaps RGB y conservación de estilos; no reemplaza RAD.
+- Validada posteriormente por el usuario en Windows y Sven Co-op con exportación real del mapa `sandstone`.
+
+## 2026-11-11 — Editor BSP · Etapa 6C · Texture Studio + WAD3
+
+- Interfaz flotante Texture Studio y biblioteca WAD3 con búsqueda, miniaturas, selector de WAD y presets de ajustes UV; no modifica el editor MAP.
+- Widget UV de 120 px fijado a pantalla con pestaña de arrastre separada y posición persistente; Alt + clic izquierdo para desplazar UV con seguridad de gestos/cancelación.
+- Exportación BSP incorpora nuevas texturas WAD3 sin comprimir con todos sus mipmaps y paleta; reapertura y validación de otros lumps; preservación del original y restricciones de lightmaps/texturas especiales.
+- Regresiones BSP, TypeScript y servidor; prueba en Sven Co-op/Windows 6C aún pendiente.
+
+## Editor BSP — Etapa 6B: edición persistente y controlada de texturas/UV (11 noviembre 2026)
+- Partiendo de la Etapa 6A que el usuario probó y aprobó, el modo **Caras** incorpora cambio de textura a otra ya existente en el BSP de igual resolución, desplazamiento U/V y edición de rotación/escala cuando no existe lightmap compilado.
+- Para caras con luz compilada, solo se admite UV desplazado en múltiplos de 16 texeles: se valida que cada vértice muestree exactamente la misma posición relativa del lightmap; operaciones que exijan RAD se rechazan.
+- Exportación binaria real en copia BSP30: clonación de texinfo por cara y parche exacto de los índices de las caras; reimportación con parser, validación de lightmap y conservación de otros lumps. Cambios de entidades y superficies pueden exportarse juntos sin sobrescribir el archivo original.
+- Deshacer/rehacer de superficies, selección múltiple atómica, selector de texturas compatibles y protecciones de materiales especiales. UI en seis idiomas. Sin alteraciones a Editor MAP, BSP Composition ni BuildTogether.
+- Ver `docs/BSP_EDITOR_ETAPA_6B_EDICION_SEGURA_ES.md`. **No se ha probado aún esta Etapa 6B en Windows ni dentro del juego**.
+
+## Editor BSP — Etapa 6A: selección de caras compiladas y diagnóstico (11 noviembre 2026)
+- Primera mejora funcional construida **sobre Preview 5 HF9**, sin sustituir el visor BSP, el editor MAP ni el editor de entidades.
+- Nuevo selector **Entidades / Caras** en la barra superior del Editor BSP. Clic en superficies compiladas recupera el índice de cara original, aunque los triángulos estén agrupados; resaltado de polígono completo, Ctrl/Shift+clic y selección múltiple acotada a 64. Al volver a Entidades se recuperan gizmos y MDL.
+- Inspector integrado con textura, tamaño, texinfo compartido, ejes S/T, UV reales, plano/modelo, lightmap y lightstyles; textos de UI ES/EN/RU/KO/ZH/PT.
+- Solo diagnóstico: no guarda UV ni texturas, no cambia BSP binario ni invalida lightmaps. La **Etapa 6B** implementará edición persistente con exportación de copia y validaciones.
+- Ver `docs/BSP_EDITOR_ETAPA_6A_CARAS_DIAGNOSTICO_ES.md`; 164/164 pruebas BSP, TypeScript y sintaxis del servidor correctos. Compilación y prueba de interfaz en Windows pendientes.
+
+## Distribución portable HF9 para primera instalación (11 noviembre 2026)
+- **Solo empaquetado y documentación** de la Preview 5 HF9 aprobada por el usuario. No modifica el código de Editor BSP, Editor MAP, BSP Composition, servidor ni herramientas.
+- Se entregan: ZIP completo **Windows x64 con `node_modules`** y ZIP de **código fuente sin `node_modules`**, con documentos de continuidad para la próxima Etapa 6. `package.json`/`package-lock.json` coinciden exactamente con las dependencias Windows heredadas del portable v1.9.
+- **Primer inicio:** el BAT prepara Node.js 22.16.0 desde sitio oficial y verifica SHA-256; requiere conexión en ese primer arranque si no existe `runtime/node.exe`. Los siguientes inicios locales pueden ser offline.
+- **Etapa 6 aún no implementada:** selección/edición segura de caras, texturas y UV sobre BSP compilado es el siguiente trabajo. Más detalles: `docs/CONTINUIDAD_HF9_ETAPA6_NUEVO_CHAT_ES.md`.
+
+## Editor BSP Preview 5 HF9 — Gizmo de rotación compacto
+- El aro de rotación anterior era demasiado grande y tapaba al NPC. Se sustituyó por **dos arcos de giro pequeños** con puntas discretas, sin la flecha larga de orientación de las primeras previews.
+- Radios visibles: 20–26 unidades, frente a 35–48 de HF8. La captura de clic permanece amplia (13–35 unidades), independientemente del dibujo.
+- Se mantiene arrastre circular desde cualquier sector, Yaw durante la rotación, deshacer y guardado BSP original protegido. Rótulo Yaw más cercano al nuevo aro.
+- No cambia cámara, selección múltiple, paneles, MDL, FGD, IA, exportación, ni otras herramientas. Ver `docs/BSP_EDITOR_VISUAL_PREVIEW_5_HF9_ES.md`.
+
+## Editor BSP Preview 5 HF8 — Ventana de propiedades redimensionable y ajustes visuales
+- La ventana flotante de propiedades de entidades se puede **agrandar o achicar desde la esquina inferior derecha** (ancho y alto); sus dimensiones se recuerdan en este navegador separadamente de su posición, y se limitan al espacio disponible. Incluye soporte de teclado con flechas para redimensionar al enfocar el tirador y área interna desplazable sin recortar controles.
+- Rótulo **Yaw** del aro grande de rotación más próximo al aro (de 72 a 40 unidades relativas), sin modificar agarre, rotación ni exportación BSP.
+- **Vuelo WASD** situado inmediatamente **antes** de Buscar entidades en la barra superior del Editor BSP; borde cian resaltado y estado activo distinguible.
+- No cambia NPC, IA, FGD, modelos MDL, selección, BSP Composition ni operaciones binarias. Guía: `docs/BSP_EDITOR_VISUAL_PREVIEW_5_HF8_ES.md`.
+
+## Editor BSP Preview 5 HF7 — Aro de rotación y ubicación de Vuelo
+- Gizmo R reemplazado por aro único ancho con área de captura ampliada, giro continuo y sin flechas ni marcas de orientación.
+- Vuelo WASD reubicado al lado de Buscar entidades (Editor BSP); se conserva en Visor BSP.
+- Sin cambios en selección, geometría, IA, FGD ni guardado BSP.
+- Ver `docs/BSP_EDITOR_VISUAL_PREVIEW_5_HF5_HF7_ARO_ES.md`.
+
+## Editor BSP Preview 5 HF6 — Ajuste visual del gizmo de rotación
+- Se reemplazó la flecha amarilla grande por un indicador discreto en el aro de rotación; se mantienen Yaw, grados y marcas de orientación.
+- Sin cambios en comportamientos de NPC, FGD, editor MAP, exportación o geometría BSP.
+- Véase `docs/BSP_EDITOR_VISUAL_PREVIEW_5_HF5_HF6_GIZMO_ES.md`.
+
+## v1.9 — Editor BSP Visual Preview 5 HF5 (11 noviembre 2026)
+- Propiedades de entidades ahora en panel flotante cerca de la selección 3D, arrastrable, con posición persistente y límites adaptativos; pestañas FGD, conexiones, RAW, duplicación y eliminación conservados. La inspector lateral mantiene visualización, búsqueda y creación.
+- Navegador lateral categorizado por tipos de entidad, tarjetas compactas, búsqueda, número de resultados y paginación de 24 elementos; selección múltiple y enfocar continúan.
+- Gizmo R: guía de orientación/yaw con aro, marcas y flecha, lectura de ángulo y variación mientras se gira, sin modificar el motor BSP ni el guardado de `angles`.
+- UI localizada ES/EN/RU/KO/ZH/PT. No modifica BSP Composition 2.1.2, MDL, cámara ni geometría.
+- Guía: `docs/BSP_EDITOR_VISUAL_PREVIEW_5_HF5_INTERFAZ_ES.md`.
+
+## v1.9 — Editor BSP Preview 5 HF4 (11 noviembre 2026)
+- La Biblioteca de modelos BSP sugiere clases de IA de combate nativa para MDL conocidos (p. ej. `models/agrunt.mdl` → `monster_alien_grunt`) si existen en las FGD cargadas; advierte que `monster_generic` no ataca automáticamente. No se asigna IA a modelos de forma implícita al exportar.
+- FGD adicionales importables solo para la sesión del Editor BSP; combinación de clases y herencia disponible entre archivos importados, con límites de tamaño; no instala recursos ni motores de IA.
+- Inspector con pestañas **Atributos / Flags / Edición RAW**, choices y casillas generadas desde FGD, bits desconocidos preservados, y edición manual de keyvalues.
+- Menú contextual con clic derecho sobre modelos y marcadores 3D, sin interferir con el arrastre de cámara; eliminación por **Supr**, confirmación al borrar grupos, Ctrl+Z para deshacer. Clic en vacío cancela colocación/conexión y limpia selección.
+- Mantiene el Visor BSP, Editor MAP, BSP Composition 2.1.2, BuildTogether, MDL, paneles redimensionables, controles G/R, seis idiomas y exportación sin sobrescribir BSP original. Los modelos brush compilados siguen protegidos.
+- Guía: `docs/BSP_EDITOR_VISUAL_PREVIEW_5_HF4_FGD_CONTEXTO_ES.md`.
+
+## v1.9 — Editor BSP Preview 5 HF3 (11 noviembre 2026)
+- Biblioteca MDL: modos nativos de colocación diferenciados (decoración `item_generic`, objeto con colisión `item_generic`, NPC `monster_*` de FGD y modelo reactivo a disparos `cycler`). Ya no se crea siempre un `item_generic` decorativo al colocar MDL desde la biblioteca.
+- Configuración por modo de salud, aliado, roaming, spawnflags, clase de IA, equipo compatible, hull personalizado, skin/bodygroup, escala y secuencias donde el motor las permite. Validación antes de entrar al modo colocar en 3D.
+- Convertir modelos puntuales existentes entre modos de forma atómica y deshacible: conserva origen, orientación, conexiones y keyvalues ajenos al modo. No altera entidades brush compiladas.
+- Panel de propiedades de Biblioteca MDL con scroll propio y distribución responsiva; traducciones en ES/EN/RU/KO/ZH/PT.
+- 139/139 pruebas BSP y 125/126 regresiones FGD/NPC relacionadas; falla histórica aislada en comprobación textual de Gameplay Studio. TypeScript y servidor correctos. Vite Linux no disponible por módulo nativo de Rollup no incluido en la base Windows; juego real por comprobar.
+- Guía: `docs/BSP_EDITOR_VISUAL_PREVIEW_5_HF3_MODELOS_ES.md`.
+
+## Editor BSP Visual Preview 5 HF2 (v1.9, 11-11-2026)
+- Al entrar nuevamente en Vuelo WASD se conserva la orientación orbital; OrbitControls ya no se remonta al alternar los modos.
+- Marco 3D en MDL seleccionados y anillos de selección para entidades puntuales y selecciones múltiples.
+- Biblioteca BSP con cuadrícula de miniaturas MDL de carga diferida, preferencia persistente y soporte de modelos locales de sesión.
+- Se mantiene la base Preview 5 HF1 y la exportación de copia BSP.
+
+## v1.9 — Editor BSP Visual Preview 5 HF1 (11 noviembre 2026)
+
+- Correcciones sobre Preview 5: modo visible de selección múltiple en Editor BSP, botones rápidos de buscar/colocar entidades y biblioteca de modelos recuperados en la barra superior; paneles y herramientas laterales intactos.
+- Vuelo WASD → órbita: snapshot de cámara y sincronización del target durante los primeros fotogramas al salir, para evitar saltos al pulsar Escape o «Salir de vuelo».
+- Modelos MDL: interpolación de rotación de huesos por cuaterniones en el parser compartido, validación de matrices de pose antes de aplicar cambios y ajuste cercano al suelo de NPC, items, armas, munición y props en el visor, sin cambiar sus `origin`.
+- Mensajes nuevos en los seis idiomas. Tests nuevos de selección, interpolación, modelos y accesos, más regresiones BSP existentes. Vista previa en Windows por verificar; Vite bloqueado en Linux por módulos nativos de Windows de la distribución original.
+- Guía: `docs/BSP_EDITOR_VISUAL_PREVIEW_5_HF1_ES.md`.
+
+---
+
+## v1.9 — Editor BSP visual, Preview 4 (11 noviembre 2026)
+
+- Visor BSP y Editor BSP: se conserva posición, yaw y pitch al salir de Vuelo WASD con Escape o botón. Reconciliación de cámara y destino de OrbitControls al cambiar de modo sin amortiguación antigua; Escape de vuelo no borra la selección.
+- Interfaz BSP en tres columnas ajustables: barra superior simplificada, panel izquierdo para herramientas/visualización/cámara y panel derecho para inspector y edición. Laterales redimensionables con arrastre o flechas, tamaños persistidos, botones para ocultar/mostrar y correcciones de scroll, texto y controles estrechos.
+- Marcadores de entidades desde la apertura: en BSP con más de 800 entidades, se eligen las cercanas al usuario en vez de los primeros 800 índices del lump; se actualizan al recorrer el escenario y respetan selección/distancia.
+- Idle MDL más fluido: actualización de pose adaptativa 30/24/18 FPS frente a 11 FPS anterior; la ventana MDL usa requestAnimationFrame a 30 FPS frente al temporizador de 20 FPS. Alineación de NPC al suelo basada en la altura de pies idle y caché por bodygroup; ningún cambio al origin de BSP.
+- Cambios aislados al Viewer/Editor BSP, modelo de vista previa e idioma. Conserva BSP Composition 2.1.2, MAP, BuildTogether y exportación por copia.
+- TypeScript, sintaxis servidor y pruebas BSP con regresiones nuevas. **Pendiente** prueba visual en Windows/Sven Co-op y compilación web completa por dependencias nativas Linux ausentes en el ZIP Windows original.
+- Guía: `docs/BSP_EDITOR_VISUAL_PREVIEW_4_ES.md`.
+
+---
+
+## v1.9 — Editor BSP visual, Preview 3 (11 noviembre 2026)
+
+- Nuevo control **Distancia de visibilidad de entidades** independiente del de etiquetas: oculta marcadores 3D y vistas previas MDL lejanos, preservando la entidad seleccionada y la lista del inspector.
+- No se renderiza una multitud de modelos de jugador para `info_player_deathmatch`/`info_player_coop`: solo `info_player_start` mantiene su previsualización de personaje.
+- Previsualización MDL para NPC terrestres ajustada visualmente al suelo worldspawn cercano (con opción de desactivar el ajuste), sin alterar la posición BSP (`origin`) ni las colisiones. Los NPC aéreos no se ajustan. Animación idle nativa del MDL, limitada por distancia, complejidad y cantidad de recursos.
+- Mejoras en resolución de `model`, `new_model`, `custom_model`, rutas de subcarpetas, FGD y modelos aliados; búsqueda opcional en carpetas instaladas adicionales.
+- Biblioteca de modelos: **Importar carpeta MDL adicional** desde archivos elegidos por el usuario (sesión solamente), con compañeros de textura/animación y previsualización/asignación por ruta. No instala MDL ni modifica archivos de juego.
+- Mantiene Editor BSP, Visor BSP, BSP Composition 2.1.2 y MAP editor. Traducciones ES/EN/RU/KO/ZH/PT y documentación.
+- TypeScript y sintaxis servidor aprobados; 99/99 pruebas BSP y 38/38 regresiones extra aprobadas. Vite Linux no pudo compilar por dependencia nativa Rollup ausente. Sin prueba visual de los MDL reales en Windows todavía.
+- Guía: `docs/BSP_EDITOR_VISUAL_PREVIEW_3_ES.md`.
+
+---
+
+## v1.9 — Editor BSP visual, Preview 2 (11 noviembre 2026)
+
+- Acceso independiente **Editor BSP** en la barra global, junto a **Visor BSP**. Herramientas de escena reorganizadas en menús compactos **Herramientas / Visualización / Cámara**, con exportación BSP y Biblioteca de modelos a mano.
+- La creación de entidades puntuales desde FGD pasa a **modo de colocación en superficies**: vista previa del punto en el visor, clic izquierdo confirma la posición 3D real, Esc cancela. Conserva los gizmos G/R y el historial/guardado nativo previos.
+- Resuelve modelos NPC implícitos a través de `@studio` FGD y rutas GoldSrc conocidas, sin escribir keyvalues artificiales. Vista previa limitada/priorizada para escenas grandes, con diagnóstico de recursos no cargados. Requiere gameDir válido y archivos MDL disponibles.
+- Nueva ventana **Biblioteca de modelos BSP**: catálogo de MDL instalados, búsqueda, vista previa 3D existente, aplicar a entidad puntual o colocar `item_generic` en una superficie. No modifica archivos MDL.
+- Traducciones ES/EN/RU/KO/ZH/PT. Se conserva BSP Composition 2.1.2 y todas las herramientas existentes.
+- TypeScript, sintaxis del servidor y 91/91 pruebas BSP aprobadas (incluidas 4 nuevas). Compilación web en Linux y verificación Windows/Sven Co-op pendientes.
+- Guía: `docs/BSP_EDITOR_VISUAL_PREVIEW_2_ES.md`.
+
+---
+
+## v1.9 — Editor BSP visual, Preview 1 (11 noviembre 2026)
+
+- Primer modo de **edición visual de entidades puntuales y NPC** integrado directamente en el Visor BSP, independiente de las tres pestañas de Recuperación BSP. La versión de aplicación sigue siendo `1.9.0`.
+- Selección 3D de entidades, gizmo G para desplazamiento XYZ y R para yaw, edición de keyvalues con confirmación al terminar, búsqueda e inspector lateral.
+- Añadir desde el FGD `PointClass` existente, duplicar y eliminar entidades puntuales, Ctrl+Z/Y, historial limitado a 80 operaciones, restablecer, y exportar **copia BSP** verificada.
+- La geometría compilada original y sus lumps de lightmaps/VIS/clipnodes no se editan. Entidades de submodelo `*N` bloqueadas para transformación. No hay simulación de IA ni recomputación de luz.
+- Vista previa rápida basada en el mapa original; modelos MDL opcionales siguen posiciones editadas cuando sus recursos están disponibles, sin recargar el modelo si solo cambia su posición.
+- Traducciones ES/EN/RU/KO/ZH/PT. Se conserva BSP Composition 2.1.2 con sus correcciones WAD3/lightstyles.
+- Pruebas unitarias nuevas y regresiones BSP, TypeScript, sintaxis del servidor. **Pendiente:** prueba real de la interfaz y archivos exportados en Windows/Sven Co-op.
+- Instrucciones: `docs/BSP_EDITOR_VISUAL_PREVIEW_1_ES.md`.
+
+---
+
+## v1.9 — BSP Composition 2.1.2 (lightstyles sin lightmap, 11 noviembre 2026)
+
+- Corrección del bloqueo `Invalid face lightstyle array` observado tras resolver `halflife.wad` en la transferencia binaria de `func_door`.
+- Las caras sin estilos activos (`255,255,255,255`) no intentan copiar lightmaps aunque el BSP origen conserve un `lightofs` residual; en el submodelo nuevo se normaliza ese offset a `-1`. Las caras iluminadas preservan sus datos.
+- Los estilos inválidos con huecos o los offsets fuera de rango siguen rechazándose; diagnóstico de cara/valores con traducciones ES/EN/RU/KO/ZH/PT y contador de ajustes en el informe.
+- Regresiones específicas de iluminación sin lightmaps y caso conjunto WAD3 + estilo ausente; **77/77 pruebas BSP** y TypeScript aprobados.
+- Pendiente: comprobación con los BSP originales del usuario y ejecución real en Sven Co-op. Proyecto completo sin `node_modules`, semver `1.9.0`.
+- Informe: `docs/VALIDACION_BSP_COMPOSITION_2_1_2_LIGHTSTYLES_ES.md`.
+
+---
+
+## v1.9 — BSP Composition 2.1.1 (corrección de texturas WAD3 externas, 11 noviembre 2026)
+
+- Corregido el bloqueo reproducido al transferir puertas compiladas cuando el BSP fuente usa una textura externa como `-0babtech7` no registrada en el destino, aunque los mapas se hubieran compilado usando el mismo WAD.
+- Nuevo selector opcional de archivos WAD3 dentro de la transferencia binaria: resuelve por nombre/dimensiones, comprueba mipmaps/paleta, incrusta únicamente las texturas necesarias en la **copia** del BSP, sin modificar archivos de origen/destino o WAD.
+- Rechazos explícitos por textura ausente, WAD comprimido o malformado, dimensiones incompatibles y definiciones ambiguas; contador de texturas recuperadas desde WAD3.
+- Mensajes y etiquetas nuevas traducidas al español, inglés, ruso, coreano, chino y portugués. Conserva pestañas e interfaz v1.9.
+- Pruebas específicas agregadas y suite BSP de regresión. Sigue pendiente la verificación de esta copia en Sven Co-op real.
+- ZIP de desarrollo completo sin `node_modules`; versión de la aplicación sigue siendo 1.9.0.
+
+---
+
+## v1.9 — BSP Composition 2.1 (primera transferencia binaria de submodelos, 10 noviembre 2026)
+
+- Nueva operación independiente en la pestaña «Composición BSP»: trasplantar **un** submodelo `*N` compilado (puerta/plataforma), sin MAP intermedio ni recompilación. No transfiere el mundo ni modifica BSP originales.
+- Reindexación de caras, planos, vértices, texinfo, texturas incrustadas compatibles, lightmaps RGB, nodos, hojas, marcas de superficie y hulls/clipnodes; lectura de validación tras escribir.
+- Selección de entidad fuente, análisis previo, resumen numérico, rechazo de casos no compatibles, confirmación y descarga de copia. Localización de la nueva interfaz a ES/EN/RU/KO/ZH/PT; se conservan las tres pestañas.
+- Límites de 64 MiB por BSP de entrada, 2.048 caras, 8.192 nodos por clase; sin offset XYZ, PVS del mundo, fusión `worldspawn` ni entidades enlazadas.
+- Pruebas automáticas con geometría de fixture BSP30 compilado; falta validar modelos reales dentro de Sven Co-op en Windows. Detalles en `docs/BSP_COMPOSITION_2_1_SUBMODELOS_BINARIOS_ES.md`.
+- Entrega **de desarrollo**: ZIP completo sin `node_modules`, no distribución GitHub con dependencias. Semver se conserva en `1.9.0`.
+
+---
+
+## v1.9 Hotfix — Inicio del visor 3D y reparación UV (11 noviembre 2026)
+
+- Corregido un desacuerdo entre los umbrales de reconstrucción de los ejes UV que podía lanzar `Unable to create a valid tangent UV basis for this face` durante el inicio del viewport 3D.
+- Los ejes problemáticos se reparan sin modificar el brush ni los datos del proyecto; se conserva el desfase de textura en el punto de referencia.
+- Añadidas pruebas de regresión para el caso concreto, la calidad de la base UV y la conservación de offsets.
+- No se alteran las herramientas de edición, la interfaz, los seis idiomas, el lanzador portátil ni las opciones de compilación.
+- La ejecución real del visor con los datos locales del usuario queda pendiente de comprobar en Windows.
+
+---
+
+# SvenStudio 3D v1.9 — Consolidación portable
+
+- Consolidación de World Builder Studio, Brush Workshop 3D, Smart Brush Fusion y Universal Placement 3D a partir de la cadena v1.9.2 → v1.9.7 Preview 3, sin crear estudios duplicados.
+- Ayuda actualizada y localizada en ES/EN/RU/KO/ZH/PT, incluidos los controles de colocación y herramientas de geometría.
+- Interfaz e iniciador identificados como v1.9; paquete semver interno 1.9.0.
+- Documentación e instrucciones históricas movidas a `docs/` y `docs/Historial/`, sin archivos LEEME sueltos en la raíz.
+- Se mantienen los `node_modules` Windows y el sistema de Node.js local descargado solo cuando falta.
+
+---
+
+## v1.9.7 Preview 3 — Geometry Refinement / World Builder integrado (10 noviembre 2026)
+- **World Builder Studio:** la curva paramétrica y la repetición radial se organizan en una nueva pestaña interna «Curvas y repeticiones», sin abrir el antiguo estudio de curvas por separado.
+- **Sin generadores duplicados:** carreteras, puentes, túneles y rampas nuevos utilizan el generador de recorridos de World Builder. La repetición radial conserva su utilidad para copiar brushes existentes alrededor de un arco.
+- **Compatibilidad con proyectos anteriores:** las curvas paramétricas de Preview 1/2 siguen almacenadas como `curveAssemblies` y pueden editarse o desvincularse con la selección original; no se eliminan ni se convierten automáticamente.
+- **Reutilizar rutas:** en Recorridos y estructuras se puede cargar una ruta guardada y copiar sus puntos a un recorrido NUEVO con otro tipo de estructura, sin modificar el original ni duplicar identificadores ferroviarios.
+- **Accesos:** el menú contextual y Modelado/CSG llevan a World Builder → Curvas y repeticiones, no a un segundo estudio de curvas. Brush Workshop y Smart Brush Fusion permanecen como herramientas generales del editor.
+- **Interfaz:** controles existentes del World Builder, tamaños legibles y distribución adaptativa; traducciones ES/EN/RU/KO/ZH/PT.
+- **Seguridad:** no cambia el formato de proyecto, geometría MAP, compiladores, BuildTogether, Universal Placement, runtime ni node_modules.
+- **Alcance:** no incorpora todavía Loft Builder, deformación libre de pasillos, unión automática de bifurcaciones T/Y ni una optimización automática de geometría. Es reorganización funcional y reutilización de rutas existentes.
+
+## v1.9.7 Preview 2 — Brush Workshop 3D y perfiles precisos (10 noviembre 2026)
+- Brush Workshop incorpora visor 3D independiente, orbitable y con vistas orientadas; ya no depende solamente de la proyección 2D que se veía desde abajo.
+- Vista 3D del resultado real CSG antes de aplicar, con opción de comparación del sólido original y selección de cara desde la vista.
+- Dibujo 2D conservado como pestaña para trazar sobre la cara seleccionada con precisión.
+- Nuevos perfiles rectángulo/círculo/elipse/polígono regular/rectángulo redondeado y control de calidad de 3–64 segmentos según la forma.
+- Paneles, recortes, rebajes, marcos y huecos con marco funcionan con perfiles poligonales convexos GoldSrc; validación antes de modificar el mapa.
+- Interfaz amplia y controles grandes, traducciones de los seis idiomas; sin modificar Universal Placement, World Builder ni el runtime portable.
+- Se conservan por compatibilidad las curvas paramétricas de Preview 1 mientras se migra la organización de World Builder.
+
+# SvenStudio 3D v1.9.7 — Advanced Geometry (Preview 1)
+
+- **Smart Brush Fusion (editor general):** fusiona varios brushes en un único sólido cuando la unión es convexa y las texturas/UV son uniformes; si no, crea un objeto compuesto seleccionable y desplegable en el Explorador, sin rellenar huecos ni eliminar piezas. Permite separar y restaurar los grupos previos. Valida compatibilidad de entidades, visibilidad, bloqueo y procedencia de la geometría.
+- **Brush Workshop:** edición de una cara en un panel amplio; dibujar rectángulos, añadir panel sobresaliente, hacer rebajes, abrir huecos pasantes y crear marcos; validación convexa de cada resultado, vista previa 2D, Undo/Redo por operación. Los detalles de una entidad de brushes siguen unidos a la misma entidad.
+- **Advanced Curved Geometry:** rampas/puentes en arco y espiral (prismas triangulares cerrados y planos), repetición radial de brushes existentes, elevación por recorrido y parámetros guardados que permiten regenerar la rampa mientras la geometría no haya sido modificada manualmente.
+- **Sin estudios duplicados:** accesos en Modelado/CSG y menú contextual de brushes. Traducciones principales ES/EN/RU/KO/ZH/PT. Sin modificar BuildTogether, World Builder, BSP Viewer, la colocación universal, runtime ni dependencias.
+- **Alcance:** no se incluyeron todavía Loft Builder, uniones T/Y automáticas, deformación libre de una estructura existente ni edición no destructiva de un historial de recortes. Son mejoras posteriores; el MAP exporta brushes convexos convencionales.
+
+## v1.9.6 — Universal Placement 3D: Free Space + Camera Control (2026-11-10)
+
+- **Libre 3D real:** rayos desde la cámara, con profundidad ajustable 32–8192 unidades; no depende del plano Z ni de los brushes existentes.
+- Tres modos principales: Superficie, Plano Z y Libre 3D. Ajuste a objeto y altura relativa siguen en controles avanzados sin duplicar menús.
+- Alt + rueda cambia profundidad en el visor; Shift + rueda cambia altura del plano o desplazamiento relativo. Rueda sola mantiene el zoom habitual.
+- **WASD:** los botones no conservan el foco del navegador; campos numéricos devuelven el foco con Enter.
+- RMB corto cancela; RMB arrastrado conserva el control de la cámara. Escape cancela los modos de colocación.
+- Posicionamiento opcional en dos pasos: primer clic congela la vista previa, edición XYZ, segundo clic utiliza la misma operación original para colocar el objeto. Cancelación limpia sin historial extra.
+- Visor sin control Z flotante; el cursor mantiene el último punto válido al pasar por la interfaz.
+- Compatibilidad con formas, prefabs, World Builder, Blueprint, luces, sonidos, NPC y recorridos; puertas y decals siguen sujetos a superficies.
+- Localización ES/EN/RU/KO/ZH/PT. La preferencia previa de modo permanece, pero una colocación provisional no se restaura tras reiniciar el navegador.
+
+# v1.9.5 — Universal Placement 3D: usability hotfix
+
+- Rediseño del panel universal de colocación: compacto, dos modos principales (superficie/plano de trabajo), ajuste Z numérico y opciones avanzadas desplegables.
+- Vista previa más estable con respaldo cuando un rayo de cámara no intersecta el plano de altura. No se oculta simplemente al pasar el cursor sobre las herramientas flotantes.
+- Eliminado el botón `⇅ Z` que seguía al cursor y tapaba la selección.
+- Clic derecho y Escape cancelan todos los modos universales de colocación desde un mismo controlador, sin alterar geometría o historial. Botón explícito cancelar.
+- Doble clic ya no selecciona los textos de overlays del visor mientras una colocación está activa; entradas numéricas siguen editables.
+- Traducidos nuevos controles a los seis idiomas. Compatible con proyectos v1.9.4 y sistema portable.
+
+# SvenStudio 3D v1.9.4 — Universal Placement 3D (10 noviembre 2026)
+
+- Motor compartido en el editor MAP para ubicar shapes, prefabs, terrenos, rocas, rutas, Blueprint, NPC/waypoints, cine, iluminación, sonidos y recursos arrastrados desde la biblioteca, conservando las acciones de confirmación originales.
+- Modos: sobre superficie, sobre grilla, libre 3D, ajuste a vértices/bordes/cara real y altura relativa Z.
+- Plano de trabajo Z configurado y hasta 12 niveles guardados. Puede colocarse por encima o debajo de la grilla global sin modificarla.
+- Panel del visor compacto y expandible, campos XYZ exactos, +/- de altura, copia de posición seleccionada y botón 3D vertical de altura arrastrable con control de teclado.
+- Controles localizados ES/EN/RU/KO/ZH/PT. No modifica World Builder Studio, Map Packager, BuildTogether ni la jerarquía de los demás estudios.
+- Las puertas/ventanas y decals conservan su requisito de una superficie válida para no crear geometría inválida.
+- Pruebas de motor, integración con editor MAP, TypeScript y regresión seleccionada; aún requiere validación visual final en Windows/Sven Co-op.
+- Instalación mediante un parche incremental sobre v1.9.3; sin node_modules, sin cambios al runtime o al BAT portable.
+
+# SvenStudio 3D v1.9.3 — Smart World Building (incremental)
+
+- World Builder Studio > Recorridos y estructuras: panel grande de **Integración inteligente**.
+- Caminos y pasarelas que siguen el terreno seleccionado, adaptan suavemente vértices y muestran la geometría final en el visor 3D. Usa muestreo exacto de triángulos y diagonales.
+- Cuevas sobre terreno **Superficie delgada**: accesos por celdas retiradas y paneles de techo abiertos solo en los extremos. **No** realiza operaciones booleanas sobre brushes sólidos ni sella automáticamente el mapa.
+- Guarda terreno + ruta en una sola operación deshacible del editor MAP. Firmas protegidas para evitar sobrescribir brushes modificados o bloqueados.
+- Relación persistente entre terreno y recorrido: evita editar un lado por separado y dejar la integración rota. Sin modificar rutas anteriores.
+- Nuevo metadato opcional `excludedCells` en terrenos y `surfacePortals`/`integratedTerrainId` en rutas, con validación y compatibilidad retroactiva.
+- World Builder mantiene rocas, acantilados, rutas, ferrocarriles, BuildTogether, Empaquetador y el resto de estudios sin modificaciones funcionales.
+- Controles del panel de integración con tamaño mínimo 47 px, mensajes de validación y soporte multidioma.
+- Cobertura de pruebas de geometría convexa, round-trip Valve 220, Undo y proyectos existentes.
+
+**Limitaciones:** las cuevas en v1.9.3 crean entradas verticales en capas delgadas; no excavan macizos sólidos, no generan rampas/escaleras automáticamente y no garantizan sellado VIS. Se deben comprobar los accesos, colisiones y fugas en Sven Co-op. Los recorridos ligados se protegen contra ediciones independientes hasta disponer de una edición sincronizada.
+
+---
+
+## v1.9.2 — World Builder Studio: Advanced Terrain & 3D Workspace (2026-11-10)
+
+- Fusiona el nombre **World Builder Studio** en los menús y el visor, traducido a español, ruso, coreano, chino y portugués (inglés por defecto).
+- Rediseño de trabajo: lienzo de terreno más grande, panel de propiedades plegable en modo concentración, accesos rápidos a secciones, botones amplios y vistas de cámara en perspectiva/superior/lateral.
+- Esculpido y navegación simultáneos: arrastre izquierdo esculpe, derecho orbita, medio desplaza y rueda acerca. El modo inspección mantiene su navegación independiente. Cursor circular de radio del pincel.
+- Edición de vértices con marcadores grandes, cambio preciso de altura y Undo/Redo. Cambio de diagonal de cada celda persistido en el proyecto y usado también en la exportación Valve 220.
+- Nuevas formaciones de superficie (crestas, cauces, escarpes), deterministas y dentro de ±512 unidades, combinables con heightmaps y los 9 generadores anteriores.
+- Nueva estructura Cave Tunnel de recorrido 3D (piso plano, sección arqueada, brushes convexos cerrados). Las entradas deben conectarse manualmente: no excava automáticamente brushes adyacentes.
+- Se conservan el terreno de base sólida/delgada, rocas, recorridos, vías, tuberías, BuildTogether, compilers y el resto de estudios, sin alterar Workspace global.
+- Nuevas pruebas de triangulación, persistencia, MAP roundtrip y construcción de túneles. No se añaden mallas abiertas incompatibles.
+
+## v1.9.1 — World Builder: Thin Surface & Base Modes (HF1)
+
+- Nuevo generador de terreno con **superficie delgada** (16u iniciales) y caras ocultas NULL; brushes cerrados y convexos GoldSrc, no superficies abiertas.
+- Se conserva **base sólida** original; nuevo modo **base personalizada** con comprobación del fondo mínimo.
+- Vista previa exacta de las superficies superiores e inferiores, selector visual grande y campos accesibles.
+- Terrenos anteriores sin `baseMode` continúan en modo sólido sin alteraciones automáticas.
+- Rocas, acantilados, vías, tuberías y soportes conservan su volumen; caminos/pasarelas mantienen su espesor existente.
+- Validación de metadatos en proyectos guardados, pruebas de mapa Valve 220 y compatibilidad con Undo, BuildTogether y sistema MAP.
+
+## SvenStudio 3D v1.9.0 — World Builder (2026-11-10)
+- Fusiona el estudio existente «Terrenos y geometría» bajo el nombre World Builder, sin duplicar paneles ni modificar el editor MAP.
+- Conserva Terrain Sculpt, Rock & Cliff Generator, Road & Structure Studio, rutas y ferrocarriles guardados, WAD, UV, Undo MAP y BuildTogether.
+- Generador reproducible de 9 paisajes (plano, colinas, montañas, valle, cañón, isla, cráter, dunas, meseta), con semilla y altura configurables.
+- Importación de mapas de altura PNG/JPEG/WebP con escala configurable e inversión de colores; exportación de mapa de altura PNG.
+- Operaciones de alturas: suavizado, terrazas, centrado, simetría X/Y, giro 90°, deshacer/rehacer alturas y pinceles de esculpido agrupados por trazo.
+- Vista previa no destructiva; se mantiene exportación Valve 220 mediante brushes convexos válidos y validación antes de aplicar.
+- UI aislada más grande, propiedades accesibles, scroll independiente, fullscreen opcional en todas las pestañas, controles/hit targets ampliados, diseño adaptable y traducciones.
+- Pruebas automatizadas de paisajes, MAP export/import, transformaciones, raster y regresión de herramientas existentes.
+- Limitaciones: heightmap representa una superficie de terreno sólido, no cuevas perforadas ni agua simulada. El agua sigue en Material & Surface Studio. Recursos externos se cargan desde el navegador WAD.
+
+## SvenStudio 3D v1.8.16 — Map Packager 2.0 (2026-11-10)
+- Expande el Empaquetador de mapas existente: no se añade un estudio duplicado.
+- Nuevo generador automático de maps/<map>.res para las dependencias descargables seleccionadas que efectivamente se incluyen en el ZIP.
+- Excluye BSP, CFG, AngelScript, recursos de la instalación oficial y recursos faltantes del RES; los archivos del servidor se mantienen en el paquete para instalación manual.
+- Previsualización RES sensible a selección y opción de desactivarlo. El RES anterior solamente se sustituye dentro del ZIP; no cambia ningún fichero instalado.
+- Localización segura y diagnóstico de diferencias entre mayúsculas/minúsculas en rutas; el ZIP usa la ruta referenciada para funcionar en servidores Linux.
+- Conserva los límites y controles de seguridad del empaquetador, sin tocar compiladores, MAP, BSP Viewer, Custom NPC Importer ni BuildTogether.
+- La detección de recursos sigue siendo estática: eventos de audio dentro de MDL, recursos dinámicos de AngelScript y restricciones de distribución requieren inspección adicional.
+
+## SvenStudio 3D v1.8.15 — Hammer / SvenCraft Project Importer
+
+- Importación directa de archivos binarios RMF (Worldcraft / Valve Hammer / SvenCraft 1.4, 1.6, 1.8 y 2.2) desde Archivo.
+- Importación de brushes, entidades, worldspawn, planos y alineación de texturas mediante validación del motor MAP existente.
+- Recuperación de grupos, VisGroups, cámaras, rutas, parámetros de caras y metadatos originales en el proyecto SvenStudio.
+- Resumen previo a la importación y rechazo seguro si se detecta geometría no reconstruible; no se sobrescribe el proyecto actual por error.
+- El editor MAP, Blueprint to Map, BuildTogether, BSP Viewer y demás estudios se mantienen sin cambios funcionales.
+- Más información y limitaciones: `docs/HAMMER_SVENCRAFT_PROJECT_IMPORT_V1815_ES.md`.
+
+# v1.8.14 Preview — Multi-Level Building, Smart Wall Visibility y Escaleras
+
+- Blueprint to Map: hasta seis plantas con alturas propias y trazados editables independientes.
+- Escaleras paramétricas rectas con controles 2D/3D y hueco real en las losas que atraviesan.
+- Cubiertas de una o dos aguas para habitaciones superiores rectangulares.
+- Vista 3D: ocultación o transparencia automática de muros exteriores frente a la cámara.
+- Se conserva inspector HF4 sin compactar ni duplicar paneles; selector de plantas en barra separada.
+- Compatibilidad con proyectos HF4; persistencia independiente y Undo/Redo completo.
+- MAP de dos plantas y pruebas de regresión. Pendiente de prueba real en Windows y juego.
+
+---
+
+## v1.8.13 HF4 — Blueprint to Map: Inspector adaptable y ajuste vertical de aberturas (Preview)
+
+- Panel derecho organizado en pestañas **Habitaciones**, **Propiedades** y **Conexiones** con controles grandes y desplazamiento independiente. La lista de habitaciones ya no comparte un scroll reducido con los vértices, las puertas y la reparación de conexiones.
+- Las propiedades presentan vértices en un desplegable opcional, por lo que las aberturas permanecen accesibles incluso con muchas habitaciones.
+- Puertas y ventanas ahora tienen controles **Subir / Bajar** (8 unidades por clic), campo **Altura desde el suelo Z** y un tirador violeta para arrastrarlas verticalmente desde la vista 3D.
+- El desplazamiento vertical conserva el ancho y alto del hueco, salvo que un documento previo incumpla los límites del muro. Se impide atravesar el suelo o el techo.
+- Guardado, importación/exportación `.svenblueprint.json`, sincronización de muros compartidos, MAP Valve 220 y edición 2D/3D se mantienen compatibles.
+- Pruebas de exportación/reimportación MAP y geometría convexa. Prueba real en Chrome Windows y compilación BSP siguen pendientes.
+
+## v1.8.13 HF3 — Blueprint to Map: Smart Wall Connections (Preview)
+
+- Unificación geométrica de muros colineales compartidos entre habitaciones (también parcialmente solapados e invertidos).
+- Encuentros T/X recortados, puertas comunes unificadas y detección de aberturas incompatibles.
+- Ajuste magnético a vértices y ejes; marcadores verdes de paredes compartidas en 2D.
+- Previsualización de reparación de uniones desalineadas, aplicar/cancelar, integración Undo.
+- Conservación de documentos HF2 y archivos `.svenblueprint.json`, protección de brushes modificados y mapa MAP Valve 220.
+- Pruebas automatizadas; Chrome Windows y compilación Sven Co-op pendientes de validación real.
+
+## v1.8.13 HF2 — Blueprint to Map: edición 3D y planos reutilizables (Preview)
+
+- Cierre no bloqueante y guardado de borradores con errores de geometría; la validación estricta se mantiene al generar.
+- Editor 3D con tiradores de ancho, alto y posición para aberturas, sincronizado con el plano 2D; 3 modos 2D / 3D / dividido y techos ocultables.
+- Auto Snap para aberturas y reparación asistida de huecos mal colocados; sincronización de cambios entre muros coincidentes cuando corresponda.
+- Exportar, importar y duplicar planos editables, incluidos planos ya terminados y generados. Formato independiente `.svenblueprint.json` con imagen y trazados, sin identificadores externos.
+- Inspector de margen a esquina y ancho disponible; advertencia de puertas demasiado bajas.
+- 7 pruebas nuevas de HF2, además de las regresiones de Blueprint, misiones, NPC, puzles y Railway.
+- Windows / juego: requieren comprobación práctica antes de considerar HF2 estable.
+
+## v1.8.13 HF1 — Blueprint to Map: correcciones de calibración, colocación y guardado
+
+- Evita un fallo fatal de React cuando la calibración recibe puntos inválidos: validación previa a setState y mensaje local.
+- Añade Guardar plano (metadatos sin geometría), recuperación del último documento y guardado al cerrar.
+- Añade Colocar en mapa mediante un fantasma 3D, con anclaje de centro de trazado y altura de superficie.
+- Mejora colocación de puertas/ventanas y sincroniza huecos en paredes compartidas; marcador arrastrable y control de posición.
+- Mantiene validación convexa, protección de ediciones manuales, Undo/Redo y estudios existentes.
+
+# SvenStudio 3D — Changes
+
+## v1.8.13 Preview — Blueprint to Map
+
+- Add a new standalone visual blueprint tracing Studio with PNG/JPG/WEBP references, two-point scale calibration, grid snapping, 2D pan/zoom and 3D preview.
+- Draw free-angle walls, closed polygon or rectangular rooms, geometric doors/windows (no entities), floors and ceilings. Closed, convex solids are prevalidated for Valve 220; concave floors use convex decomposition.
+- Persist editable image and layout metadata; safe provenance-preserving rebuild, detach, remove and one-step map Undo/Redo.
+- Add demo reference image, MAP, editable JSON project, WAD and roundtrip report. Vehicle Builder remains removed.
+- Build and game tests on Windows/Sven Co-op are still required.
+
+
+## v1.8.12 Preview — Advanced Co-op Gameplay
+
+- Co-op Puzzle Builder: native func_button consoles, one-shot game_counter puzzles, timed simultaneous multisource inputs, and one-shot relay completion for missions, events and door targets.
+- Editable XYZ console placement, six locales, integrated reference audit, project-save metadata validation, provenance signatures, safe detach/remove, and one-step Undo/Redo.
+- Encounter Director planning data inside existing NPC & AI Studio. Static diagnostics cover mission/event references, loops and NPC spawn restrictions, without claiming to simulate AI.
+- Add a new 3-stage combined Valve 220 MAP + editable project + WAD demo, with two puzzles, 3-wave combat, timed extraction and native alarms.
+- No changes intended to Architecture, BuildTogether, True Lighting, Terrain, Railway or launcher. Vehicle Builder remains removed.
+- The demo must still be compiled and played with Sven Co-op to verify actual engine behavior.
+
+## v1.8.11 Preview — Smart NPC Encounters 2.0
+
+- Extend existing NPC & AI Studio with a dedicated encounter editor; no separate duplicate Studio.
+- Native sequence generation: `squadmaker` with `trigger_condition=4`, death-counted `game_counter`, `multi_manager`, optional `trigger_once` entry brush and HUD notifications.
+- Defense/ambush/mixed presets; up to 8 waves, adjustable NPC type/count/max-live/health/weapon/intervals and up to four spawn XYZ locations per wave; waypoint/guard options.
+- Connect wave start events to Dynamic Events Studio and finish signals to Mission & Campaign objective relays / existing map targets.
+- Strict project metadata validation, targetname collision checks, cross-studio reference protections, non-destructive detach, one-operation Undo/Redo, manual-edit protection.
+- Add a packaged **Valve 220 MAP and editable SvenStudio project** containing a sealed industrial arena, equipment lobby, three enemy waves, Mission objectives, alarms, door and extraction.
+- Six localized UI languages; preserve previous terrain, railway, lighting, BuildTogether, Architecture Mode and portable Windows launcher. Vehicle Builder stays removed.
+- GoldSrc note: blocked squadmaker spawn points or bodies counted toward the active-monster limit can stall waves. Validate gameplay/compilation with installed Sven Co-op SDK; no native game execution was available in this environment.
+
+## v1.8.10 Preview — Mission & Dynamic Events 2.0
+
+- Editable native mission success/failure branches with bounded activation counters (`game_counter`), optional-stage annotations and dedicated external failure relays.
+- Deterministic in-editor mission logic inspector; explicitly **not** gameplay emulation.
+- Map target picker with temporary non-blocking toolbar; existing object `targetname` only, no implicit mutation.
+- Timeline handles support pointer drag and keyboard nudge, duplicate cues and records, shift all cues, and inspect missing targetnames.
+- Reject indirect event-trigger cycles and invalid mission route cycles; warn on unreachable objectives and missing external targets.
+- Block removal or regeneration when externally authored connections would be broken; preserve detachment and one-step MAP Undo/Redo.
+- Retain the 1.8.9 project format with optional metadata fields and keep the full existing browser editor and Windows portable runtime.
+- Preview requires real Chrome/Windows and Sven Co-op gameplay verification. Does not count unique players or create AngelScript/checkpoints.
+
+## v1.8.9 Preview — Mission & Campaign + Dynamic Events Studio
+
+- New objective-based mission editor: ordered stages, HUD notices, first objective auto-start, completion relays, event sequence linkage, and optional final target.
+- New timeline editor: multi_manager actions with seconds, Toggle/On/Off/Kill, existing targetname picker, timeline inspection and event templates (alarm, reinforcements and reactor).
+- Generates standard Sven Co-op map entities, no mandatory script dependencies, using verified native entity classes.
+- Editable project metadata, strict validation, protected regeneration, delete/detach with safeguards, full MAP history Undo/Redo.
+- Embedded language support for ES/EN/RU/KO/ZH/PT, Help and menu entries updated.
+- Experimental: real Sven Co-op entity behavior, asset effects and gameplay completion require in-game testing. No automatic checkpoints or mission-state gating.
+- Vehicle Builder remains removed. The existing architecture, terrain, railway, lighting, compilation and collaboration modules are not intentionally changed.
+
+## v1.8.8 HF1 — Vehicle Builder removal (Preview)
+
+- Removed the Vehicle Builder introduced in v1.8.8 after its geometry did not meet the desired quality.
+- This build is restored from the v1.8.7 code baseline, with no Vehicle Builder menu item, component, generator, project serializer or translations.
+- Preserved Railway Builder 2.0, Path & Structure Studio, optimized terrain, True Lighting, SDHLT integration and the Windows launcher.
+- **Compatibility:** vehicle-generated brushes in an older saved project remain normal brushes, but their parametric vehicle controls are no longer supported. Backup projects before switching.
+- Preview only: native Windows launch and in-game compile tests still recommended.
+
+## v1.8.7 — Railway Builder 2.0 (Preview)
+
+- Added native **path_track** chains sampled along existing rails (including curves and slopes), with valid `target` / `targetname` links.
+- Optional experimental **turnout**: additional rail branch, `altpath` on the junction node and a `func_button` to toggle the branch. Junction geometry and collision must be checked after compilation.
+- Optional second parallel railway with configurable separation. Parallel rail geometry is decorative and does not yet have an independent path_track chain.
+- Station platforms with configurable side, size, control point and optional `newspeed 0` stop. Stations do not automatically terraform the terrain.
+- Optional **func_tracktrain** brush template, **ORIGIN** brush and **func_traincontrols** volume; player train starts stopped with speed and size settings.
+- Approximate 3D train-position slider for inspecting route curvature. It is *not* an in-game physics simulation.
+- Native railway entities and generated brushes are stored with route metadata. Updating a route safely replaces both; manually modified entities or brushes block destructive regeneration. Undo/Redo is a single map history action. Network names are checked for collisions.
+- Localized railway settings in EN / ES / RU / KO / ZH / PT. Added project-format bounds checks and directed MAP export/import and route persistence tests.
+- Existing roads, terrain, pipes, cables, bridge, Architecture Mode, BuildTogether, lighting and compilers are not changed.
+- **Experimental:** no fully collision-clean curved railway turnout, automatic train path reversing, advanced signaling or complete player-tested train behavior. Validate BSP and train operation in actual Sven Co-op before release.
+
+## v1.8.6 HF1 — Terrain & Shape Studio startup fix
+
+- Fixed a React/Zustand 5 render loop when opening Terrain & Shape Studio in maps that do not yet have saved path structures.
+- The missing `pathGroups` fallback now uses a stable, shared empty snapshot instead of allocating a fresh array on every store read.
+- Keeps saved routes reactive; no changes to path geometry, 3D controls, road tools, cable settings, compiler paths, or project file format.
+- Regression tests added for existing and absent path groups.
+
+## v1.8.6 — XYZ Pipes, Ventilation & Cable Builder (Preview)
+
+- New true-3D sweep frames for **octagonal hollow pipes** and **rectangular hollow ventilation ducts**. Sections follow the XYZ route, including vertical sections and rising turns. This changes only the pipe/vent generator; roads, railway, fences, and bridges keep the previous algorithm.
+- Convex decomposition for twisted wall sections: fallback into planar tetrahedral brushes when a standard closed panel is not a valid MAP solid. Confirmed in automated Valve 220 export/reimport tests. This can increase brush counts, so a hard safety limit prevents excessively complex routes from being added.
+- New **Suspended cables (3D)** mode with adjustable cable diameter, parabolic sag between selected anchor points, 1–4 parallel cables and controllable spacing. The drop is a design approximation, not a simulated physical catenary.
+- New settings in Path & Structure Studio with six localized interfaces; switching to 3D structures opens the 3D preview. Saved route settings retain the new parameters, and the existing MAP click-placement / Undo / regeneration safeguards remain.
+- Added dedicated 3D sweep tests (valid brushes, import/export round-trips, vertical segments, bends, multi-strand cables and invalid input).
+- **Still experimental:** sharp or highly detailed XYZ paths may exceed brush limits; some more complex path intersections, T/Y pipe junctions, pipe flanges, attachment points and fully realistic cable physics are not implemented in this preview. Confirm visual seams, in-game collision, textures and compiler compatibility in Sven Co-op.
+
+## v1.8.5 — Path & Structure Studio (Preview)
+
+- Added direct 3D control-point editing in the **3D geometry preview**. Select orange handles, move in XY, X, Y or Z, use green intermediate handles to insert points, then verify the geometry before placement.
+- Added **Railway Track** (parallel rails and sleepers), **Fence & Barrier** (posts and horizontal rails), and **Bridge & Catwalk** (deck, edge rails, supports) modes. These generate real convex brushes; tracks are *visual geometry*, not working train entities.
+- Saved path metadata in the SvenStudio project so a generated route can be loaded, edited and safely regenerated. Added **Edit saved route in MAP** for modifying the same route directly within the map viewport with pointer handles and axis constraints. If individual source brushes were changed or deleted, a signature guard prevents accidental replacement. The original MAP export remains normal Valve 220 geometry.
+- Preserved the v1.8.4 large 2D editor, elevation profile, map-click placement, and route-local Undo/Redo.
+- New interface labels translated to Spanish, English, Russian, Korean, Simplified Chinese and Brazilian Portuguese.
+- Does **not** yet include train movement logic, railway switches, railway junctions, 3D vertical pipe elbows, or direct in-MAP gizmos; these require separate compatibility and geometry work.
+
+**Preview: Windows Chrome visual interaction and actual Sven Co-op compilation still require user testing. Keep v1.8.4 as a backup.**
+
+## v1.8.4 — Route Editor UX Preview
+
+- Expand terrain studio to nearly fullscreen; focus mode hides settings while editing paths.
+- Fit-to-route, wheel zoom at cursor, middle-button or Shift+drag pan, adaptive canvas coordinates, visible unit grid and cursor readout.
+- Expandable elevation profile; existing route history and geometry generation remain unchanged.
+- Removed immediate Apply at X/Y/Z for new roads, ventilation paths and rock clusters; use placement by clicking on the MAP viewport. Existing terrain can still be updated in place.
+- UI strings in six supported locales.
+
+**Preview** — mouse interaction must be verified in Windows Chrome before publishing as stable.
+
+## v1.8.3 — Path elevation editing (Preview)
+
+- Added a linked elevation profile for Paths & Ventilation. The overhead plan edits X/Y; the draggable profile edits Z in 8-unit increments.
+- Added route-local Undo/Redo (`Ctrl+Z`, `Ctrl+Y`, `Ctrl+Shift+Z`) and visible buttons, with one history entry per point drag.
+- The 3D geometry preview reflects route changes. Invalid brushes remain blocked by the existing Valve 220 MAP round-trip validation.
+- No changes to Architecture Mode, SDHLT/SC compilers, BuildTogether, or the Windows launcher.
+
+## v1.8.2 Preview — Roads & Ventilation rework
+
+# SvenStudio 3D v1.8.2 — Preview de Road Builder y Paths & Ventilation
+
+## Cambios
+- Se reemplazó el ensamblado de rectángulos independientes por secciones de carretera con bordes compartidos y uniones tipo miter.
+- Curvas suavizadas con interpolación centrípeta y subdivisión por distancia/curvatura.
+- Interfaz para arrastrar puntos de control, añadir/eliminar puntos, ajustar alturas y alternar entre planta y vista 3D del resultado.
+- Road Builder: calzada, bordillos y veredas opcionales. Los tramos rectos necesitan pocos brushes y las curvas utilizan subdivisiones.
+- Paths & Ventilation: pasos elevados, conductos rectangulares huecos y tuberías octogonales (estas últimas todavía experimentales).
+- La colocación en mapa conserva el botón de clic sobre superficie, coordenadas manuales y Undo.
+- La confirmación bloquea los segmentos que no sobreviven la exportación/reimportación MAP Valve 220. No se insertan brushes inválidos deliberadamente.
+- Se conserva Terrain Sculpt, Terrain Optimization, Architecture Mode, compilación SC/SDHLT, BuildTogether y Node local.
+- Traducciones nuevas para español, inglés, ruso, coreano, chino simplificado y portugués.
+
+## Limitaciones y validación pendiente
+- Cruces en T/X/Y y conexiones de conductos ramificados no están implementados.
+- Curvas muy cerradas, cruces propios o uniones de conductos que provoquen pérdida de brushes se rechazan con error; ampliar radio, separar puntos o reducir detalle.
+- Algunos cambios de altura y codos complejos de conductos/tuberías están limitados por la geometría convexa de GoldSrc.
+- Las UV pueden mostrar costuras en curvas; comprobar texturas en Sven Co-op.
+- No se ha probado la compilación SC-CSG/SC-RAD en Windows ni la interacción gráfica real en Chrome en este entorno.
+- Es una PREVIEW: conservar la v1.7.19 estable como respaldo y probar la nueva función en una copia de mapa.
+
+## Prueba recomendada
+1. Abrí Estudios > Terrain & Shape Studio > Paths & Ventilation.
+2. Elegí Road Builder. Mové puntos naranjas en el plano y alterná con 3D geometry preview.
+3. Configurá ancho, curva y veredas. Aplicá sobre mapa o por X/Y/Z.
+4. Probá una calle en S, una curva de 90° amplia y una pendiente. Verificá dentro de Sven Co-op.
+5. Repetí para conducto rectangular y tubería, evitando radios demasiado cerrados.
+
+
+---
+
+# SvenStudio 3D v1.8.1 — Preview (Paths Placement)
+
+- Fixed Paths & Ventilation placement: the viewport now supports choosing where to place a generated path with a click.
+- Click placement uses the existing terrain placement system, including grid snapping and Escape to cancel.
+- Preserves the relative layout of control points and moves all generated brushes together.
+- The original Apply at X/Y/Z placement remains available.
+- Windows and in-game testing still required before considering this stable.
+
+# SvenStudio 3D v1.8.0 — Preview (Terrain & Paths)
+
+- Optional planar-cell optimization for new terrain; existing saved terrain retains legacy output.
+- New Paths & Ventilation tab with editable control points, road/walkway and hollow rectangular duct generation.
+- GoldSrc convex brush export, live brush count, translations for all six editor languages.
+- Still experimental: corner joins, visual UVs, full runtime integration and Windows map compilation must be tested.
+
 ## v1.7.19 — Rama 1.7 / candidata estable (2026-11-09)
 
 - Ayuda actualizada: True Lighting, SC-RAD/SDHLT, cámara libre y Escape/F8, funcionamiento portátil.
@@ -947,3 +1507,38 @@ Consulta `LEER_HF5_DESVINCULAR_ENTIDADES_ES.md` y `VERIFICACION_HF5_DESVINCULAR_
 - Preserve explicit `origin` values for entities that have them and leave ordinary point entities unchanged.
 - Keep brush geometry, UVs, targets and Valve 220 MAP export behavior unchanged.
 - Added automated regression tests and a standalone MAP fixture containing `func_door` and `func_button` brush entities.
+
+## 2026-11-11 — SvenStudio 3D v1.9 · Editor BSP Visual Preview 5
+
+- Edición múltiple de entidades puntuales en el Editor BSP: selección Ctrl/Shift+clic, movimiento de grupo conservando distancias, actualización masiva de keyvalues seguros y operaciones reversibles en un paso.
+- Conexiones visuales entre entidades (`target`, `killtarget`, `trigger_target`), líneas de colores en el visor, informe de destinos no resueltos y asignación de `targetname` único en el destino cuando sea necesario.
+- Inspector FGD contextual: campos `choices` y casillas de `spawnflags`, sin perder bits desconocidos y conservando edición manual de keyvalues.
+- Protecciones para entidades sólidas compiladas y `worldspawn`; exportación por copia únicamente del lump de entidades.
+- Etiquetas de interfaz en ES/EN/RU/KO/ZH/PT. Conserva paneles, cámara, animaciones y composición BSP de Preview 4.
+- Pruebas reproducibles y límites documentados: `docs/BSP_EDITOR_VISUAL_PREVIEW_5_ES.md`.
+
+## 2026-11-11 — Editor BSP Etapa 6D: UV continuo y lightmaps reproyectados
+
+- Reutiliza mallas/materiales durante edición UV (sin reconstrucción completa en cada movimiento).
+- Habilita giro/escala en caras iluminadas con reproyección segura de las muestras RGB y lightstyles al exportar. No realiza un RAD nuevo.
+- Biblioteca WAD3 indexada con memoización; UI MAP, widget fijo, historia y cámara preservados.
+- Pruebas BSP, serialización y reimportación; el juego sigue pendiente de comprobación manual.
+- Ver `docs/BSP_EDITOR_ETAPA_6D_UV_CONTINUO_LIGHTMAPS_ES.md`.
+
+- **Editor BSP Etapa 7 / HF7:** Lightmap Studio para RGB de caras con estilos, copia/pegado de muestras compatibles, guardado seguro y compactación; copia/pegado colocado por clic de modelos compilados estáticos func_wall/func_illusionary. Véase docs/SvenStudio3D_v1.9_BSP_ETAPA7_LIGHTMAP_BRUSH_PASTE.md.
+
+### v1.9 Etapa 8A HF9 — External Resource Manager (12-nov-2026)
+- Selección de hasta ocho carpetas externas de recursos desde Configuración de compilación, con diagnóstico compartido con Map Packager Studio y restauración de los ajustes.
+- Reconocimiento de carpetas anidadas `maps/models`, `maps/sound` y contenido bajo `svencoop_addon`; reubicación solo al empaquetar y solo cuando se identifica inequívocamente el recurso esperado.
+- Distribución a carpeta, ZIP o instalación explícita y protegida de recursos en `svencoop_addon`; sin sobrescrituras ni movimientos de archivos originales.
+- Smart WAD deja de bloquearse por imágenes distintas para las texturas técnicas `CLIP` y `NULL`, priorizando `zhlt.wad`/`sdhlt.wad`; las colisiones de texturas normales siguen siendo errores.
+- Sin reemplazar Map Packager, Prefab Studio ni otros estudios.
+
+
+### v2.0 Preview UI 4 HF3 (temas, legibilidad y CSS)
+- Se elimina el selector CSS incompleto que podía invalidar las reglas posteriores.
+- Nuevo puente semántico por componente `interfaceThemeComponents.css`, 1.326
+  reglas originales de color/superficie adaptadas a los seis temas.
+- Ajustes de encabezados, inputs, estados y acciones de Texture Studio.
+- Auditoría de contraste repetible `tests/verify-theme-contrast-hf3.py`.
+- Sin cambios en el mapa, compilación, shaders, archivos del juego o editor BSP.

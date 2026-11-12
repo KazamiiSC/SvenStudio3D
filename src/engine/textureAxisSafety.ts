@@ -50,7 +50,11 @@ export function safeTextureAlignment(
   const puOrFallback=length(project(baseU,n))>EPS?fallbackU:unit(cross(baseV,n));
   if(!finite(outU)||length(outU)<EPS)outU=puOrFallback;
   let outV:Vec3;
-  if(lv>=.20*vMagnitude&&Math.abs(dot(n,cross(outU,unit(pv))))>=.20)
+  // A repaired pair must meet the stricter final tangent-basis threshold.
+  // Previously .20 was accepted here but .50 was required below; a face with
+  // .20..50 separation would throw and crash the entire 3D viewport on load.
+  // Keep margin for Valve 220's three-decimal axis rounding.
+  if(lv>=.20*vMagnitude&&Math.abs(dot(n,cross(outU,unit(pv))))>=.55)
     outV=unit(pv);
   else {
     outV=unit(cross(n,outU));

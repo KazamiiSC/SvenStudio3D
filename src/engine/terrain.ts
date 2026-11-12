@@ -10,16 +10,24 @@ import {validateBrush} from './exportMap';
 
 export const TERRAIN_RESOLUTIONS=[4,8,12,16] as const;
 export type TerrainTool='raise'|'lower'|'smooth'|'flatten'|'noise';
+/** Legacy projects without a mode remain fully solid. */
+export type TerrainBaseMode='solid'|'thin'|'custom';
 export type TerrainDefinition={
   id:string;name:string;origin:Vec3;width:number;depth:number;resolution:number;
-  heights:number[];texture:string;/** Optional for compatibility with terrain groups from Preview 1/2. */baseDepth?:number;brushIds:string[];brushSignatures:string[];
+  heights:number[];texture:string;optimized?:boolean;/** Legacy solid volume. */baseDepth?:number;
+  baseMode?:TerrainBaseMode;surfaceThickness?:number;customBaseOffset?:number;hideUnderside?:boolean;
+  /** Per-cell alternate diagonal (0 or 1), optional for legacy projects. */
+  diagonalFlips?:number[];
+  /** Optional empty cells for thin-surface cave mouth portals. 0 = solid cell. */
+  excludedCells?:number[];
+  brushIds:string[];brushSignatures:string[];
 };
-export type TerrainDraft=Pick<TerrainDefinition,'id'|'name'|'origin'|'width'|'depth'|'resolution'|'heights'|'texture'|'baseDepth'>;
+export type TerrainDraft=Pick<TerrainDefinition,'id'|'name'|'origin'|'width'|'depth'|'resolution'|'heights'|'texture'|'baseDepth'|'optimized'|'baseMode'|'surfaceThickness'|'customBaseOffset'|'hideUnderside'|'diagonalFlips'|'excludedCells'>;
 export type RockOptions={origin:Vec3;count:number;radius:number;height:number;seed:number;texture:string};
 const finite=(n:number)=>Number.isFinite(n);
 const round=(n:number)=>Math.round(n*100)/100;
 export function defaultTerrain(origin:Vec3=[0,0,0]):TerrainDraft{
-  return {id:uid(),name:'Terrain 01',origin:[...origin],width:512,depth:512,resolution:8,heights:Array(81).fill(0),texture:'SV_BRICK01',baseDepth:96};
+  return {id:uid(),name:'Terrain 01',origin:[...origin],width:512,depth:512,resolution:8,heights:Array(81).fill(0),texture:'SV_BRICK01',baseDepth:96,baseMode:'thin',surfaceThickness:16,customBaseOffset:-192,hideUnderside:true};
 }
 function terrainSignatureData(brush:Brush):string{
   return JSON.stringify([brush.position,brush.rotation,brush.scale,brush.vertices,brush.faces,brush.entityId]);
@@ -53,6 +61,15 @@ export function validateTerrainDraft(d:TerrainDraft):string[]{
   if(d.origin.length!==3||d.origin.some(x=>!finite(x)||Math.abs(x)>125000))errors.push('Invalid terrain position.');
   if(d.heights.length!==(d.resolution+1)**2||d.heights.some(h=>!finite(h)||h< -512||h>512))errors.push('Invalid terrain heights (limit ±512).');
   if(d.baseDepth!==undefined&&(!finite(d.baseDepth)||d.baseDepth<64||d.baseDepth>1024))errors.push('Terrain base depth must be 64–1024 units.');
+  if(d.baseMode!==undefined&&!['solid','thin','custom'].includes(d.baseMode))errors.push('Invalid terrain base mode.');
+  if(d.surfaceThickness!==undefined&&(!finite(d.surfaceThickness)||d.surfaceThickness<8||d.surfaceThickness>128))errors.push('Surface thickness must be 8–128 units.');
+  if(d.customBaseOffset!==undefined&&(!finite(d.customBaseOffset)||d.customBaseOffset< -2048||d.customBaseOffset>512))errors.push('Custom base offset must be between -2048 and 512 units.');
+  if(d.hideUnderside!==undefined&&typeof d.hideUnderside!=='boolean')errors.push('Invalid underside visibility setting.');
+  if(d.excludedCells!==undefined&&(!Array.isArray(d.excludedCells)||d.excludedCells.length!==d.resolution*d.resolution||!d.excludedCells.every(v=>v===0||v===1)||d.excludedCells.every(v=>v===1)))errors.push('Invalid terrain cutout cells.');
+  if(d.excludedCells?.some(Boolean)&&d.baseMode!=='thin')errors.push('Cutout cells are supported only on thin terrain.');
+  if(d.diagonalFlips!==undefined&&(!Array.isArray(d.diagonalFlips)||d.diagonalFlips.length!==d.resolution*d.resolution||!d.diagonalFlips.every(v=>v===0||v===1)))errors.push('Invalid per-cell diagonal layout.');
+  if(d.baseMode==='custom'&&d.heights.length>0&&finite(d.customBaseOffset??-192)&&
+     (d.customBaseOffset??-192)>Math.min(...d.heights)-8)errors.push('Custom base must be at least 8 units below the lowest terrain point.');
   if(!/^[^\s"()[\]]{1,32}$/.test(d.texture))errors.push('Invalid GoldSrc texture name.');
   return errors;
 }
@@ -95,7 +112,14 @@ export function sculptTerrain(d:TerrainDraft,tool:TerrainTool,atX:number,atY:num
  * The automatic 64-u clearance prevents a bottom plane crossing a valley.
  */
 export function terrainBaseZ(d:TerrainDraft):number{
+  if(d.baseMode==='thin')return round(d.origin[2]+Math.min(...d.heights)-(d.surfaceThickness??16));
+  if(d.baseMode==='custom')return round(d.origin[2]+(d.customBaseOffset??-192));
   return round(d.origin[2]+Math.min(-(d.baseDepth??96),Math.min(...d.heights)-64));
+}
+/** Lower face of a terrain prism. Thin mode follows each vertex exactly, so
+ * the output is a true parallel triangular/planar slab, never a giant cliff. */
+export function terrainLowerVertex(d:TerrainDraft,p:Vec3):Vec3{
+  return [p[0],p[1],d.baseMode==='thin'?round(p[2]-(d.surfaceThickness??16)):terrainBaseZ(d)];
 }
 /** Source-of-truth vertex for export and preview; values are rounded to
  * GoldSrc MAP precision, so the visible outer silhouette is identical.
@@ -117,7 +141,7 @@ export function createTerrainPreviewShell(d:TerrainDraft){
   const n=d.resolution,base=terrainBaseZ(d);
   const topPositions:number[]=[],topUvs:number[]=[],basePositions:number[]=[],baseUvs:number[]=[];
   const vertex=(i:number,j:number)=>terrainTopVertex(d,i,j);
-  const lower=(p:Vec3):Vec3=>[p[0],p[1],base];
+  const lower=(p:Vec3):Vec3=>terrainLowerVertex(d,p);
   const add=(positions:number[],uvs:number[],p:Vec3,side=false,xside=false)=>{
     positions.push(round(p[0]-d.origin[0]),round(p[2]-d.origin[2]),round(d.origin[1]-p[1]));
     uvs.push((side?(xside?p[1]:p[0]):p[0])/64,(side?p[2]:p[1])/64);
@@ -130,45 +154,111 @@ export function createTerrainPreviewShell(d:TerrainDraft){
     triangle(basePositions,baseUvs,a,lower(b),lower(a),true,xside);
   };
   for(let j=0;j<n;j++)for(let i=0;i<n;i++){
+    if(d.excludedCells?.[j*n+i])continue;
     const a=vertex(i,j),b=vertex(i+1,j),c=vertex(i+1,j+1),e=vertex(i,j+1);
-    // Same two top triangles as createTerrainBrushes.
-    triangle(topPositions,topUvs,a,b,c);
-    triangle(topPositions,topUvs,a,c,e);
-    triangle(basePositions,baseUvs,lower(c),lower(b),lower(a));
-    triangle(basePositions,baseUvs,lower(e),lower(c),lower(a));
+    // Adjacent triangles use the same editable diagonal as the Valve 220 export.
+    const flip=d.diagonalFlips?.[j*n+i]===1;
+    if(flip){
+      triangle(topPositions,topUvs,a,b,e);
+      triangle(topPositions,topUvs,b,c,e);
+      triangle(basePositions,baseUvs,lower(e),lower(b),lower(a));
+      triangle(basePositions,baseUvs,lower(e),lower(c),lower(b));
+    }else{
+      triangle(topPositions,topUvs,a,b,c);
+      triangle(topPositions,topUvs,a,c,e);
+      triangle(basePositions,baseUvs,lower(c),lower(b),lower(a));
+      triangle(basePositions,baseUvs,lower(e),lower(c),lower(a));
+    }
+  }
+  // Exposed boundaries of cave mouth cutouts are real convex side faces.
+  for(let j=0;j<n;j++)for(let i=0;i<n;i++){
+    if(d.excludedCells?.[j*n+i])continue;
+    if(j>0&&d.excludedCells?.[(j-1)*n+i])wall(vertex(i+1,j),vertex(i,j));
+    if(j<n-1&&d.excludedCells?.[(j+1)*n+i])wall(vertex(i,j+1),vertex(i+1,j+1));
+    if(i>0&&d.excludedCells?.[j*n+i-1])wall(vertex(i,j),vertex(i,j+1),true);
+    if(i<n-1&&d.excludedCells?.[j*n+i+1])wall(vertex(i+1,j+1),vertex(i+1,j),true);
   }
   for(let i=0;i<n;i++){
-    wall(vertex(i,0),vertex(i+1,0));
-    wall(vertex(i+1,n),vertex(i,n));
+    if(d.excludedCells?.[i])continue;wall(vertex(i,0),vertex(i+1,0));
+    if(!d.excludedCells?.[(n-1)*n+i])wall(vertex(i+1,n),vertex(i,n));
   }
   for(let j=0;j<n;j++){
-    wall(vertex(0,j+1),vertex(0,j),true);
-    wall(vertex(n,j),vertex(n,j+1),true);
+    if(!d.excludedCells?.[j*n])wall(vertex(0,j+1),vertex(0,j),true);
+    if(!d.excludedCells?.[j*n+n-1])wall(vertex(n,j),vertex(n,j+1),true);
   }
   return {topPositions,topUvs,basePositions,baseUvs,bottomZ:base};
+}
+/**
+ * Optional low-brush terrain output. Every emitted unit remains a *closed convex*
+ * Valve 220 brush, not a Source displacement or an open triangle mesh.
+ * Adjacent grid cells are merged only when ALL vertices of the rectangular
+ * region lie on one planar top. Non-planar cells retain the legacy two wedges.
+ * Existing saved terrain without `optimized` retains its original geometry.
+ */
+export function terrainBrushCount(d:TerrainDraft):number {
+  if(!d.optimized)return 2*(d.resolution*d.resolution-(d.excludedCells?.filter(Boolean).length??0));
+  return terrainRegions(d).reduce((sum,r)=>sum+(r.planar?1:2),0);
+}
+type TerrainRegion={i:number;j:number;w:number;h:number;planar:boolean};
+function terrainRegions(d:TerrainDraft):TerrainRegion[]{
+  const n=d.resolution,used=new Uint8Array(n*n),regions:TerrainRegion[]=[];
+  const height=(i:number,j:number)=>d.heights[j*(n+1)+i];
+  const planar=(i:number,j:number,w:number,h:number)=>{
+    const z0=height(i,j),dx=(height(i+w,j)-z0)/w,dy=(height(i,j+h)-z0)/h;
+    for(let y=0;y<=h;y++)for(let x=0;x<=w;x++)
+      if(Math.abs(height(i+x,j+y)-(z0+dx*x+dy*y))>0.005)return false;
+    return true;
+  };
+  for(let j=0;j<n;j++)for(let i=0;i<n;i++){
+    if(used[j*n+i]||d.excludedCells?.[j*n+i])continue;
+    if(!planar(i,j,1,1)){
+      used[j*n+i]=1;regions.push({i,j,w:1,h:1,planar:false});continue;
+    }
+    let w=1,h=1;
+    // Greedy deterministic rectangles; no merging through a previously used cell.
+    while(i+w<n&&!used[j*n+i+w]&&!d.excludedCells?.[j*n+i+w]&&planar(i,j,w+1,1))w++;
+    while(j+h<n&&Array.from({length:w},(_,x)=>used[(j+h)*n+i+x]||d.excludedCells?.[(j+h)*n+i+x]).every(v=>!v)
+      &&planar(i,j,w,h+1))h++;
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++)used[(j+y)*n+i+x]=1;
+    regions.push({i,j,w,h,planar:true});
+  }
+  return regions;
 }
 /** Two 5-face closed triangular prisms per cell (GoldSrc planar, convex). */
 export function createTerrainBrushes(d:TerrainDraft,existingIds?:string[]):Brush[]{
   const issues=validateTerrainDraft(d);if(issues.length)throw Error(issues.join(' '));
-  const n=d.resolution,bottom=terrainBaseZ(d);
+  const n=d.resolution;
   const top=(i:number,j:number):Vec3=>terrainTopVertex(d,i,j);
   const output:Brush[]=[];
-  for(let j=0;j<n;j++)for(let i=0;i<n;i++){
-    const p00=top(i,j),p10=top(i+1,j),p01=top(i,j+1),p11=top(i+1,j+1);
-    for(const tri of [[p00,p10,p11],[p00,p11,p01]]){
-      const vertices:Vec3[]=[...tri, ...tri.map(([x,y])=>[x,y,round(bottom)] as Vec3)];
-      const faceIndices=[[0,1,2],[5,4,3],[0,3,4,1],[1,4,5,2],[2,5,3,0]];
-      const faces:Face[]=orientFaces(vertices,faceIndices.map(indices=>({indices,texture:d.texture})));
-      const brush:Brush={id:existingIds?.[output.length]||uid(),kind:'brush',name:`${d.name} · ${output.length+1}`,
-        primitive:'poly',position:[0,0,0],rotation:[0,0,0],scale:[1,1,1],vertices,faces,layer:'Terrain',group:d.name};
-      const errors=validateBrush(brush);if(errors.length)throw Error(`Terrain cell ${i},${j}: ${errors[0]}`);
-      output.push(brush);
+  const regions=d.optimized?terrainRegions(d):Array.from({length:n*n},(_,k)=>({i:k%n,j:Math.floor(k/n),w:1,h:1,planar:false})).filter(r=>!d.excludedCells?.[r.j*n+r.i]);
+  const append=(vertices:Vec3[],faceIndices:number[][],label:string)=>{
+    // The top stays textured; the invisible bottom/sides still seal collision.
+    // GoldSrc NULL is used only when this is explicitly a thin shell.
+    const faces:Face[]=orientFaces(vertices,faceIndices.map((indices,index)=>({indices,texture:
+      d.baseMode==='thin'&&d.hideUnderside!==false&&index>0?'NULL':d.texture})));
+    const brush:Brush={id:existingIds?.[output.length]||uid(),kind:'brush',name:`${d.name} · ${output.length+1}`,
+      primitive:'poly',position:[0,0,0],rotation:[0,0,0],scale:[1,1,1],vertices,faces,layer:'Terrain',group:d.name};
+    const errors=validateBrush(brush);if(errors.length)throw Error(`Terrain ${label}: ${errors[0]}`);
+    output.push(brush);
+  };
+  for(const {i,j,w,h,planar} of regions){
+    if(planar){
+      const corners=[top(i,j),top(i+w,j),top(i+w,j+h),top(i,j+h)];
+      const vertices:Vec3[]=[...corners,...corners.map(point=>terrainLowerVertex(d,point))];
+      append(vertices,[[0,1,2,3],[7,6,5,4],[0,4,5,1],[1,5,6,2],[2,6,7,3],[3,7,4,0]],`${i},${j}`);
+    }else{
+      const p00=top(i,j),p10=top(i+1,j),p01=top(i,j+1),p11=top(i+1,j+1);
+      const flip=d.diagonalFlips?.[j*n+i]===1;
+      for(const tri of flip?[[p00,p10,p01],[p10,p11,p01]]:[[p00,p10,p11],[p00,p11,p01]]){
+        const vertices:Vec3[]=[...tri,...tri.map(point=>terrainLowerVertex(d,point))];
+        append(vertices,[[0,1,2],[5,4,3],[0,3,4,1],[1,4,5,2],[2,5,3,0]],`${i},${j}`);
+      }
     }
   }
   return output;
 }
 export function terrainRecord(d:TerrainDraft,brushes:Brush[]):TerrainDefinition{
-  return {...d,origin:[...d.origin],heights:[...d.heights],brushIds:brushes.map(b=>b.id),brushSignatures:brushes.map(terrainBrushSignature)};
+  return {...d,origin:[...d.origin],heights:[...d.heights],excludedCells:d.excludedCells?[...d.excludedCells]:undefined,brushIds:brushes.map(b=>b.id),brushSignatures:brushes.map(terrainBrushSignature)};
 }
 function random(seed:number){let x=Math.floor(seed)||1;return ()=>{x=(Math.imul(1664525,x)+1013904223)|0;return (x>>>0)/4294967296}}
 /** Individual convex rock fragments; this is not a Source mesh/displacement. */

@@ -139,18 +139,33 @@ export function parseGoldSrcMdl(buffer:ArrayBuffer,textureCompanion?:ArrayBuffer
   const floor=Math.floor(bounded),frac=bounded-floor;
   const world:THREE.Matrix4[]=[];
   for(let b=0;b<nBones;b++){
-   const values=bones[b].defaults.slice();
+   // GoldSrc interpolates bone translations linearly but bone rotations
+   // through quaternions. Interpolating Euler values directly can make an
+   // elbow/knee flip for one frame when rotation crosses +/-180 degrees.
+   const first=bones[b].defaults.slice(),last=first.slice();
    for(let axis=0;axis<6;axis++){
     const record=base+b*12,offset=sv.getUint16(record+axis*2,true);
-    if(offset){const a=readRleValue(data,record+offset,floor),z=frac>0?readRleValue(data,record+offset,Math.min(floor+1,seq.numFrames-1)):a;
-     values[axis]+=(a+(z-a)*frac)*bones[b].scales[axis];}
+    if(offset){
+     first[axis]+=readRleValue(data,record+offset,floor)*bones[b].scales[axis];
+     last[axis]+=readRleValue(data,record+offset,Math.min(floor+1,seq.numFrames-1))*bones[b].scales[axis];
+    }
    }
-   const local=composeBone(values),parent=bones[b].parent;
+   const local=interpolateBoneFrames(first,last,frac),parent=bones[b].parent;
    world.push(parent>=0?world[parent].clone().multiply(local):local);
   }
   return world;
  };
  return {name:text(buffer,8,64),meshes,bodyparts,skins,textures,sequences,missingTextures,triangles,warnings,samplePose};
+}
+/** GoldSrc skeletal interpolation: linear translation, shortest-arc
+ * quaternion interpolation for rotation; avoids Euler angle wrapping flips. */
+export function interpolateBoneFrames(first:readonly number[],last:readonly number[],fraction:number):THREE.Matrix4{
+ const t=Math.max(0,Math.min(1,Number.isFinite(fraction)?fraction:0));
+ const p=new THREE.Vector3(first[0],first[1],first[2]).lerp(new THREE.Vector3(last[0],last[1],last[2]),t);
+ const qa=new THREE.Quaternion().setFromEuler(new THREE.Euler(first[3],first[4],first[5],'ZYX'));
+ const qb=new THREE.Quaternion().setFromEuler(new THREE.Euler(last[3],last[4],last[5],'ZYX'));
+ qa.slerp(qb,t);
+ return new THREE.Matrix4().compose(p,qa,new THREE.Vector3(1,1,1));
 }
 function composeBone(values:number[]):THREE.Matrix4{
  const xyz=new THREE.Vector3(values[0],values[1],values[2]);

@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableExtensions DisableDelayedExpansion
 chcp 65001 >nul
-title SvenStudio 3D v1.7.19
+title SvenStudio 3D v2.0
 pushd "%~dp0"
 if errorlevel 1 goto :bad_folder
 set "START_EXIT=1"
@@ -31,7 +31,7 @@ if exist "%I18N_FILE%" (
   set "MSG_PRESS=Press any key to close this window."
 )
 echo ==================================================
-echo SvenStudio 3D v1.7.19
+echo SvenStudio 3D v2.0
 echo ==================================================
 echo.
 if not exist "package.json" goto :missing_project

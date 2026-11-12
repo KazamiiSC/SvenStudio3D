@@ -1,0 +1,37 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),ts=require('typescript');
+require.extensions['.ts']=(module,file)=>module._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,file);
+const {useEditor,demoProject}=require('../src/store.ts');
+const {validateProjectFile}=require('../src/engine/projectValidation.ts');
+const {terrainBrushMatchesSignature}=require('../src/engine/terrain.ts');
+useEditor.getState().loadProject(demoProject());
+const original=useEditor.getState().project.objects.length;
+const options={kind:'rail',name:'Test rail',points:[[0,0,0],[256,0,0]],width:96,height:96,wallThickness:8,texture:'SV_BRICK01',repeatSpacing:128};
+useEditor.getState().addPathStructure(options,[0,0,0]);
+const project=useEditor.getState().project;
+assert.equal(project.pathGroups.length,1);
+assert.ok(project.objects.length>original);
+const group=project.pathGroups[0];
+assert.deepEqual(validateProjectFile(project),project,'project metadata must survive validation');
+assert.ok(group.brushIds.every((id,i)=>terrainBrushMatchesSignature(project.objects.find(o=>o.id===id),group.signatures[i])));
+useEditor.getState().setPathEditing(group.id);
+assert.equal(useEditor.getState().pathEditingId,group.id);
+useEditor.getState().setPathEditAxis('z');
+assert.equal(useEditor.getState().pathEditAxis,'z');
+useEditor.getState().setPathEditing(null);
+assert.equal(useEditor.getState().pathEditingId,null);
+const updated={...options,points:[[0,0,0],[128,64,0],[256,0,0]]};
+useEditor.getState().updatePathStructure(group.id,updated);
+assert.equal(useEditor.getState().project.pathGroups[0].options.points.length,3);
+useEditor.getState().undo();
+assert.deepEqual(useEditor.getState().project.pathGroups[0].options.points,options.points);
+// A source brush manually edited after regeneration must never be silently
+// replaced by an editor-generated route.
+const target=useEditor.getState().project.pathGroups[0].brushIds[0];
+useEditor.getState().updateObject(target,{position:[32,0,0]});
+const saved=JSON.stringify(useEditor.getState().project);
+assert.throws(()=>useEditor.getState().updatePathStructure(group.id,updated),/changed or deleted/i);
+assert.equal(JSON.stringify(useEditor.getState().project),saved);
+const corrupted=structuredClone(useEditor.getState().project);
+corrupted.pathGroups[0].brushIds.push('ghost');
+assert.throws(()=>validateProjectFile(corrupted),/path group/);
+console.log('Editable route records, signatures, Undo, and import validation: PASS');

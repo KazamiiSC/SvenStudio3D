@@ -1,4 +1,4 @@
-import {useLayoutEffect,useRef,useState,type ReactNode,type RefObject} from 'react';
+import {useLayoutEffect,useRef,useState,type ReactNode,type RefObject,type CSSProperties} from 'react';
 import {createPortal} from 'react-dom';
 
 /**
@@ -54,5 +54,5 @@ export function TopDropdown({anchor,open,onClose,align='left',width=240,id,child
     };
   },[open,anchor,align,width,id]);
   if(!open)return null;
-  return createPortal(<div id={id} className={`topbar-floating-menu ${className}`} role="menu" style={{position:'fixed',left:position.left,top:position.top,width,maxWidth:'calc(100vw - 16px)'}}>{children}</div>,document.body);
+  return createPortal(<div id={id} className={`topbar-floating-menu ${className}`} role="menu" style={{position:'fixed',left:position.left,top:position.top,width,maxWidth:'calc(100vw - 16px)','--menu-top':`${position.top}px`} as CSSProperties}>{children}</div>,document.body);
 }

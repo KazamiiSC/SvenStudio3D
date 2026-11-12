@@ -1,6 +1,8 @@
 /** First-run editor manual, not FGD metadata. Keep shortcuts in App.tsx bound to
  * the live controls store, so remapped shortcuts are never documented incorrectly. */
 import type {Locale} from '../i18n';
+import {localizeManual} from './editorManualIntl';
+import {updateManualForV2} from './releaseHelpV2';
 export type Manual={intro:string;firstTitle:string;first:string[];fullTitle:string;full:string;cameraTitle:string;camera:string[];editTitle:string;edit:string[];uvTitle:string;uv:string[];shapesTitle:string;shapes:string[];walkTitle:string;walk:string[];shortcutsTitle:string;shortcutsHint:string;studiosTitle:string;studios:{title:string;description:string}[];workspaceTitle:string;workspace:string[];technicalTitle:string;technical:string[];noticeTitle:string;notice:string;contact:string;linksTitle:string};
 const en:Manual={
  intro:'SvenStudio 3D is an actively developed browser-based Valve 220 map editor for Sven Co-op / Svengine. Create brushes, edit UVs, place entities, test simplified interactions and compile using your local Sven Co-op SDK. In-editor previews are approximations: always test the compiled map in Sven Co-op.',
@@ -39,14 +41,16 @@ const en:Manual={
  {title:'Decal Studio',description:'Load Sven Co-op decals.wad, search decal previews, paint native infodecal entities onto brushes by clicking walls/floors/ceilings, then select, duplicate, delete and undo. Esc exits placement.'},
  {title:'Shapes & Prefabs',description:'Place prepared architecture (walls, floors, ramps, windows, doors) and reusable groups or saved prefabs.'},
  {title:'Gameplay Studio',description:'Visual configuration of triggers, buttons, doors, relays, entity targets and event connections.'},
- {title:'NPC & AI Studio',description:'Place NPCs, routes, waypoints and spawners; inspect behavior settings and supported custom NPC resources.'},
+ {title:'Co-op Puzzle Builder',description:'Create persistent power consoles and timed simultaneous controls using func_button, game_counter and multisource. Connect to missions, events or doors, validate target references and preserve generated edits.'},
+ {title:'NPC & AI Studio',description:'Place NPCs, routes, waypoints and spawners. Smart NPC Encounters 2.0 builds up to eight native death-counted waves with multiple spawn points and Mission & Dynamic Events links. Check spawn clearance and corpses before assuming a stalled wave is a wiring bug. Test compiled BSP in Sven Co-op.'},
  {title:'Lighting Studio',description:'Adjust lights, environment, fog and skies; quick viewport lighting is approximate.'},
  {title:'True Lighting (Studios)',description:'Build temporary baked BSP lightmaps with SC-RAD by default or experimental SDHLT. Select a compiler and confirm the potentially time-consuming bake. In expanded preview, WASD/Q/E navigate the BSP camera; Escape or F8 releases the mouse. AO and PCF require SDHLT and a new bake. Keep the console open during compilation.'},
  {title:'Sound Studio',description:'Configure ambient sounds and music, preview audio and work with supported sound conversion.'},
- {title:'Terrain & Shape Studio',description:'Generate/edit terrain, brush-based landscapes, rocks and cliffs.'},
+ {title:'World Builder Studio',description:'Sculpt and triangulate terrain, import heightmaps, make thin surfaces, caves, rails, roads, walkways and bridges. Use Routes & Structures to reuse an existing route for a new structure; Curves & Repetitions edits saved curves and creates radial arrays. Smart cave openings are limited to compatible thin terrain; verify sealing and collision in the compiled BSP.'},
  {title:'Model Browser',description:'Inspect available Sven Co-op MDL models, skins, bodygroups and animation sequences using game resources.'},
  {title:'Cinematic Camera Studio',description:'Build and preview camera routes and entities such as path_corner and trigger_camera.'},
  {title:'BSP Viewer / Recovery',description:'Preview compiled BSP faces, textures, lightmaps and entities; experimental BSP-to-MAP recovery may not reproduce the original exactly.'},
+ {title:'Brush Workshop / Smart Brush Fusion',description:'Edit a selected brush face in a 3D orbit view or precise 2D drawing view. Make panels, holes, recesses and frames with polygonal profiles. Select multiple brushes in the MAP editor to fuse compatible convex volumes or create editable compound structures; always inspect the preview before applying.'},
  {title:'Map Doctor',description:'Check geometry, texture and WAD references, entity connections and possible compile problems.'},
  {title:'Map Packager',description:'Collect outputs and supporting resources for distributing a compiled Sven Co-op map.'},
  {title:'Gameplay Test',description:'Walk through an approximate browser preview to inspect scale and basic scripted interactions.'}
@@ -98,14 +102,16 @@ const es:Manual={
  {title:'Decal Studio',description:'Carga decals.wad de Sven Co-op, busca decals y colócalos con clic sobre paredes, pisos y techos como entidades nativas infodecal. Permite seleccionar, duplicar, borrar y deshacer. Esc termina la colocación.'},
  {title:'Shapes & Prefabs',description:'Coloca arquitectura rápida (paredes, pisos, rampas, ventanas y puertas) y grupos reutilizables o prefabs guardados.'},
  {title:'Gameplay Studio',description:'Configura visualmente triggers, botones, puertas, relays, targets y conexiones de lógica.'},
- {title:'NPC & AI Studio',description:'Coloca NPC, rutas, waypoints y spawners; revisa ajustes de comportamiento y recursos de NPC personalizados.'},
+ {title:'Co-op Puzzle Builder',description:'Creá consolas de energía persistentes y botones simultáneos temporizados, vinculados a misiones, eventos y puertas. Permite auditar conexiones, guardar y deshacer con seguridad.'},
+ {title:'NPC & AI Studio',description:'Colocá NPC, rutas, waypoints y spawners. Smart NPC Encounters 2.0 permite hasta ocho oleadas con contadores nativos, varios puntos de aparición y enlaces con Misiones y Eventos. Si se detiene una oleada revisá espacio libre y cuerpos que aún ocupan cupos; probá el BSP compilado en Sven Co-op.'},
  {title:'Lighting Studio',description:'Configura luces, ambiente, niebla y sky; la iluminación rápida del visor es aproximada.'},
  {title:'True Lighting (Estudios)',description:'Genera lightmaps RGB reales en un BSP temporal con SC-RAD (predeterminado) o SDHLT experimental. Elegí el compilador y confirmá la compilación; puede tardar y afectar el rendimiento. Con la vista ampliada, WASD/Q/E mueven la cámara del BSP; Esc o F8 libera el ratón. AO y PCF necesitan SDHLT y recompilar.'},
  {title:'Sound Studio',description:'Configura sonidos ambientales y música, previsualiza audio y permite conversiones de sonido compatibles.'},
- {title:'Terrain & Shape Studio',description:'Genera y edita terrenos, paisajes de brushes, rocas y acantilados.'},
+ {title:'Estudio de Construcción de Mundos (World Builder Studio)',description:'Esculpí terrenos y editá su triangulación, importá heightmaps y creá superficies delgadas, cuevas, vías, carreteras, pasarelas y puentes. En Recorridos y estructuras podés reutilizar una ruta para crear otra estructura; Curvas y repeticiones permite editar curvas guardadas y crear matrices radiales. Las cuevas automáticas requieren terreno delgado compatible: verificá el sellado y las colisiones al compilar.'},
  {title:'Model Browser',description:'Explora modelos MDL disponibles de Sven Co-op, skins, bodygroups y animaciones usando recursos del juego.'},
  {title:'Cinematic Camera Studio',description:'Diseña y previsualiza recorridos de cámara y entidades como path_corner y trigger_camera.'},
  {title:'BSP Viewer / Recovery',description:'Muestra BSP compilados, texturas, lightmaps y entidades; BSP a MAP es experimental y puede diferir del original.'},
+ {title:'Brush Workshop / Smart Brush Fusion',description:'Seleccioná un brush y editá sus caras con visor orbital 3D o dibujo preciso en 2D; creá paneles, huecos, rebajes y marcos. En el editor general seleccioná varios brushes para fusionar volúmenes convexos compatibles o crear una estructura compuesta. Revisá la vista previa antes de aplicar.'},
  {title:'Map Doctor',description:'Analiza geometría, referencias WAD/texturas, conexiones de entidades y posibles errores de compilación.'},
  {title:'Map Packager',description:'Reúne archivos compilados y recursos para distribuir un mapa de Sven Co-op.'},
  {title:'Gameplay Test',description:'Permite recorrer una simulación del mapa para comprobar escala e interacciones básicas.'}
@@ -120,7 +126,7 @@ const es:Manual={
  'Guardar proyecto exporta .svenstudio.json y hay recuperación local de sesiones. La compilación usa SC-SDK por defecto o SDHLT experimental (requiere ejecutables externos). Compile Map crea un MAP temporal y copia el BSP final a maps según configuración.'
  ],noticeTitle:'Proyecto en desarrollo',notice:'SvenStudio 3D todavía NO está terminado al 100%. Recibe nuevas actualizaciones periódicamente. Por favor, avisame de errores, herramientas que falten y propuestas de mejoras.',contact:'Discord: kzsheez',linksTitle:'Contacto con el desarrollador'
 };
-export const editorManual=(locale:Locale):Manual=>locale==='es'?es:en;
+export const editorManual=(locale:Locale):Manual=>updateManualForV2(locale,locale==='es'?es:locale==='en'?en:localizeManual(locale,en));
 /** Fixed actions grouped for readability; their actual binding is displayed dynamically. */
 export const EDITOR_SHORTCUT_GROUPS={
  transform:['move','rotate','scale','fly','frame','frameAll','projection','resetView'],

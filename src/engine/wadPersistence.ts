@@ -4,6 +4,10 @@
 const DATABASE='svenstudio:imported-wads';
 const STORE='wad-files';
 export type SavedWad={name:string;bytes:Blob;savedAt:number};
+/** Prevent an in-flight startup restore from re-adding a file just forgotten. */
+const removedInSession=new Set<string>();
+const wadKey=(name:string)=>name.trim().toLowerCase();
+export function wasWadRemovedInSession(name:string):boolean{return removedInSession.has(wadKey(name));}
 function openWadDatabase():Promise<IDBDatabase>{
   if(typeof indexedDB==='undefined')return Promise.reject(new Error('IndexedDB is not supported'));
   return new Promise((resolve,reject)=>{
@@ -27,8 +31,8 @@ export async function rememberWadFile(file:File):Promise<void>{
   if(file.name.toLowerCase()==='svstudio.wad')return; // built-in WAD loads from /public
   const db=await openWadDatabase();
   try{await runTx<void>(db,'readwrite',(store,done)=>{
-    store.put({key:file.name.toLowerCase(),name:file.name,bytes:file.slice(0,file.size),savedAt:Date.now()});done(undefined);
-  });}finally{db.close();}
+    store.put({key:wadKey(file.name),name:file.name,bytes:file.slice(0,file.size),savedAt:Date.now()});done(undefined);
+  });removedInSession.delete(wadKey(file.name));}finally{db.close();}
 }
 export async function loadSavedWadFiles():Promise<File[]>{
   const db=await openWadDatabase();
@@ -37,7 +41,19 @@ export async function loadSavedWadFiles():Promise<File[]>{
   });return saved.filter(entry=>entry&&entry.name&&entry.bytes instanceof Blob).map(entry=>new File([entry.bytes],entry.name,{type:'application/octet-stream'}));}
   finally{db.close();}
 }
+/** Delete one WAD from IndexedDB, permanently across restarts. Other WADs,
+ * decals and the built-in pack are not affected. Never delete disk files. */
+export async function forgetSavedWadFile(name:string):Promise<void>{
+  const key=wadKey(name);
+  if(!key||key==='svstudio.wad'||key==='decals.wad')throw Error('Cannot remove a protected WAD (built-in / Decal Studio).');
+  removedInSession.add(key);
+  try{
+    const db=await openWadDatabase();
+    try{await runTx<void>(db,'readwrite',(store,done)=>{store.delete(key);done(undefined);});}
+    finally{db.close();}
+  }catch(error){removedInSession.delete(key);throw error;}
+}
 export async function forgetSavedWadFiles():Promise<void>{
   const db=await openWadDatabase();
-  try{await runTx<void>(db,'readwrite',(store,done)=>{store.clear();done(undefined);});}finally{db.close();}
+  try{await runTx<void>(db,'readwrite',(store,done)=>{store.clear();done(undefined);});removedInSession.clear();}finally{db.close();}
 }

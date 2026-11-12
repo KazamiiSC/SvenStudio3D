@@ -7,7 +7,7 @@ import {useEditor} from '../store';
 const activityNames:Record<string,[string,string]>={
  exploring:['Explorando el mapa','Exploring map'],selecting:['Seleccionando objetos','Selecting objects'],moving:['Moviendo brushes','Moving brushes'],
  rotating:['Rotando brushes','Rotating brushes'],scaling:['Escalando brushes','Scaling brushes'],drawing:['Dibujando geometría','Drawing geometry'],
- texturing:['Texture Studio','Texture Studio'],terrain:['Terrain & Shape Studio','Terrain & Shape Studio'],architecture:['Architecture Mode','Architecture Mode'],
+ texturing:['Texture Studio','Texture Studio'],terrain:['World Builder','World Builder'],architecture:['Architecture Mode','Architecture Mode'],
  npc:['NPC & AI Studio','NPC & AI Studio'],sound:['Sound Studio','Sound Studio'],lighting:['Lighting Studio','Lighting Studio'],
  gameplay:['Gameplay Studio','Gameplay Studio'],cinematic:['Cinematic Camera Studio','Cinematic Camera Studio'],
  decals:['Decal Studio','Decal Studio'],models:['Model Browser','Model Browser'],materials:['Material Studio','Material Studio'],

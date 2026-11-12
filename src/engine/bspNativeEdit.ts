@@ -161,3 +161,24 @@ export function writeNativeBsp(doc:NativeBsp):ArrayBuffer{
   }
   return output;
 }
+
+/** Guarded bmodel instance copy. This is deliberately separate from point
+ * duplication: a clone reuses the source model=*N and never changes BSP trees.
+ * The caller must validate model limits and static class before using it. */
+export function appendNativeBrushInstance(doc:NativeBsp,index:number,origin:string):NativeBsp{
+  const src=doc.entities[index];
+  if(!src||index<1)throw Error('Cannot copy worldspawn as a brush instance.');
+  if(doc.entities.length>=MAX_ENTITIES)throw Error('Maximum BSP entity count reached.');
+  const classname=nativeClassname(src);
+  if(!['func_wall','func_illusionary'].includes(classname))throw Error('Only static func_wall / func_illusionary models can be instanced safely.');
+  const model=nativeProperty(src,'model');
+  if(!/^\*[1-9]\d*$/.test(model))throw Error('Source must reference a compiled BSP submodel, not worldspawn.');
+  const numbers=origin.trim().split(/\s+/).map(Number);
+  if(numbers.length!==3||numbers.some(v=>!Number.isFinite(v)||Math.abs(v)>131072))throw Error('Paste position exceeds safe BSP coordinate range.');
+  const nextPairs=src.pairs.map(pair=>({key:pair.key,value:pair.key==='origin'?origin:
+    pair.key==='targetname'?`${pair.value.slice(0,56)}_copy${doc.entities.length}`:pair.value}));
+  if(!nextPairs.some(pair=>pair.key==='origin'))nextPairs.push({key:'origin',value:origin});
+  for(const pair of nextPairs){checkUserField(pair.key,true);checkUserField(pair.value,false)}
+  const raw=`{\n${nextPairs.map(pair=>`"${pair.key}" "${pair.value.replaceAll('\\','\\\\')}"`).join('\n')}\n}`;
+  return {...doc,entities:[...doc.entities,{leading:'\n',raw,pairs:parseEntity(raw)}]};
+}

@@ -1,6 +1,7 @@
 /** Browser-only workspace arrangement. No map data or compiler settings are modified. */
 import {create} from 'zustand';
 import {persist} from 'zustand/middleware';
+import {DEFAULT_INTERFACE_THEME,normalizeInterfaceTheme,type InterfaceTheme} from './engine/interfaceThemes.ts';
 export type DockSide = 'left'|'right'|'top'|'bottom';
 export type DockPanelId = 'assets'|'explorer'|'properties'|'console';
 export const TOOLBAR_GROUPS = ['transform','view','geometry','tools','grid','edit','studios'] as const;
@@ -16,7 +17,24 @@ export function moveToolbarGroup(groups:readonly ToolbarGroup[],from:ToolbarGrou
 }
 
 export type Accent = 'nebula'|'ice'|'ember'|'mint'|'orchid'|'gold';
+export type AppearanceMode = 'dark';
+/** New visual order, while the canonical group IDs remain backward compatible. */
+export const REDESIGNED_TOOLBAR_ORDER: ToolbarGroup[] = ['transform','edit','view','geometry','tools','grid','studios'];
 export type PerformancePreset = 'quality'|'balanced'|'large';
+export type WorkspaceSnapshot = {
+  sides:Record<DockPanelId,DockSide>;order:DockPanelId[];visible:Record<DockPanelId,boolean>;
+  toolbarDock:DockSide;compactTools:boolean;toolbarGroups:ToolbarGroup[];
+  widths:{left:number;right:number};heights:{top:number;bottom:number};weights:Record<DockPanelId,number>;
+};
+export function validateWorkspaceName(value:string):string{
+  return value.trim().replace(/[<>\\/:*?"|]/g,'').slice(0,48);
+}
+const cloneSnapshot=(s:WorkspaceSnapshot):WorkspaceSnapshot=>({
+ sides:{...s.sides},order:[...s.order],visible:{...s.visible},toolbarDock:s.toolbarDock,
+ compactTools:s.compactTools,toolbarGroups:[...s.toolbarGroups],widths:{...s.widths},
+ heights:{...s.heights},weights:{...s.weights}
+});
+
 type LayoutState = {
   sides: Record<DockPanelId,DockSide>;
   order: DockPanelId[];
@@ -24,6 +42,14 @@ type LayoutState = {
   toolbarDock: DockSide;
   compactTools:boolean;
   toolbarGroups:ToolbarGroup[];
+  entityStampMode:boolean;
+  setEntityStampMode:(value:boolean)=>void;
+  pinnedToolbarGroups:ToolbarGroup[];
+  togglePinnedToolbarGroup:(id:ToolbarGroup)=>void;
+  savedWorkspaces:Record<string,WorkspaceSnapshot>;
+  saveCurrentWorkspace:(name:string)=>void;
+  restoreSavedWorkspace:(name:string)=>void;
+  deleteSavedWorkspace:(name:string)=>void;
   reorderToolbarGroup:(from:ToolbarGroup,to:ToolbarGroup)=>void;
   stepToolbarGroup:(id:ToolbarGroup,direction:-1|1)=>void;
   floatRailSide:'left'|'right';
@@ -34,6 +60,8 @@ type LayoutState = {
   autoLayout:boolean;
   setAutoLayout:(value:boolean)=>void;
   accent:Accent;
+  interfaceTheme:InterfaceTheme;
+  appearance:AppearanceMode;
   fontScale:number;
   performancePreset:PerformancePreset;
   movePanel:(id:DockPanelId,side:DockSide,before?:DockPanelId)=>void;
@@ -44,21 +72,23 @@ type LayoutState = {
   setWeights:(id:DockPanelId,a:number,other:DockPanelId,b:number)=>void;
   setScale:(scale:number)=>void;
   setAccent:(accent:Accent)=>void;
+  setInterfaceTheme:(theme:InterfaceTheme)=>void;
+  setAppearance:(mode:AppearanceMode)=>void;
   setFontScale:(value:number)=>void;
   setPerformancePreset:(value:PerformancePreset)=>void;
   resetLayout:()=>void;
-  usePreset:(preset:'organized'|'classic'|'focus'|'creative'|'wide'|'minimal')=>void;
+  usePreset:(preset:'organized'|'classic'|'focus'|'creative'|'wide'|'minimal'|'construction'|'entities'|'bsp')=>void;
 };
 const defaults = () => ({
   sides:{assets:'left',explorer:'right',properties:'right',console:'bottom'} as Record<DockPanelId,DockSide>,
   order:['assets','properties','explorer','console'] as DockPanelId[],
   visible:{assets:true,explorer:true,properties:true,console:false} as Record<DockPanelId,boolean>,
   toolbarDock:'top' as DockSide,
-  toolbarGroups:[...TOOLBAR_GROUPS],
+  toolbarGroups:[...REDESIGNED_TOOLBAR_ORDER],pinnedToolbarGroups:[] as ToolbarGroup[],entityStampMode:false,savedWorkspaces:{} as Record<string,WorkspaceSnapshot>,
   compactTools:false,floatRailSide:'left' as 'left'|'right',
   widths:{left:254,right:302},heights:{top:192,bottom:168},
   weights:{assets:1,explorer:1,properties:1,console:1},
-  uiScale:1,autoLayout:true,accent:'nebula' as Accent,fontScale:1,performancePreset:'balanced' as PerformancePreset
+  uiScale:1,autoLayout:true,accent:'nebula' as Accent,interfaceTheme:DEFAULT_INTERFACE_THEME,appearance:'dark' as AppearanceMode,fontScale:1,performancePreset:'balanced' as PerformancePreset
 });
 const clamp=(n:number,min:number,max:number)=>Math.min(max,Math.max(min,n));
 const panelIds:DockPanelId[]=['assets','explorer','properties','console'];
@@ -98,13 +128,39 @@ export function mergeSavedLayout(saved:unknown,current:LayoutState):LayoutState{
     heights:{top:finiteOr(originalHeights.top,base.heights.top,130,500),bottom:finiteOr(originalHeights.bottom,base.heights.bottom,130,500)},
     compactTools:typeof data.compactTools==='boolean'?data.compactTools:base.compactTools,
     floatRailSide,
-    toolbarGroups:normalizeToolbarGroups(data.toolbarGroups),
+    entityStampMode:data.entityStampMode===true,
+    pinnedToolbarGroups:Array.isArray(data.pinnedToolbarGroups)?normalizeToolbarGroups(data.pinnedToolbarGroups).filter(id=>(data.pinnedToolbarGroups as unknown[]).includes(id)):[],
+    savedWorkspaces:Object.fromEntries(Object.entries(recordOrEmpty(data.savedWorkspaces)).filter(([name,item])=>name.length<=48&&item&&typeof item==='object').slice(0,12).map(([name,item])=>{
+      const source=recordOrEmpty(item);
+      const layout=mergeWorkspaceSnapshot(source,base);
+      return [name,layout];
+    })),
+    toolbarGroups:(Array.isArray(data.toolbarGroups)&&data.toolbarGroups.length===TOOLBAR_GROUPS.length&&data.toolbarGroups.every((id,index)=>id===TOOLBAR_GROUPS[index]))?[...REDESIGNED_TOOLBAR_ORDER]:normalizeToolbarGroups(data.toolbarGroups??REDESIGNED_TOOLBAR_ORDER),
     uiScale:finiteOr(data.uiScale,base.uiScale,.8,1.2),
     autoLayout:typeof data.autoLayout==='boolean'?data.autoLayout:true,
     fontScale:finiteOr(data.fontScale,base.fontScale,.9,1.2),
     accent:accents.includes(data.accent as Accent)?data.accent as Accent:base.accent,
+    interfaceTheme:normalizeInterfaceTheme(data.interfaceTheme),
+    appearance:'dark',
     performancePreset:performancePresets.includes(data.performancePreset as PerformancePreset)?data.performancePreset as PerformancePreset:base.performancePreset
   };
+}
+/** Sanitize a saved profile before it can change a live workspace. */
+function mergeWorkspaceSnapshot(data:Record<string,unknown>,base:ReturnType<typeof defaults>):WorkspaceSnapshot{
+ const sides={...base.sides},visible={...base.visible},weights={...base.weights};
+ const rawSides=recordOrEmpty(data.sides),rawVisible=recordOrEmpty(data.visible),rawWeights=recordOrEmpty(data.weights);
+ for(const id of panelIds){
+   if(dockSides.includes(rawSides[id] as DockSide))sides[id]=rawSides[id] as DockSide;
+   if(typeof rawVisible[id]==='boolean')visible[id]=rawVisible[id] as boolean;
+   weights[id]=finiteOr(rawWeights[id],1,.12,16);
+ }
+ const widths=recordOrEmpty(data.widths),heights=recordOrEmpty(data.heights);
+ return {sides,visible,weights,order:[...new Set([...(Array.isArray(data.order)?data.order.filter((id):id is DockPanelId=>panelIds.includes(id as DockPanelId)):[]),...base.order])],
+   toolbarDock:dockSides.includes(data.toolbarDock as DockSide)?data.toolbarDock as DockSide:'top',
+   compactTools:typeof data.compactTools==='boolean'?data.compactTools:false,
+   toolbarGroups:normalizeToolbarGroups(data.toolbarGroups),
+   widths:{left:finiteOr(widths.left,254,190,700),right:finiteOr(widths.right,302,190,700)},
+   heights:{top:finiteOr(heights.top,192,130,500),bottom:finiteOr(heights.bottom,168,130,500)}};
 }
 export const useStudioLayout=create<LayoutState>()(persist((set)=>({
   ...defaults(),
@@ -115,6 +171,22 @@ export const useStudioLayout=create<LayoutState>()(persist((set)=>({
     return {sides:{...s.sides,[id]:side},visible:{...s.visible,[id]:true},order:others};
   }),
   setToolbarDock:side=>set({toolbarDock:side}),
+  setEntityStampMode:entityStampMode=>set({entityStampMode}),
+  togglePinnedToolbarGroup:id=>set(s=>({pinnedToolbarGroups:s.pinnedToolbarGroups.includes(id)?s.pinnedToolbarGroups.filter(g=>g!==id):[...s.pinnedToolbarGroups,id]})),
+  saveCurrentWorkspace:name=>set(s=>{
+    const clean=validateWorkspaceName(name);if(!clean)return {};
+    const snapshot=cloneSnapshot(s);
+    const names=Object.keys(s.savedWorkspaces).filter(k=>k!==clean);
+    // Cap local browser profiles. Do not touch projects or compiler settings.
+    const previous=Object.fromEntries(names.slice(-11).map(k=>[k,s.savedWorkspaces[k]]));
+    return {savedWorkspaces:{...previous,[clean]:snapshot}};
+  }),
+  restoreSavedWorkspace:name=>set(s=>{
+    const profile=s.savedWorkspaces[name];if(!profile)return {};
+    return {...cloneSnapshot(mergeWorkspaceSnapshot(profile as unknown as Record<string,unknown>,defaults()))};
+  }),
+  deleteSavedWorkspace:name=>set(s=>{const next={...s.savedWorkspaces};delete next[name];return {savedWorkspaces:next};}),
+
   reorderToolbarGroup:(from,to)=>set(s=>({toolbarGroups:moveToolbarGroup(s.toolbarGroups??TOOLBAR_GROUPS,from,to)})),
   stepToolbarGroup:(id,direction)=>set(s=>{
     const groups=normalizeToolbarGroups(s.toolbarGroups);
@@ -144,11 +216,16 @@ export const useStudioLayout=create<LayoutState>()(persist((set)=>({
   setScale:uiScale=>set({uiScale:clamp(uiScale,.8,1.2)}),
   setAutoLayout:autoLayout=>set({autoLayout}),
   setAccent:accent=>set({accent}),
+  setInterfaceTheme:theme=>set({interfaceTheme:normalizeInterfaceTheme(theme)}),
+  setAppearance:()=>set({appearance:'dark'}),
   setFontScale:fontScale=>set({fontScale:clamp(fontScale,.9,1.2)}),
   setPerformancePreset:performancePreset=>set({performancePreset}),
-  resetLayout:()=>set(defaults()),
+  resetLayout:()=>set(s=>({...defaults(),accent:s.accent,interfaceTheme:s.interfaceTheme,appearance:s.appearance,savedWorkspaces:s.savedWorkspaces,pinnedToolbarGroups:s.pinnedToolbarGroups,entityStampMode:s.entityStampMode})),
   usePreset:preset=>set(s=>{
-    const base={...defaults(),accent:s.accent,uiScale:s.uiScale,autoLayout:s.autoLayout,fontScale:s.fontScale,performancePreset:s.performancePreset};
+    const base={...defaults(),accent:s.accent,interfaceTheme:s.interfaceTheme,appearance:s.appearance,uiScale:s.uiScale,autoLayout:s.autoLayout,fontScale:s.fontScale,performancePreset:s.performancePreset,savedWorkspaces:s.savedWorkspaces,pinnedToolbarGroups:s.pinnedToolbarGroups,entityStampMode:s.entityStampMode};
+    if(preset==='construction')return {...base,compactTools:false,toolbarDock:'top',visible:{assets:true,explorer:false,properties:true,console:false},widths:{left:292,right:310}};
+    if(preset==='entities')return {...base,compactTools:true,toolbarDock:'top',visible:{assets:true,explorer:true,properties:true,console:false},widths:{left:316,right:294}};
+    if(preset==='bsp')return {...base,compactTools:true,toolbarDock:'top',visible:{assets:false,explorer:false,properties:true,console:false},widths:{left:254,right:364}};
     if(preset==='organized')return {...base,compactTools:true,visible:{assets:true,explorer:true,properties:true,console:false},widths:{left:266,right:294}};
     if(preset==='classic')return {...base,compactTools:false,toolbarDock:'top',visible:{assets:true,explorer:true,properties:true,console:false}};
     if(preset==='focus')return {...base,toolbarDock:'left',visible:{assets:false,explorer:false,properties:true,console:false}};
@@ -162,4 +239,4 @@ export const useStudioLayout=create<LayoutState>()(persist((set)=>({
   if(version<2&&saved&&typeof saved==='object'){
     const old=saved as Record<string,unknown>;return {...old,visible:{...recordOrEmpty(old.visible),assets:true,explorer:true,properties:true}};
   }return saved;
-},merge:mergeSavedLayout,partialize:s=>({sides:s.sides,order:s.order,visible:s.visible,toolbarDock:s.toolbarDock,toolbarGroups:s.toolbarGroups,compactTools:s.compactTools,floatRailSide:s.floatRailSide,widths:s.widths,heights:s.heights,weights:s.weights,uiScale:s.uiScale,autoLayout:s.autoLayout,accent:s.accent,fontScale:s.fontScale,performancePreset:s.performancePreset})}));
+},merge:mergeSavedLayout,partialize:s=>({sides:s.sides,order:s.order,visible:s.visible,toolbarDock:s.toolbarDock,toolbarGroups:s.toolbarGroups,pinnedToolbarGroups:s.pinnedToolbarGroups,savedWorkspaces:s.savedWorkspaces,entityStampMode:s.entityStampMode,compactTools:s.compactTools,floatRailSide:s.floatRailSide,widths:s.widths,heights:s.heights,weights:s.weights,uiScale:s.uiScale,autoLayout:s.autoLayout,accent:s.accent,interfaceTheme:s.interfaceTheme,fontScale:s.fontScale,performancePreset:s.performancePreset})}));

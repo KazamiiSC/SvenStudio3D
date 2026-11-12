@@ -12,6 +12,7 @@ import {useEditor} from '../store';
 import {useT} from '../i18n';
 import {customNpcToFgd,EMPTY_CUSTOM_NPCS} from '../engine/customNpc';
 import {CustomNpcImporter} from './CustomNpcImporter';
+import {EncounterDesigner} from './EncounterDesigner';
 
 function AutoFrame({data}:{data:StudioPreview}){
   const {camera}=useThree();
@@ -56,6 +57,7 @@ export function NPCStudio({onClose}:{onClose:()=>void}){
   const customNames=useMemo(()=>new Set(customNpcs.map(c=>c.classname)),[customNpcs]);
   const [query,setQuery]=useState(''),[className,setClassName]=useState<string>('monster_zombie');
   const [importOpen,setImportOpen]=useState(false);
+  const [encountersOpen,setEncountersOpen]=useState(false);
   const [options,setOptions]=useState<SpawnerOptions>(DEFAULT_SPAWNER);
   const [notice,setNotice]=useState('');
   const [fgdBusy,setFgdBusy]=useState(false);
@@ -97,9 +99,9 @@ export function NPCStudio({onClose}:{onClose:()=>void}){
     run(()=>{spawn(npcOwner.id,options);setActiveId(null);appendLogs([`NPC Studio: squadmaker created for ${npcOwner.classname}.`])});
   };
   useEffect(()=>{
-    const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){e.stopPropagation();if(importOpen)setImportOpen(false);else onClose()}};
+    const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){e.stopPropagation();if(encountersOpen)return; if(importOpen)setImportOpen(false);else onClose()}};
     window.addEventListener('keydown',key,true);return()=>window.removeEventListener('keydown',key,true);
-  },[onClose,importOpen]);
+  },[onClose,importOpen,encountersOpen]);
   const fgdField=(field:string)=>(allNpcs.find(c=>c.name===npcOwner?.classname)||classes.find(c=>c.name===npcOwner?.classname))?.props[field];
   return <div className="modal-backdrop npc-backdrop" onMouseDown={onClose}>
     <section className="npc-shell" onMouseDown={e=>e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('NPC & AI Studio')}>
@@ -111,6 +113,7 @@ export function NPCStudio({onClose}:{onClose:()=>void}){
           {!loaded&&<p className="npc-hint">{t('Starter list. Import sven-coop.fgd for full list.')}</p>}
           <button className="npc-load-fgd" onClick={loadFgd} disabled={fgdBusy}>{fgdBusy?'…':t('Load Sven Co-op FGD')}</button>
           <button className="npc-load-fgd" onClick={()=>setImportOpen(true)}><PackagePlus size={14}/>{t('Import Custom NPC (AngelScript)')}</button>
+          <button className="npc-load-fgd" onClick={()=>setEncountersOpen(true)}><Users size={14}/> Smart NPC Encounters 2.0</button>
           <div className="npc-class-list">{npcs.map(c=><button key={c.name} className={className===c.name?'active':''} onClick={()=>setClassName(c.name)} title={c.description}>
             <Skull size={15}/><span><strong>{c.name}</strong><small>{c.description}</small></span><ChevronRight size={13}/>
           </button>)}</div>
@@ -156,6 +159,7 @@ export function NPCStudio({onClose}:{onClose:()=>void}){
       </div>
       <footer className="npc-footer"><span><Shield size={13}/>{t('Uses supported Sven Co-op keyvalues. No simulated AI.')}</span><span aria-live="polite">{notice}</span></footer>
       {importOpen&&<CustomNpcImporter onClose={()=>setImportOpen(false)}/>}
+      {encountersOpen&&<EncounterDesigner onClose={()=>setEncountersOpen(false)}/>}
     </section>
   </div>;
 }

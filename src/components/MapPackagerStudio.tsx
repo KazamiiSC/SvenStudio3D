@@ -6,12 +6,13 @@ import {customNpcFiles} from '../engine/customNpc';
 import {generateSurfaceMaterialsTxt,materialSoundPath} from '../engine/materialSurface';
 
 type PackageEntry={path:string;status:'ready'|'missing'|'builtin'|'oversize'|'conflict';layer:string;size:number;reason:string;required?:boolean};
-type PackageScan={mapName:string;entries:PackageEntry[];warnings:string[];missing:number;ready:number;builtin:number;entities:number;externalTextures:boolean};
+type PackageScan={mapName:string;entries:PackageEntry[];warnings:string[];missing:number;ready:number;builtin:number;entities:number;externalTextures:boolean;resPreview:string[];resCount:number};
 
 /** Not a map editor. This viewer only requests a read-only scan and downloads a new ZIP. */
 export function MapPackagerStudio({onClose}:{onClose:()=>void}){
   const t=useT();
   const gameDir=useEditor(s=>s.settings.gameDir);
+  const resourceRoots=useEditor(s=>s.settings.resourceRoots)||[];
   const mapName=useEditor(s=>s.settings.mapName);
   const projectName=useEditor(s=>s.project.name);
   const [packageMapName,setPackageMapName]=useState(mapName);
@@ -20,6 +21,7 @@ export function MapPackagerStudio({onClose}:{onClose:()=>void}){
   const linkedSurfaceFile=useEditor(s=>s.project.world.materials_file);
   const [manual,setManual]=useState('');
   const [addCustom,setAddCustom]=useState(true);
+  const [generateRes,setGenerateRes]=useState(true);
   const [scan,setScan]=useState<PackageScan|null>(null);
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState('');
@@ -47,7 +49,7 @@ export function MapPackagerStudio({onClose}:{onClose:()=>void}){
     }
     const manualPaths=manual.split(/\r?\n/).map(x=>x.trim()).filter(x=>x&&!x.startsWith('#'));
     if(addCustom)for(const npc of customNpcs||[])if(npc.modelPath&&!manualPaths.some(p=>p.toLowerCase()===npc.modelPath.toLowerCase()))manualPaths.push(npc.modelPath);
-    return {gameDir,mapName:packageMapName,manualPaths,inlineFiles,scriptLines};
+    return {gameDir,mapName:packageMapName,resourceRoots,manualPaths,inlineFiles,scriptLines,generateRes};
   };
   const request=async(url:string,body:unknown)=>{
     const response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -74,6 +76,7 @@ export function MapPackagerStudio({onClose}:{onClose:()=>void}){
     }catch(error){setMessage(String(error instanceof Error?error.message:error))}finally{setBusy(false)}
   };
   const toggle=(path:string)=>setSelected(prev=>{const next=new Set(prev);const key=path.toLowerCase();if(next.has(key))next.delete(key);else next.add(key);return next});
+  const resSelected=scan?.resPreview.filter(path=>selected.has(path.toLowerCase()))||[];
   return <div className="modal-backdrop mp-backdrop" onMouseDown={onClose}>
     <section className="mp-shell" role="dialog" aria-modal="true" aria-label={t('Map Packager Studio')} onMouseDown={e=>e.stopPropagation()}>
       <header className="mp-header"><Package size={22}/><div><strong>{t('Map Packager Studio')}</strong><small>{t('Review local map dependencies · Sven Co-op / Svengine')}</small></div><button title={t('Close')} onClick={onClose}><X size={19}/></button></header>
@@ -84,7 +87,7 @@ export function MapPackagerStudio({onClose}:{onClose:()=>void}){
           <p className="mp-muted" role="status">{t('Only a BSP already compiled in the game folder can be packaged. An opened MAP is not automatically a compiled BSP.')}</p>
           {projectName&&projectName.toLowerCase()!==packageMapName.toLowerCase()&&<div className="mp-warning" role="alert">{t('The loaded project and the selected compiled BSP have different names. Confirm this is the file you intend to share.')} ({projectName} / {packageMapName}.bsp)</div>}
           <label>{t('Game folder')}<input readOnly value={gameDir||t('Not configured')}/></label>
-          <p className="mp-muted">{t('Uses the compiled BSP in your configured maps folder. Compile your latest changes before scanning.')}</p>
+          <p className="mp-muted">{t('Uses the compiled BSP in your configured maps folder. Compile your latest changes before scanning.')} {resourceRoots.length} external source folder(s) from Build Configuration.</p>
           {surfaceSounds&&Object.keys(surfaceSounds).length>0&&<p className="mp-muted">Material & Surface Studio: {Object.keys(surfaceSounds).length} material sounds. {linkedSurfaceFile!==`sound/${packageMapName}/${packageMapName}_materials.txt`?'Link materials_file in the MAP and recompile the BSP first.':'Project materials.txt will be included in the package.'}</p>}
           <label className="mp-check"><input type="checkbox" checked={addCustom} onChange={e=>{setAddCustom(e.target.checked);setScan(null)}} disabled={!(customNpcs||[]).length}/>{t('Include registered Custom NPC scripts')} ({(customNpcs||[]).length})</label>
           <p className="mp-muted">{t('Scripts are packaged as source, never executed. Existing CFG files are not changed.')}</p>
@@ -98,14 +101,17 @@ export function MapPackagerStudio({onClose}:{onClose:()=>void}){
             <div className="mp-stats"><div><strong>{scan.ready}</strong><span>{t('Ready')}</span></div><div><strong>{scan.missing}</strong><span>{t('Missing')}</span></div><div><strong>{scan.builtin}</strong><span>{t('Game built-in')}</span></div><div><strong>{scan.entities}</strong><span>{t('BSP entities')}</span></div></div>
             <div className="mp-filters">{(['all','ready','missing','builtin'] as const).map(mode=><button key={mode} className={filter===mode?'active':''} onClick={()=>setFilter(mode)}>{t(mode==='all'?'All':mode==='ready'?'Ready':mode==='missing'?'Missing':'Game built-in')}</button>)}</div>
             <div className="mp-items">{scan.entries.filter(e=>filter==='all'||e.status===filter||(filter==='missing'&&(e.status==='conflict'||e.status==='oversize'))).map(e=><div className="mp-item" key={e.path}>
-              <input type="checkbox" aria-label={e.path} checked={e.status==='ready'&&selected.has(e.path.toLowerCase())} disabled={e.status!=='ready'||e.required} onChange={()=>toggle(e.path)}/>
+              <input type="checkbox" aria-label={e.path} checked={e.status==='ready'&&selected.has(e.path.toLowerCase())} disabled={e.status!=='ready'||e.required||(generateRes&&e.path.toLowerCase()===`maps/${packageMapName}.res`.toLowerCase())} onChange={()=>toggle(e.path)}/>
               {e.status==='ready'?<CheckCircle2 size={15} color="#69dbaf"/>:<AlertTriangle size={15} color={e.status==='builtin'?'#8aa6bc':'#f9c16a'}/>}
-              <div><b>{e.path}</b><small>{e.reason} · {e.layer||e.status} · {e.size?`${(e.size/1024).toFixed(1)} KB`:e.status}</small></div>
+              <div><b>{e.path}</b><small>{generateRes&&e.path.toLowerCase()===`maps/${packageMapName}.res`.toLowerCase()?t('Replaced by generated RES in ZIP'):e.reason} · {e.layer||e.status} · {e.size?`${(e.size/1024).toFixed(1)} KB`:e.status}</small></div>
             </div>)}</div>
           </>:<div className="mp-empty"><FolderSearch size={38}/><p>{t('Analyze a compiled BSP to inspect resources before creating an archive.')}</p></div>}
         </main>
         <aside className="mp-right">
           <h3>{t('Package review')}</h3>
+          <label className="mp-check"><input type="checkbox" checked={generateRes} onChange={e=>setGenerateRes(e.target.checked)}/>{t('Generate optimized RES file automatically')}</label>
+          <p className="mp-muted">{t('RES lists custom client downloads; server CFG and AngelScript are excluded. Existing RES is replaced only inside the new ZIP.')}</p>
+          {scan&&generateRes&&<div className="mp-safety" style={{display:'block'}}><strong>{t('RES preview')} · {resSelected.length} {t('files')}</strong><div style={{maxHeight:110,overflowY:'auto',marginTop:7,overflowWrap:'anywhere'}}>{resSelected.length?resSelected.slice(0,14).map(name=><div key={name}>{name}</div>):t('No custom client resources selected')}{resSelected.length>14&&<div>+{resSelected.length-14}</div>}</div></div>}
           <p className="mp-muted">{t('ZIP contents are placed at the root: maps/, models/, sound/, sprites/, gfx/ and scripts/maps/. Extract into svencoop_addon/.')}</p>
           {scan&&<>
             {scan.warnings.length>0&&<div className="mp-warning"><strong><AlertTriangle size={16}/>{t('Warnings')} ({scan.warnings.length})</strong>{scan.warnings.slice(0,12).map((w,i)=><p key={i}>{w}</p>)}</div>}

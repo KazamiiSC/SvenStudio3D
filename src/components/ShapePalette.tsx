@@ -1,6 +1,8 @@
 import {useEffect,useRef,useState} from 'react';
 import {Shapes,Box,Square,ChevronDown,X,MousePointer2,PencilRuler,DoorOpen,AppWindow,Layers3,BookmarkPlus,Package,MousePointerClick} from 'lucide-react';
 import {useEditor} from '../store';
+import {decodePrefabTextures} from '../engine/prefabWadDependencies';
+import {rememberWadFile} from '../engine/wadPersistence';
 import type {PlaceableShape,Vec3} from '../engine/types';
 import {defaultArchitecture} from '../engine/architecture';
 import {useT} from '../i18n';
@@ -76,8 +78,18 @@ export function ShapePalette(){
     if(!name?.trim())return;
     try{saveSelection(name.trim())}catch(error){window.alert(String(error))}
   };
-  const placeReusable=(id:string)=>{
-    try{setPlacementPrefab(pendingPrefab===id?null:id);setOpen(false)}catch(error){window.alert(String(error))}
+  const placeReusable=async(id:string)=>{
+    try{
+      if(pendingPrefab===id){setPlacementPrefab(null);setOpen(false);return}
+      const prefab=useEditor.getState().prefabs.find(item=>item.id===id);
+      if(!prefab)throw Error('Prefab no longer exists.');
+      if((prefab as {format?:string}).format==='svenstudio-bsp-object'){
+        const {file,textures}=await decodePrefabTextures(prefab,useEditor.getState().textureAssets);
+        useEditor.getState().setTextures(textures,file.name,{trackProject:false});
+        try{await rememberWadFile(file)}catch(error){useEditor.getState().appendLogs([`Prefab WAD cache: ${String(error)}`])}
+      }
+      setPlacementPrefab(id);setOpen(false);
+    }catch(error){window.alert(String(error))}
   };
 
   const opening=(kind:'door'|'window')=>{
@@ -111,7 +123,7 @@ export function ShapePalette(){
         <button type="button" className="shape-prefab-save" disabled={!selectedIds.length||prefabs.length>=64} onClick={saveReusable}><BookmarkPlus size={15}/>{t('Save selected construction')} ({selectedIds.length})</button>
         {prefabs.length>0&&<div className="shape-prefab-list" role="list" aria-label={t('Reusable constructions')}>
           {prefabs.map(prefab=><button key={prefab.id} type="button" role="listitem"
-            className={pendingPrefab===prefab.id?'active':''} onClick={()=>placeReusable(prefab.id)}
+            className={pendingPrefab===prefab.id?'active':''} onClick={()=>void placeReusable(prefab.id)}
             title={`${t('Place prefab with mouse')} · ${prefab.objects.length} ${t('objects')}`}>
             <MousePointerClick size={15}/><span>{prefab.name}<small>{prefab.objects.length} {t('objects')}</small></span>
           </button>)}

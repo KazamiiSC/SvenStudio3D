@@ -82,9 +82,14 @@ export async function prepareCompileWads(source,{gameDir,compilerDir,builtInWad,
   const old=readWorldWadList(source);
   let list=uniqueWads(old);
   if(list.length!==old.length)warnings.push(`Removed ${old.length-list.length} duplicate WAD reference(s) (case-insensitive basename).`);
+  // Bundled editor WAD is a compiler-only source when a MAP already names
+  // svstudio.wad but it is not installed in the user's Sven Co-op folder.
+  // Installed/user WADs always retain priority over this fallback.
+  const resolveWad=async(entry)=>await lookupWad(entry,gameDir,compilerDir,configuredWadPaths)
+    ||(wadBase(entry)==='svstudio.wad'&&await statSafe(builtInWad)?path.resolve(builtInWad):null);
   const available=[];
   for(const entry of list){
-    const file=await lookupWad(entry,gameDir,compilerDir,configuredWadPaths);
+    const file=await resolveWad(entry);
     if(!file){warnings.push(`Cannot inspect WAD ${entry}; verify it is installed on the compiler PC.`);continue}
     try{available.push({entry,file,names:wadTextureNames(await fs.readFile(file))})}
     catch(e){warnings.push(`Cannot inspect WAD ${entry}: ${e.message}`)}
@@ -104,7 +109,7 @@ export async function prepareCompileWads(source,{gameDir,compilerDir,builtInWad,
   }
   const providerList=[];
   for(const entry of list){
-    const file=await lookupWad(entry,gameDir,compilerDir,configuredWadPaths);
+    const file=await resolveWad(entry);
     if(!file)continue;
     try{providerList.push({entry,names:wadTextureNames(await fs.readFile(file))})}catch{/* warning above */}
   }
@@ -115,7 +120,7 @@ export async function prepareCompileWads(source,{gameDir,compilerDir,builtInWad,
   }
   const resolvedWadList=[],missingWads=[];
   for(const entry of list){
-    const file=await lookupWad(entry,gameDir,compilerDir,configuredWadPaths);
+    const file=await resolveWad(entry);
     if(file)resolvedWadList.push(file);
     else missingWads.push(entry);
   }

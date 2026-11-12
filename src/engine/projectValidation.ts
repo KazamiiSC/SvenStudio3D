@@ -5,6 +5,11 @@
  */
 import type {Face,MapObject,Project,Vec3} from './types';
 import {validateCustomNpc} from './customNpc';
+import {validateRailwaySettings} from './railwayBuilder';
+import {validateMissionEventMetadata} from './missionEvents';
+import {validateEncounterMetadata} from './npcEncounters';
+import {validatePuzzleMetadata} from './coopPuzzles';
+import {validateBlueprintMetadata} from './blueprintToMap';
 
 type Obj=Record<string,unknown>;
 const record=(v:unknown):v is Obj=>v!==null&&typeof v==='object'&&!Array.isArray(v);
@@ -13,6 +18,8 @@ const vec3=(v:unknown):v is Vec3=>Array.isArray(v)&&v.length===3&&v.every(x=>typ
 const textMap=(v:unknown,maxEntries=8192):v is Record<string,string>=>record(v)&&Object.keys(v).length<=maxEntries&&Object.entries(v).every(([k,val])=>k.length<=512&&str(val,65536));
 const optionalText=(v:unknown,max=1024)=>v===undefined||str(v,max);
 const optionalBoolean=(v:unknown)=>v===undefined||typeof v==='boolean';
+const bounded=(v:unknown,min:number,max:number)=>typeof v==='number'&&Number.isFinite(v)&&v>=min&&v<=max;
+const optionalBounded=(v:unknown,min:number,max:number)=>v===undefined||bounded(v,min,max);
 const optionalNumber=(v:unknown)=>v===undefined||(typeof v==='number'&&Number.isFinite(v)&&Math.abs(v)<1_000_000);
 const primitives=new Set(['box','wedge','cylinder','cone','pyramid','icosphere','archSegment','poly']);
 function bad(message:string):never{throw Error(`Invalid project: ${message}`)}
@@ -68,6 +75,10 @@ export function validateProjectFile(input:unknown):Project{
     if(ids.has(obj.id))bad(`duplicate object ID at ${i+1}.`);
     ids.add(obj.id);
   }
+  validateMissionEventMetadata(input);
+  validateEncounterMetadata(input);
+  validatePuzzleMetadata(input);
+  validateBlueprintMetadata(input);
   if(input.customNpcs!==undefined){
     if(!Array.isArray(input.customNpcs)||input.customNpcs.length>80)bad('custom NPC definitions are malformed.');
     const seen=new Set<string>();
@@ -100,6 +111,41 @@ export function validateProjectFile(input:unknown):Project{
        !Object.entries(input.cinematicPreviewSpeeds).every(([id,speed])=>id.length>0&&id.length<=256&&typeof speed==='number'&&Number.isFinite(speed)&&speed>=1&&speed<=2000))
       bad('cinematic preview speeds are malformed.');
   }
+  if(input.pathGroups!==undefined){
+    if(!Array.isArray(input.pathGroups)||input.pathGroups.length>256)bad('path group collection is malformed.');
+    const routeIds=new Set<string>();
+    for(const [index,route] of input.pathGroups.entries()){
+      if(!record(route)||!str(route.id,256)||!vec3(route.origin)||!record(route.options)||
+         !Array.isArray(route.brushIds)||route.brushIds.length<1||route.brushIds.length>640||
+         !Array.isArray(route.signatures)||route.signatures.length!==route.brushIds.length||
+         (route.entityIds!==undefined&&(!Array.isArray(route.entityIds)||route.entityIds.length>200||!route.entityIds.every(v=>str(v,256))))||
+         (route.entitySignatures!==undefined&&(!Array.isArray(route.entitySignatures)||route.entitySignatures.length!==(route.entityIds?.length??0)||!route.entitySignatures.every(v=>str(v,64))))||
+         (route.entityIds!==undefined&&route.entitySignatures===undefined)||
+         (route.integratedTerrainId!==undefined&&!str(route.integratedTerrainId,256))||
+         !route.brushIds.every(v=>str(v,256))||
+         !route.signatures.every(v=>str(v,8192))||!Array.isArray(route.options.points)||
+         route.options.points.length<2||route.options.points.length>48||!route.options.points.every(vec3)||
+         !['road','walkway','vent','pipe','cable','rail','fence','bridge','cave'].includes(String(route.options.kind))||
+         !str(route.options.texture,32)||!Number.isFinite(route.options.width)||!Number.isFinite(route.options.height)||
+         !bounded(route.options.wallThickness,2,64)||
+         !optionalBounded(route.options.repeatSpacing,32,512)||
+         !optionalBounded(route.options.sidewalkWidth,0,128)||
+         !optionalBounded(route.options.curbHeight,0,24)||
+         !optionalBounded(route.options.cableSag,0,256)||
+         !optionalBounded(route.options.cableSpacing,4,64)||
+         (route.options.cableCount!==undefined&&(!Number.isInteger(route.options.cableCount)||!bounded(route.options.cableCount,1,4)))||
+         (route.options.subdivisions!==undefined&&(!Number.isInteger(route.options.subdivisions)||!bounded(route.options.subdivisions,1,16)))||
+         (route.options.smooth!==undefined&&typeof route.options.smooth!=='boolean')||
+         (route.options.surfacePortals!==undefined&&(route.options.kind!=='cave'||typeof route.options.surfacePortals!=='boolean'))||
+         (route.options.name!==undefined&&!str(route.options.name,96))||
+         (route.options.railway!==undefined&&(route.options.kind!=='rail'||!record(route.options.railway)||
+           validateRailwaySettings(route.options.railway as never,route.options.points as Vec3[]).length>0)))bad(`path group ${index+1} is malformed.`);
+      // Missing brush IDs are allowed so projects with manually removed path
+      // parts can still open. Regeneration checks provenance and safely refuses.
+      if(routeIds.has(route.id))bad('duplicate path group ID.');
+      routeIds.add(route.id);
+    }
+  }
   if(input.terrainGroups!==undefined){
     if(!Array.isArray(input.terrainGroups)||input.terrainGroups.length>128)bad('terrain group collection is malformed.');
     const groupIds=new Set<string>();
@@ -108,8 +154,13 @@ export function validateProjectFile(input:unknown):Project{
          typeof group.width!=='number'||typeof group.depth!=='number'||typeof group.resolution!=='number'||
          !Array.isArray(group.heights)||!group.heights.every(n=>typeof n==='number'&&Number.isFinite(n))||
          !str(group.texture,32)||!Array.isArray(group.brushIds)||!Array.isArray(group.brushSignatures)||
-         group.brushIds.length!==2*group.resolution*group.resolution||
+         (group.optimized===true||(Array.isArray(group.excludedCells)&&group.excludedCells.some((v:number)=>v===1))?(group.brushIds.length<1||group.brushIds.length>2*group.resolution*group.resolution):group.brushIds.length!==2*group.resolution*group.resolution)||
          group.brushSignatures.length!==group.brushIds.length||
+         (group.optimized!==undefined&&typeof group.optimized!=='boolean')||
+         (group.baseMode!==undefined&&!['solid','thin','custom'].includes(String(group.baseMode)))||
+         (group.hideUnderside!==undefined&&typeof group.hideUnderside!=='boolean')||
+         (group.excludedCells!==undefined&&(!Array.isArray(group.excludedCells)||group.excludedCells.length!==group.resolution*group.resolution||!group.excludedCells.every((v:number)=>v===0||v===1)||group.excludedCells.every((v:number)=>v===1)||group.baseMode!=='thin'))||
+         (group.diagonalFlips!==undefined&&(!Array.isArray(group.diagonalFlips)||group.diagonalFlips.length!==group.resolution*group.resolution||!group.diagonalFlips.every(v=>v===0||v===1)))||
          !group.brushIds.every(id=>str(id,256)&&ids.has(id))||
          !group.brushSignatures.every(signature=>str(signature,8192)))bad(`terrain group ${i+1} is malformed.`);
       if(![4,8,12,16].includes(group.resolution as number)||
@@ -120,6 +171,9 @@ export function validateProjectFile(input:unknown):Project{
          group.heights.length!==((group.resolution as number)+1)**2||
          !group.heights.every(n=>n>=-512&&n<=512)||
          (group.baseDepth!==undefined&&(typeof group.baseDepth!=='number'||!Number.isFinite(group.baseDepth)||group.baseDepth<64||group.baseDepth>1024))||
+         (group.surfaceThickness!==undefined&&!bounded(group.surfaceThickness,8,128))||
+         (group.customBaseOffset!==undefined&&!bounded(group.customBaseOffset,-2048,512))||
+         (group.baseMode==='custom'&&(Number(group.customBaseOffset??-192)>Math.min(...(group.heights as number[]))-8))||
          !/^[^\s\"()[\]]{1,32}$/.test(group.texture as string))bad(`terrain group ${i+1} has invalid geometry settings.`);
       if(groupIds.has(group.id))bad('duplicate terrain group ID.');
       groupIds.add(group.id);
@@ -160,6 +214,30 @@ export function validateProjectFile(input:unknown):Project{
       for(const key of ['width','height','depth','frame','steps'])if(!optionalNumber(item.options[key]))bad(`architecture assembly ${i+1} has invalid ${key}.`);
       for(const key of ['cutOnly','doorLeaf','openTop'])if(!optionalBoolean(item.options[key]))bad(`architecture assembly ${i+1} has invalid ${key}.`);
       assemblyIds.add(item.id);
+    }
+  }
+  if(input.brushComposites!==undefined){
+    if(!Array.isArray(input.brushComposites)||input.brushComposites.length>1024)bad('brush composites malformed.');
+    const all=new Set<string>();
+    for(const rec of input.brushComposites){
+      if(!record(rec)||!str(rec.id,256)||!str(rec.group,128)||!rec.group.startsWith('Smart Merge ')||
+         !Array.isArray(rec.memberIds)||rec.memberIds.length<2||rec.memberIds.length>512||!rec.memberIds.every(id=>str(id,256))||
+         new Set(rec.memberIds).size!==rec.memberIds.length||!record(rec.previousGroups)||
+         !Object.entries(rec.previousGroups).every(([id,group])=>str(id,256)&&(group===null||str(group,128)))||all.has(rec.id))bad('brush composite record malformed.');
+      all.add(rec.id);
+    }
+  }
+  if(input.curveAssemblies!==undefined){
+    if(!Array.isArray(input.curveAssemblies)||input.curveAssemblies.length>256)bad('curve assemblies malformed.');
+    const all=new Set<string>();
+    for(const rec of input.curveAssemblies){
+      if(!record(rec)||!str(rec.id,256)||all.has(rec.id)||!record(rec.options)||
+        !vec3(rec.options.origin)||!Array.isArray(rec.memberIds)||!rec.memberIds.length||rec.memberIds.length>128||
+        !rec.memberIds.every(id=>str(id,256))||!Array.isArray(rec.signatures)||rec.signatures.length!==rec.memberIds.length||
+        !rec.signatures.every(signature=>str(signature,8192))||
+        ![rec.options.radius,rec.options.width,rec.options.thickness,rec.options.sweep,rec.options.rise,rec.options.segments,rec.options.startAngle].every(Number.isFinite)||
+        !str(rec.options.texture,32))bad('curve assembly record malformed.');
+      all.add(rec.id);
     }
   }
   return {...input,target:'svengine'} as Project;

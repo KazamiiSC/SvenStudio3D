@@ -2,7 +2,7 @@ import {useEffect,useState} from 'react';
 import {createPortal} from 'react-dom';
 import {useThree} from '@react-three/fiber';
 import * as THREE from 'three';
-import {Copy,Trash2,EyeOff,Eye,Lock,Unlock,Focus,Move3D,Rotate3D,Scaling,Box,Sun,Layers,Grid3x3,Users,Link2,Unlink,FolderOpen,Paintbrush,Settings2,MousePointer2,Undo2,Redo2,Scan,FilePlus2,MapPin,Group,FolderTree,PenLine} from 'lucide-react';
+import {Copy,Trash2,EyeOff,Eye,Lock,Unlock,Focus,Route,Move3D,Rotate3D,Scaling,Box,Sun,Layers,Grid3x3,Users,Link2,Unlink,FolderOpen,Paintbrush,Settings2,MousePointer2,Undo2,Redo2,Scan,FilePlus2,MapPin,Group,FolderTree,PenLine} from 'lucide-react';
 import {useEditor} from '../store';
 import {confirmBrushDetach} from './brushEntityActions';
 import {useT} from '../i18n';
@@ -125,6 +125,11 @@ export function ContextMenu({menu,onClose}:{menu:SceneMenu;onClose:()=>void}){
       {item(obj.locked?'Unlock':'Lock',obj.locked?<Unlock size={15}/>:<Lock size={15}/>,()=>store.toggleLocked(obj.id))}
       {obj.kind==='brush'&&<>
         {section('Brush tools')}
+        {item('Brush Workshop',<Box size={15}/>,()=>document.dispatchEvent(new CustomEvent('svenstudio:open-studio',{detail:'workshop'})),undefined,obj.locked)}
+        {item('World Builder · Curves',<Route size={15}/>,()=>document.dispatchEvent(new CustomEvent('svenstudio:open-studio',{detail:'curves'})))}
+        {selectedIds.length>=2&&item('Fuse selection',<Group size={15}/>,()=>store.fuseSelection('auto'))}
+        {selectedIds.length>=2&&item('Make composite',<Group size={15}/>,()=>store.fuseSelection('composite'))}
+        {obj.group?.startsWith('Smart Merge ')&&item('Separate composite',<Unlink size={15}/>,store.separateSelectedComposite)}
         {item('Object mode',<MousePointer2 size={15}/>,()=>store.setGeometryMode('object'))}
         {item('Vertex mode',<MapPin size={15}/>,()=>store.setGeometryMode('vertex'))}
         {item('Edge mode',<Scan size={15}/>,()=>store.setGeometryMode('edge'))}

@@ -93,3 +93,11 @@ export function bspCameraPose(map:Pick<BspMap,'bounds'|'entities'>,requested:Bsp
   }
   return {position:toThree(pos),target:toThree(target),view:'interior'};
 }
+
+/** Exact OrbitControls target for handoff from pointer-locked fly mode.
+ * Normalizes any direction, preserving camera position, yaw and pitch. */
+export function bspFlyOrbitTarget(position:readonly number[],direction:readonly number[],distance=160):[number,number,number]{
+  const norm=Math.hypot(...direction);
+  const scale=Number.isFinite(norm)&&norm>1e-8?Math.max(16,distance)/norm:0;
+  return [0,1,2].map(i=>(position[i]||0)+(direction[i]||0)*scale) as [number,number,number];
+}

@@ -2,10 +2,15 @@ import {useEffect,useMemo,useState,type MouseEvent,type ReactNode,type CSSProper
 import {Box,ChevronDown,ChevronRight,Eye,EyeOff,FolderTree,Focus,Layers,Link2,Lock,Route,Search,Unlock,UserRound,Users,AlertTriangle,MapPin,AudioLines,DoorOpen,Sun,Package,Skull,Target,FilterX} from 'lucide-react';
 import {useEditor} from '../store';
 import {organizeScene,routeColor,type SceneGroup} from '../engine/sceneOrganization';
-import type {MapObject} from '../engine/types';
+import type {MapObject,BrushCompositeRecord} from '../engine/types';
 import {useT} from '../i18n';
 import {consumeRouteFocus} from '../engine/uiNavigation';
 import {connectionSearchText} from '../engine/entityNaming';
+
+// Stable empty value for projects that do not yet contain brush composites.
+// Never create [] inside a Zustand selector: React 19's external-store
+// subscription requires identical snapshots for identical store states.
+const EMPTY_BRUSH_COMPOSITES:BrushCompositeRecord[]=[];
 
 const icons:Record<string,typeof Box>={geometry:Box,npc:Skull,spawners:Users,audio:AudioLines,lighting:Sun,triggers:Target,brushentities:DoorOpen,items:Package,other:Box};
 export function ExplorerOrganized(){
@@ -13,6 +18,7 @@ export function ExplorerOrganized(){
   const selected=useEditor(s=>s.selected),setSelected=useEditor(s=>s.setSelected),toggleVisibility=useEditor(s=>s.toggleVisibility),toggleLocked=useEditor(s=>s.toggleLocked);
   const routeSolo=useEditor(s=>s.routeSolo),setRouteSolo=useEditor(s=>s.setRouteSolo);
   const startWaypoint=useEditor(s=>s.startWaypointPlacement),focus=useEditor(s=>s.issueCameraCommand);
+  const composites=useEditor(s=>s.project.brushComposites)??EMPTY_BRUSH_COMPOSITES;
   const tree=useMemo(()=>organizeScene(objects),[objects]);
   // Launched from the floating AI Routes shortcut: reveal and scroll to
   // routes, even if this Explorer panel was previously collapsed or filtered.
@@ -45,7 +51,27 @@ export function ExplorerOrganized(){
     <button className="tree-folder scene-hierarchy-heading" onClick={()=>flip(key)}>{open(key)?<ChevronDown size={13}/>:<ChevronRight size={13}/>}<Icon size={15}/><span>{t(label)}</span><small>{count}</small></button>
     {open(key)&&children}
   </section>;
-  const groupNode=(g:SceneGroup)=>{const filtered=g.items.filter(test);if(!filtered.length)return null;const Icon=icons[g.id]||Box;const limit=limits[g.id]||120;return folder(g.id,g.name,filtered.length,Icon,<>{filtered.slice(0,limit).map(o=>item(o))}{filtered.length>limit&&<button className="explorer-load-more" onClick={()=>setLimits(v=>({...v,[g.id]:limit+120}))}>{t('Show more entities')} ({filtered.length-limit})</button>}</>)};
+  const groupNode=(g:SceneGroup)=>{
+    const filtered=g.items.filter(test);if(!filtered.length)return null;
+    const Icon=icons[g.id]||Box,limit=limits[g.id]||120,seen=new Set<string>();
+    const rows:ReactNode[]=[];
+    for(const o of filtered.slice(0,limit)){
+      const record=composites.find(c=>c.group===o.group&&c.memberIds.includes(o.id));
+      if(!record){rows.push(item(o));continue;}
+      if(seen.has(record.id))continue;seen.add(record.id);
+      const key='fusion:'+record.id,expanded=collapsed[key]===false;
+      const members=record.memberIds.map(id=>objects.find(obj=>obj.id===id)).filter((v):v is MapObject=>!!v);
+      rows.push(<section key={record.id} className="explorer-composite">
+        <div className={`explorer-composite-heading ${members.some(b=>selectedIds.includes(b.id))?'selected':''}`}>
+          <button className="explorer-composite-toggle" title={t('Expand composite')} onClick={()=>setCollapsed(v=>({...v,[key]:!(v[key]??true)}))}>{expanded?<ChevronDown size={16}/>:<ChevronRight size={16}/>}</button>
+          <button className="explorer-composite-name" onClick={()=>{if(members[0])select(members[0].id,false)}} title={t('Select composite')}><Package size={15}/><span>{t('Composite object')} · {members.length} {t('brushes')}</span></button>
+          <button className="explorer-composite-toggle" title={t('Frame selection')} onClick={()=>{if(members[0]){select(members[0].id,false);focus('frame')}}}><Focus size={15}/></button>
+        </div>
+        {expanded&&members.map(member=>item(member,2))}
+      </section>);
+    }
+    return folder(g.id,g.name,filtered.length,Icon,<>{rows}{filtered.length>limit&&<button className="explorer-load-more" onClick={()=>setLimits(v=>({...v,[g.id]:limit+120}))}>{t('Show more entities')} ({filtered.length-limit})</button>}</>);
+  };
   const includedRoutes=tree.routes.filter(r=>!query||r.name.toLowerCase().includes(query.toLowerCase())||r.nodes.some(test)||r.owners.some(test));
   return <div className="explorer scene-hierarchy">
     <div className="panel-header"><span><FolderTree size={15}/> {t('Explorer')} · {t('Scene')}</span><span className="counter">{objects.filter(o=>o.kind==='entity').length}</span></div>

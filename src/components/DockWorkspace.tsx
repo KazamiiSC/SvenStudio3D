@@ -1,7 +1,9 @@
-import {useEffect,useRef,useState,type ReactNode,type PointerEvent as ReactPointerEvent,type DragEvent} from 'react';
-import {GripVertical,ArrowLeft,ArrowRight,ArrowDownToLine,PanelLeft,PanelRight,PanelTop,PanelBottom,RotateCcw,SlidersHorizontal,Layers,Blocks,FolderTree,Terminal,LayoutTemplate,Eye,EyeOff,Move} from 'lucide-react';
+import {useEffect,useRef,useState,type ReactNode,type CSSProperties,type PointerEvent as ReactPointerEvent,type DragEvent} from 'react';
+import {GripVertical,ArrowLeft,ArrowRight,ArrowDownToLine,PanelLeft,PanelRight,PanelTop,PanelBottom,RotateCcw,SlidersHorizontal,Layers,Blocks,FolderTree,Terminal,LayoutTemplate,Eye,EyeOff,Move,Sun,Check} from 'lucide-react';
 import {useStudioLayout,TOOLBAR_GROUPS,normalizeToolbarGroups,type DockPanelId,type DockSide,type ToolbarGroup} from '../layout';
+import {INTERFACE_THEMES,INTERFACE_THEME_NAMES,INTERFACE_THEME_SWATCHES,interfaceThemeCopy} from '../engine/interfaceThemes';
 import {useT} from '../i18n';
+import {useEditor} from '../store';
 import {measureAdaptiveDocks} from '../engine/adaptiveWorkspace';
 import {normalizedDockFlexGrows} from '../engine/dockFlex';
 import {AssetPanel,Explorer,Properties} from './Panels';
@@ -10,6 +12,16 @@ type Dragged={type:'panel',id:DockPanelId}|{type:'toolbar'};
 const sides:DockSide[]=['left','right','top','bottom'];
 const sideIcons={left:PanelLeft,right:PanelRight,top:PanelTop,bottom:PanelBottom};
 const panelIcons={assets:Blocks,explorer:FolderTree,properties:SlidersHorizontal,console:Terminal};
+
+/** Appearance labels stay in one place, with no fallback to another UI language. */
+const appearanceLabels={
+  es:{title:'Apariencia y tema de acento',mode:'Apariencia',dark:'Modo oscuro',hint:'El aspecto de los paneles cambia; los colores y la iluminación del mapa no cambian.',accent:'Tema de acento'},
+  en:{title:'Appearance & accent theme',mode:'Appearance',dark:'Dark mode',hint:'Only editor panels change; map materials and lighting are unaffected.',accent:'Accent theme'},
+  ru:{title:'Оформление и цветовой акцент',mode:'Оформление',dark:'Тёмная тема',hint:'Изменяется только интерфейс редактора, не материалы и освещение карты.',accent:'Цветовой акцент'},
+  ko:{title:'화면 모드 및 강조 색상',mode:'화면 모드',dark:'다크 모드',hint:'편집기 패널만 바뀌며 맵 재질과 조명은 그대로 유지됩니다.',accent:'강조 색상'},
+  zh:{title:'外观与强调色主题',mode:'外观',dark:'深色模式',hint:'仅更改编辑器面板，不改变地图材质和光照。',accent:'强调色主题'},
+  pt:{title:'Aparência e tema de destaque',mode:'Aparência',dark:'Modo escuro',hint:'Apenas a interface muda; os materiais e a iluminação do mapa permanecem iguais.',accent:'Tema de destaque'}
+} as const;
 const panelNames={assets:'Asset Library',explorer:'Explorer',properties:'Properties',console:'Output'} as const;
 
 function AttachSelect({value,onChange,label}:{value:DockSide,onChange:(side:DockSide)=>void,label:string}){
@@ -189,9 +201,15 @@ export function DockWorkspace({toolbar,viewport,consolePanel}:{toolbar:ReactNode
     const Icon=sideIcons[side];
     return <div key={side} className={`viewport-dock-target target-${side}`} onDragOver={e=>{e.preventDefault();e.dataTransfer.dropEffect='move'}} onDrop={e=>complete(e,side)}><Icon size={18}/><span>{t(side[0].toUpperCase()+side.slice(1))}</span></div>;
   };
+  const scrollRibbon=(delta:number)=>{
+    const element=dockRef.current?.parentElement?.querySelector('.ribbon-shell .ribbon');
+    element?.scrollBy({left:delta,top:0,behavior:'smooth'});
+  };
   const bar=<div className="ribbon-shell">
     <div className="toolbar-dock-heading">
       <DragHandle onStart={beginToolbar} onEnd={()=>setDragging(null)}><Layers size={15}/><span>{t('Tools')}</span></DragHandle>
+      <div className="ui3-ribbon-navigation"><button type="button" onClick={()=>scrollRibbon(-350)} aria-label={t('Previous toolbar groups')} title={t('Previous toolbar groups')}>‹</button>
+      <button type="button" onClick={()=>scrollRibbon(350)} aria-label={t('Next toolbar groups')} title={t('Next toolbar groups')}>›</button></div>
       <AttachSelect value={layout.toolbarDock} label="Tools" onChange={layout.setToolbarDock}/>
     </div>
     {toolbar}
@@ -220,12 +238,57 @@ export function LayoutModal({onClose}:{onClose:()=>void}){
   },[onClose]);
   const t=useT();
   const layout=useStudioLayout();
+  const [workspaceName,setWorkspaceName]=useState('');
+  const locale=useEditor(s=>s.locale);
+  const appearanceText=appearanceLabels[locale];
+  const themeText=interfaceThemeCopy(locale);
   const orderedToolbar=normalizeToolbarGroups(layout.toolbarGroups??TOOLBAR_GROUPS);
   const toolbarLabels:Record<ToolbarGroup,string>={transform:'Transform',view:'View',geometry:'Geometry editing',tools:'Tools',grid:'Grid',edit:'Edit',studios:'Studios'};
   return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal-card layout-modal" onMouseDown={e=>e.stopPropagation()}>
-    <div className="modal-title"><LayoutTemplate size={19}/><span>{t('Workspace layout')}</span><button onClick={onClose}>×</button></div>
+    <div className="modal-title"><LayoutTemplate size={19}/><span>{appearanceText.title}</span><button onClick={onClose}>×</button></div>
     <p className="modal-subtext">{t('Drag panel headers or choose a docking side. Resize the dividers. Changes are saved automatically.')}</p>
+    <section className="studio-appearance-section" aria-label={appearanceText.title}>
+      <div className="layout-subtitle"><Sun size={15}/>{appearanceText.title}</div>
+      <div className="layout-subtitle"><LayoutTemplate size={16}/>{themeText.heading}</div>
+      <p className="modal-subtext studio-appearance-hint">{themeText.subtitle}</p>
+      <div className="studio-theme-grid" role="group" aria-label={themeText.heading}>
+        {INTERFACE_THEMES.map(id=>{
+          const swatch=INTERFACE_THEME_SWATCHES[id];
+          return <button type="button" key={id} className={`studio-theme-card studio-theme-card-${id} ${layout.interfaceTheme===id?'chosen':''}`}
+            aria-pressed={layout.interfaceTheme===id} onClick={()=>layout.setInterfaceTheme(id)}
+            title={`${INTERFACE_THEME_NAMES[id]} — ${themeText[id]}`}>
+            <span className="studio-theme-miniature" aria-hidden="true" style={{'--preview-bg':swatch.bg,'--preview-panel':swatch.panel,'--preview-highlight':swatch.accent,'--preview-text':swatch.text} as CSSProperties}>
+              <span className="studio-theme-miniature-title"/><span className="studio-theme-miniature-body"><i/><i/><i/></span>
+            </span>
+            <span className="studio-theme-card-copy"><strong>{INTERFACE_THEME_NAMES[id]}</strong><small>{themeText[id]}</small></span>
+            {layout.interfaceTheme===id&&<Check size={16} className="studio-theme-selected"/>}
+          </button>;
+        })}
+      </div>
+      <p className="modal-subtext studio-appearance-hint">{appearanceText.hint}</p>
+      <div className="layout-subtitle">{appearanceText.accent}</div>
+      <div className="layout-theme-choices">{(['nebula','ice','ember','mint','orchid','gold'] as const).map(id=><button type="button" key={id} aria-pressed={layout.accent===id} className={`theme-choice theme-${id} ${layout.accent===id?'chosen':''}`} onClick={()=>layout.setAccent(id)}><span/>{t(id[0].toUpperCase()+id.slice(1))}</button>)}</div>
+    </section>
     <div className="layout-subtitle">{t('Quick layouts')}</div>
+    <div className="ui3-workflow-presets">
+      {(['construction','entities','bsp'] as const).map(preset=><button type="button" key={preset} title={preset==='bsp'?t('BSP viewport inspector layout only'):t('Workspace preset')} onClick={()=>{
+        layout.usePreset(preset);
+        if(preset==='construction')useEditor.getState().setResourceView('textures');
+        if(preset==='entities')useEditor.getState().setResourceView('entities');
+      }}><LayoutTemplate size={16}/>{t(preset==='construction'?'Construction workspace':preset==='entities'?'Entities workspace':'BSP workspace')}</button>)}
+    </div>
+    <div className="layout-subtitle">{t('Saved workspaces')}</div>
+    <form className="ui3-save-workspace" onSubmit={e=>{e.preventDefault();layout.saveCurrentWorkspace(workspaceName);setWorkspaceName('')}}>
+      <input aria-label={t('Workspace name')} placeholder={t('Workspace name')} value={workspaceName} maxLength={48} onChange={e=>setWorkspaceName(e.target.value)}/>
+      <button disabled={!workspaceName.trim()} type="submit">{t('Save workspace')}</button>
+    </form>
+    <div className="ui3-saved-workspaces">
+      {Object.keys(layout.savedWorkspaces).length===0&&<small>{t('No saved workspaces')}</small>}
+      {Object.keys(layout.savedWorkspaces).map(name=><div key={name}><span title={name}>{name}</span>
+        <button type="button" onClick={()=>layout.restoreSavedWorkspace(name)}>{t('Apply')}</button>
+        <button type="button" onClick={()=>layout.deleteSavedWorkspace(name)} aria-label={`${t('Delete')} ${name}`}>×</button>
+      </div>)}
+    </div>
     <div className="layout-presets">{(['organized','creative','classic','focus','wide','minimal'] as const).map(k=><button key={k} onClick={()=>layout.usePreset(k)}><LayoutTemplate size={19}/><span>{t(k[0].toUpperCase()+k.slice(1))}</span></button>)}</div>
     <div className="layout-subtitle">{t('Toolbar style')}</div><div className="layout-side-choices"><button className={layout.compactTools!==false?'chosen':''} onClick={()=>layout.setCompactTools(true)}>{t('Floating tools')}</button><button className={layout.compactTools===false?'chosen':''} onClick={()=>layout.setCompactTools(false)}>{t('Classic ribbon')}</button></div>
     {layout.compactTools===false?<>
@@ -233,9 +296,10 @@ export function LayoutModal({onClose}:{onClose:()=>void}){
       <div className="layout-side-choices">{sides.map(side=>{const Icon=sideIcons[side];return <button key={side} className={layout.toolbarDock===side?'chosen':''} onClick={()=>layout.setToolbarDock(side)}><Icon size={18}/>{t(side[0].toUpperCase()+side.slice(1))}</button>})}</div>
     </>:<p className="modal-subtext">{t('Move floating tools with Edit HUD. Toolbar docking applies to Classic ribbon only.')}</p>}
     <div className="layout-subtitle">{t('Toolbar sections')}</div>
+    <p className="modal-subtext">{t('Pin the most-used toolbar groups to the front. The others stay available.')}</p>
     <p className="modal-subtext">{t('Drag the section label on the classic toolbar, or use the arrows below to change its order.')}</p>
     <div className="layout-toolbar-sections">{orderedToolbar.map((id,index)=><div key={id}>
-      <GripVertical size={14}/><strong>{t(toolbarLabels[id])}</strong>
+      <button type="button" className={layout.pinnedToolbarGroups.includes(id)?'ui3-pinned':'ui3-unpinned'} onClick={()=>layout.togglePinnedToolbarGroup(id)} title={t('Pin or unpin toolbar group')} aria-pressed={layout.pinnedToolbarGroups.includes(id)}>★</button><GripVertical size={14}/><strong>{t(toolbarLabels[id])}</strong>
       <button type="button" title={t('Move left')} aria-label={`${t(toolbarLabels[id])} · ${t('Move left')}`} disabled={index===0} onClick={()=>layout.stepToolbarGroup(id,-1)}><ArrowLeft size={14}/></button>
       <button type="button" title={t('Move right')} aria-label={`${t(toolbarLabels[id])} · ${t('Move right')}`} disabled={index===orderedToolbar.length-1} onClick={()=>layout.stepToolbarGroup(id,1)}><ArrowRight size={14}/></button>
     </div>)}</div>
@@ -251,8 +315,6 @@ export function LayoutModal({onClose}:{onClose:()=>void}){
     <div className="layout-subtitle">{t('Large map performance')}</div>
     <div className="layout-performance-options">{(['quality','balanced','large'] as const).map(id=><button key={id} className={layout.performancePreset===id?'chosen':''} onClick={()=>layout.setPerformancePreset(id)}>{t(id==='quality'?'Quality':id==='balanced'?'Balanced':'Large maps')}</button>)}</div>
     <p className="modal-subtext">{t('Performance settings affect only viewport previews, never compiled map content.')}</p>
-    <div className="layout-subtitle">{t('Accent theme')}</div>
-    <div className="layout-theme-choices">{(['nebula','ice','ember','mint','orchid','gold'] as const).map(id=><button key={id} className={`theme-choice theme-${id} ${layout.accent===id?'chosen':''}`} onClick={()=>layout.setAccent(id)}><span/>{t(id[0].toUpperCase()+id.slice(1))}</button>)}</div>
     <div className="layout-bottom-buttons"><button onClick={layout.resetLayout}><RotateCcw size={16}/>{t('Reset layout')}</button><button className="primary-action" onClick={onClose}>{t('Done')}</button></div>
   </div></div>;
 }
