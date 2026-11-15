@@ -1,0 +1,877 @@
+{
+  "version": "2.1",
+  "image_count": 22,
+  "tool_count": 42,
+  "images": [
+    {
+      "id": "SvenStudio-3D",
+      "filename": "SvenStudio 3D.png",
+      "category": "general",
+      "es": "Bienvenida y acceso a estudios",
+      "en": "Welcome and studio launcher"
+    },
+    {
+      "id": "MapEditor1",
+      "filename": "MapEditor1.png",
+      "category": "map",
+      "es": "Editor MAP · vista 3D",
+      "en": "MAP Editor · 3D view"
+    },
+    {
+      "id": "MapEditor2",
+      "filename": "MapEditor2.png",
+      "category": "map",
+      "es": "Editor MAP · estructura",
+      "en": "MAP Editor · structure"
+    },
+    {
+      "id": "MapEditor3",
+      "filename": "MapEditor3.png",
+      "category": "map",
+      "es": "Editor MAP · entidades",
+      "en": "MAP Editor · entities"
+    },
+    {
+      "id": "WorldBuilderStudio1",
+      "filename": "WorldBuilderStudio1.png",
+      "category": "studios",
+      "es": "World Builder Studio",
+      "en": "World Builder Studio"
+    },
+    {
+      "id": "BlueprintStudio1",
+      "filename": "BlueprintStudio1.png",
+      "category": "studios",
+      "es": "Blueprint to Map",
+      "en": "Blueprint to Map"
+    },
+    {
+      "id": "GameplayStudio1",
+      "filename": "GameplayStudio1.png",
+      "category": "studios",
+      "es": "Gameplay Studio",
+      "en": "Gameplay Studio"
+    },
+    {
+      "id": "NPCAIStudio1",
+      "filename": "NPCAIStudio1.png",
+      "category": "studios",
+      "es": "NPC & AI Studio",
+      "en": "NPC & AI Studio"
+    },
+    {
+      "id": "MissionCampaignStudio1",
+      "filename": "MissionCampaignStudio1.png",
+      "category": "studios",
+      "es": "Misiones y campañas",
+      "en": "Missions & campaigns"
+    },
+    {
+      "id": "LightingStudio1",
+      "filename": "LightingStudio1.png",
+      "category": "studios",
+      "es": "Lighting Studio",
+      "en": "Lighting Studio"
+    },
+    {
+      "id": "SoundsStudio1",
+      "filename": "SoundsStudio1.png",
+      "category": "studios",
+      "es": "Sound Studio",
+      "en": "Sound Studio"
+    },
+    {
+      "id": "PrefabStudio1",
+      "filename": "PrefabStudio1.png",
+      "category": "studios",
+      "es": "Prefab Studio",
+      "en": "Prefab Studio"
+    },
+    {
+      "id": "BuildTogether1",
+      "filename": "BuildTogether1.png",
+      "category": "collab",
+      "es": "BuildTogether · conexión",
+      "en": "BuildTogether · connection"
+    },
+    {
+      "id": "BuildTogether2",
+      "filename": "BuildTogether2.png",
+      "category": "collab",
+      "es": "BuildTogether · edición",
+      "en": "BuildTogether · editing"
+    },
+    {
+      "id": "BSPViewer1",
+      "filename": "BSPViewer1.png",
+      "category": "bsp",
+      "es": "BSP Viewer · interior",
+      "en": "BSP Viewer · interior"
+    },
+    {
+      "id": "BSPViewer2",
+      "filename": "BSPViewer2.png",
+      "category": "bsp",
+      "es": "BSP Viewer · recorrido",
+      "en": "BSP Viewer · navigation"
+    },
+    {
+      "id": "BSPEditor_PlaceEntities1",
+      "filename": "BSPEditor_PlaceEntities1.png",
+      "category": "bsp",
+      "es": "BSP Editor · entidades",
+      "en": "BSP Editor · entities"
+    },
+    {
+      "id": "GoldSrcTheme",
+      "filename": "GoldSrcTheme.png",
+      "category": "themes",
+      "es": "Tema GoldSrc Workshop",
+      "en": "GoldSrc Workshop theme"
+    },
+    {
+      "id": "CyberNeonTheme",
+      "filename": "CyberNeonTheme.png",
+      "category": "themes",
+      "es": "Tema Cyber Neon",
+      "en": "Cyber Neon theme"
+    },
+    {
+      "id": "MidnightTheme",
+      "filename": "MidnightTheme.png",
+      "category": "themes",
+      "es": "Tema Midnight Minimal",
+      "en": "Midnight Minimal theme"
+    },
+    {
+      "id": "Windows98Theme",
+      "filename": "Windows98Theme.png",
+      "category": "themes",
+      "es": "Tema Windows 98 Classic",
+      "en": "Windows 98 Classic theme"
+    },
+    {
+      "id": "WindowsXPTheme",
+      "filename": "WindowsXPTheme.png",
+      "category": "themes",
+      "es": "Tema Windows XP Luna",
+      "en": "Windows XP Luna theme"
+    }
+  ],
+  "tools": [
+    {
+      "category": "geometry",
+      "title": "Editor MAP",
+      "es": "Construcción y edición precisa de mapas Valve 220.",
+      "en": "Precise Valve 220 map creation and editing.",
+      "details_es": [
+        "Brushes convexos, selección de objetos, vértices, aristas y caras",
+        "Operaciones CSG: Clip, Hollow, Extrude, Bevel, Inset y Push/Pull",
+        "Gizmos 3D, grilla, propiedades y exportación MAP"
+      ],
+      "details_en": [
+        "Convex brushes; object, vertex, edge and face selection",
+        "CSG operations: Clip, Hollow, Extrude, Bevel, Inset and Push/Pull",
+        "3D gizmos, grid, properties and MAP export"
+      ],
+      "screenshot": "MapEditor1"
+    },
+    {
+      "category": "geometry",
+      "title": "Brush Workshop 3D",
+      "es": "Dibujá detalles directamente sobre la cara de un brush.",
+      "en": "Draw solid details directly onto a brush face.",
+      "details_es": [
+        "Paneles, rebajes y aberturas a través del sólido",
+        "Marcos y aberturas con marco en una operación",
+        "Previsualización 3D y deshacer integrado"
+      ],
+      "details_en": [
+        "Panels, recesses and cut-through openings",
+        "Frames and framed openings in one operation",
+        "3D preview with integrated undo"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "geometry",
+      "title": "Advanced Geometry",
+      "es": "Modelado de sólidos integrado en las herramientas existentes.",
+      "en": "Solid modeling built into the existing geometry tools.",
+      "details_es": [
+        "Edición de vértices, aristas y caras sin crear estudios duplicados",
+        "Extrusión, bisel, inset, vaciado y corte sobre brushes",
+        "Validación de geometría convexa antes de exportar"
+      ],
+      "details_en": [
+        "Vertex, edge and face editing without duplicate studios",
+        "Extrude, bevel, inset, hollow and clip brushes",
+        "Convex geometry checks before export"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "geometry",
+      "title": "Smart Connect 2.0",
+      "es": "Uní dos caras con geometría GoldSrc editable.",
+      "en": "Join two faces with editable GoldSrc geometry.",
+      "details_es": [
+        "Varias rutas candidatas y detección de obstáculos",
+        "Puntos de control en 3D, planta XY y alzado XZ",
+        "Aberturas CSG optativas con confirmación y Undo/Redo"
+      ],
+      "details_en": [
+        "Multiple candidate routes and obstacle checks",
+        "Editable control points in 3D, XY plan and XZ elevation",
+        "Optional confirmed CSG openings with Undo/Redo"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "geometry",
+      "title": "World Builder Studio",
+      "es": "Terrenos, rocas, caminos e infraestructura.",
+      "en": "Terrain, rocks, paths and infrastructure.",
+      "details_es": [
+        "Sculpt Terrain con cambios de altura y pinceles",
+        "Rock & Cliff para rocas y acantilados",
+        "Caminos, puentes, raíles y flujos con heightmaps"
+      ],
+      "details_en": [
+        "Sculpt Terrain with height brushes",
+        "Rock & Cliff for rocks and cliffs",
+        "Paths, bridges, rails and heightmap workflows"
+      ],
+      "screenshot": "WorldBuilderStudio1"
+    },
+    {
+      "category": "geometry",
+      "title": "Terrain & Shape Studio",
+      "es": "Editá superficies y geometrías de paisaje.",
+      "en": "Edit terrain surfaces and landscape geometry.",
+      "details_es": [
+        "Herramientas de terreno con vértices y diagonales",
+        "Pinceles para modelar, suavizar y modificar alturas",
+        "Vista de terreno, rocas, rutas y curvas"
+      ],
+      "details_en": [
+        "Terrain tools with editable vertices and diagonals",
+        "Sculpting, smoothing and height-adjustment brushes",
+        "Terrain, rocks, paths and curves views"
+      ],
+      "screenshot": "WorldBuilderStudio1"
+    },
+    {
+      "category": "geometry",
+      "title": "Blueprint to Map",
+      "es": "Convertí planos 2D en estructuras de varios niveles.",
+      "en": "Turn 2D plans into multilevel structures.",
+      "details_es": [
+        "Dibujá paredes y habitaciones a partir de un plano",
+        "Insertá puertas y ventanas editables desde la vista 3D",
+        "Pisos, escaleras y ocultación inteligente de paredes"
+      ],
+      "details_en": [
+        "Draw rooms and walls from a floor plan",
+        "Place editable doors and windows in the 3D view",
+        "Floors, staircases and smart wall visibility"
+      ],
+      "screenshot": "BlueprintStudio1"
+    },
+    {
+      "category": "geometry",
+      "title": "Architecture Mode",
+      "es": "Herramientas de arquitectura y construcción guiada.",
+      "en": "Guided architecture and building tools.",
+      "details_es": [
+        "Trazado de arquitectura y creación de estructuras",
+        "Operaciones de construcción dentro del Editor MAP",
+        "Trabajo compatible con los brushes del proyecto"
+      ],
+      "details_en": [
+        "Architecture drawing and structure creation",
+        "Building operations inside the MAP Editor",
+        "Works with the project brush geometry"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "geometry",
+      "title": "Curvas y repeticiones",
+      "es": "Geometrías curvas y patrones repetidos.",
+      "en": "Curved geometry and repeated patterns.",
+      "details_es": [
+        "Herramientas de curvas integradas en World Builder",
+        "Piezas segmentadas compatibles con GoldSrc",
+        "Creación repetible de componentes geométricos"
+      ],
+      "details_en": [
+        "Curves integrated into World Builder",
+        "Segmented pieces compatible with GoldSrc",
+        "Repeatable geometry patterns"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "geometry",
+      "title": "Universal Placement 3D",
+      "es": "Posicionamiento preciso al colocar objetos y recursos.",
+      "en": "Accurate placement for objects and assets.",
+      "details_es": [
+        "Vista previa antes de confirmar la colocación",
+        "Controles compactos y avanzados de transformación",
+        "Ajustes directos durante el flujo de construcción"
+      ],
+      "details_en": [
+        "Preview objects before committing placement",
+        "Compact and advanced transform controls",
+        "On-the-fly adjustments while building"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "geometry",
+      "title": "Smart Snapping 2.0",
+      "es": "Ajuste magnético configurable en el editor.",
+      "en": "Configurable magnetic snapping in the editor.",
+      "details_es": [
+        "Alineación a caras, vértices y aristas",
+        "Guías visuales 3D y distancia de captura configurable",
+        "Shift para ignorar temporalmente el ajuste"
+      ],
+      "details_en": [
+        "Snap to faces, vertices and edges",
+        "3D visual guides and configurable snapping distance",
+        "Temporarily bypass snapping with Shift"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "geometry",
+      "title": "Smart Map Navigator",
+      "es": "Encontrá y enfocá elementos en escenas grandes.",
+      "en": "Find and focus objects in large scenes.",
+      "details_es": [
+        "Búsqueda por clase, textura, grupo, capa y targetname",
+        "Filtros de brushes y entidades en el Explorador",
+        "Encuadre de cámara y contorno temporal sin modificar el MAP"
+      ],
+      "details_en": [
+        "Search by class, texture, group, layer and targetname",
+        "Brush and entity filters in the Explorer",
+        "Camera focus and temporary highlight without altering MAP"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "visual",
+      "title": "Texture Studio / WAD",
+      "es": "Gestioná materiales y UV por cara.",
+      "en": "Manage materials and face UVs.",
+      "details_es": [
+        "Carga y búsqueda de texturas WAD3",
+        "Escala, rotación, desplazamiento y alineación UV",
+        "Edición de caras y propiedades de textura"
+      ],
+      "details_en": [
+        "Load and browse WAD3 textures",
+        "UV scale, rotation, offset and alignment",
+        "Per-face editing and texture properties"
+      ],
+      "screenshot": "MapEditor3"
+    },
+    {
+      "category": "visual",
+      "title": "Seamless Texture Alignment",
+      "es": "Continuidad de texturas entre superficies vecinas.",
+      "en": "Seamless texture flow across adjacent surfaces.",
+      "details_es": [
+        "Identifica bordes compartidos entre caras seleccionadas",
+        "Previsualiza las correcciones sin alterar el MAP hasta aplicar",
+        "Conserva fase UV en esquinas y paredes conectadas"
+      ],
+      "details_en": [
+        "Detects shared edges on selected faces",
+        "Previews alignment before applying to the MAP",
+        "Preserves UV phase across corners and joined walls"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "visual",
+      "title": "Decal Studio",
+      "es": "Colocación de detalles visuales con entidades nativas.",
+      "en": "Place visual details using native entities.",
+      "details_es": [
+        "Importación de decals desde WAD",
+        "Colocación visual en paredes, suelos o techos",
+        "Exportación como entidades infodecal compatibles"
+      ],
+      "details_en": [
+        "Import decals from WADs",
+        "Place decals on walls, floors and ceilings",
+        "Export Sven Co-op compatible infodecal entities"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "visual",
+      "title": "Material & Surface Studio",
+      "es": "Configuración de superficies y sonido asociado.",
+      "en": "Configure surface behavior and associated sounds.",
+      "details_es": [
+        "Propiedades nativas para texturas y superficies",
+        "Preajustes de material y comportamiento",
+        "Conserva UV Valve 220 del mapa"
+      ],
+      "details_en": [
+        "Native texture and surface properties",
+        "Material presets and behavior options",
+        "Preserves the map’s Valve 220 UVs"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "visual",
+      "title": "Lighting Studio",
+      "es": "Diseñá ambientes, luces y skyboxes.",
+      "en": "Design environments, lights and skyboxes.",
+      "details_es": [
+        "Entidades de iluminación y parámetros ambientales",
+        "Preajustes de luz, cielo y entorno",
+        "Controles para SC-RAD y estilos de luz"
+      ],
+      "details_en": [
+        "Lighting entities and environment settings",
+        "Light, sky and environment presets",
+        "SC-RAD settings and light styles"
+      ],
+      "screenshot": "LightingStudio1"
+    },
+    {
+      "category": "visual",
+      "title": "True Lighting 2.0",
+      "es": "Vista previa de iluminación compilada.",
+      "en": "Preview compiled lighting in the editor.",
+      "details_es": [
+        "Flujo de previsualización con SDHLT",
+        "Opciones de Ambient Occlusion y PCF donde aplica",
+        "Revisión de iluminación sin sustituir la prueba en el juego"
+      ],
+      "details_en": [
+        "Preview workflow with SDHLT",
+        "Ambient Occlusion and PCF options where supported",
+        "Inspect lighting without replacing in-game testing"
+      ],
+      "screenshot": "LightingStudio1"
+    },
+    {
+      "category": "visual",
+      "title": "Sound Studio",
+      "es": "Sonidos, música y ambientes sonoros.",
+      "en": "Sounds, music and soundscapes.",
+      "details_es": [
+        "Biblioteca de sonidos de Sven Co-op",
+        "Preescucha y selección de recursos locales",
+        "Entidades de sonido y configuración de ambiente"
+      ],
+      "details_en": [
+        "Sven Co-op sound library",
+        "Preview and select local audio assets",
+        "Sound entities and ambient configuration"
+      ],
+      "screenshot": "SoundsStudio1"
+    },
+    {
+      "category": "visual",
+      "title": "Model Browser",
+      "es": "Explorá modelos MDL para usar en mapas y entidades.",
+      "en": "Browse MDL models for maps and entities.",
+      "details_es": [
+        "Biblioteca visual de modelos disponibles",
+        "Previsualización y selección de MDL compatibles",
+        "Uso al configurar entidades y prefabs"
+      ],
+      "details_en": [
+        "Visual library of available models",
+        "Preview and select compatible MDLs",
+        "Use models when configuring entities and prefabs"
+      ],
+      "screenshot": "NPCAIStudio1"
+    },
+    {
+      "category": "visual",
+      "title": "Temas e interfaz",
+      "es": "Personalizá la apariencia del espacio de trabajo.",
+      "en": "Customize the workspace appearance.",
+      "details_es": [
+        "Modern Dark, GoldSrc Workshop y Cyber Neon",
+        "Windows 98 Classic, Windows XP Luna y Midnight Minimal",
+        "Temas independientes de las herramientas y del MAP"
+      ],
+      "details_en": [
+        "Modern Dark, GoldSrc Workshop and Cyber Neon",
+        "Windows 98 Classic, Windows XP Luna and Midnight Minimal",
+        "Themes do not modify tool behavior or MAP geometry"
+      ],
+      "screenshot": "CyberNeonTheme"
+    },
+    {
+      "category": "gameplay",
+      "title": "Gameplay Studio",
+      "es": "Conectá entidades y creá lógica de juego visualmente.",
+      "en": "Connect entities and build gameplay logic visually.",
+      "details_es": [
+        "Relaciones target / targetname y triggers",
+        "Flujos de botones, puertas, relays y objetivos",
+        "Inspector de entidades y conexiones visuales"
+      ],
+      "details_en": [
+        "target / targetname links and triggers",
+        "Buttons, doors, relays and objective flows",
+        "Entity inspector and visual connections"
+      ],
+      "screenshot": "GameplayStudio1"
+    },
+    {
+      "category": "gameplay",
+      "title": "NPC & AI Studio",
+      "es": "Colocación y configuración de NPC.",
+      "en": "Place and configure NPCs.",
+      "details_es": [
+        "Biblioteca de NPC y vista previa de modelos",
+        "Edición de propiedades y navegación asociada",
+        "Integración con entidades y lógica de Sven Co-op"
+      ],
+      "details_en": [
+        "NPC library with model preview",
+        "Edit properties and navigation settings",
+        "Integrates with Sven Co-op entities and logic"
+      ],
+      "screenshot": "NPCAIStudio1"
+    },
+    {
+      "category": "gameplay",
+      "title": "Smart NPC Encounters 2.0",
+      "es": "Oleadas y encuentros cooperativos.",
+      "en": "Waves and cooperative encounters.",
+      "details_es": [
+        "Diseño de oleadas con entidades nativas",
+        "Contadores de bajas y encadenamiento de encuentros",
+        "Conexión con misiones y eventos dinámicos"
+      ],
+      "details_en": [
+        "Wave design with native entities",
+        "Death counters and chained encounters",
+        "Links to missions and dynamic events"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "gameplay",
+      "title": "Mission & Campaign Studio",
+      "es": "Objetivos y progreso de misiones cooperativas.",
+      "en": "Co-op mission objectives and progression.",
+      "details_es": [
+        "Creación de objetivos y enlaces entre etapas",
+        "Eventos programados con entidades multi_manager",
+        "Organización de experiencias cooperativas"
+      ],
+      "details_en": [
+        "Create objectives and links between stages",
+        "Scheduled events with multi_manager entities",
+        "Organize cooperative experiences"
+      ],
+      "screenshot": "MissionCampaignStudio1"
+    },
+    {
+      "category": "gameplay",
+      "title": "Dynamic Events Studio",
+      "es": "Coordinación de eventos y secuencias de mapa.",
+      "en": "Coordinate events and map sequences.",
+      "details_es": [
+        "Activaciones mediante entidades GoldSrc",
+        "Temporización y relaciones entre acciones",
+        "Integración con misiones, NPC y lógica de gameplay"
+      ],
+      "details_en": [
+        "Native GoldSrc entity activations",
+        "Timing and links between actions",
+        "Integrates with missions, NPCs and gameplay logic"
+      ],
+      "screenshot": "MissionCampaignStudio1"
+    },
+    {
+      "category": "gameplay",
+      "title": "Co-op Puzzle Studio",
+      "es": "Diseñá mecanismos para varios jugadores.",
+      "en": "Design puzzles for several players.",
+      "details_es": [
+        "Consolas y botones cooperativos",
+        "Requisitos de activación y validación de referencias",
+        "Comprobación de conexiones con misiones y eventos"
+      ],
+      "details_en": [
+        "Cooperative consoles and buttons",
+        "Activation requirements and reference checks",
+        "Checks links to missions and events"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "gameplay",
+      "title": "Cinematic Camera Studio",
+      "es": "Cámaras, recorridos y secuencias visuales.",
+      "en": "Cameras, paths and visual sequences.",
+      "details_es": [
+        "Definición de movimientos de cámara",
+        "Vista previa de secuencias en el mapa",
+        "Herramientas de control de velocidad por tramo"
+      ],
+      "details_en": [
+        "Configure camera movements",
+        "Preview sequences inside the map",
+        "Per-segment speed controls"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "gameplay",
+      "title": "Vista previa de movimiento",
+      "es": "Inspeccioná mecanismos antes de compilar.",
+      "en": "Inspect mechanisms before compiling.",
+      "details_es": [
+        "Puertas, plataformas, botones y trenes compatibles",
+        "Reproducir, pausar y recorrer la trayectoria",
+        "Vista previa estimada y no destructiva"
+      ],
+      "details_en": [
+        "Compatible doors, platforms, buttons and trains",
+        "Play, pause and scrub trajectories",
+        "Non-destructive estimated preview"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "gameplay",
+      "title": "Co-op Playtest Validator",
+      "es": "Detectá problemas frecuentes de navegación cooperativa.",
+      "en": "Find common co-op navigation issues.",
+      "details_es": [
+        "Agentes fantasma en una validación dentro del editor",
+        "Detección orientativa de falta de suelo e intersecciones",
+        "No ejecuta Sven Co-op ni sustituye probar el BSP"
+      ],
+      "details_en": [
+        "Ghost agents in an editor-based validation",
+        "Indicative floor and intersection checks",
+        "Does not launch Sven Co-op or replace testing the BSP"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "gameplay",
+      "title": "BuildTogether",
+      "es": "Construcción colaborativa en red local.",
+      "en": "Collaborative building over a local network.",
+      "details_es": [
+        "Sincronización de edición por WebSocket",
+        "Sesiones LAN, cursores y cámaras remotas",
+        "Colaboración en redes privadas/de confianza"
+      ],
+      "details_en": [
+        "WebSocket editing synchronization",
+        "LAN sessions, cursors and remote cameras",
+        "Collaboration on trusted private networks"
+      ],
+      "screenshot": "BuildTogether2"
+    },
+    {
+      "category": "bsp",
+      "title": "BSP Viewer & Editor",
+      "es": "Inspección y edición de mapas BSP30 compilados.",
+      "en": "Inspect and edit compiled BSP30 maps.",
+      "details_es": [
+        "Navegación 3D, entidades, modelos y geometría",
+        "Selección de caras, regiones y edición visual de entidades",
+        "Inspector flotante, gizmos y exportación de una copia"
+      ],
+      "details_en": [
+        "3D navigation, entities, models and geometry",
+        "Face and region selection plus visual entity editing",
+        "Floating inspector, gizmos and export of a copy"
+      ],
+      "screenshot": "BSPViewer1"
+    },
+    {
+      "category": "bsp",
+      "title": "BSP Texture Studio",
+      "es": "Texturas y proyección UV sobre caras BSP.",
+      "en": "Textures and UV projection on BSP faces.",
+      "details_es": [
+        "Selección de caras del BSP importado",
+        "Rotación, escala y desplazamiento UV",
+        "Gestión de texturas WAD3 cuando están disponibles"
+      ],
+      "details_en": [
+        "Select faces on imported BSPs",
+        "UV rotation, scale and offset",
+        "WAD3 texture management when available"
+      ],
+      "screenshot": "BSPEditor_PlaceEntities1"
+    },
+    {
+      "category": "bsp",
+      "title": "BSP Lightmap Studio",
+      "es": "Ajuste de muestras RGB de iluminación existentes.",
+      "en": "Adjust existing compiled RGB lightmap samples.",
+      "details_es": [
+        "Edición de la iluminación de caras ya compiladas",
+        "Estilos de luz y previsualización",
+        "No recalcula SC-RAD ni crea sombras nuevas"
+      ],
+      "details_en": [
+        "Edit previously compiled face lighting",
+        "Light styles and preview",
+        "Does not rerun SC-RAD or create new shadows"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "bsp",
+      "title": "BSP Recovery & Composition",
+      "es": "Recuperá geometría aproximada o combiná mapas.",
+      "en": "Recover approximate geometry or combine maps.",
+      "details_es": [
+        "Recuperar BSP → MAP para continuar editando",
+        "Recuperación aproximada de caras o Hull 0 cuando corresponde",
+        "Composición de geometría recuperada con diagnóstico"
+      ],
+      "details_en": [
+        "Recover BSP → MAP for further editing",
+        "Approximate face or Hull 0 reconstruction where supported",
+        "Compose recovered geometry with diagnostics"
+      ],
+      "screenshot": "BSPViewer2"
+    },
+    {
+      "category": "bsp",
+      "title": "VIS & Portal Explorer",
+      "es": "Explorá datos de visibilidad de BSP30.",
+      "en": "Inspect BSP30 visibility information.",
+      "details_es": [
+        "Lectura de hojas y PVS almacenados en el BSP",
+        "Cajas de hojas potencialmente visibles",
+        "Importación optativa de portales PRT1 del mismo build"
+      ],
+      "details_en": [
+        "Read BSP-stored leaves and PVS",
+        "Potentially visible leaf bounds",
+        "Optional PRT1 portal import from a matching build"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "pipeline",
+      "title": "Prefab & Assets Studio",
+      "es": "Guardá y reutilizá contenido de tus mapas.",
+      "en": "Save and reuse assets from your maps.",
+      "details_es": [
+        "Catálogo con vista previa 3D y biblioteca local",
+        "Prefabs vinculados e instancias reutilizables",
+        "Extractor de objetos BSP y gestión de WAD cuando aplica"
+      ],
+      "details_en": [
+        "3D-preview catalog and local library",
+        "Linked prefabs and reusable instances",
+        "BSP object extractor and WAD handling where applicable"
+      ],
+      "screenshot": "PrefabStudio1"
+    },
+    {
+      "category": "pipeline",
+      "title": "Map Doctor 3.0",
+      "es": "Diagnóstico específico para Sven Co-op.",
+      "en": "Sven Co-op aware map diagnostics.",
+      "details_es": [
+        "Comprobaciones de geometría, entidades y recursos",
+        "Avisos de problemas antes de compilar",
+        "Informe para revisar manualmente en el editor"
+      ],
+      "details_en": [
+        "Geometry, entity and resource checks",
+        "Warnings about issues before compilation",
+        "Reviewable map diagnostic reports"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "pipeline",
+      "title": "Smart Build 3.0",
+      "es": "Compilación y empaquetado con destinos aislados.",
+      "en": "Compile and package into isolated destinations.",
+      "details_es": [
+        "SC-CSG, SC-BSP, SC-VIS y SC-RAD del SDK",
+        "Smart WAD y compilación Full / Fast",
+        "Salidas separadas, ZIP opcional e instalación al juego solo confirmada"
+      ],
+      "details_en": [
+        "SDK SC-CSG, SC-BSP, SC-VIS and SC-RAD",
+        "Smart WAD and Full / Fast builds",
+        "Separate outputs, optional ZIP and confirmed game installation only"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "pipeline",
+      "title": "Map Packager",
+      "es": "Organizá los recursos necesarios para distribuir un mapa.",
+      "en": "Organize the resources needed to distribute a map.",
+      "details_es": [
+        "Recopilación de dependencias de mapas y recursos",
+        "Distribución con carpetas de fuentes y logs",
+        "Exportación de paquete y avisos de archivos faltantes"
+      ],
+      "details_en": [
+        "Collect map dependencies and assets",
+        "Distribution with source and log directories",
+        "Export packages and warnings for missing files"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "pipeline",
+      "title": "Project History & Recovery",
+      "es": "Creá puntos de restauración independientes.",
+      "en": "Create independent restore points.",
+      "details_es": [
+        "Historial de proyectos en Documentos/SvenStudio3D",
+        "Recuperación de versiones sin borrar archivos externos",
+        "Conserva el autoguardado del navegador"
+      ],
+      "details_en": [
+        "History under Documents/SvenStudio3D",
+        "Restore versions without deleting external files",
+        "Keeps browser autosave intact"
+      ],
+      "screenshot": null
+    },
+    {
+      "category": "pipeline",
+      "title": "Large Map Performance",
+      "es": "Herramientas para inspeccionar escenas exigentes.",
+      "en": "Inspect demanding scenes and performance.",
+      "details_es": [
+        "Monitor de FPS, draw calls y triángulos",
+        "NULL Smart Mode para ocultar caras de herramienta",
+        "Diagnóstico exportable de render sin alterar el MAP"
+      ],
+      "details_en": [
+        "FPS, draw call and triangle monitoring",
+        "NULL Smart Mode to hide tool faces",
+        "Exportable render diagnostics without altering the MAP"
+      ],
+      "screenshot": null
+    }
+  ]
+}
