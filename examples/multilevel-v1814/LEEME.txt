@@ -1,0 +1,12 @@
+SVENSTUDIO 3D v1.8.14 - MULTI-LEVEL TEST
+
+1. Open the .svenstudio.json project or .svenblueprint.json as an editable blueprint.
+2. Check two levels and the editable main staircase in Blueprint to Map.
+3. Toggle Normal / Fade / Hide front walls while orbiting the camera.
+4. Switch to Ground floor and verify stair position and size.
+5. Inspect the upper floor: the stairwell should pass through floor and ceiling.
+6. Export / compile sv_multilevel_validation.map with Sven Co-op's SC compilers.
+7. Test the BSP in the game: map sv_multilevel_validation
+
+The BSP is not precompiled; in-game traversal and lighting have NOT been verified in this environment.
+The pitched roof covers only the large upper laboratory room; the small upper room uses its flat ceiling.

@@ -10,7 +10,7 @@ const en:Manual={
  'Set your map name in Build Configuration and configure the SDK compiler directory and Sven Co-op game data folder.',
  'Load your game’s WAD3 textures in Asset Library → Textures. Import sven-coop.fgd for the complete original entity class list; entity classnames remain in English.',
  'Create or import a MAP, select objects in the 3D viewport or Explorer, then edit properties and textures. Use File → Save project (Ctrl+S) for a portable .svenstudio.json file.',
- 'Click Compile Map to run the chosen compilers: Sven Co-op SDK (default) or experimental SDHLT. A successful build copies the BSP into the configured maps directory; intermediate MAP/build files are temporary. SDHLT requires separate external tools.'
+ 'Click Compile Map to run the chosen compilers: Sven Co-op SDK (default) or experimental SDHLT. Build results are saved outside the game by default; installing a BSP in Sven Co-op is a separate confirmed action. The intermediate MAP/build files are temporary. SDHLT requires separate external tools.'
  ],fullTitle:'Fullscreen recommended',full:'For reliable camera movement and fewer conflicts with browser keyboard shortcuts, use the editor’s Fullscreen button. Some browser shortcuts such as Ctrl+W, Ctrl+R or F5 may still be reserved; fullscreen cannot guarantee blocking all of them. Save projects frequently.',
  cameraTitle:'Mouse and camera',camera:[
  'Hold right mouse button inside the 3D viewport to look freely. Release it to restore the cursor. A brief right-click opens the context menu.',
@@ -30,7 +30,7 @@ const en:Manual={
  'Adjust U/V offset, scale, rotation, tile count, Fit, Align, Center and flip. Multiple faces may be selected; material copy/paste and the eyedropper are available. UV changes do not alter brush geometry.'
  ],shapesTitle:'Shapes, prefabs and other placement tools',shapes:[
  'While placing a shape/prefab: R rotates 90°, Shift+R rotates 15°, X/Y/Z chooses axis, F toggles surface alignment, 0 resets angle, P toggles repeat placement and Escape cancels.',
- 'Construction/geometry tools include Object, Vertex, Edge, Face, Clip, Hollow, CSG, Extrude, Bevel and Inset. Use the measure tool to click two points.'
+ 'Construction/geometry tools include Object, Vertex, Edge, Face, Clip, Hollow, CSG, Extrude, Bevel and Inset. HF22: select a brush, choose a geometry mode in Properties, click vertex or edge handles (Shift/Ctrl for multiple), then drag the gizmo or enter a local XYZ offset. A selected face can also be moved with the gizmo when Texture Studio is closed. Every valid edit is one Undo action. Existing tools are grouped below.',
  ],walkTitle:'Gameplay Test',walk:[
  'F5 or Shift+P toggles Gameplay Test. WASD moves, mouse looks, Shift runs, Space jumps, C crouches; E interacts with supported doors/buttons/triggers.',
  'F toggles flashlight, H toggles gameplay HUD, N toggles noclip, Escape exits the test. Q/E control vertical motion when applicable. This is a preview, not Sven Co-op gameplay.'
@@ -61,8 +61,8 @@ const en:Manual={
  'Use Edit HUD for draggable on-viewport buttons. Individual windows such as Texture Studio can be moved independently outside the 3D viewport.'
  ],technicalTitle:'How the editor accesses Sven Co-op',technical:[
  'The browser cannot freely read installed game folders. You explicitly import WAD/FGD assets, or provide game and SDK paths to the local Node.js service running on 127.0.0.1.',
- 'The portable local Node.js runtime is downloaded at first launch if missing; subsequent starts work offline. The local service uses configured game/SDK paths. Sven Co-op WAD/FGD/MDL assets and SC/SDHLT compilers are not bundled.',
- 'Saving a project exports .svenstudio.json; session recovery is also stored locally in the browser. MAP export uses Valve 220; Compile Map creates a temporary source MAP and copies the finished BSP to the selected Sven Co-op maps folder on success.'
+ 'The portable Windows package includes Node.js locally; if its runtime is missing, the launcher may download a verified replacement. Subsequent starts work offline. The local service uses configured game/SDK paths. Sven Co-op WAD/FGD/MDL assets and SC/SDHLT compilers are not bundled.',
+ 'Saving a project exports .svenstudio.json; session recovery is also stored locally in the browser. MAP export uses Valve 220; Compile Map creates a temporary source MAP and saves the output outside Sven Co-op by default. Installing a compiled BSP requires an explicit confirmed action.'
  ],noticeTitle:'Work in progress',notice:'SvenStudio 3D is NOT 100% finished. New updates arrive periodically. Please report bugs, missing tools, feature requests and suggestions to the developer.',contact:'Discord: kzsheez',linksTitle:'Developer contact'
 };
 const es:Manual={
@@ -71,7 +71,7 @@ const es:Manual={
  'Escribí el nombre del mapa en Build Configuration y configurá la carpeta de los compiladores del SDK y la carpeta de datos de Sven Co-op.',
  'Cargá las texturas WAD3 del juego en Asset Library → Texturas. Importá sven-coop.fgd para obtener la lista completa de entidades originales; sus classnames se conservan en inglés.',
  'Creá o importá un MAP, seleccioná objetos en el visor 3D o Explorer y editá sus propiedades y texturas. Usá File → Guardar proyecto (Ctrl+S) para conservar el archivo portátil .svenstudio.json.',
- 'Con Compile Map se ejecutan los compiladores del SDK. Si finaliza correctamente, el BSP se copia a <carpeta del juego>/maps/<nombre del mapa>.bsp; el MAP fuente y los archivos intermedios se generan temporalmente.'
+ 'Con Compile Map se ejecutan los compiladores del SDK. Los resultados quedan fuera del juego de forma predeterminada; instalar el BSP en Sven Co-op exige una acción y confirmación específicas. El MAP fuente y los archivos intermedios se generan temporalmente.'
  ],fullTitle:'Se recomienda usar pantalla completa',full:'Usá el botón Fullscreen del editor: facilita el movimiento de cámara y reduce conflictos con atajos del navegador. Algunas combinaciones como Ctrl+W, Ctrl+R o F5 pueden seguir reservadas por el navegador; la pantalla completa no garantiza bloquearlas todas. Guardá el proyecto con frecuencia.',
  cameraTitle:'Mouse y controles de cámara',camera:[
  'Mantené clic derecho dentro del visor 3D para mirar libremente. Soltá para recuperar el cursor. Un clic derecho breve abre el menú contextual.',
@@ -91,7 +91,7 @@ const es:Manual={
  'Modificá desplazamiento U/V, escala, rotación, mosaicos, Fit, Align, Center y espejado. Permite varias caras, copiar/pegar material y cuentagotas. Los cambios UV no alteran la geometría.'
  ],shapesTitle:'Formas, prefabs y colocación',shapes:[
  'Mientras colocás una forma o prefab: R gira 90°, Shift+R gira 15°, X/Y/Z elige eje, F alterna alineación con superficie, 0 reinicia ángulo, P repite colocación y Escape cancela.',
- 'La edición geométrica incluye Objeto, Vértice, Arista, Cara, Clip, Hollow, CSG, Extrude, Bevel e Inset. La herramienta de medir permite seleccionar dos puntos.'
+ 'La edición geométrica incluye Objeto, Vértice, Arista, Cara, Clip, Hollow, CSG, Extrude, Bevel e Inset. HF22: seleccioná un brush, elegí un modo en Propiedades, marcá vértices o aristas (Shift/Ctrl para varios) y mové el gizmo o escribí un desplazamiento XYZ local. También podés mover una cara con Texture Studio cerrado. Cada cambio válido ocupa un solo paso de Deshacer. Las herramientas anteriores están agrupadas debajo.',
  ],walkTitle:'Gameplay Test',walk:[
  'F5 o Shift+P activa/desactiva Gameplay Test. WASD mueve, el mouse mira, Shift corre, Espacio salta, C se agacha y E interactúa con puertas, botones o triggers compatibles.',
  'F activa linterna, H muestra/oculta HUD, N activa noclip y Escape sale. Q/E permite movimiento vertical cuando corresponda. Es una simulación, no el funcionamiento definitivo de Sven Co-op.'
@@ -122,8 +122,8 @@ const es:Manual={
  'Con Edit HUD podés reacomodar los botones flotantes del visor. Algunas ventanas, como Texture Studio, también se arrastran fuera del visor 3D.'
  ],technicalTitle:'Cómo obtiene recursos de Sven Co-op',technical:[
  'Por seguridad, el navegador no puede leer carpetas instaladas libremente. Importás WAD/FGD manualmente o indicás las rutas del juego y el SDK al servidor local de Node.js que funciona en 127.0.0.1.',
- 'El runtime Node.js portátil se descarga la primera vez si falta; luego el inicio funciona sin Internet. El servicio lee recursos desde las carpetas configuradas. Los recursos WAD/FGD/MDL de Sven Co-op y los compiladores SC/SDHLT se obtienen por separado.',
- 'Guardar proyecto exporta .svenstudio.json y hay recuperación local de sesiones. La compilación usa SC-SDK por defecto o SDHLT experimental (requiere ejecutables externos). Compile Map crea un MAP temporal y copia el BSP final a maps según configuración.'
+ 'El portable de primera instalación incluye Node.js; solo se intenta descargarlo si falta. Con dependencias instaladas, el editor puede iniciar sin Internet. El servicio lee recursos desde las carpetas configuradas. Los recursos WAD/FGD/MDL de Sven Co-op y los compiladores SC/SDHLT se obtienen por separado.',
+ 'Guardar proyecto exporta .svenstudio.json y hay recuperación local de sesiones. La compilación usa SC-SDK por defecto o SDHLT experimental (requiere ejecutables externos). Compile Map genera un MAP temporal y deja el BSP fuera del juego de forma predeterminada; instalarlo en Sven Co-op requiere confirmación explícita.'
  ],noticeTitle:'Proyecto en desarrollo',notice:'SvenStudio 3D todavía NO está terminado al 100%. Recibe nuevas actualizaciones periódicamente. Por favor, avisame de errores, herramientas que falten y propuestas de mejoras.',contact:'Discord: kzsheez',linksTitle:'Contacto con el desarrollador'
 };
 export const editorManual=(locale:Locale):Manual=>updateManualForV2(locale,locale==='es'?es:locale==='en'?en:localizeManual(locale,en));

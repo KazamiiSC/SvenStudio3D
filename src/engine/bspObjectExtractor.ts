@@ -12,9 +12,10 @@ import {createPrefab,validatePrefab,type Prefab} from './prefabs';
 import {findMipTextureInWads,type WAD3MipTexture} from './bspWadMipTexture';
 import {bspOriginalFaceIndex} from './bspFaceSelection';
 import {recoverSolidSubmodelHull0} from './bspHull0Recovery';
+import {deduplicateBspSurfacePanels,repairBspSurfacePanels} from './bspPrefabPanelRepair';
 
-export type BspObjectExtractionMode='exact'|'surface-shell'|'hull0-solid';
-export type BspObjectExtractionOptions={mode?:BspObjectExtractionMode;thickness?:number};
+export type BspObjectExtractionMode='exact'|'surface-shell'|'hull0-solid'|'auto';
+export type BspObjectExtractionOptions={mode?:BspObjectExtractionMode;thickness?:number;resolvedMipTextures?:readonly WAD3MipTexture[]};
 export type BspObjectPrefab=Prefab&{
   format:'svenstudio-bsp-object';sourceBsp:string;wad:{filename:string;base64:string};faceIds:number[];
   /** Surface shells are explicitly approximate: they do NOT recover the original
@@ -287,27 +288,46 @@ export const decodePrefabWad=(base64:string):Uint8Array=>{
 };
 export function extractBspObjectPrefab(map:BspMap,source:ArrayBuffer,faceIds:readonly number[],label:string,externalWads:readonly Uint8Array[]=[],options:BspObjectExtractionOptions={}):BspObjectPrefab{
   const mode=options.mode??'exact',thickness=options.thickness??2;
-  if(mode!=='exact'&&mode!=='surface-shell'&&mode!=='hull0-solid')throw Error('Unknown BSP prefab extraction mode.');
-  if(mode==='surface-shell'&&(!Number.isFinite(thickness)||thickness<1||thickness>16))throw Error('Panel thickness must be between 1 and 16 units.');
-  if(faceIds.length<(mode==='surface-shell'?1:4)||faceIds.length>MAX_SELECTED||new Set(faceIds).size!==faceIds.length)throw Error(mode==='exact'?'Select 4–256 distinct BSP faces belonging to complete solids.':'Select 1–256 distinct visible BSP faces.');
+  if(mode!=='exact'&&mode!=='surface-shell'&&mode!=='hull0-solid'&&mode!=='auto')throw Error('Unknown BSP prefab extraction mode.');
+  if((mode==='surface-shell'||mode==='auto')&&(!Number.isFinite(thickness)||thickness<1||thickness>16))throw Error('Panel thickness must be between 1 and 16 units.');
+  if(faceIds.length<((mode==='surface-shell'||mode==='auto')?1:4)||faceIds.length>MAX_SELECTED||new Set(faceIds).size!==faceIds.length)throw Error(mode==='exact'?'Select 4–256 distinct BSP faces belonging to complete solids.':'Select 1–256 distinct visible BSP faces.');
   const byId=new Map(map.faces.map((f,i)=>[bspOriginalFaceIndex(f,i),f]));
   const faces=faceIds.map(id=>byId.get(id));if(faces.some(f=>!f))throw Error('One or more selected BSP faces are missing.');
-  const groups=mode==='exact'?components(faces as BspFace[]):[];
-  if(groups.length>64)throw Error('Too many disconnected object pieces (limit 64).');
-  // Approximate recovery is explicitly opt-in. A tiny clipped/sliver BSP
-  // polygon must not make 83 otherwise recoverable chair faces fail together.
-  // Keep ALL rejected face IDs in the prefab manifest and require explicit UI
-  // confirmation before downloading a visibly incomplete object.
+  // Smart save uses the exact brush path when the selected polygons genuinely
+  // enclose a closed convex volume. A compiled worldspawn texture island usually
+  // is NOT such a volume: fall back to visibly accurate thin MAP panels instead.
+  // Never invent missing back faces or pretend an approximation is an original brush.
+  let resolvedMode:Exclude<BspObjectExtractionMode,'auto'>=mode==='auto'?'exact':mode;
+  let groups:BspFace[][]=[];
+  if(mode==='exact'||mode==='auto'){
+    groups=components(faces as BspFace[]);
+    if(mode==='exact'&&groups.length>64)throw Error('Too many disconnected object pieces (limit 64).');
+  }
   const skippedFaces:{faceId:number;reason:string}[]=[];
+  let brushes:Brush[]=[];
+  if(mode==='hull0-solid'){
+    // Hull 0 is a deliberately separate operation: it is never silently used
+    // for a worldspawn texture island or incomplete submodel selection.
+    brushes=[];
+  }else if(mode==='exact'){
+    brushes=groups.map((g,i)=>reconstructConvex(g,map,`${label} ${i+1}`));
+  }else if(mode==='auto'&&faceIds.length>=4&&groups.length<=64){
+    try{brushes=groups.map((g,i)=>reconstructConvex(g,map,`${label} ${i+1}`))}
+    catch{resolvedMode='surface-shell';brushes=[]}
+  }else resolvedMode='surface-shell';
   const hull=mode==='hull0-solid'?recoverSolidSubmodelHull0(map,source,faceIds,label):null;
-  const brushes=mode==='hull0-solid'?hull!.brushes:mode==='exact'?groups.map((g,i)=>reconstructConvex(g,map,`${label} ${i+1}`)):(faces as BspFace[]).flatMap((face,i)=>{
-    try{return surfaceShellPanels(face,map,label,thickness)}
-    catch(error){
-      skippedFaces.push({faceId:faceIds[i],reason:String(error instanceof Error?error.message:error).slice(0,220)});
-      return [];
-    }
-  });
-  if(mode==='surface-shell'&&!brushes.length)throw Error(`No exportable panels remain (${skippedFaces.length} selected BSP faces rejected). First: ${skippedFaces[0]?.reason||'invalid selection'}`);
+  if(hull)brushes=hull.brushes;
+  if(resolvedMode==='surface-shell'){
+    brushes=(faces as BspFace[]).flatMap((face,i)=>{
+      try{return surfaceShellPanels(face,map,label,thickness)}
+      catch(error){
+        skippedFaces.push({faceId:faceIds[i],reason:String(error instanceof Error?error.message:error).slice(0,220)});
+        return [];
+      }
+    });
+    if(!brushes.length)throw Error(`No exportable panels remain (${skippedFaces.length} selected BSP faces rejected). First: ${skippedFaces[0]?.reason||'invalid selection'}`);
+  }
+  if(resolvedMode==='surface-shell')brushes=repairBspSurfacePanels(deduplicateBspSurfacePanels(brushes));
   if(brushes.length>256)throw Error('Surface shell requires more than 256 editable panels. Select fewer faces.');
   const textureNames=[...new Set(brushes.flatMap(b=>b.faces.map(f=>f.texture.toLowerCase())))];
   if(textureNames.length>MAX_TEXTURES)throw Error('Too many textures in selected object.');
@@ -328,15 +348,15 @@ export function extractBspObjectPrefab(map:BspMap,source:ArrayBuffer,faceIds:rea
   const textures=[...expandedTextureNames].map(name=>{
     const descriptor=map.textures.find(t=>t.name.toLowerCase()===name);
     if(!descriptor)throw Error(`Missing BSP texture ${name}`);
-    const mip=readEmbeddedMip(source,descriptor.name,descriptor.width,descriptor.height)||findMipTextureInWads(externalWads,descriptor.name,descriptor.width,descriptor.height);
-    if(!mip)throw Error(`Texture ${descriptor.name} is external and its original WAD3 bytes are not loaded. Import the source WAD3 in BSP Texture Studio first; image previews alone do not preserve palette/mipmaps.`);
+    const mip=readEmbeddedMip(source,descriptor.name,descriptor.width,descriptor.height)||findMipTextureInWads(externalWads,descriptor.name,descriptor.width,descriptor.height)||options.resolvedMipTextures?.find(item=>item.name.toLowerCase()===name&&item.width===descriptor.width&&item.height===descriptor.height);
+    if(!mip)throw Error(`Texture ${descriptor.name} is external and its original WAD3 bytes are not loaded. Import the source WAD3 in BSP Texture Studio or configure the Sven Co-op game folder for automatic recovery; image previews alone do not preserve palette/mipmaps.`);
     return mip;
   });
   const wad=makeWad3(textures),safeLabel=label.trim().replace(/[^A-Za-z0-9_-]+/g,'_').slice(0,42)||'extracted';
   let fingerprint=2166136261;for(const byte of wad){fingerprint=Math.imul(fingerprint^byte,16777619)>>>0}
   const wadName=`${safeLabel}_${fingerprint.toString(16).padStart(8,'0')}.wad`;
   const base=createPrefab(brushes,label);
-  return {...base,format:'svenstudio-bsp-object',sourceBsp:map.name,wad:{filename:wadName,base64:toBase64(wad)},faceIds:[...faceIds],...(mode==='surface-shell'?{recovery:{mode:'surface-shell' as const,thickness,panels:brushes.length,skippedFaces,warning:'Approximate visible surface panels only. Original brush volumes, collision hulls, hidden faces, scripts and lighting are not recovered. Any skipped BSP faces are recorded.'}}:mode==='hull0-solid'?{recovery:{mode:'hull0-solid' as const,modelIndex:hull!.modelIndex,solids:brushes.length,warning:'Convex solid BSP hull-0 leaf cells; NOT original brushes. Face texture assignment can be approximate. Original collision hulls, scripts and baked lighting are not recovered.'}}:{})};
+  return {...base,format:'svenstudio-bsp-object',sourceBsp:map.name,wad:{filename:wadName,base64:toBase64(wad)},faceIds:[...faceIds],...(resolvedMode==='surface-shell'?{recovery:{mode:'surface-shell' as const,thickness,panels:brushes.length,skippedFaces,warning:'Approximate visible surface panels only. Original brush volumes, collision hulls, hidden faces, scripts and lighting are not recovered. Any skipped BSP faces are recorded.'}}:mode==='hull0-solid'?{recovery:{mode:'hull0-solid' as const,modelIndex:hull!.modelIndex,solids:brushes.length,warning:'Convex solid BSP hull-0 leaf cells; NOT original brushes. Face texture assignment can be approximate. Original collision hulls, scripts and baked lighting are not recovered.'}}:{})};
 }
 export function validateBspObjectPrefab(value:unknown):BspObjectPrefab{
   if(!value||typeof value!=='object')throw Error('Invalid BSP object prefab.');

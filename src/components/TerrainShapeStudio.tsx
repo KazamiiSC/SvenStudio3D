@@ -1,3 +1,4 @@
+import {saveStudioBlob} from '../engine/studioFiles';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {Canvas,useThree} from '@react-three/fiber';
 import {OrbitControls} from '@react-three/drei';
@@ -256,11 +257,10 @@ export function TerrainShapeStudio({onClose,initialTab='terrain'}:{onClose:()=>v
       context.putImageData(img,0,0);
       canvas.toBlob(blob=>{
         if(!blob){setMessage('Failed to export PNG.');return;}
-        const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;
-        link.download=(grid.name.replace(/[^a-z0-9_-]+/gi,'_')||'terrain')+'_heightmap.png';link.click();
-        window.setTimeout(()=>URL.revokeObjectURL(url),5000);
+        void saveStudioBlob(blob,(grid.name.replace(/[^a-z0-9_-]+/gi,'_')||'terrain')+'_heightmap.png','exports')
+          .then(saved=>setMessage(`Heightmap PNG saved: ${saved.path} (grayscale ${stats.min}–${stats.max} u).`))
+          .catch(error=>setMessage(String(error)));
       },'image/png');
-      setMessage(`Heightmap PNG exported (grayscale normalized to current ${stats.min}–${stats.max} u).`);
     }catch(error){setMessage(String(error instanceof Error?error.message:error))}
   };
   useEffect(()=>{

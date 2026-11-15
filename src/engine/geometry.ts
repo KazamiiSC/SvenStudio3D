@@ -4,6 +4,7 @@ import { uid } from './types';
 import {lockTranslatedBrushTextures} from './textureStudio';
 import {safeTextureAlignment} from './textureAxisSafety';
 import {normalizedUvAt} from './valve220UV.ts';
+import {isBspSyntheticClosure} from './bspPrefabSurfaceFlags.ts';
 
 
 // GoldSrc: X/Y horizontal, Z up. Three.js: X/Z horizontal, Y up.
@@ -240,7 +241,14 @@ export function buildMeshGeometry(b:Brush,textureSizes?:ReadonlyMap<string,{widt
   const positions:number[]=[];const uv:number[]=[];const indices:number[]=[];const trianglesToFaces:number[]=[];
   const worldVertices=transformedVertices(b);
   let base=0;
+  const geometryGroups:{start:number;count:number;faceIndex:number}[]=[];
   b.faces.forEach((face,fi)=>{
+    // A BSP surface-shell is a visible BSP polygon extruded into a temporary
+    // closed brush. Only face 0 is authoritative. The generated BACK and all
+    // SIDE caps are not textured geometry from the source BSP and must never
+    // enter the depth buffer, even when their edges are exposed. HF3 hid only
+    // adjacent caps and leaked repeated door/trim textures at the perimeter.
+    if(isBspSyntheticClosure(b,fi,face)||face.bspPrefabInternalCap)return;
     const faceVertices=face.indices.map(i=>gameToThree(b.vertices[i]));
     if(faceVertices.length<3)return;
     const {u,v,uShift,vShift}=safeFaceTextureAxes(worldVertices,face);
@@ -258,14 +266,15 @@ export function buildMeshGeometry(b:Brush,textureSizes?:ReadonlyMap<string,{widt
       const goldSrcV=normalizedUvAt(world,v,vScale,vShift,imageHeight);
       uv.push(normalizedUvAt(world,u,uScale,uShift,imageWidth),1-goldSrcV);
     });
+    const triangleStart=indices.length;
     for(let j=1;j<faceVertices.length-1;j++){
       indices.push(base,base+j,base+j+1);trianglesToFaces.push(fi);
     }
+    geometryGroups.push({start:triangleStart,count:indices.length-triangleStart,faceIndex:fi});
     base+=faceVertices.length;
   });
   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.setIndex(indices);geometry.computeVertexNormals();
-  let triangle=0;
-  b.faces.forEach((f,fi)=>{const count=Math.max(0,f.indices.length-2);if(count)geometry.addGroup(triangle*3,count*3,fi);triangle+=count});
+  geometryGroups.forEach(({start,count,faceIndex})=>geometry.addGroup(start,count,faceIndex));
   geometry.userData.trianglesToFaces=trianglesToFaces;
   return geometry;
 }

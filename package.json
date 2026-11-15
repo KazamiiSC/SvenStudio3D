@@ -1,9 +1,12 @@
 {
   "name": "sven-studio-3d",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "type": "module",
   "scripts": {
+    "verify:hf20": "node --experimental-transform-types --experimental-loader ./scripts/bsp-test-resolver.mjs --test tests/hf20-smart-connect.test.mjs",
+    "verify:hf20-hf1": "node --experimental-transform-types --experimental-loader ./scripts/bsp-test-resolver.mjs --test tests/hf20-hf1-multiselect.test.mjs tests/hf20-smart-connect.test.mjs",
+    "verify:hf20-hf2": "node --experimental-transform-types --experimental-loader ./scripts/bsp-test-resolver.mjs --test tests/hf20-hf2-smart-connect-routing-openings.test.mjs tests/hf20-hf1-multiselect.test.mjs tests/hf20-smart-connect.test.mjs",
     "dev": "concurrently -k -n API,WEB -c blue,green \"node server/index.js\" \"vite --host 127.0.0.1 --strictPort --open\"",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
@@ -58,7 +61,14 @@
     "verify:hf15-hf5": "node scripts/verify-hf15-p2-hf5.mjs",
     "verify:gameplay-v170": "node --test tests/gameplay-v170-workspace.test.mjs",
     "verify:gameplay-v172": "node --test tests/gameplay-v170-workspace.test.mjs tests/gameplay-v171-systems.test.mjs tests/gameplay-v172-designer.test.mjs",
-    "verify:gameplay-v173": "node --test tests/gameplay-v170-workspace.test.mjs tests/gameplay-v171-systems.test.mjs tests/gameplay-v172-designer.test.mjs tests/gameplay-v173-map.test.mjs"
+    "verify:gameplay-v173": "node --test tests/gameplay-v170-workspace.test.mjs tests/gameplay-v171-systems.test.mjs tests/gameplay-v172-designer.test.mjs tests/gameplay-v173-map.test.mjs",
+    "verify:bsp-prefab-hf1": "node --experimental-transform-types --experimental-loader ./scripts/bsp-test-resolver.mjs --test tests/bsp-prefab-smart-save-v20.test.mjs tests/bsp-object-extractor-stage8.test.mjs tests/bsp-object-extractor-hf5-real-cases.test.mjs tests/bsp-prefab-studio-folder-stage8.test.mjs tests/prefab-wad-auto-hf6.test.mjs",
+    "verify:bsp-prefab-hf2": "node --experimental-transform-types --experimental-loader ./scripts/bsp-test-resolver.mjs --test tests/bsp-editor-hf2-hull0-region-ui.test.mjs tests/bsp-editor-hf8-region-selection.test.mjs tests/bsp-prefab-smart-save-v20.test.mjs tests/bsp-object-extractor-stage8.test.mjs tests/bsp-object-extractor-hf5-real-cases.test.mjs tests/bsp-prefab-studio-folder-stage8.test.mjs tests/prefab-wad-auto-hf6.test.mjs",
+    "verify:bsp-prefab-hf3": "node --experimental-transform-types --experimental-loader ./scripts/bsp-test-resolver.mjs --test tests/bsp-editor-hf2-hull0-region-ui.test.mjs tests/bsp-editor-hf8-region-selection.test.mjs tests/bsp-prefab-smart-save-v20.test.mjs tests/bsp-object-extractor-stage8.test.mjs tests/bsp-object-extractor-hf5-real-cases.test.mjs tests/bsp-prefab-studio-folder-stage8.test.mjs tests/prefab-wad-auto-hf6.test.mjs tests/bsp-prefab-zfight-hf3.test.mjs",
+    "verify:bsp-prefab-hf4": "node --experimental-transform-types --experimental-loader ./scripts/bsp-test-resolver.mjs --test tests/bsp-editor-hf2-hull0-region-ui.test.mjs tests/bsp-editor-hf8-region-selection.test.mjs tests/bsp-prefab-smart-save-v20.test.mjs tests/bsp-object-extractor-stage8.test.mjs tests/bsp-object-extractor-hf5-real-cases.test.mjs tests/bsp-prefab-studio-folder-stage8.test.mjs tests/prefab-wad-auto-hf6.test.mjs tests/bsp-prefab-zfight-hf3.test.mjs tests/bsp-prefab-visual-fidelity-hf4.test.mjs",
+    "verify:hf5": "node --test tests/hf5-build-reset-preview.test.mjs tests/brush-workshop-preview2.test.cjs tests/smart-wad-hf7.test.mjs tests/hf10-isolated-build.test.mjs && node --experimental-transform-types --experimental-loader ./scripts/bsp-test-resolver.mjs --test tests/hf5-browser-cache-and-reset.test.mjs && npm run verify:bsp-prefab-hf4",
+    "verify:hf6": "node --test tests/hf6-documents-clean-new-project.test.mjs tests/hf5-build-reset-preview.test.mjs && npm run verify:bsp-prefab-hf4",
+    "verify:hf22": "node --experimental-transform-types --experimental-loader ./scripts/bsp-test-resolver.mjs --test tests/hf22-geometry-editing.test.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.0.7",

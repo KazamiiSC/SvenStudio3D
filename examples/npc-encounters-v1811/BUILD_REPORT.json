@@ -1,0 +1,37 @@
+{
+  "brushes": 70,
+  "pointEntities": 60,
+  "waves": [
+    {
+      "name": "HECU security team",
+      "monster": "monster_human_grunt",
+      "count": 4
+    },
+    {
+      "name": "Containment breach - zombies",
+      "monster": "monster_zombie",
+      "count": 3
+    },
+    {
+      "name": "Alien counterattack",
+      "monster": "monster_alien_grunt",
+      "count": 2
+    }
+  ],
+  "missionStages": [
+    "Eliminate all hostile waves",
+    "Reach extraction"
+  ],
+  "events": [
+    "Security lockdown warning",
+    "Final assault alert"
+  ],
+  "roundTrip": {
+    "totalBrushes": 70,
+    "importedBrushes": 70,
+    "skippedBrushes": 0,
+    "skippedLocations": []
+  },
+  "startTarget": "sv_en_373dd9b06a864c819d6_start",
+  "finishTarget": "sv_en_373dd9b06a864c819d6_finish"
+}

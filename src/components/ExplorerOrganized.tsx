@@ -6,6 +6,7 @@ import type {MapObject,BrushCompositeRecord} from '../engine/types';
 import {useT} from '../i18n';
 import {consumeRouteFocus} from '../engine/uiNavigation';
 import {connectionSearchText} from '../engine/entityNaming';
+import {SmartMapNavigator} from './SmartMapNavigator';
 
 // Stable empty value for projects that do not yet contain brush composites.
 // Never create [] inside a Zustand selector: React 19's external-store
@@ -76,6 +77,7 @@ export function ExplorerOrganized(){
   return <div className="explorer scene-hierarchy">
     <div className="panel-header"><span><FolderTree size={15}/> {t('Explorer')} · {t('Scene')}</span><span className="counter">{objects.filter(o=>o.kind==='entity').length}</span></div>
     <div className="search-field compact"><Search size={14}/><input placeholder={t('Filter objects...')} value={query} onChange={e=>setQuery(e.target.value)}/>{query&&<button onClick={()=>setQuery('')} title="Clear search"><FilterX size={14}/></button>}</div>
+    <SmartMapNavigator/>
     <div className="explorer-quickbar"><span><Route size={14}/>{tree.routes.length} {t('Routes')}</span><span>{tree.orphanWaypoints.length} {t('Unassigned')}</span>{routeSolo&&<button onClick={()=>setRouteSolo(null)}><Eye size={13}/>{t('Show all')}</button>}</div>
     <div className="explorer-tree"><div className="tree-root"><Layers size={15}/><strong>{t('Workspace')}</strong><small>{selectedIds.length>1?`${selectedIds.length} ${t('selected')}`:''}</small></div>
       {folder('routes','AI Routes',includedRoutes.length+tree.orphanWaypoints.length,Route,<>

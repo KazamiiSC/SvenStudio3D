@@ -1,0 +1,10 @@
+SvenStudio 3D v1.8.13 HF3 - Smart Wall Connections
+
+1. Blueprint to Map > Abrir plano guardado, importá sv_shared_walls_hf3.svenblueprint.json.
+2. Activá la vista 3D y Ocultar techos. Observá las paredes compartidas.
+3. Modificá un vértice o puerta, Guardar plano, Generar/Actualizar.
+4. También podés cargar el proyecto editable .svenstudio.json para ver las piezas ya generadas.
+5. El .map sirve para inspeccionar el resultado en el editor o compilarlo en Windows; WAD svstudio.wad requerido.
+
+Geometría: 23 brushes; 4 tramos compartidos; 880 unidades de pared repetida evitada.
+El MAP no fue compilado ni jugado en Sven Co-op en este entorno.

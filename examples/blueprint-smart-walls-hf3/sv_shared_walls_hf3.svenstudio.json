@@ -1,0 +1,3118 @@
+{
+  "version": 1,
+  "target": "svengine",
+  "name": "Shared Walls HF3",
+  "objects": [
+    {
+      "id": "48ca6b05-ccf1-4d84-ba6a-64e907007032",
+      "kind": "brush",
+      "name": "Dormitorio · Wall 1 main 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -222,
+          -8,
+          -112
+        ],
+        [
+          222,
+          -8,
+          -112
+        ],
+        [
+          238,
+          8,
+          -112
+        ],
+        [
+          -238,
+          8,
+          -112
+        ],
+        [
+          -222,
+          -8,
+          112
+        ],
+        [
+          222,
+          -8,
+          112
+        ],
+        [
+          238,
+          8,
+          112
+        ],
+        [
+          -238,
+          8,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -70,
+        250,
+        112
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "06ffa0ed-7b98-424d-97a6-ad30cc8e3798",
+      "kind": "brush",
+      "name": "Baño · Wall 2 side 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -35,
+          -112
+        ],
+        [
+          8,
+          35,
+          -112
+        ],
+        [
+          -8,
+          35,
+          -112
+        ],
+        [
+          -8,
+          -35,
+          -112
+        ],
+        [
+          8,
+          -35,
+          112
+        ],
+        [
+          8,
+          35,
+          112
+        ],
+        [
+          -8,
+          35,
+          112
+        ],
+        [
+          -8,
+          -35,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -70,
+        -127,
+        112
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "290fd0d2-6143-408d-8216-26c4c66a8391",
+      "kind": "brush",
+      "name": "Baño · Wall 2 lintel 2",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -32,
+          -56
+        ],
+        [
+          8,
+          32,
+          -56
+        ],
+        [
+          -8,
+          32,
+          -56
+        ],
+        [
+          -8,
+          -32,
+          -56
+        ],
+        [
+          8,
+          -32,
+          56
+        ],
+        [
+          8,
+          32,
+          56
+        ],
+        [
+          -8,
+          32,
+          56
+        ],
+        [
+          -8,
+          -32,
+          56
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -70,
+        -60,
+        168
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "e4c1daad-46b9-4949-a734-74de5b477058",
+      "kind": "brush",
+      "name": "Baño · Wall 2 main 3",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -35,
+          -112
+        ],
+        [
+          8,
+          35,
+          -112
+        ],
+        [
+          -8,
+          35,
+          -112
+        ],
+        [
+          -8,
+          -35,
+          -112
+        ],
+        [
+          8,
+          -35,
+          112
+        ],
+        [
+          8,
+          35,
+          112
+        ],
+        [
+          -8,
+          35,
+          112
+        ],
+        [
+          -8,
+          -35,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -70,
+        7,
+        112
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "bb37b9e1-702e-4628-b93e-16fcac5574e9",
+      "kind": "brush",
+      "name": "Baño · Wall 2 side 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -30,
+          -112
+        ],
+        [
+          8,
+          30,
+          -112
+        ],
+        [
+          -8,
+          30,
+          -112
+        ],
+        [
+          -8,
+          -30,
+          -112
+        ],
+        [
+          8,
+          -30,
+          112
+        ],
+        [
+          8,
+          30,
+          112
+        ],
+        [
+          -8,
+          30,
+          112
+        ],
+        [
+          -8,
+          -30,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -70,
+        88,
+        112
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "cc1a407d-0ae6-454d-9f40-f569efdb83f2",
+      "kind": "brush",
+      "name": "Baño · Wall 2 lintel 2",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -32,
+          -56
+        ],
+        [
+          8,
+          32,
+          -56
+        ],
+        [
+          -8,
+          32,
+          -56
+        ],
+        [
+          -8,
+          -32,
+          -56
+        ],
+        [
+          8,
+          -32,
+          56
+        ],
+        [
+          8,
+          32,
+          56
+        ],
+        [
+          -8,
+          32,
+          56
+        ],
+        [
+          -8,
+          -32,
+          56
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -70,
+        150,
+        168
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "10a1e320-0b27-4a35-9de0-eea77ce0b637",
+      "kind": "brush",
+      "name": "Baño · Wall 2 main 3",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -30,
+          -112
+        ],
+        [
+          8,
+          30,
+          -112
+        ],
+        [
+          -8,
+          30,
+          -112
+        ],
+        [
+          -8,
+          -30,
+          -112
+        ],
+        [
+          8,
+          -30,
+          112
+        ],
+        [
+          8,
+          30,
+          112
+        ],
+        [
+          -8,
+          30,
+          112
+        ],
+        [
+          -8,
+          -30,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -70,
+        212,
+        112
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "e719b2f7-039b-467e-9abb-eaaf0e2ebb50",
+      "kind": "brush",
+      "name": "Dormitorio · Wall 3 side 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -37.5,
+          -8,
+          -112
+        ],
+        [
+          37.5,
+          -8,
+          -112
+        ],
+        [
+          37.5,
+          8,
+          -112
+        ],
+        [
+          -37.5,
+          8,
+          -112
+        ],
+        [
+          -37.5,
+          -8,
+          112
+        ],
+        [
+          37.5,
+          -8,
+          112
+        ],
+        [
+          37.5,
+          8,
+          112
+        ],
+        [
+          -37.5,
+          8,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -254.5,
+        50,
+        112
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "25d510ff-a9ec-4872-a05f-c542ef785eb5",
+      "kind": "brush",
+      "name": "Dormitorio · Wall 3 lintel 2",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -32,
+          -8,
+          -56
+        ],
+        [
+          32,
+          -8,
+          -56
+        ],
+        [
+          32,
+          8,
+          -56
+        ],
+        [
+          -32,
+          8,
+          -56
+        ],
+        [
+          -32,
+          -8,
+          56
+        ],
+        [
+          32,
+          -8,
+          56
+        ],
+        [
+          32,
+          8,
+          56
+        ],
+        [
+          -32,
+          8,
+          56
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -185,
+        50,
+        168
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "d172585e-ece9-4f0d-8399-e4d9ae48074c",
+      "kind": "brush",
+      "name": "Dormitorio · Wall 3 side 3",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -83,
+          -8,
+          -112
+        ],
+        [
+          83,
+          -8,
+          -112
+        ],
+        [
+          83,
+          8,
+          -112
+        ],
+        [
+          -83,
+          8,
+          -112
+        ],
+        [
+          -83,
+          -8,
+          112
+        ],
+        [
+          83,
+          -8,
+          112
+        ],
+        [
+          83,
+          8,
+          112
+        ],
+        [
+          -83,
+          8,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -70,
+        50,
+        112
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "9bf485fa-a082-4b1d-907b-042602f386eb",
+      "kind": "brush",
+      "name": "Dormitorio · Wall 3 lintel 4",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -32,
+          -8,
+          -56
+        ],
+        [
+          32,
+          -8,
+          -56
+        ],
+        [
+          32,
+          8,
+          -56
+        ],
+        [
+          -32,
+          8,
+          -56
+        ],
+        [
+          -32,
+          -8,
+          56
+        ],
+        [
+          32,
+          -8,
+          56
+        ],
+        [
+          32,
+          8,
+          56
+        ],
+        [
+          -32,
+          8,
+          56
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        45,
+        50,
+        168
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "93036e19-1f10-4139-bf2c-4d0f0385fccd",
+      "kind": "brush",
+      "name": "Dormitorio · Wall 3 main 5",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -37.5,
+          -8,
+          -112
+        ],
+        [
+          37.5,
+          -8,
+          -112
+        ],
+        [
+          37.5,
+          8,
+          -112
+        ],
+        [
+          -37.5,
+          8,
+          -112
+        ],
+        [
+          -37.5,
+          -8,
+          112
+        ],
+        [
+          37.5,
+          -8,
+          112
+        ],
+        [
+          37.5,
+          8,
+          112
+        ],
+        [
+          -37.5,
+          8,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        114.5,
+        50,
+        112
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "36c429c0-b582-4bc3-8184-35f73b3c21a5",
+      "kind": "brush",
+      "name": "Baño · Wall 4 main 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -202,
+          -112
+        ],
+        [
+          8,
+          202,
+          -112
+        ],
+        [
+          -8,
+          218,
+          -112
+        ],
+        [
+          -8,
+          -218,
+          -112
+        ],
+        [
+          8,
+          -202,
+          112
+        ],
+        [
+          8,
+          202,
+          112
+        ],
+        [
+          -8,
+          218,
+          112
+        ],
+        [
+          -8,
+          -218,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -300,
+        40,
+        112
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "8a32c33b-98fb-4b36-8c46-444a2eb9986f",
+      "kind": "brush",
+      "name": "Comedor · Wall 5 main 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -218,
+          -112
+        ],
+        [
+          8,
+          218,
+          -112
+        ],
+        [
+          -8,
+          202,
+          -112
+        ],
+        [
+          -8,
+          -202,
+          -112
+        ],
+        [
+          8,
+          -218,
+          112
+        ],
+        [
+          8,
+          218,
+          112
+        ],
+        [
+          -8,
+          202,
+          112
+        ],
+        [
+          -8,
+          -202,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        160,
+        40,
+        112
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "59af168a-701d-4c33-9713-153c3180cad9",
+      "kind": "brush",
+      "name": "Baño · Wall 6 main 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -238,
+          -8,
+          -112
+        ],
+        [
+          238,
+          -8,
+          -112
+        ],
+        [
+          222,
+          8,
+          -112
+        ],
+        [
+          -222,
+          8,
+          -112
+        ],
+        [
+          -238,
+          -8,
+          112
+        ],
+        [
+          238,
+          -8,
+          112
+        ],
+        [
+          222,
+          8,
+          112
+        ],
+        [
+          -222,
+          8,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -70,
+        -170,
+        112
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "dcb04047-d7f1-4f7a-8761-63b114457f3c",
+      "kind": "brush",
+      "name": "Dormitorio Floor 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -115,
+          -100,
+          -8
+        ],
+        [
+          115,
+          -100,
+          -8
+        ],
+        [
+          115,
+          100,
+          -8
+        ],
+        [
+          -115,
+          100,
+          -8
+        ],
+        [
+          -115,
+          -100,
+          8
+        ],
+        [
+          115,
+          -100,
+          8
+        ],
+        [
+          115,
+          100,
+          8
+        ],
+        [
+          -115,
+          100,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -185,
+        150,
+        -8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "f8e5856e-7151-4117-b558-84901eecb670",
+      "kind": "brush",
+      "name": "Dormitorio Ceiling 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -115,
+          -100,
+          -8
+        ],
+        [
+          115,
+          -100,
+          -8
+        ],
+        [
+          115,
+          100,
+          -8
+        ],
+        [
+          -115,
+          100,
+          -8
+        ],
+        [
+          -115,
+          -100,
+          8
+        ],
+        [
+          115,
+          -100,
+          8
+        ],
+        [
+          115,
+          100,
+          8
+        ],
+        [
+          -115,
+          100,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -185,
+        150,
+        232
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "c62523cc-da34-4310-8889-ea511485a86c",
+      "kind": "brush",
+      "name": "Cocina Floor 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -115,
+          -100,
+          -8
+        ],
+        [
+          115,
+          -100,
+          -8
+        ],
+        [
+          115,
+          100,
+          -8
+        ],
+        [
+          -115,
+          100,
+          -8
+        ],
+        [
+          -115,
+          -100,
+          8
+        ],
+        [
+          115,
+          -100,
+          8
+        ],
+        [
+          115,
+          100,
+          8
+        ],
+        [
+          -115,
+          100,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        45,
+        150,
+        -8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "fea7f502-967b-43a1-be10-2d9ecc8e9409",
+      "kind": "brush",
+      "name": "Cocina Ceiling 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -115,
+          -100,
+          -8
+        ],
+        [
+          115,
+          -100,
+          -8
+        ],
+        [
+          115,
+          100,
+          -8
+        ],
+        [
+          -115,
+          100,
+          -8
+        ],
+        [
+          -115,
+          -100,
+          8
+        ],
+        [
+          115,
+          -100,
+          8
+        ],
+        [
+          115,
+          100,
+          8
+        ],
+        [
+          -115,
+          100,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        45,
+        150,
+        232
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "14696e0c-791c-41c9-a248-b6866cdae08a",
+      "kind": "brush",
+      "name": "Baño Floor 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -115,
+          -110,
+          -8
+        ],
+        [
+          115,
+          -110,
+          -8
+        ],
+        [
+          115,
+          110,
+          -8
+        ],
+        [
+          -115,
+          110,
+          -8
+        ],
+        [
+          -115,
+          -110,
+          8
+        ],
+        [
+          115,
+          -110,
+          8
+        ],
+        [
+          115,
+          110,
+          8
+        ],
+        [
+          -115,
+          110,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -185,
+        -60,
+        -8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "8167dabb-5e80-417c-b949-b6af3cc0e600",
+      "kind": "brush",
+      "name": "Baño Ceiling 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -115,
+          -110,
+          -8
+        ],
+        [
+          115,
+          -110,
+          -8
+        ],
+        [
+          115,
+          110,
+          -8
+        ],
+        [
+          -115,
+          110,
+          -8
+        ],
+        [
+          -115,
+          -110,
+          8
+        ],
+        [
+          115,
+          -110,
+          8
+        ],
+        [
+          115,
+          110,
+          8
+        ],
+        [
+          -115,
+          110,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -185,
+        -60,
+        232
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "cfa00d26-163f-433a-8553-f67ea939653e",
+      "kind": "brush",
+      "name": "Comedor Floor 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -115,
+          -110,
+          -8
+        ],
+        [
+          115,
+          -110,
+          -8
+        ],
+        [
+          115,
+          110,
+          -8
+        ],
+        [
+          -115,
+          110,
+          -8
+        ],
+        [
+          -115,
+          -110,
+          8
+        ],
+        [
+          115,
+          -110,
+          8
+        ],
+        [
+          115,
+          110,
+          8
+        ],
+        [
+          -115,
+          110,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        45,
+        -60,
+        -8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "029aa050-ee12-4723-b06f-0a7e05f4157e",
+      "kind": "brush",
+      "name": "Comedor Ceiling 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -115,
+          -110,
+          -8
+        ],
+        [
+          115,
+          -110,
+          -8
+        ],
+        [
+          115,
+          110,
+          -8
+        ],
+        [
+          -115,
+          110,
+          -8
+        ],
+        [
+          -115,
+          -110,
+          8
+        ],
+        [
+          115,
+          -110,
+          8
+        ],
+        [
+          115,
+          110,
+          8
+        ],
+        [
+          -115,
+          110,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        45,
+        -60,
+        232
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint bp_smart"
+    },
+    {
+      "id": "player_start",
+      "kind": "entity",
+      "name": "Player Start",
+      "classname": "info_player_start",
+      "position": [
+        -185,
+        155,
+        36
+      ],
+      "props": {
+        "angles": "0 0 0"
+      }
+    },
+    {
+      "id": "light_0",
+      "kind": "entity",
+      "name": "Light",
+      "classname": "light",
+      "position": [
+        -185,
+        155,
+        150
+      ],
+      "props": {
+        "_light": "255 240 220 280"
+      }
+    },
+    {
+      "id": "light_1",
+      "kind": "entity",
+      "name": "Light",
+      "classname": "light",
+      "position": [
+        45,
+        155,
+        150
+      ],
+      "props": {
+        "_light": "255 240 220 280"
+      }
+    },
+    {
+      "id": "light_2",
+      "kind": "entity",
+      "name": "Light",
+      "classname": "light",
+      "position": [
+        -185,
+        -55,
+        150
+      ],
+      "props": {
+        "_light": "255 240 220 280"
+      }
+    },
+    {
+      "id": "light_3",
+      "kind": "entity",
+      "name": "Light",
+      "classname": "light",
+      "position": [
+        45,
+        -55,
+        150
+      ],
+      "props": {
+        "_light": "255 240 220 280"
+      }
+    }
+  ],
+  "world": {
+    "classname": "worldspawn",
+    "wad": "svstudio.wad"
+  },
+  "wadNames": [
+    "svstudio.wad"
+  ],
+  "blueprintPlans": [
+    {
+      "id": "bp_smart_walls_hf3",
+      "name": "Smart Walls HF3 · 4 connected rooms",
+      "imageWidth": 800,
+      "imageHeight": 700,
+      "unitsPerPixel": 1,
+      "origin": [
+        0,
+        0
+      ],
+      "baseZ": 0,
+      "wallHeight": 224,
+      "wallThickness": 16,
+      "slabThickness": 16,
+      "texture": "SV_BRICK01",
+      "strokes": [
+        {
+          "id": "room_a",
+          "kind": "room",
+          "name": "Dormitorio",
+          "points": [
+            [
+              100,
+              100
+            ],
+            [
+              330,
+              100
+            ],
+            [
+              330,
+              300
+            ],
+            [
+              100,
+              300
+            ]
+          ],
+          "floor": true,
+          "ceiling": true,
+          "openings": [
+            {
+              "id": "8a5c09ec-ec7b-4dfb-92cf-366c1ed1bb1f",
+              "edge": 1,
+              "kind": "door",
+              "t": 0.5,
+              "width": 64,
+              "height": 112,
+              "sill": 0
+            },
+            {
+              "id": "b8aa8ae0-5d66-4a21-be90-92fbfefd4e8c",
+              "edge": 2,
+              "kind": "door",
+              "t": 0.5,
+              "width": 64,
+              "height": 112,
+              "sill": 0
+            }
+          ]
+        },
+        {
+          "id": "room_b",
+          "kind": "room",
+          "name": "Cocina",
+          "points": [
+            [
+              330,
+              100
+            ],
+            [
+              560,
+              100
+            ],
+            [
+              560,
+              300
+            ],
+            [
+              330,
+              300
+            ]
+          ],
+          "floor": true,
+          "ceiling": true,
+          "openings": [
+            {
+              "id": "8a6ebfe8-c4e0-4416-aa83-baa0f2624df7",
+              "edge": 3,
+              "kind": "door",
+              "t": 0.5,
+              "width": 64,
+              "height": 112,
+              "sill": 0
+            },
+            {
+              "id": "6d5b03a6-7cc7-4ee7-9e39-2b35e9c61c18",
+              "edge": 2,
+              "kind": "door",
+              "t": 0.5,
+              "width": 64,
+              "height": 112,
+              "sill": 0
+            }
+          ]
+        },
+        {
+          "id": "room_c",
+          "kind": "room",
+          "name": "Baño",
+          "points": [
+            [
+              100,
+              300
+            ],
+            [
+              330,
+              300
+            ],
+            [
+              330,
+              520
+            ],
+            [
+              100,
+              520
+            ]
+          ],
+          "floor": true,
+          "ceiling": true,
+          "openings": [
+            {
+              "id": "44d39a13-3f48-413f-8215-06ba13a4fd88",
+              "edge": 1,
+              "kind": "door",
+              "t": 0.5,
+              "width": 64,
+              "height": 112,
+              "sill": 0
+            },
+            {
+              "id": "5296c317-ceab-44c6-9cdb-561caf8efebc",
+              "edge": 0,
+              "kind": "door",
+              "t": 0.5,
+              "width": 64,
+              "height": 112,
+              "sill": 0
+            }
+          ]
+        },
+        {
+          "id": "room_d",
+          "kind": "room",
+          "name": "Comedor",
+          "points": [
+            [
+              330,
+              300
+            ],
+            [
+              560,
+              300
+            ],
+            [
+              560,
+              520
+            ],
+            [
+              330,
+              520
+            ]
+          ],
+          "floor": true,
+          "ceiling": true,
+          "openings": [
+            {
+              "id": "c9dc2063-991f-44c3-8ca5-902c56060a2b",
+              "edge": 3,
+              "kind": "door",
+              "t": 0.5,
+              "width": 64,
+              "height": 112,
+              "sill": 0
+            },
+            {
+              "id": "0c823fab-c89c-4e04-88d3-8c3fc30a698a",
+              "edge": 0,
+              "kind": "door",
+              "t": 0.5,
+              "width": 64,
+              "height": 112,
+              "sill": 0
+            }
+          ]
+        }
+      ],
+      "memberIds": [
+        "48ca6b05-ccf1-4d84-ba6a-64e907007032",
+        "06ffa0ed-7b98-424d-97a6-ad30cc8e3798",
+        "290fd0d2-6143-408d-8216-26c4c66a8391",
+        "e4c1daad-46b9-4949-a734-74de5b477058",
+        "bb37b9e1-702e-4628-b93e-16fcac5574e9",
+        "cc1a407d-0ae6-454d-9f40-f569efdb83f2",
+        "10a1e320-0b27-4a35-9de0-eea77ce0b637",
+        "e719b2f7-039b-467e-9abb-eaaf0e2ebb50",
+        "25d510ff-a9ec-4872-a05f-c542ef785eb5",
+        "d172585e-ece9-4f0d-8399-e4d9ae48074c",
+        "9bf485fa-a082-4b1d-907b-042602f386eb",
+        "93036e19-1f10-4139-bf2c-4d0f0385fccd",
+        "36c429c0-b582-4bc3-8184-35f73b3c21a5",
+        "8a32c33b-98fb-4b36-8c46-444a2eb9986f",
+        "59af168a-701d-4c33-9713-153c3180cad9",
+        "dcb04047-d7f1-4f7a-8761-63b114457f3c",
+        "f8e5856e-7151-4117-b558-84901eecb670",
+        "c62523cc-da34-4310-8889-ea511485a86c",
+        "fea7f502-967b-43a1-be10-2d9ecc8e9409",
+        "14696e0c-791c-41c9-a248-b6866cdae08a",
+        "8167dabb-5e80-417c-b949-b6af3cc0e600",
+        "cfa00d26-163f-433a-8553-f67ea939653e",
+        "029aa050-ee12-4723-b06f-0a7e05f4157e"
+      ],
+      "signatures": [
+        "468:e60cb22",
+        "461:d0daf1dc",
+        "452:93daef7",
+        "458:9a52a706",
+        "459:2b4fabf1",
+        "452:b6099694",
+        "460:5ae4312e",
+        "478:40be3343",
+        "452:5a55f174",
+        "459:22745560",
+        "450:399c7996",
+        "477:bbe90f55",
+        "468:d56f16e1",
+        "467:d6d1fc20",
+        "469:3c0b02be",
+        "468:ba92a607",
+        "469:90472cdd",
+        "466:528563a5",
+        "467:f17541cb",
+        "468:359492d2",
+        "469:50c0c612",
+        "466:9c62234c",
+        "467:d66b227c"
+      ],
+      "smartWalls": true
+    }
+  ]
+}

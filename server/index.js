@@ -11,7 +11,7 @@ import {inspectSoundReference} from './soundDiagnostics.js';
 import {listSkies,skyFace} from './skyAssets.js';
 import {findBspWadTextures} from './bspWadAssets.js';
 import {prepareCompileWads,patchWorldWads} from './compileWads.js';
-import {planSmartWadBuild} from './smartWadBuild.js';
+import {planSmartWadBuild,smartWadFilename,assertNoInstalledWadCollision} from './smartWadBuild.js';
 import {installPrefabWad} from './prefabWadInstall.js';
 import {resolveCompilerProfile} from './sdhltCompiler.js';
 import {inspectBspFile} from './bspAudit.js';
@@ -27,18 +27,72 @@ import {lightTestSettings,lightTestRadArgs} from './lightingTest.js';
 import {attachBuildTogether} from './buildTogether.js';
 import {mountedRoots,discoverInstallations,browseLocalFolder,verifyLocalInstall} from './installationDiscovery.js';
 import {createLightingPreviewRecord,isPreviewCompile,lightingPreviewAvailable} from './lightingPreviewBuild.js';
+import {studioFolders,saveStudioFile,listStudioFiles,readStudioFile,studioDirectory} from './studioDocuments.js';
+import {pickWindowsFolder} from './nativeWindowsDialogs.js';
+import {listHistory,createHistorySnapshot,readHistorySnapshot} from './projectHistory.js';
 
 const app=express();app.use(express.json({limit:'36mb'}));
-const PORT=49177;let active=null;let lastLightingPreview=null;let lastCompiledOutput=null;
+const PORT=Number(process.env.SVEN_API_PORT||49177);let active=null;let lastLightingPreview=null;let lastCompiledOutput=null;
 const stages=['CSG','BSP','VIS','RAD'];
 const validMapName=s=>typeof s==='string'&&/^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/.test(s);
 const isDir=async p=>{try{return (await fs.stat(p)).isDirectory()}catch{return false}};
 const send=(res,type,message,extra={})=>res.write(`${JSON.stringify({type,message,...extra})}\n`);
 app.get('/api/health',(_req,res)=>res.json({ok:true,platform:process.platform,stages}));
+
+// Only the loopback UI may request local document writes. Never accept a user
+// supplied output path, and never silently overwrite an existing document.
+const studioOriginAllowed=req=>{
+ const origin=req.headers.origin;
+ if(!origin)return true;
+ try{const parsed=new URL(origin);return ['127.0.0.1','localhost'].includes(parsed.hostname)&&parsed.port==='5173'}catch{return false}
+};
+app.get('/api/studio-files/paths',async(req,res)=>{
+ try{return res.json(await studioFolders(true))}catch(error){return res.status(500).json({error:String(error.message||error)})}
+});
+app.get('/api/studio-files/list',async(req,res)=>{
+ try{return res.json({files:await listStudioFiles(req.query.category)})}catch(error){return res.status(400).json({error:String(error.message||error)})}
+});
+app.get('/api/studio-files/read',async(req,res)=>{
+ try{return res.type('application/octet-stream').set('Cache-Control','no-store').send(await readStudioFile(req.query.category,req.query.name))}
+ catch(error){return res.status(400).json({error:String(error.message||error)})}
+});
+app.post('/api/studio-files/save',express.raw({type:'application/octet-stream',limit:'128mb'}),async(req,res)=>{
+ if(!studioOriginAllowed(req))return res.status(403).json({error:'Untrusted origin.'});
+ try{
+  const category=String(req.headers['x-sven-category']||'');
+  const filename=decodeURIComponent(String(req.headers['x-sven-filename']||''));
+  const result=await saveStudioFile({category,filename,bytes:req.body});
+  return res.json(result);
+ }catch(error){return res.status(400).json({error:String(error.message||error)})}
+});
+
+// HF14 persistent history: read-only listing, immutable snapshots, no arbitrary file paths.
+app.get('/api/project-history/list',async(_req,res)=>{
+ try{return res.set('Cache-Control','no-store').json({entries:await listHistory()})}
+ catch(error){return res.status(500).json({error:String(error.message||error)})}
+});
+app.get('/api/project-history/read',async(req,res)=>{
+ try{return res.set('Cache-Control','no-store').json(await readHistorySnapshot(req.query.id))}
+ catch(error){return res.status(400).json({error:String(error.message||error)})}
+});
+app.post('/api/project-history/save',express.raw({type:'application/octet-stream',limit:'64mb'}),async(req,res)=>{
+ if(!studioOriginAllowed(req))return res.status(403).json({error:'Untrusted origin.'});
+ try{
+  if(!Buffer.isBuffer(req.body))throw Error('Missing project checkpoint.');
+  const {project,kind,label}=JSON.parse(req.body.toString('utf8'));
+  return res.json(await createHistorySnapshot({project,kind,label}));
+ }catch(error){return res.status(400).json({error:String(error.message||error)})}
+});
+
 // Localhost-only setup assistance. Read-only: never writes to the selected drive.
 app.get('/api/setup/roots',async(_req,res)=>{
  try{return res.json({roots:await mountedRoots(),platform:process.platform});}
  catch(e){return res.status(500).json({error:String(e.message||e)});}
+});
+app.post('/api/setup/native-folder',async(req,res)=>{
+ if(!studioOriginAllowed(req))return res.status(403).json({error:'Untrusted origin.'});
+ try{return res.json(await pickWindowsFolder(req.body?.initial))}
+ catch(error){return res.status(500).json({error:String(error.message||error)})}
 });
 app.post('/api/setup/folders',async(req,res)=>{
  try{return res.json(await browseLocalFolder(req.body?.path));}
@@ -243,13 +297,14 @@ app.post('/api/prefab-wad/install',express.raw({type:'application/octet-stream',
 
 app.post('/api/compile',async(req,res)=>{
   if(active)return res.status(409).json({error:'Another compile is already running.'});
-  const {mapName:requestedMapName,mapData,compilerDir,gameDir,wadPaths,fullVis=true,extraRad=true,radAmbientTest='off',previewOnly=false,compilerEngine='sc',sdhltDir='',sdhltAO=false,sdhltPCF='off',smartWadMode='off',browserWads=[],distributionDir='',distributionFormat='off',resourceRoots=[]}=req.body||{};
+  const {mapName:requestedMapName,mapData,compilerDir,gameDir,wadPaths,fullVis=true,extraRad=true,radAmbientTest='off',previewOnly=false,compilerEngine='sc',sdhltDir='',sdhltAO=false,sdhltPCF='off',smartWadMode='off',smartWadName='',browserWads=[],distributionDir='',distributionFormat='off',resourceRoots=[]}=req.body||{};
   if(previewOnly!==false&&!isPreviewCompile(previewOnly))return res.status(400).json({error:'Invalid previewOnly flag.'});
   if(!['off','embed','external'].includes(smartWadMode))return res.status(400).json({error:'Invalid Smart WAD mode.'});
+  if(smartWadMode!=='off'){try{smartWadFilename(smartWadName,'validation','123456789abc')}catch(error){return res.status(400).json({error:error.message})}}
   if(!['off','build','folder','folder_zip','install'].includes(distributionFormat)||typeof distributionDir!=='string'||distributionDir.length>1024)return res.status(400).json({error:'Invalid distribution settings.'});
   let externalRoots;try{externalRoots=await validateExternalRoots(resourceRoots)}catch(error){return res.status(400).json({error:String(error.message||error)})}
   const outputMode=compileOutputMode(distributionFormat);
-  if(!previewOnly&&['folder','folder_zip'].includes(outputMode)){try{await validateBuildDestination(distributionDir,gameDir)}catch(error){return res.status(400).json({error:String(error.message||error)})}}
+  if(!previewOnly&&['folder','folder_zip'].includes(outputMode)){try{await validateBuildDestination(distributionDir||await studioDirectory('builds',true),gameDir)}catch(error){return res.status(400).json({error:String(error.message||error)})}}
   let plan;
   try{plan=lightTestSettings(requestedMapName,radAmbientTest);}catch(error){return res.status(400).json({error:String(error.message||error)});}
   let {name:mapName,ambient:lightAmbient}=plan;
@@ -310,9 +365,10 @@ app.post('/api/compile',async(req,res)=>{
       throw new Error(`Missing WAD files: ${wadPlan.missingWads.join(', ')}. Set full local WAD paths in Settings (WAD paths) or install the WAD files in svencoop_addon/ or svencoop/. The compiler must be able to read the WAD files. The project and its textures were not modified.`);
     }
     if(smartWadMode!=='off'){
-      smartPlan=await planSmartWadBuild(source,wadPlan.resolvedWadList,{workDir,mapName,mode:smartWadMode});
+      smartPlan=await planSmartWadBuild(source,wadPlan.resolvedWadList,{workDir,mapName,mode:smartWadMode,wadName:smartWadName});
       source=smartPlan.map;
       if(smartPlan.mode==='external'){
+        await assertNoInstalledWadCollision(smartPlan,gameDir);
         // Compiler reads the temporary WAD. Never install anything in the game
         // unless the user explicitly selected the installation output mode.
         stagedExtras.push({path:smartPlan.basename,bytes:smartPlan.buffer});
@@ -432,7 +488,7 @@ app.post('/api/compile',async(req,res)=>{
       saved={destination:installed.destination,output:path.join(installed.destination,'maps',`${mapName}.bsp`),files:installed.files,missing:0};
       send(res,'info',`Explicit installation completed in ${saved.destination}.`);
     }else{
-      const target=outputMode==='build'?null:distributionDir;
+      const target=outputMode==='build'?null:distributionDir||await studioDirectory('builds',true);
       try{
         saved=await writeIsolatedBuild({gameDir,mapName,compiledBspPath:compiledBsp,sourceMapPath:originalMapPath,buildLog:compiledLog,
           destinationDir:target,format:outputMode,resourceRoots:externalRoots,inlineBinaryFiles:stagedExtras,
@@ -457,4 +513,4 @@ app.post('/api/compile',async(req,res)=>{
 app.listen(PORT,'127.0.0.1',()=>console.log(`Sven Studio compiler service running on http://127.0.0.1:${PORT}`));
 
 // Dedicated authenticated collaboration port: no filesystem/compilation API exposed.
-attachBuildTogether(app);
+attachBuildTogether(app,{port:Number(process.env.SVEN_BUILDTOGETHER_PORT||49178)});

@@ -1,6 +1,7 @@
+import {StudioOverlayRoot} from './components/StudioOverlayRoot';
 import {useEffect,useLayoutEffect,useRef,useState} from 'react';
 import type React from 'react';
-import {Gamepad2,Hammer,Box,Move3D,Rotate3D,Scaling,Magnet,Grid3x3,Paintbrush,Eye,Undo2,Redo2,Save,FolderOpen,FilePlus2,PackagePlus,Play,StopCircle,Settings2,ChevronDown,Layers,Boxes,MonitorCog,Mountain,FileDown,FileUp,Info,Clapperboard,CheckCircle2,AlertTriangle,Terminal,SunMoon,ShieldCheck,Copy,Trash2,Keyboard,Globe2,Menu,FileCode2,LayoutTemplate,Palette,GitBranch,Skull,Headphones,Ruler,Users,ScanEye,Ghost,EyeOff,Maximize2,Minimize2,HardDrive,Flag,Activity,PenTool} from 'lucide-react';
+import {Hammer,Box,Move3D,Rotate3D,Scaling,Magnet,Grid3x3,Paintbrush,Eye,Undo2,Redo2,Save,FolderOpen,FilePlus2,PackagePlus,Play,StopCircle,Settings2,ChevronDown,Layers,Boxes,MonitorCog,Mountain,FileDown,FileUp,Info,Clapperboard,CheckCircle2,AlertTriangle,Terminal,SunMoon,ShieldCheck,Copy,Trash2,Keyboard,Globe2,Menu,FileCode2,LayoutTemplate,Palette,GitBranch,Skull,Headphones,Ruler,Users,ScanEye,Ghost,History,EyeOff,Maximize2,Minimize2,HardDrive,Flag,Activity,PenTool,Waypoints} from 'lucide-react';
 import {useEditor} from './store';
 import {ensureSvenCoopFgd} from './engine/svenFgdLoader';
 import {useArchitectureMode} from './architectureModeState';
@@ -39,7 +40,10 @@ import {browserWadsForSmartBuild} from './engine/smartBuildBrowserWads';
 import type {StudioPrefab} from './engine/prefabStudioFolder';
 import {TerrainShapeStudio} from './components/TerrainShapeStudio';
 import {BrushWorkshop} from './components/BrushWorkshop';
+import {SmartConnectPanel} from './components/SmartConnectPanel';
+import {StudioResetDialog} from './components/StudioResetDialog';
 import {PrefabStudio} from './components/PrefabStudio';
+import {ProjectHistoryModal} from './components/ProjectHistoryModal';
 import {BlueprintToMapStudio} from './components/BlueprintToMapStudio';
 import {MissionEventsStudio} from './components/MissionEventsStudio';
 import {CoopPuzzleStudio} from './components/CoopPuzzleStudio';
@@ -73,6 +77,7 @@ import type {ShortcutAction} from './engine/controls';
 import {useT,LANGUAGES} from './i18n';
 import {studioGuide} from './engine/studioGuide';
 import {editorManual,EDITOR_SHORTCUT_GROUPS,actionTitlesEs,actionTitlesEn} from './engine/editorManual';
+import {helpV21} from './engine/helpV21';
 import {releaseGuide} from './engine/editorReleaseGuide';
 import {localizedActionTitle} from './engine/editorManualIntl';
 import {lastRecoveredAt,checkpointBeforeImport} from './engine/sessionManager';
@@ -210,6 +215,15 @@ function ControlsModal({onClose}:{onClose:()=>void}){
         {([['rotationSnapDegrees','Rotation snap (0 = off)',0,90,5],['scaleSnapStep','Scale snap (0 = off)',0,1,.05],['gizmoSize','Gizmo size',.15,2,.05]] as const).map(([id,label,min,max,step])=><label key={id}>{t(label)}<div className="controls-range"><input type="range" min={min} max={max} step={step} value={controls[id]} onChange={e=>setControls({[id]:Number(e.target.value)})}/><output>{controls[id]}</output></div></label>)}
       </div>
       <p className="modal-subtext">{t('Translate uses the Grid / Snap controls in the editor toolbar. Rotation and scale snaps are optional. Multi-selection pivots use World axes.')}</p>
+      <h4>{t('Smart Snapping 2.0')}</h4>
+      <div className="controls-sliders">
+        <label className="controls-check"><input type="checkbox" checked={controls.smartSnapEnabled} onChange={e=>setControls({smartSnapEnabled:e.target.checked})}/> {t('Enable magnetic geometry snapping')}</label>
+        <label>{t('Magnetic targets')}<select value={controls.smartSnapMode} onChange={e=>setControls({smartSnapMode:e.target.value as 'all'|'face'|'vertex'|'edge'})}>
+          <option value="all">{t('Faces, vertices and edges')}</option><option value="face">{t('Faces and surfaces')}</option><option value="vertex">{t('Vertices only')}</option><option value="edge">{t('Edges only')}</option>
+        </select></label>
+        <label>{t('Magnetic distance (pixels)')}<div className="controls-range"><input type="range" min="6" max="24" step="1" value={controls.smartSnapPixels} onChange={e=>setControls({smartSnapPixels:Number(e.target.value)})}/><output>{controls.smartSnapPixels}px</output></div></label>
+      </div>
+      <p className="modal-subtext">{t('Magnetism affects only moving brushes and entities with G or the move gizmo. Hold Shift to ignore magnetic snapping. Existing grid snapping stays available; maps and BSP data are unchanged until you confirm the move.')}</p>
       <h4>{t('Custom keyboard shortcuts')}</h4>
       <p className="modal-subtext">{t('Click a shortcut and press your preferred key combination. Backspace clears it; Esc cancels. Conflicting shortcuts are automatically unassigned.')}</p>
       <div className="binding-grid">{CONTROL_ACTIONS.map(action=><div key={action.id} className="binding-action-slot">
@@ -244,6 +258,7 @@ function AboutModal({onClose}:{onClose:()=>void}){
   const controls=useEditor(s=>s.controls);
   const manual=editorManual(locale);
   const release=releaseGuide(locale);
+  const v21Help=helpV21(locale);
   const shortcutGroups=[
     {id:'transform',title:locale==='es'?'Transformación y encuadre':'Transform and framing',actions:EDITOR_SHORTCUT_GROUPS.transform},
     {id:'views',title:locale==='es'?'Vistas y proyección':'Views and projection',actions:EDITOR_SHORTCUT_GROUPS.views},
@@ -252,7 +267,7 @@ function AboutModal({onClose}:{onClose:()=>void}){
   const textList=(items:readonly string[])=><ul>{items.map((item,index)=><li key={index}>{item}</li>)}</ul>;
   const section=(id:string,title:string,items:readonly string[])=><section id={`manual-${id}`} className="help-feature-card manual-block" key={id}><h4>{title}</h4>{textList(items)}</section>;
   return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal-card about-card help-dialog help-dialog-current" onMouseDown={e=>e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('Help')}>
-    <div className="modal-title"><Info size={20}/><span>{t('Sven Studio guide')} · v2.0</span><button title={t('Close')} onClick={onClose}>×</button></div>
+    <div className="modal-title"><Info size={20}/><span>{t('Sven Studio guide')} · v2.1</span><button type="button" title={t('Close')} aria-label={t('Close')} onClick={onClose}>×</button></div>
     <div className="help-scroll" tabIndex={0}>
       <div className="help-credits" role="group" aria-label={t('Project credits')}>
 
@@ -263,8 +278,8 @@ function AboutModal({onClose}:{onClose:()=>void}){
         {[
           ['start',manual.firstTitle],['camera',manual.cameraTitle],['edit',manual.editTitle],['uv',manual.uvTitle],
           ['shapes',manual.shapesTitle],['walk',manual.walkTitle],['shortcuts',manual.shortcutsTitle],
-          ['studios',manual.studiosTitle],['current',release.title],['workspace',manual.workspaceTitle],['technical',manual.technicalTitle],['contact',manual.noticeTitle]
-        ].map(([id,label])=><a key={id} href={`#manual-${id}`}>{label}</a>)}
+          ['studios',manual.studiosTitle],['v21',v21Help.title],['current',release.title],['workspace',manual.workspaceTitle],['technical',manual.technicalTitle],['contact',manual.noticeTitle]
+        ].map(([id,label])=><a key={id} href={`#manual-${id}`} onClick={event=>{event.preventDefault();document.getElementById(`manual-${id}`)?.scrollIntoView({block:'start',behavior:'smooth'});}}>{label}</a>)}
       </nav>
       <section className="help-camera-note manual-fullscreen" role="note"><h4>{manual.fullTitle}</h4><p>{manual.full}</p></section>
       <div className="help-feature-grid manual-guide-grid">
@@ -323,6 +338,10 @@ function AboutModal({onClose}:{onClose:()=>void}){
       </section>
       <h3 className="help-feature-heading" id="manual-studios">{manual.studiosTitle}</h3>
       <div className="help-feature-grid manual-guide-grid">{manual.studios.map(studio=><section className="help-feature-card manual-studio-card" key={studio.title}><h4>{studio.title}</h4><p>{studio.description}</p></section>)}</div>
+      <section className="help-feature-card manual-block" id="manual-v21" aria-label={v21Help.title}>
+        <h3>{v21Help.title}</h3><p>{v21Help.intro}</p>
+        <div className="help-feature-grid manual-guide-grid">{v21Help.cards.map(card=><section key={card.title} className="help-feature-card manual-studio-card"><h4>{card.title}</h4><p>{card.description}</p></section>)}</div>
+      </section>
       <section className="help-feature-card manual-block" id="manual-current" aria-label={release.title}>
         <h3>{release.title}</h3><p>{release.intro}</p>
       </section>
@@ -436,7 +455,7 @@ export default function App(){
   const headerSize=useCssElementSize(headerRef);
   const headerMode=useFittingHeaderDensity(headerRef,headerDensity(headerSize.width),`${headerSize.width}:${interfaceTheme}:${locale}:${fontScale}`);
   useEffect(()=>{setExtraMenu(false)},[headerMode]);
-  const [dialog,setDialog]=useState<'settings'|'controls'|'about'|'layout'|'entityAppearance'|'gameplay'|'cinematic'|'npc'|'sound'|'lighting'|'doctor'|'visibility'|'output'|'packager'|'terrain'|'blueprint'|'mission'|'events'|'puzzle'|'buildTogether'|'workshop'|'prefabs'|null>(null),[fileMenu,setFileMenu]=useState(false),[studiosMenu,setStudiosMenu]=useState(false),[workspaceMenu,setWorkspaceMenu]=useState(false);
+  const [dialog,setDialog]=useState<'settings'|'controls'|'about'|'layout'|'entityAppearance'|'gameplay'|'cinematic'|'npc'|'sound'|'lighting'|'doctor'|'visibility'|'output'|'packager'|'terrain'|'blueprint'|'mission'|'events'|'puzzle'|'buildTogether'|'workshop'|'smartConnect'|'prefabs'|'reset'|'history'|null>(null),[fileMenu,setFileMenu]=useState(false),[studiosMenu,setStudiosMenu]=useState(false),[workspaceMenu,setWorkspaceMenu]=useState(false);
   const btArchitectureMode=useArchitectureMode(s=>s.mode);
   useEffect(()=>{setBuildTogetherDialog(welcomeOpen?null:dialog??(btArchitectureMode!=='off'?'architecture':null));return()=>setBuildTogetherDialog(null)},[dialog,welcomeOpen,btArchitectureMode]);
   const closeHelp=()=>{try{localStorage.setItem('svenstudio:welcome-guide-v1','seen')}catch{/* private browsing */}setDialog(null)};
@@ -516,7 +535,7 @@ export default function App(){
         try{useEditor.getState().addPrefab(prefab)}catch(error){appendLogs([`Prefab library: ${String(error)}`]);window.alert(String(error))}
       }
       if(window.confirm(words.download.replace('{wad}',prefab.wad.filename))){
-        downloadPrefabWad(prefab);
+        const wadPath=await downloadPrefabWad(prefab);appendLogs([`Prefab WAD saved: ${wadPath}`]);
       }
       setWelcomeOpen(false);exitGameplayTest();setBspMode(false);setBspEditorActive(false);
       appendLogs([`BSP Object Extractor: imported ${placed.length} brushes from ${file.name}; companion WAD: ${prefab.wad.filename}. Configure WAD path before compile.`]);
@@ -538,7 +557,10 @@ export default function App(){
         appendLogs([`Backup warning: ${String(error)}`]);
         if(!window.confirm(t('The current map could not be backed up locally. Continue without a recovery checkpoint?')))return false;
       }
-      loadProject(next);
+      // Mark BSP→MAP origin even if the user later renames the project.
+      // This editor-only flag is saved in the .svenstudio.json project,
+      // never in Valve 220 MAP exports or compiled BSPs.
+      loadProject({...next,recoveredFromBsp:true});
       if(recoveredTextures.length){
         // Texture previews are session assets. Never pretend an extracted WAD is
         // installed on disk: compilation still requires the real WAD path.
@@ -582,8 +604,12 @@ export default function App(){
     finally{setBspLoading(false)}
   };
   const wadPaths=settings.wadPaths.split(/[\r\n]+/).map(v=>v.trim()).filter(Boolean);
-  const saveMap=()=>{
-    try{const text=exportMap(project,wadPaths);downloadText(text,`${settings.mapName||'untitled'}.map`);appendLogs([`Exported ${text.length} bytes of Svengine Valve 220 .map source.`]);}
+  const saveProjectToDocuments=async()=>{
+    try{const saved=await saveProject(useEditor.getState().project);appendLogs([`Project saved: ${saved.path}`]);}
+    catch(error){appendLogs([`Save project error: ${String(error)}`]);window.alert(String(error))}
+  };
+  const saveMap=async()=>{
+    try{const text=exportMap(project,wadPaths);const saved=await downloadText(text,`${settings.mapName||'untitled'}.map`);appendLogs([`Exported ${text.length} bytes of Svengine Valve 220 .map source → ${saved.path}`]);}
     catch(err){appendLogs([`Export error: ${String(err)}`]);alert(String(err))}
   };
   const compile=async(mode:'game'|'preview'='game',selectedCompiler?:'sc'|'sdhlt')=>{
@@ -625,7 +651,7 @@ export default function App(){
       const mapData=exportMap(project,wadPaths);
       const browserWads=compileSettings.smartWadMode&&compileSettings.smartWadMode!=='off'
         ?await browserWadsForSmartBuild(project,state.textureAssets,state.prefabs as StudioPrefab[]):[];
-      await streamCompile({mapName:settings.mapName,mapData,compilerDir:compileSettings.compilerDir,gameDir:compileSettings.gameDir,wadPaths,radAmbientTest:mode==='preview'?'off':compileSettings.radAmbientTest||'off',previewOnly:mode==='preview',compilerEngine:compileSettings.compilerEngine||'sc',sdhltDir:compileSettings.sdhltDir||'',sdhltAO:!!compileSettings.sdhltAO,sdhltPCF:compileSettings.sdhltPCF||'off',smartWadMode:compileSettings.smartWadMode||'off',browserWads,distributionDir:mode==='game'?compileSettings.distributionDir||'':'',distributionFormat:mode==='game'?compileSettings.distributionFormat||'off':'off',resourceRoots:compileSettings.resourceRoots||[]},ev=>{
+      await streamCompile({mapName:settings.mapName,mapData,compilerDir:compileSettings.compilerDir,gameDir:compileSettings.gameDir,wadPaths,radAmbientTest:mode==='preview'?'off':compileSettings.radAmbientTest||'off',previewOnly:mode==='preview',compilerEngine:compileSettings.compilerEngine||'sc',sdhltDir:compileSettings.sdhltDir||'',sdhltAO:!!compileSettings.sdhltAO,sdhltPCF:compileSettings.sdhltPCF||'off',smartWadMode:compileSettings.smartWadMode||'off',smartWadName:compileSettings.smartWadName||'',browserWads,distributionDir:mode==='game'?compileSettings.distributionDir||'':'',distributionFormat:mode==='game'?compileSettings.distributionFormat||'off':'off',resourceRoots:compileSettings.resourceRoots||[]},ev=>{
         useMapDoctorState.getState().ingest(ev);
         appendLogs([ev.message]);if(mode==='game'&&ev.type==='package'&&ev.destination)setLastBuildDestination(ev.destination);if(mode==='preview'&&ev.type==='stage')setTruePreviewStatus(ev.message);if(ev.type==='error')error=true;if(ev.type==='complete'){completed=true;previewId=ev.previewId||null;}
       });
@@ -689,7 +715,7 @@ export default function App(){
       if(document.querySelector('.modal-backdrop')){
         // Ctrl+S remains a valid project save even when a dialog is visible.
         if((e.ctrlKey||e.metaKey)&&e.code==='KeyS'){
-          e.preventDefault();saveProject(useEditor.getState().project);return;
+          e.preventDefault();void saveProjectToDocuments();return;
         }
         if(e.code==='Escape'&&['settings','about','visibility','output','doctor'].includes(dialog||'')){
           e.preventDefault();if(dialog==='about')closeHelp();else setDialog(null);
@@ -755,7 +781,7 @@ export default function App(){
       }
       if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();if(e.shiftKey)redo();else undo();return}
       if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();redo();return}
-      if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();saveProject(useEditor.getState().project);return}
+      if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();void saveProjectToDocuments();return}
       if(e.code==='KeyE'&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!useEditor.getState().flyMode&&useEditor.getState().geometryMode==='face'&&useEditor.getState().selectedFace!==null){
         e.preventDefault();
         try{useEditor.getState().extrudeSelected(16)}catch(error){useEditor.getState().appendLogs([`Extrusion: ${String(error)}`])}
@@ -895,10 +921,10 @@ export default function App(){
   return <div className={`app-shell accent-${accent} appearance-${appearance} studio-theme-${interfaceTheme} ${welcomeOpen?'welcome-home-active':''} ${bspMode?'bsp-scale-isolated':''} ${autoLayout?'adaptive-ui-enabled':''}`} style={{zoom:shellScale,width:`${100/shellScale}vw`,height:`${100/shellScale}vh`,minHeight:0,'--ui-font-scale':fontScale} as React.CSSProperties}>
     <header ref={headerRef} className="titlebar" data-header-mode={headerMode}>
       <div className="titlebar-leading">
-      <button type="button" className={`brand brand-home-trigger ${welcomeOpen?'brand-home-active':''}`} onClick={openWelcome} aria-pressed={welcomeOpen} title={locale==='es'?'Abrir pantalla de inicio':'Open home screen'}><span className="brand-logo"><Box size={20} strokeWidth={2.3}/></span><span>SVEN<span className="brand-light">STUDIO</span></span><span className="brand-tag">3D</span><span className="version-label">v2.0</span></button>
+      <button type="button" className={`brand brand-home-trigger ${welcomeOpen?'brand-home-active':''}`} onClick={openWelcome} aria-pressed={welcomeOpen} title={locale==='es'?'Abrir pantalla de inicio':'Open home screen'}><span className="brand-logo"><Box size={20} strokeWidth={2.3}/></span><span>SVEN<span className="brand-light">STUDIO</span></span><span className="brand-tag">3D</span><span className="version-label">v2.1</span></button>
       <div className="top-divider"/>
       <div className="menu-parent"><button ref={fileButton} type="button" aria-expanded={fileMenu} aria-controls="sven-file-menu" aria-haspopup="menu" className={`top-nav ${fileMenu?'chosen':''}`} onClick={()=>{setStudiosMenu(false);setWorkspaceMenu(false);setFileMenu(v=>!v)}}>{t('File')} <ChevronDown size={12}/></button>
-        <TopDropdown anchor={fileButton} open={fileMenu} onClose={()=>setFileMenu(false)} id="sven-file-menu" className="file-menu" align="left" width={288}><MenuButton onClick={()=>{if(confirm(t('Start a new project? Save existing work first.')))newProject();setFileMenu(false)}}><FilePlus2 size={15}/> {t('New project')}</MenuButton>
+        <TopDropdown anchor={fileButton} open={fileMenu} onClose={()=>setFileMenu(false)} id="sven-file-menu" className="file-menu" align="left" width={288}><MenuButton onClick={()=>{if(confirm(t('Start a new project? Save existing work first.'))){newProject();setLastCompiled(null);setLastBuildDestination(null);setBspMode(false);setBspMap(null);setBspSource(null);setBspEditorActive(false);setDialog(null)}setFileMenu(false)}}><FilePlus2 size={15}/> {t('New project')}</MenuButton>
           <MenuButton onClick={()=>{setFileMenu(false);projectInput.current?.click()}}><FolderOpen size={15}/> {t('Open project')}</MenuButton>
           <MenuButton onClick={()=>{setFileMenu(false);mapInput.current?.click()}}><FileUp size={15}/> {t('Import .MAP')}</MenuButton>
           <MenuButton onClick={()=>{setFileMenu(false);objectPrefabInput.current?.click()}}><PackagePlus size={15}/> {({es:'Importar objeto BSP (.svprefab)',en:'Import BSP object (.svprefab)',ru:'Импорт BSP объекта (.svprefab)',ko:'BSP 오브젝트 가져오기 (.svprefab)',zh:'导入 BSP 对象 (.svprefab)',pt:'Importar objeto BSP (.svprefab)'} as Record<string,string>)[locale]}</MenuButton>
@@ -906,10 +932,13 @@ export default function App(){
           <MenuButton onClick={()=>{setFileMenu(false);bspInput.current?.click()}}><ScanEye size={15}/> {t('Open .BSP (read-only)')}</MenuButton>
           <MenuButton onClick={()=>{setFileMenu(false);void openCompiledBsp()}}><ScanEye size={15}/> {t('Open compiled BSP')}</MenuButton>
           <div className="menu-separator"/>
-          <MenuButton onClick={()=>{saveProject(project);setFileMenu(false)}}><Save size={15}/> {t('Save project')} <span className="shortcut">Ctrl+S</span></MenuButton>
+          <MenuButton onClick={()=>{void saveProjectToDocuments();setFileMenu(false)}}><Save size={15}/> {t('Save project')} <span className="shortcut">Ctrl+S</span></MenuButton>
           <MenuButton onClick={async()=>{setFileMenu(false);const backup=await readRecoveryBackup();if(!backup){window.alert(t('No earlier recovery snapshot is available.'));return;}if(window.confirm(t('Restore the previous locally saved project? Your current work will be replaced.'))){loadProject(backup.project);appendLogs([`Recovered previous snapshot from ${new Date(backup.savedAt).toLocaleString()}`]);}}}><FolderOpen size={15}/> {t('Restore previous autosave')}</MenuButton>
+          <MenuButton onClick={()=>{setFileMenu(false);setDialog('history')}}><History size={15}/> {({es:'Historial y recuperación',en:'Project History & Recovery',ru:'История и восстановление',ko:'프로젝트 기록 및 복구',zh:'项目历史与恢复',pt:'Histórico e recuperação'} as Record<string,string>)[locale]}</MenuButton>
           <MenuButton onClick={()=>{saveMap();setFileMenu(false)}}><FileDown size={15}/> {t('Export Svengine .MAP')}</MenuButton>
           <MenuButton onClick={()=>{setFileMenu(false);setDialog('packager')}}><PackagePlus size={15}/> {t('Map Packager Studio')}</MenuButton>
+          <div className="menu-separator"/>
+          <MenuButton onClick={()=>{setFileMenu(false);setDialog('reset')}}><Trash2 size={15}/> CLEAN</MenuButton>
         </TopDropdown>
       </div>
       <button className="top-nav" onClick={()=>setDialog('about')}>{t('Help')}</button>
@@ -917,6 +946,7 @@ export default function App(){
       <div className="titlebar-more-parent"><button ref={extraButton} type="button" className="top-nav titlebar-more" title={locale==='es'?'Más acciones':'More actions'} aria-label={locale==='es'?'Más acciones':'More actions'} aria-expanded={extraMenu} aria-haspopup="menu" aria-controls="sven-extra-menu" onClick={()=>{setFileMenu(false);setStudiosMenu(false);setWorkspaceMenu(false);setExtraMenu(v=>!v)}}><Menu size={18}/><span>{locale==='es'?'Más':'More'}</span></button>
         <TopDropdown anchor={extraButton} open={extraMenu} onClose={()=>setExtraMenu(false)} id="sven-extra-menu" className="studio-menu-dropdown titlebar-extra-menu" align="left" width={265}>
           <button role="menuitem" onClick={()=>{setDialog('about');setExtraMenu(false)}}><Info size={16}/>{t('Help')}</button>
+          <button role="menuitem" onClick={()=>{setDialog('layout');setExtraMenu(false)}}><SunMoon size={16}/>{({es:'Apariencia y temas',en:'Appearance & themes',ru:'Оформление и темы',ko:'모양 및 테마',zh:'外观与主题',pt:'Aparência e temas'} as Record<string,string>)[locale]}</button>
           <div className="titlebar-extra-fullscreen"><FullscreenMenuButton/></div>
           <button role="menuitem" onClick={()=>{setDialog('buildTogether');setExtraMenu(false)}}><Users size={16}/>BuildTogether</button>
           <div className="menu-separator"/>
@@ -949,7 +979,7 @@ export default function App(){
         <button className={bspMode&&!bspEditorActive?'active':''} aria-pressed={bspMode&&!bspEditorActive} disabled={bspLoading} onClick={()=>{setWelcomeOpen(false);exitGameplayTest();setBspEditorActive(false);if(bspMap)setBspMode(true);else if(lastCompiled)void openCompiledBsp();else bspInput.current?.click()}}><ScanEye size={14}/>{bspLoading?'...':t('BSP Viewer')}</button>
         <button className={bspMode&&bspEditorActive?'active bsp-editor-global-tab':''} aria-pressed={bspMode&&bspEditorActive} disabled={bspLoading} title={t('Edit BSP entities in 3D')} onClick={()=>{setWelcomeOpen(false);exitGameplayTest();setBspEditorActive(true);if(bspMap)setBspMode(true);else if(lastCompiled)void openCompiledBsp();else bspInput.current?.click()}}><PenTool size={14}/>{t('BSP Editor')}</button>
         <button className={walkMode?'active gameplay-tab-active':''} aria-pressed={walkMode} disabled={bspLoading} title={t('Gameplay Test')} onClick={()=>{setWelcomeOpen(false);toggleGameplayTest()}}><Play size={14}/>{t('Gameplay Test')}</button>
-      </div><div className="studio-menu-parent"><button ref={studiosButton} type="button" aria-expanded={studiosMenu} aria-controls="sven-studios-menu" aria-haspopup="menu" className="studio-menu-button" onClick={()=>{setFileMenu(false);setWorkspaceMenu(false);setStudiosMenu(v=>!v)}}><Layers size={16}/>{t('Studios')}<ChevronDown size={12}/></button><TopDropdown anchor={studiosButton} open={studiosMenu} onClose={()=>setStudiosMenu(false)} id="sven-studios-menu" className="studio-menu-dropdown" align="right" width={242}><button role="menuitem" onClick={()=>{setDialog('prefabs');setStudiosMenu(false)}}><Boxes size={16}/>{({es:'Estudio de Prefabricados',en:'Prefab Studio',ru:'Студия префабов',ko:'프리팹 스튜디오',zh:'预制件工作室',pt:'Estúdio de Prefabs'} as Record<string,string>)[locale]}</button><button role="menuitem" onClick={()=>{setDialog('blueprint');setStudiosMenu(false)}}><Ruler size={16}/>{BLUEPRINT_MENU_LABELS[locale]}</button><button role="menuitem" onClick={()=>{setWorldBuilderStart('terrain');setDialog('terrain');setStudiosMenu(false)}}><Mountain size={16}/>{t('World Builder Studio')}</button><button role="menuitem" onClick={()=>{setDialog('gameplay');setStudiosMenu(false)}}><GitBranch size={16}/>{t('Gameplay Studio')}</button><button role="menuitem" onClick={()=>{setDialog('mission');setStudiosMenu(false)}}><Flag size={16}/>{MISSION_STUDIO_LABELS[locale][0]}</button><button role="menuitem" onClick={()=>{setDialog('npc');setStudiosMenu(false)}}><Skull size={16}/>{t('NPC & AI Studio')}</button><button role="menuitem" onClick={()=>{useEditor.getState().setEnvironmentPreview(false);setTruePreviewOpen(true);setTruePreviewLayout('split');setStudiosMenu(false)}}><SunMoon size={16}/>True Lighting</button><button role="menuitem" onClick={()=>{setDialog('lighting');setStudiosMenu(false)}}><SunMoon size={16}/>{t('Lighting & Environment Studio')}</button><button role="menuitem" onClick={()=>{setDialog('sound');setStudiosMenu(false)}}><Headphones size={16}/>{t('Audio Studio')}</button><button role="menuitem" onClick={()=>{useEditor.getState().setResourceView('decals');useStudioLayout.getState().setVisible('assets',true);setStudiosMenu(false)}}><Paintbrush size={16}/>Decal Studio</button><button role="menuitem" onClick={()=>{setDialog('cinematic');setStudiosMenu(false)}}><Clapperboard size={16}/>{t('Cinematic Camera Studio')}</button><button role="menuitem" onClick={()=>{setDialog('doctor');setStudiosMenu(false)}}><CheckCircle2 size={16}/>{t('Map Doctor')}</button></TopDropdown></div><label className="language-picker" title={t('Interface language')}><Globe2 size={15}/><select aria-label={t('Interface language')} value={localePreference} onChange={e=>setLocale(e.target.value as typeof localePreference)}><option value="auto">{t('Automatic (system language)')} · {LANGUAGES.find(l=>l.id===locale)?.label??'English'}</option>{LANGUAGES.map(l=><option key={l.id} value={l.id}>{l.label}</option>)}</select></label><div className="studio-menu-parent workspace-menu-parent"><button ref={workspaceButton} type="button" aria-expanded={workspaceMenu} aria-controls="sven-workspace-menu" aria-haspopup="menu" className="studio-menu-button workspace-menu-button" onClick={()=>{setFileMenu(false);setStudiosMenu(false);setWorkspaceMenu(v=>!v)}}><Settings2 size={16}/><span>{t('Workspace')}</span><ChevronDown size={12}/></button><TopDropdown anchor={workspaceButton} open={workspaceMenu} onClose={()=>setWorkspaceMenu(false)} id="sven-workspace-menu" className="studio-menu-dropdown workspace-menu-dropdown" align="right" width={266}>
+      </div><div className="studio-menu-parent"><button ref={studiosButton} type="button" aria-expanded={studiosMenu} aria-controls="sven-studios-menu" aria-haspopup="menu" className="studio-menu-button" onClick={()=>{setFileMenu(false);setWorkspaceMenu(false);setStudiosMenu(v=>!v)}}><Layers size={16}/>{t('Studios')}<ChevronDown size={12}/></button><TopDropdown anchor={studiosButton} open={studiosMenu} onClose={()=>setStudiosMenu(false)} id="sven-studios-menu" className="studio-menu-dropdown" align="right" width={242}><button role="menuitem" onClick={()=>{setDialog('prefabs');setStudiosMenu(false)}}><Boxes size={16}/>{({es:'Estudio de Prefabricados',en:'Prefab Studio',ru:'Студия префабов',ko:'프리팹 스튜디오',zh:'预制件工作室',pt:'Estúdio de Prefabs'} as Record<string,string>)[locale]}</button><button role="menuitem" onClick={()=>{setDialog('blueprint');setStudiosMenu(false)}}><Ruler size={16}/>{BLUEPRINT_MENU_LABELS[locale]}</button><button role="menuitem" disabled={bspMode||walkMode} onClick={()=>{setDialog('smartConnect');setStudiosMenu(false)}}><Waypoints size={16}/>Smart Connect 3D</button><button role="menuitem" onClick={()=>{setWorldBuilderStart('terrain');setDialog('terrain');setStudiosMenu(false)}}><Mountain size={16}/>{t('World Builder Studio')}</button><button role="menuitem" onClick={()=>{setDialog('gameplay');setStudiosMenu(false)}}><GitBranch size={16}/>{t('Gameplay Studio')}</button><button role="menuitem" onClick={()=>{setDialog('mission');setStudiosMenu(false)}}><Flag size={16}/>{MISSION_STUDIO_LABELS[locale][0]}</button><button role="menuitem" onClick={()=>{setDialog('npc');setStudiosMenu(false)}}><Skull size={16}/>{t('NPC & AI Studio')}</button><button role="menuitem" onClick={()=>{useEditor.getState().setEnvironmentPreview(false);setTruePreviewOpen(true);setTruePreviewLayout('split');setStudiosMenu(false)}}><SunMoon size={16}/>True Lighting</button><button role="menuitem" onClick={()=>{setDialog('lighting');setStudiosMenu(false)}}><SunMoon size={16}/>{t('Lighting & Environment Studio')}</button><button role="menuitem" onClick={()=>{setDialog('sound');setStudiosMenu(false)}}><Headphones size={16}/>{t('Audio Studio')}</button><button role="menuitem" onClick={()=>{useEditor.getState().setResourceView('decals');useStudioLayout.getState().setVisible('assets',true);setStudiosMenu(false)}}><Paintbrush size={16}/>Decal Studio</button><button role="menuitem" onClick={()=>{setDialog('cinematic');setStudiosMenu(false)}}><Clapperboard size={16}/>{t('Cinematic Camera Studio')}</button><button role="menuitem" onClick={()=>{setDialog('doctor');setStudiosMenu(false)}}><CheckCircle2 size={16}/>{t('Map Doctor')}</button></TopDropdown></div><label className="language-picker" title={t('Interface language')}><Globe2 size={15}/><select aria-label={t('Interface language')} value={localePreference} onChange={e=>setLocale(e.target.value as typeof localePreference)}><option value="auto">{t('Automatic (system language)')} · {LANGUAGES.find(l=>l.id===locale)?.label??'English'}</option>{LANGUAGES.map(l=><option key={l.id} value={l.id}>{l.label}</option>)}</select></label><div className="studio-menu-parent workspace-menu-parent"><button ref={workspaceButton} type="button" aria-expanded={workspaceMenu} aria-controls="sven-workspace-menu" aria-haspopup="menu" className="studio-menu-button workspace-menu-button" onClick={()=>{setFileMenu(false);setStudiosMenu(false);setWorkspaceMenu(v=>!v)}}><Settings2 size={16}/><span>{t('Workspace')}</span><ChevronDown size={12}/></button><TopDropdown anchor={workspaceButton} open={workspaceMenu} onClose={()=>setWorkspaceMenu(false)} id="sven-workspace-menu" className="studio-menu-dropdown workspace-menu-dropdown" align="right" width={266}>
         <button role="menuitem" onClick={()=>{setDialog('visibility');setWorkspaceMenu(false)}}><Eye size={16}/>{t('Visibility manager')}</button>
         <button role="menuitem" onClick={()=>{setDialog('entityAppearance');setWorkspaceMenu(false)}}><Palette size={16}/>{t('Entity visuals')}</button>
         <button role="menuitem" onClick={()=>{setDialog('controls');setWorkspaceMenu(false)}}><Keyboard size={16}/>{t('Camera & Gizmo Controls')}</button>
@@ -978,7 +1008,7 @@ export default function App(){
     <div className="ribbon-group" {...toolbarGroupProps('studios')}>
       <div className="ribbon-tools">
         <ToolButton title={t('Shapes')} onClick={()=>{if(!useHudLayout.getState().items.shapes.visible){useHudLayout.getState().update('shapes',{visible:true});return;}document.dispatchEvent(new Event('svenstudio:toggle-shapes'))}}><Box size={20}/><small>{t('Shapes')}</small></ToolButton>
-        <ToolButton title={t('Visibility manager')} onClick={()=>setDialog('visibility')}><ScanEye size={20}/><small>{t('Visibility')}</small></ToolButton>
+        <ToolButton title="Smart Connect 3D · Universal geometry" onClick={()=>setDialog('smartConnect')}><Waypoints size={20}/><small>Connect</small></ToolButton><ToolButton title={t('Visibility manager')} onClick={()=>setDialog('visibility')}><ScanEye size={20}/><small>{t('Visibility')}</small></ToolButton>
                 <ToolButton title={t('World Builder Studio')} onClick={()=>{setWorldBuilderStart('terrain');setDialog('terrain')}}><Mountain size={20}/><small>World</small></ToolButton>
         <ToolButton title={t('Gameplay Studio')} onClick={()=>setDialog('gameplay')}><GitBranch size={20}/><small>{t('Gameplay')}</small></ToolButton>
         <ToolButton title={t('NPC & AI Studio')} onClick={()=>setDialog('npc')}><Skull size={20}/><small>{t('NPC')}</small></ToolButton>
@@ -992,11 +1022,13 @@ export default function App(){
     </div>
     {welcomeOpen&&<WelcomeScreen onStart={()=>setWelcomeOpen(false)}/>}
     </main>
-    <footer className="statusbar"><div><span className="status-ok"/>{t('Ready')} <span className="status-divider"/> Svengine · Valve 220 <span className="status-divider"/> {project.objects.filter(o=>o.kind==='brush').length} {t('brushes')} <span className="status-divider"/> {project.objects.filter(o=>o.kind==='entity').length} {t('entities')}</div><div><Keyboard size={13}/> {displayBinding(controls.shortcuts.move)} {t('Move')} · {displayBinding(controls.shortcuts.rotate)} {t('Rotate')} · {displayBinding(controls.shortcuts.scale)} {t('Scale')} · {walkMode?t('Gameplay Test'):flyMode?t('Fly ON'):'RMB look · WASD · Q/E'} <span className="status-divider welcome-hide-version"/> <span className="welcome-hide-version">SvenStudio 3D v2.0</span></div></footer>
+    <footer className="statusbar"><div><span className="status-ok"/>{t('Ready')} <span className="status-divider"/> Svengine · Valve 220 <span className="status-divider"/> {project.objects.filter(o=>o.kind==='brush').length} {t('brushes')} <span className="status-divider"/> {project.objects.filter(o=>o.kind==='entity').length} {t('entities')}</div><div><Keyboard size={13}/> {displayBinding(controls.shortcuts.move)} {t('Move')} · {displayBinding(controls.shortcuts.rotate)} {t('Rotate')} · {displayBinding(controls.shortcuts.scale)} {t('Scale')} · {walkMode?t('Gameplay Test'):flyMode?t('Fly ON'):'RMB look · WASD · Q/E'} <span className="status-divider welcome-hide-version"/> <span className="welcome-hide-version">SvenStudio 3D v2.1</span></div></footer>
     {!bspMode&&<ShadingPie/>}
+    <StudioOverlayRoot fontScale={fontScale}>
     {dialog==='visibility'&&<VisibilityManager onClose={()=>setDialog(null)}/>}
     {dialog==='output'&&<BuildOutputModal onClose={()=>setDialog(null)} onCancel={cancelCompile} onDoctor={()=>setDialog('doctor')} hasOutput={!!lastBuildDestination&&!!lastCompiled} onOpenFolder={()=>void openLastBuildFolder()} onInstall={()=>void installCompiledWithoutRebuild()}/>}
     {dialog==='settings'&&<SettingsModal onClose={()=>setDialog(null)} onOpenPackager={()=>setDialog('packager')} onOpenOutput={()=>setDialog('output')}/>}
+    {dialog==='reset'&&<StudioResetDialog onClose={()=>setDialog(null)}/>}
     {dialog==='controls'&&<ControlsModal onClose={()=>setDialog(null)}/>}
     {dialog==='about'&&<AboutModal onClose={closeHelp}/>}
     {dialog==='layout'&&<LayoutModal onClose={()=>setDialog(null)}/>}
@@ -1010,11 +1042,17 @@ export default function App(){
     {dialog==='packager'&&<MapPackagerStudio onClose={()=>setDialog(null)}/>}
     {dialog==='terrain'&&<TerrainShapeStudio initialTab={worldBuilderStart} onClose={()=>setDialog(null)}/>}
     {dialog==='workshop'&&<BrushWorkshop onClose={()=>setDialog(null)}/>}
+    {dialog==='smartConnect'&&!bspMode&&!walkMode&&<SmartConnectPanel onClose={()=>setDialog(null)}/>}
+    {dialog==='history'&&<ProjectHistoryModal onClose={()=>setDialog(null)} onRestore={restored=>{
+      setWelcomeOpen(false);exitGameplayTest();setBspMode(false);setBspMap(null);setBspSource(null);setBspEditorActive(false);setLastCompiled(null);setLastBuildDestination(null);
+      loadProject(restored);appendLogs([`Project History: restored ${restored.name} (${restored.objects.length} objects).`]);
+    }}/>}
     {dialog==='prefabs'&&<PrefabStudio onClose={()=>setDialog(null)} onImportPrefab={importPrefabFile} onStartPlacement={id=>{setWelcomeOpen(false);exitGameplayTest();setBspMode(false);setBspEditorActive(false);useEditor.getState().setPlacementPrefab(id)}}/>}
     {dialog==='blueprint'&&<BlueprintToMapStudio onClose={()=>setDialog(null)}/>}
     {dialog==='mission'&&<MissionEventsStudio initialMode="mission" onClose={()=>setDialog(null)} onOpenPuzzle={()=>setDialog('puzzle')}/>}
     {dialog==='events'&&<MissionEventsStudio initialMode="events" onClose={()=>setDialog(null)}/>}
     {dialog==='puzzle'&&<CoopPuzzleStudio onClose={()=>setDialog('mission')}/>}
-    {dialog==='buildTogether'&&<BuildTogetherPanel onClose={()=>setDialog(null)}/>} 
+    {dialog==='buildTogether'&&<BuildTogetherPanel onClose={()=>setDialog(null)}/>}
+    </StudioOverlayRoot>
   </div>;
 }

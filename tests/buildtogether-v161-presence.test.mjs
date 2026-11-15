@@ -17,7 +17,7 @@ const fakeStore=`import {create} from './zustand.mjs';export const useEditor=cre
 async function setupClient(dir,name){
  await writeFile(join(dir,'store'+name+'.mjs'),fakeStore);
  const source=await readFile(new URL('../src/engine/buildTogetherClient.ts',import.meta.url),'utf8');
- const code=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText.replace("from 'zustand'","from './zustand.mjs'").replace("from '../store'",`from './store${name}.mjs'`);
+ const code=ts.transpileModule(source.replace("from './studioFiles'", "from '"+new URL('../src/engine/studioFiles.ts',import.meta.url).href+"'"),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText.replace("from 'zustand'","from './zustand.mjs'").replace("from '../store'",`from './store${name}.mjs'`);
  await writeFile(join(dir,'client'+name+'.mjs'),code);
  const client=await import(pathToFileURL(join(dir,'client'+name+'.mjs')).href);
  const {useEditor}=await import(pathToFileURL(join(dir,'store'+name+'.mjs')).href);

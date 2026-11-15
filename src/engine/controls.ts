@@ -18,6 +18,7 @@ export type ControlSettings = {
   flyBoostMultiplier:number;flySlowMultiplier:number;flyLookSensitivity:number;
   gizmoSpace:'world'|'local';rotationSnapDegrees:number;scaleSnapStep:number;gizmoSize:number;
   transformFineFactor:number;transformRotationStep:number;transformScaleStep:number;
+  smartSnapEnabled:boolean;smartSnapMode:'all'|'face'|'vertex'|'edge';smartSnapPixels:number;
   shortcuts:Record<ShortcutAction,string>;
 };
 export const CONTROL_ACTIONS:{id:ShortcutAction;label:string;description:string}[]=[
@@ -52,6 +53,7 @@ export const DEFAULT_CONTROLS:ControlSettings={
   cameraDamping:true,dampingFactor:.08,zoomToCursor:false,minCameraDistance:10,maxCameraDistance:180000,perspectiveFov:60,flyBoostMultiplier:2.5,flySlowMultiplier:.35,flyLookSensitivity:1,
   gizmoSpace:'world',rotationSnapDegrees:0,scaleSnapStep:0,gizmoSize:0.9,
   transformFineFactor:.15,transformRotationStep:15,transformScaleStep:.1,
+  smartSnapEnabled:false,smartSnapMode:'all',smartSnapPixels:12,
   shortcuts:{move:'KeyG',rotate:'KeyR',scale:'KeyC',fly:'Shift+KeyF',frame:'NumpadDecimal',frameAll:'Home',front:'Numpad1',right:'Numpad3',top:'Numpad7',projection:'Numpad5',back:'Ctrl+Numpad1',left:'Ctrl+Numpad3',bottom:'Ctrl+Numpad7',isometric:'Numpad0',orbitLeft:'Numpad4',orbitRight:'Numpad6',orbitUp:'Numpad8',orbitDown:'Numpad2',panLeft:'Ctrl+Numpad4',panRight:'Ctrl+Numpad6',panUp:'Ctrl+Numpad8',panDown:'Ctrl+Numpad2',zoomIn:'NumpadAdd',zoomOut:'NumpadSubtract',resetView:'Shift+Home'}
 };
 const STORAGE_KEY='svenstudio-controls-v2';
@@ -107,7 +109,10 @@ export function readControls():ControlSettings{
       gizmoSize:clampControlNumber(raw.gizmoSize,.9,.15,2),
       transformFineFactor:clampControlNumber(raw.transformFineFactor,.15,.02,1),
       transformRotationStep:clampControlNumber(raw.transformRotationStep,15,1,90),
-      transformScaleStep:clampControlNumber(raw.transformScaleStep,.1,.01,.5)
+      transformScaleStep:clampControlNumber(raw.transformScaleStep,.1,.01,.5),
+      smartSnapEnabled:raw.smartSnapEnabled===true,
+      smartSnapMode:['all','face','vertex','edge'].includes(raw.smartSnapMode)?raw.smartSnapMode:'all',
+      smartSnapPixels:clampControlNumber(raw.smartSnapPixels,12,6,24)
     };
   }catch{return structuredClone(DEFAULT_CONTROLS)}
 }

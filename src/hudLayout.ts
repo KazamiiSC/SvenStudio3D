@@ -9,7 +9,7 @@ export type HudItem={x:number;y:number;scale:number;opacity:number;visible:boole
 export type HudItems=Record<HudId,HudItem>;
 const item=(x:number,y:number,scale=1,opacity=1,visible=true):HudItem=>({x,y,scale,opacity,visible});
 export const DEFAULT_HUD:HudItems={
-  status:item(1,1),view:item(1,6),pivot:item(1,12),tools:item(1,20,.83),
+  status:item(1,1),view:item(1,6),pivot:item(1,12),tools:item(1,20,.95),
   orthographic:item(2,59,.85),help:item(1,94,.9),
   stats:item(1,88,.9),transform:item(37,78,.88),alerts:item(27,18,.9),axes:item(92,89,.9),
   shapes:item(72,12,.94),fps:item(90,15,.9)

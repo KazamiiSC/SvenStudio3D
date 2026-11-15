@@ -1,9 +1,10 @@
 /** Portable reusable room/brush/entity prefabs for SvenStudio 3D 0.7.0. */
-import type {MapObject,Vec3} from './types';
+import type {MapObject,Vec3,Brush} from './types';
 import {uid} from './types';
 import {validateBrush} from './exportMap';
 import {lockTranslatedBrushTextures} from './textureStudio';
 import {rotateObjectsForPlacement} from './smartPlacement';
+import {deduplicateBspSurfacePanels,repairBspSurfacePanels} from './bspPrefabPanelRepair';
 import type {PlacementAxis} from './smartPlacementMath';
 export type Prefab={version:1;id:string;name:string;origin:Vec3;objects:MapObject[]};
 const copy=<T>(value:T):T=>structuredClone(value);
@@ -43,7 +44,12 @@ export function placePrefab(prefab:Prefab,at:Vec3,axis:PlacementAxis='z',angle=0
     if(clone.kind==='brush'&&clone.entityId)clone.entityId=ids.get(clone.entityId);
     return clone;
   });
-  const placed=rotateObjectsForPlacement(objects,at,axis,angle,autoYaw);
+  // HF1/HF2 surface prefabs have two coincident artificial cap faces along
+  // adjacent polygons. Repair their viewport geometry during placement too,
+  // so users do not have to re-extract already saved doors.
+  const shell=(checked as Prefab&{recovery?:{mode?:string}}).recovery?.mode==='surface-shell';
+  const normalized=shell?repairBspSurfacePanels(deduplicateBspSurfacePanels(objects.filter((o):o is Brush=>o.kind==='brush'))):objects;
+  const placed=rotateObjectsForPlacement(normalized,at,axis,angle,autoYaw);
   for(const object of placed){
     if(!finitePosition(object.position))throw Error('Prefab is outside the map limits.');
     if(object.kind==='brush'){

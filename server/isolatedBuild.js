@@ -3,7 +3,7 @@
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import os from 'node:os';
+import {studioDirectory} from './studioDocuments.js';
 
 const VALID_NAME=/^[a-z][a-z0-9_-]{0,63}$/i;
 export function compileOutputMode(value){
@@ -34,7 +34,7 @@ export async function writeIsolatedBuild({gameDir,mapName,compiledBspPath,source
     compiledBspPath,sourceMapPath,buildLog,manualPaths:inlineBinaryFiles.filter(x=>/\.wad$/i.test(x.path)).map(x=>x.path),organizedLayout:true});
   return {...result,output:path.join(result.destination,'Distribucion','maps',`${mapName}.bsp`)};
  }
- const base=destinationDir?await validateBuildDestination(destinationDir,gameDir):path.join(os.homedir(),'SvenStudio3D','Builds');
+ const base=destinationDir?await validateBuildDestination(destinationDir,gameDir):await studioDirectory('builds',true);
  if(!destinationDir)await fs.mkdir(base,{recursive:true});
  const destination=await newFolder(base,mapName);
  try{

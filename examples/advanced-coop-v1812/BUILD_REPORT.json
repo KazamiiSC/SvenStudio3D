@@ -1,0 +1,53 @@
+{
+  "brushes": 87,
+  "pointEntities": 78,
+  "puzzles": [
+    {
+      "name": "Restore three generator circuits",
+      "mode": "switches",
+      "buttons": 3,
+      "finish": "sv_pz_2516b1bee59c4ba99b0_done"
+    },
+    {
+      "name": "Extraction dual-key authorization",
+      "mode": "simultaneous",
+      "buttons": 2,
+      "finish": "sv_pz_6a32def7a02549fd870_done"
+    }
+  ],
+  "diagnostics": [],
+  "waves": [
+    {
+      "name": "HECU security team",
+      "monster": "monster_human_grunt",
+      "count": 4
+    },
+    {
+      "name": "Containment breach - zombies",
+      "monster": "monster_zombie",
+      "count": 3
+    },
+    {
+      "name": "Alien counterattack",
+      "monster": "monster_alien_grunt",
+      "count": 2
+    }
+  ],
+  "missionStages": [
+    "Restore facility power",
+    "Clear the combat hall",
+    "Synchronize extraction controls"
+  ],
+  "events": [
+    "Security lockdown warning",
+    "Final assault alert"
+  ],
+  "roundTrip": {
+    "totalBrushes": 87,
+    "importedBrushes": 87,
+    "skippedBrushes": 0,
+    "skippedLocations": []
+  },
+  "startTarget": "sv_en_af087efe964a4ebdbc3_start",
+  "finishTarget": "sv_en_af087efe964a4ebdbc3_finish"
+}

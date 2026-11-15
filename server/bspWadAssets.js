@@ -57,7 +57,7 @@ async function readAt(handle,offset,count){
   return buffer;
 }
 /** Scan one WAD's directory and extract only requested, uncompressed MIPTEX textures. */
-export async function readMissingWadTextures(file,needed,budget){
+export async function readMissingWadTextures(file,needed,budget,includeMipRaw=false){
   const found=[];
   const handle=await fs.open(file,'r');
   try{
@@ -76,22 +76,35 @@ export async function readMissingWadTextures(file,needed,budget){
       try{
         const header=await readAt(handle,pos,40),width=header.readUInt32LE(16),height=header.readUInt32LE(20);
         const mip0=header.readUInt32LE(24),mip3=header.readUInt32LE(36),pixels=width*height;
-        if(!width||!height||width>4096||height>4096||pixels>MAX_TEXELS||pixels>budget.remaining||mip0<40||!mip3||mip0+pixels>size)continue;
+        if(!width||!height||width>4096||height>4096||pixels>MAX_TEXELS||mip0<40||!mip3||mip0+pixels>size)continue;
         const palAt=mip3+Math.max(1,width>>3)*Math.max(1,height>>3);
         if(palAt+2>size)continue;
         const colorCount=(await readAt(handle,pos+palAt,2)).readUInt16LE(0);
         if(colorCount<1||colorCount>256||palAt+2+colorCount*3>size)continue;
-        const palette=await readAt(handle,pos+palAt+2,colorCount*3);
-        const indices=await readAt(handle,pos+mip0,pixels);
-        found.push({name,width,height,indices:indices.toString('base64'),palette:palette.toString('base64')});
-        budget.remaining-=pixels;needed.delete(key);
+        const sizeNeeded=includeMipRaw?palAt+2+colorCount*3:pixels;
+        if(sizeNeeded>budget.remaining)continue;
+        // Raw mode is opt-in for BSP object export. Keep the actual four mip
+        // levels and palette, rather than synthesizing pixel data from a preview.
+        if(includeMipRaw){
+          const mipSizes=[pixels,...[1,2,3].map(level=>Math.max(1,width>>level)*Math.max(1,height>>level))];
+          const offsets=[0,1,2,3].map(level=>header.readUInt32LE(24+level*4));
+          if(offsets.some((off,level)=>off<40||off+mipSizes[level]>sizeNeeded||level>0&&off<offsets[level-1]+mipSizes[level-1]))continue;
+          const raw=await readAt(handle,pos,sizeNeeded);
+          if(raw.toString('latin1',0,16).split('\0')[0].toLowerCase()!==key)continue;
+          found.push({name,width,height,raw:raw.toString('base64')});
+        }else{
+          const palette=await readAt(handle,pos+palAt+2,colorCount*3);
+          const indices=await readAt(handle,pos+mip0,pixels);
+          found.push({name,width,height,indices:indices.toString('base64'),palette:palette.toString('base64')});
+        }
+        budget.remaining-=sizeNeeded;needed.delete(key);
       }catch{ /* Skip malformed individual MIPTEX data. */ }
     }
     return found;
   }finally{await handle.close()}
 }
-export async function findBspWadTextures({gameDir,wadNames=[],textureNames=[]}={}){
-  if(!Array.isArray(wadNames)||!Array.isArray(textureNames)||wadNames.length>256||textureNames.length>4096)throw Error('Invalid BSP texture request.');
+export async function findBspWadTextures({gameDir,wadNames=[],textureNames=[],includeMipRaw=false}={}){
+  if(typeof includeMipRaw!=='boolean'||!Array.isArray(wadNames)||!Array.isArray(textureNames)||wadNames.length>256||textureNames.length>4096)throw Error('Invalid BSP texture request.');
   const allNames=[...new Set(textureNames.map(x=>typeof x==='string'?x.trim().toLowerCase():'').filter(cleanTexture))];
   const requested=allNames.slice(0,MAX_REQUESTED);
   const roots=await bspWadRoots(gameDir);
@@ -104,7 +117,7 @@ export async function findBspWadTextures({gameDir,wadNames=[],textureNames=[]}={
   for(const entry of ordered.slice(0,MAX_WADS)){
     if(!remaining.size||budget.remaining<=0)break;
     try{
-      const loaded=await readMissingWadTextures(entry.full,remaining,budget);
+      const loaded=await readMissingWadTextures(entry.full,remaining,budget,includeMipRaw);
       textures.push(...loaded.map(tex=>({...tex,wad:entry.name,source:entry.layer})));
     }catch{ /* Unreadable WAD: try the next overlay. */ }
     scanned++;

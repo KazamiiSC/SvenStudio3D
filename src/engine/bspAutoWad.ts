@@ -1,3 +1,4 @@
+import type {WAD3MipTexture} from './bspWadMipTexture';
 import type {TextureAsset} from './types';
 export type AutoWadTexture={name:string;width:number;height:number;indices:string;palette:string;wad:string;source:string};
 export type AutoWadResponse={textures:AutoWadTexture[];missing:string[];scanned:number;truncated:boolean};
@@ -71,4 +72,31 @@ export function autoWadTexturesToAssets(items:AutoWadTexture[]):TextureAsset[]{
       get thumbUrl(){return thumb??(thumb=draw(128));},
       get dataUrl(){return full??(full=draw(Number.POSITIVE_INFINITY));}};
   });
+}
+
+/** Fetch exact WAD3 MIPTEX bytes for a user-requested BSP prefab export.
+ * This is separate from auto-preview discovery: it runs on Save and never
+ * mutates Sven Co-op files. Missing textures remain missing, not fabricated.
+ */
+export async function fetchBspPrefabMipTextures(
+  gameDir:string,wadNames:string[],textureNames:string[],request:typeof fetch=fetch,
+):Promise<WAD3MipTexture[]>{
+  const found=new Map<string,WAD3MipTexture>();
+  for(const names of bspWadBatches(textureNames,24)){
+    const response=await request('/api/bsp/wad-textures',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({gameDir,wadNames,textureNames:names,includeMipRaw:true}),
+    });
+    const data=await response.json() as {textures:Array<{name:string;width:number;height:number;raw?:string}>;error?:string};
+    if(!response.ok)throw Error(data.error||`WAD search failed (HTTP ${response.status}).`);
+    if(!Array.isArray(data.textures))throw Error('Invalid automatic WAD texture response.');
+    for(const item of data.textures){
+      if(!item.raw||!names.some(name=>name.toLowerCase()===item.name.toLowerCase())||!Number.isSafeInteger(item.width)||!Number.isSafeInteger(item.height)||item.width<1||item.height<1||item.width*item.height>4_194_304)continue;
+      if(item.raw.length>12*1024*1024*4/3+8||!/^[A-Za-z0-9+/]*={0,2}$/.test(item.raw))throw Error('Invalid MIPTEX data returned by the automatic WAD search.');
+      const binary=atob(item.raw),raw=Uint8Array.from(binary,char=>char.charCodeAt(0));
+      if(raw.byteLength<40||new DataView(raw.buffer).getUint32(16,true)!==item.width||new DataView(raw.buffer).getUint32(20,true)!==item.height)throw Error('Automatic WAD returned an invalid texture header.');
+      found.set(item.name.toLowerCase(),{name:item.name,width:item.width,height:item.height,raw});
+    }
+  }
+  return [...found.values()];
 }

@@ -18,7 +18,7 @@ async function waitFor(predicate,timeout=13000){const started=Date.now();while(!
 async function clientModule(folder,id){
  await writeFile(join(folder,`store${id}.mjs`),fakeStore);
  const source=await readFile(new URL('../src/engine/buildTogetherClient.ts',import.meta.url),'utf8');
- const transpiled=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText
+ const transpiled=ts.transpileModule(source.replace("from './studioFiles'", "from '"+new URL('../src/engine/studioFiles.ts',import.meta.url).href+"'"),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText
   .replace("from 'zustand'","from './zustand.mjs'").replace("from '../store'",`from './store${id}.mjs'`);
  await writeFile(join(folder,`client${id}.mjs`),transpiled);
  const client=await import(pathToFileURL(join(folder,`client${id}.mjs`)).href);

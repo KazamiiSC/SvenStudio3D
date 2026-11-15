@@ -5,8 +5,9 @@ import {analyzeMap,type MapIssue} from '../engine/mapDiagnostics';
 import {analyzeBuildLog,parsePointfile,renderDoctorMessage} from '../engine/compileDiagnostics';
 import {useMapDoctorState} from '../mapDoctorState';
 import {useT} from '../i18n';
+import {CoopPlaytestPanel} from './CoopPlaytestPanel';
 export function MapDoctor({onClose}:{onClose:()=>void}){
- const t=useT(),editor=useEditor(),[severity,setSeverity]=useState<'all'|MapIssue['severity']>('all');
+ const t=useT(),editor=useEditor(),[severity,setSeverity]=useState<'all'|MapIssue['severity']>('all'),[tab,setTab]=useState<'general'|'coop'>('general');
  const input=useRef<HTMLInputElement>(null),[importMessage,setImportMessage]=useState('');
  const trace=useMapDoctorState(s=>s.trace),traceVisible=useMapDoctorState(s=>s.traceVisible);
  const traceOrigin=useMapDoctorState(s=>s.traceOrigin),mapName=useMapDoctorState(s=>s.mapName);
@@ -27,9 +28,11 @@ export function MapDoctor({onClose}:{onClose:()=>void}){
   }catch{setImportMessage(t('The pointfile could not be read.'));}
  };
  return <div className="modal-backdrop" onMouseDown={onClose}><section className="map-doctor" role="dialog" aria-modal="true" aria-label={t('Map Doctor')} onMouseDown={e=>e.stopPropagation()}>
-  <header><ShieldCheck size={22}/><strong>{t('Map Doctor')} 2.0 · Svengine</strong><button title={t('Close')} onClick={onClose}><X size={18}/></button></header>
+  <header><ShieldCheck size={22}/><strong>{t('Map Doctor')} 3.0 · Svengine</strong><button title={t('Close')} onClick={onClose}><X size={18}/></button></header>
   <p>{t('Map Doctor checks editable geometry and summarizes real compiler errors. A pointfile from SC-BSP reveals the diagnosed leak route; static checks alone cannot prove a map is sealed.')}</p>
   <div className="map-doctor-stats"><span>{report.brushes} {t('brushes')}</span><span>{report.entities} {t('entities')}</span><span>{report.faces} {t('Faces')}</span><span>{report.textures} {t('Texture')}</span></div>
+  <nav className="doctor-mode-tabs" aria-label="Map Doctor sections"><button type="button" className={tab==='general'?'active':''} onClick={()=>setTab('general')}>{t('Map Doctor')}</button><button type="button" className={tab==='coop'?'active':''} onClick={()=>setTab('coop')}>Co-op Playtest</button></nav>
+  {tab==='coop'?<CoopPlaytestPanel onClose={onClose}/>:<>
   <section className="doctor-trace-panel">
     <div className="doctor-trace-heading"><strong>{t('Leak pointfile route')}</strong><small>{mapName||t('Current map')} · {traceOrigin||t('No pointfile loaded')}</small></div>
     <p>{trace.length?`${trace.length} ${t('route points')}`:t('Compile a leaking map or import a .pts/.lin pointfile to see the route.')}</p>
@@ -52,7 +55,7 @@ export function MapDoctor({onClose}:{onClose:()=>void}){
   <nav>{(['all','error','warning','info'] as const).map(kind=><button className={severity===kind?'active':''} key={kind} onClick={()=>setSeverity(kind)}>{t(kind==='all'?'All issues':kind==='error'?'Errors':kind==='warning'?'Warnings':'Information')} ({kind==='all'?report.issues.length:count(kind)})</button>)}</nav>
   <div className="map-doctor-issues">{filtered.map((issue,i)=><button key={`${issue.code}-${issue.objectId||i}`} onClick={()=>{if(issue.objectId){editor.setSelected(issue.objectId);editor.issueCameraCommand('frame');onClose()}}} className={`map-doctor-issue ${issue.severity}`} disabled={!issue.objectId}>
     {issue.severity==='error'?<AlertTriangle size={16}/>:issue.severity==='warning'?<Search size={16}/>:<CheckCircle2 size={16}/>}<span><strong>{t(issue.category[0].toUpperCase()+issue.category.slice(1))} · {issue.code}</strong><small>{localizeIssue(issue)}</small></span></button>)}
-   {!filtered.length&&<p>{t('No findings for this filter.')}</p>}</div>
-  <footer><button onClick={()=>editor.appendLogs([`Map Doctor: ${count('error')} errors, ${count('warning')} warnings, ${count('info')} notices.`,...buildFindings.map(f=>`[${f.code}] ${renderDoctorMessage(t(f.messageKey),f.params)}`)])}>{t('Write summary to build log')}</button><button onClick={onClose}>{t('Close')}</button></footer>
+   {!filtered.length&&<p>{t('No findings for this filter.')}</p>}</div></>}
+  <footer>{tab==='general'&&<button onClick={()=>editor.appendLogs([`Map Doctor: ${count('error')} errors, ${count('warning')} warnings, ${count('info')} notices.`,...buildFindings.map(f=>`[${f.code}] ${renderDoctorMessage(t(f.messageKey),f.params)}`)])}>{t('Write summary to build log')}</button>}<button onClick={onClose}>{t('Close')}</button></footer>
  </section></div>;
 }

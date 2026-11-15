@@ -1,0 +1,205 @@
+{
+  "format": "svenstudio-blueprint",
+  "version": 1,
+  "plan": {
+    "id": "bp_smart_walls_hf3",
+    "name": "Smart Walls HF3 · 4 connected rooms",
+    "imageWidth": 800,
+    "imageHeight": 700,
+    "unitsPerPixel": 1,
+    "origin": [
+      0,
+      0
+    ],
+    "baseZ": 0,
+    "wallHeight": 224,
+    "wallThickness": 16,
+    "slabThickness": 16,
+    "texture": "SV_BRICK01",
+    "strokes": [
+      {
+        "id": "room_a",
+        "kind": "room",
+        "name": "Dormitorio",
+        "points": [
+          [
+            100,
+            100
+          ],
+          [
+            330,
+            100
+          ],
+          [
+            330,
+            300
+          ],
+          [
+            100,
+            300
+          ]
+        ],
+        "floor": true,
+        "ceiling": true,
+        "openings": [
+          {
+            "id": "8a5c09ec-ec7b-4dfb-92cf-366c1ed1bb1f",
+            "edge": 1,
+            "kind": "door",
+            "t": 0.5,
+            "width": 64,
+            "height": 112,
+            "sill": 0
+          },
+          {
+            "id": "b8aa8ae0-5d66-4a21-be90-92fbfefd4e8c",
+            "edge": 2,
+            "kind": "door",
+            "t": 0.5,
+            "width": 64,
+            "height": 112,
+            "sill": 0
+          }
+        ]
+      },
+      {
+        "id": "room_b",
+        "kind": "room",
+        "name": "Cocina",
+        "points": [
+          [
+            330,
+            100
+          ],
+          [
+            560,
+            100
+          ],
+          [
+            560,
+            300
+          ],
+          [
+            330,
+            300
+          ]
+        ],
+        "floor": true,
+        "ceiling": true,
+        "openings": [
+          {
+            "id": "8a6ebfe8-c4e0-4416-aa83-baa0f2624df7",
+            "edge": 3,
+            "kind": "door",
+            "t": 0.5,
+            "width": 64,
+            "height": 112,
+            "sill": 0
+          },
+          {
+            "id": "6d5b03a6-7cc7-4ee7-9e39-2b35e9c61c18",
+            "edge": 2,
+            "kind": "door",
+            "t": 0.5,
+            "width": 64,
+            "height": 112,
+            "sill": 0
+          }
+        ]
+      },
+      {
+        "id": "room_c",
+        "kind": "room",
+        "name": "Baño",
+        "points": [
+          [
+            100,
+            300
+          ],
+          [
+            330,
+            300
+          ],
+          [
+            330,
+            520
+          ],
+          [
+            100,
+            520
+          ]
+        ],
+        "floor": true,
+        "ceiling": true,
+        "openings": [
+          {
+            "id": "44d39a13-3f48-413f-8215-06ba13a4fd88",
+            "edge": 1,
+            "kind": "door",
+            "t": 0.5,
+            "width": 64,
+            "height": 112,
+            "sill": 0
+          },
+          {
+            "id": "5296c317-ceab-44c6-9cdb-561caf8efebc",
+            "edge": 0,
+            "kind": "door",
+            "t": 0.5,
+            "width": 64,
+            "height": 112,
+            "sill": 0
+          }
+        ]
+      },
+      {
+        "id": "room_d",
+        "kind": "room",
+        "name": "Comedor",
+        "points": [
+          [
+            330,
+            300
+          ],
+          [
+            560,
+            300
+          ],
+          [
+            560,
+            520
+          ],
+          [
+            330,
+            520
+          ]
+        ],
+        "floor": true,
+        "ceiling": true,
+        "openings": [
+          {
+            "id": "c9dc2063-991f-44c3-8ca5-902c56060a2b",
+            "edge": 3,
+            "kind": "door",
+            "t": 0.5,
+            "width": 64,
+            "height": 112,
+            "sill": 0
+          },
+          {
+            "id": "0c823fab-c89c-4e04-88d3-8c3fc30a698a",
+            "edge": 0,
+            "kind": "door",
+            "t": 0.5,
+            "width": 64,
+            "height": 112,
+            "sill": 0
+          }
+        ]
+      }
+    ],
+    "memberIds": [],
+    "signatures": [],
+    "smartWalls": true
+  }
+}

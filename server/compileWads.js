@@ -65,7 +65,7 @@ const lookupWad=async(name,gameDir,compilerDir,configuredPaths=[])=>{
   const directory=path.resolve(gameDir);
   const overlays=new Set(['svencoop','svencoop_addon','svencoop_downloads']);
   const root=overlays.has(path.basename(directory).toLowerCase())?path.dirname(directory):directory;
-  const locations=[directory,root,...['svencoop_addon','svencoop_downloads','svencoop'].map(layer=>path.join(root,layer)),compilerDir];
+  const locations=[directory,root,...['svencoop_addon','svencoop_downloads','svencoop','valve'].map(layer=>path.join(root,layer)),compilerDir];
   const candidates=[clean,...locations.map(folder=>path.join(folder,file))];
   for(const entry of configuredPaths){
     if(typeof entry!=='string'||!entry.trim())continue;

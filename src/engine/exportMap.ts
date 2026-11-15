@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { transformedVertices,round,safeFaceTextureAxes } from './geometry';
+import {isBspSyntheticClosure} from './bspPrefabSurfaceFlags.ts';
 import type { Brush,PointEntity,Project,Vec3 } from './types';
+import {isSvenPlayerSpawn} from './svenEntitySemantics';
 
 const safe = (s: string) => s.replace(/["\r\n]/g,' ').trim();
 const fmt = (n:number) => String(round(n,3));
@@ -21,7 +23,7 @@ export function exportBrush(b:Brush):string {
   const center=new THREE.Vector3();
   vertices.forEach(p=>center.add(new THREE.Vector3(...p)));
   center.divideScalar(Math.max(vertices.length,1));
-  const lines=b.faces.map(face=>{
+  const lines=b.faces.map((face,faceIndex)=>{
     if(face.indices.length<3)return null;
     const ids=face.indices;
     const a=vertices[ids[0]],c=vertices[ids[1]],d=vertices[ids[2]];
@@ -38,7 +40,12 @@ export function exportBrush(b:Brush):string {
     const second=inward?d:c,third=inward?c:d;
     normal.normalize();
     const {u,v,uShift,vShift}=safeFaceTextureAxes(vertices,face);
-    const texture=safe(face.texture||'NULL').toUpperCase();
+    // BSP surface-shells are made of a genuine source front polygon and
+    // fabricated closing planes. GoldSrc must NOT paint the front texture on
+    // those invented caps, where it produces seams/stripes after SC-CSG.
+    // Keep them as closed convex volumes, but compile closures as NULL.
+    const texture=isBspSyntheticClosure(b,faceIndex,face)
+      ?'NULL':safe(face.texture||'NULL').toUpperCase();
     // Valve 220 compiler reads explicit axes; the rotation is baked in above.
     return `${point(a)} ${point(second)} ${point(third)} ${texture} [ ${u.map(fmt).join(' ')} ${fmt(uShift)} ] [ ${v.map(fmt).join(' ')} ${fmt(vShift)} ] 0 ${fmt(face.uScale||1)} ${fmt(face.vScale||1)}`;
   }).filter(Boolean);
@@ -130,7 +137,7 @@ export function validateExportIntegrity(project:Project):string[]{
 export function validateProject(project:Project):string[]{
   const errors:string[]=[];
   if(project.target&&project.target!=='svengine')errors.push('Project target must be Svengine / Sven Co-op.');
-  if(!project.objects.some(o=>o.kind==='entity'&&o.classname==='info_player_start'))errors.push('Add at least one info_player_start before compiling.');
+  if(!project.objects.some(o=>o.kind==='entity'&&isSvenPlayerSpawn(o.classname)))errors.push('Add at least one Sven Co-op player spawn (info_player_deathmatch, info_player_dm2, info_player_coop or info_player_start) before compiling.');
   if(!project.objects.some(o=>o.kind==='brush'))errors.push('Map has no solid brushes.');
   errors.push(...validateExportIntegrity(project));
   return errors;

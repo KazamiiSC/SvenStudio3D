@@ -1,0 +1,5428 @@
+{
+  "version": 1,
+  "target": "svengine",
+  "name": "sv_multilevel_validation",
+  "objects": [
+    {
+      "id": "ab7772a1-724c-4c22-8132-77fa87118287",
+      "kind": "entity",
+      "classname": "info_player_start",
+      "name": "Player spawn",
+      "position": [
+        -240,
+        -80,
+        40
+      ],
+      "props": {
+        "angles": "0 0 0"
+      }
+    },
+    {
+      "id": "94cb4ee0-dcf4-4c9a-b0d4-33f35fdcb43a",
+      "kind": "entity",
+      "classname": "light",
+      "name": "Ground light",
+      "position": [
+        -90,
+        0,
+        150
+      ],
+      "props": {
+        "_light": "255 230 200 550"
+      }
+    },
+    {
+      "id": "5123b81c-3480-4e3d-90be-3718c397dd39",
+      "kind": "entity",
+      "classname": "light",
+      "name": "Upper light",
+      "position": [
+        -90,
+        0,
+        395
+      ],
+      "props": {
+        "_light": "235 240 255 550"
+      }
+    },
+    {
+      "id": "9bdfa05c-d2f0-423a-9d60-b25243191f67",
+      "kind": "brush",
+      "name": "@ground Ground laboratory · Wall 1 main 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -332,
+          -8,
+          -112
+        ],
+        [
+          332,
+          -8,
+          -112
+        ],
+        [
+          348,
+          8,
+          -112
+        ],
+        [
+          -348,
+          8,
+          -112
+        ],
+        [
+          -332,
+          -8,
+          112
+        ],
+        [
+          332,
+          -8,
+          112
+        ],
+        [
+          348,
+          8,
+          112
+        ],
+        [
+          -348,
+          8,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        20,
+        300,
+        112
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "8d761fe0-67be-4374-9fd8-2116910e91da",
+      "kind": "brush",
+      "name": "@ground Ground laboratory · Wall 2 side 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -81,
+          -112
+        ],
+        [
+          8,
+          81,
+          -112
+        ],
+        [
+          -8,
+          81,
+          -112
+        ],
+        [
+          -8,
+          -81,
+          -112
+        ],
+        [
+          8,
+          -81,
+          112
+        ],
+        [
+          8,
+          81,
+          112
+        ],
+        [
+          -8,
+          81,
+          112
+        ],
+        [
+          -8,
+          -81,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        200,
+        -211,
+        112
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "9673af58-8db6-4abb-9b89-87c2aee86ddf",
+      "kind": "brush",
+      "name": "@ground Ground laboratory · Wall 2 lintel 2",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -40,
+          -56
+        ],
+        [
+          8,
+          40,
+          -56
+        ],
+        [
+          -8,
+          40,
+          -56
+        ],
+        [
+          -8,
+          -40,
+          -56
+        ],
+        [
+          8,
+          -40,
+          56
+        ],
+        [
+          8,
+          40,
+          56
+        ],
+        [
+          -8,
+          40,
+          56
+        ],
+        [
+          -8,
+          -40,
+          56
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        200,
+        -90,
+        168
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "11dfcd50-c7cc-4b96-9d2a-8ffeb1286756",
+      "kind": "brush",
+      "name": "@ground Ground laboratory · Wall 2 main 3",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -171,
+          -112
+        ],
+        [
+          8,
+          171,
+          -112
+        ],
+        [
+          -8,
+          171,
+          -112
+        ],
+        [
+          -8,
+          -171,
+          -112
+        ],
+        [
+          8,
+          -171,
+          112
+        ],
+        [
+          8,
+          171,
+          112
+        ],
+        [
+          -8,
+          171,
+          112
+        ],
+        [
+          -8,
+          -171,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        200,
+        121,
+        112
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "16c74aef-e15b-42b6-825b-3c5945cd4db1",
+      "kind": "brush",
+      "name": "@ground Ground laboratory · Wall 3 main 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -348,
+          -8,
+          -112
+        ],
+        [
+          348,
+          -8,
+          -112
+        ],
+        [
+          332,
+          8,
+          -112
+        ],
+        [
+          -332,
+          8,
+          -112
+        ],
+        [
+          -348,
+          -8,
+          112
+        ],
+        [
+          348,
+          -8,
+          112
+        ],
+        [
+          332,
+          8,
+          112
+        ],
+        [
+          -332,
+          8,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        20,
+        -300,
+        112
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "002c2548-adb6-4b4b-bc1f-efa71a7a06e0",
+      "kind": "brush",
+      "name": "@ground Ground laboratory · Wall 4 main 1 · Exterior",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -292,
+          -112
+        ],
+        [
+          8,
+          292,
+          -112
+        ],
+        [
+          -8,
+          308,
+          -112
+        ],
+        [
+          -8,
+          -308,
+          -112
+        ],
+        [
+          8,
+          -292,
+          112
+        ],
+        [
+          8,
+          292,
+          112
+        ],
+        [
+          -8,
+          308,
+          112
+        ],
+        [
+          -8,
+          -308,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -320,
+        0,
+        112
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "c29bb9b4-4743-4447-bc4a-94ffb9d8895d",
+      "kind": "brush",
+      "name": "@ground Ground storage · Wall 5 main 1 · Exterior",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -308,
+          -112
+        ],
+        [
+          8,
+          308,
+          -112
+        ],
+        [
+          -8,
+          292,
+          -112
+        ],
+        [
+          -8,
+          -292,
+          -112
+        ],
+        [
+          8,
+          -308,
+          112
+        ],
+        [
+          8,
+          308,
+          112
+        ],
+        [
+          -8,
+          292,
+          112
+        ],
+        [
+          -8,
+          -292,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        360,
+        0,
+        112
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "7d0cdd79-3d8e-45fb-9ae7-bb455d3d759a",
+      "kind": "brush",
+      "name": "@ground Ground laboratory Floor 1.1 cut 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -260,
+          -300,
+          -8
+        ],
+        [
+          260,
+          -300,
+          -8
+        ],
+        [
+          260,
+          300,
+          -8
+        ],
+        [
+          -260,
+          300,
+          -8
+        ],
+        [
+          -260,
+          -300,
+          8
+        ],
+        [
+          260,
+          -300,
+          8
+        ],
+        [
+          260,
+          300,
+          8
+        ],
+        [
+          -260,
+          300,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -60,
+        0,
+        -8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "0eaec626-ab97-4ba1-81ea-5f826685cfe1",
+      "kind": "brush",
+      "name": "@ground Ground laboratory Ceiling 1.1 cut 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -260,
+          -153,
+          -8
+        ],
+        [
+          260,
+          -153,
+          -8
+        ],
+        [
+          260,
+          153,
+          -8
+        ],
+        [
+          -260,
+          153,
+          -8
+        ],
+        [
+          -260,
+          -153,
+          8
+        ],
+        [
+          260,
+          -153,
+          8
+        ],
+        [
+          260,
+          153,
+          8
+        ],
+        [
+          -260,
+          153,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -60,
+        -147,
+        232
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "e4af4ea5-1239-4f05-b2e7-6db8883ddaed",
+      "kind": "brush",
+      "name": "@ground Ground laboratory Ceiling 1.1 cut 2",
+      "primitive": "poly",
+      "vertices": [
+        [
+          60,
+          -147,
+          -8
+        ],
+        [
+          60,
+          147,
+          -8
+        ],
+        [
+          -60,
+          147,
+          -8
+        ],
+        [
+          -60,
+          -147,
+          -8
+        ],
+        [
+          60,
+          -147,
+          8
+        ],
+        [
+          60,
+          147,
+          8
+        ],
+        [
+          -60,
+          147,
+          8
+        ],
+        [
+          -60,
+          -147,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        140,
+        153,
+        232
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "6c0c1b8b-90b3-4358-9e60-81b8f42fbe6c",
+      "kind": "brush",
+      "name": "@ground Ground laboratory Ceiling 1.1 cut 3",
+      "primitive": "poly",
+      "vertices": [
+        [
+          200,
+          103,
+          -8
+        ],
+        [
+          -200,
+          103,
+          -8
+        ],
+        [
+          -200,
+          -103,
+          -8
+        ],
+        [
+          200,
+          -103,
+          -8
+        ],
+        [
+          200,
+          103,
+          8
+        ],
+        [
+          -200,
+          103,
+          8
+        ],
+        [
+          -200,
+          -103,
+          8
+        ],
+        [
+          200,
+          -103,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -120,
+        197,
+        232
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "84f79d8e-92f7-4fe6-a608-b519022ce276",
+      "kind": "brush",
+      "name": "@ground Ground laboratory Ceiling 1.1 cut 4",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -40,
+          44,
+          -8
+        ],
+        [
+          -40,
+          -44,
+          -8
+        ],
+        [
+          40,
+          -44,
+          -8
+        ],
+        [
+          40,
+          44,
+          -8
+        ],
+        [
+          -40,
+          44,
+          8
+        ],
+        [
+          -40,
+          -44,
+          8
+        ],
+        [
+          40,
+          -44,
+          8
+        ],
+        [
+          40,
+          44,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -280,
+        50,
+        232
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "b4035654-a18c-4318-9262-396f4bb344f3",
+      "kind": "brush",
+      "name": "@ground Ground storage Floor 1.1 cut 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -80,
+          -300,
+          -8
+        ],
+        [
+          80,
+          -300,
+          -8
+        ],
+        [
+          80,
+          300,
+          -8
+        ],
+        [
+          -80,
+          300,
+          -8
+        ],
+        [
+          -80,
+          -300,
+          8
+        ],
+        [
+          80,
+          -300,
+          8
+        ],
+        [
+          80,
+          300,
+          8
+        ],
+        [
+          -80,
+          300,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        280,
+        0,
+        -8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "e767ce11-3939-4c4a-9785-6aa9c63c1e69",
+      "kind": "brush",
+      "name": "@ground Ground storage Ceiling 1.1 cut 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -80,
+          -153,
+          -8
+        ],
+        [
+          80,
+          -153,
+          -8
+        ],
+        [
+          80,
+          153,
+          -8
+        ],
+        [
+          -80,
+          153,
+          -8
+        ],
+        [
+          -80,
+          -153,
+          8
+        ],
+        [
+          80,
+          -153,
+          8
+        ],
+        [
+          80,
+          153,
+          8
+        ],
+        [
+          -80,
+          153,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        280,
+        -147,
+        232
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "afed8d12-5181-4256-89ef-6670f055c2be",
+      "kind": "brush",
+      "name": "@ground Ground storage Ceiling 1.1 cut 2",
+      "primitive": "poly",
+      "vertices": [
+        [
+          80,
+          -147,
+          -8
+        ],
+        [
+          80,
+          147,
+          -8
+        ],
+        [
+          -80,
+          147,
+          -8
+        ],
+        [
+          -80,
+          -147,
+          -8
+        ],
+        [
+          80,
+          -147,
+          8
+        ],
+        [
+          80,
+          147,
+          8
+        ],
+        [
+          -80,
+          147,
+          8
+        ],
+        [
+          -80,
+          -147,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        280,
+        153,
+        232
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "49cc9a1b-36e0-4cac-8ea9-7e8d80fda9e0",
+      "kind": "brush",
+      "name": "@upper Upper laboratory · Wall 1 main 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -332,
+          -8,
+          -112
+        ],
+        [
+          332,
+          -8,
+          -112
+        ],
+        [
+          348,
+          8,
+          -112
+        ],
+        [
+          -348,
+          8,
+          -112
+        ],
+        [
+          -332,
+          -8,
+          112
+        ],
+        [
+          332,
+          -8,
+          112
+        ],
+        [
+          348,
+          8,
+          112
+        ],
+        [
+          -348,
+          8,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        20,
+        300,
+        352
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "48d9d27e-02e2-46b7-a2be-b518541fea53",
+      "kind": "brush",
+      "name": "@upper Upper laboratory · Wall 2 side 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -81,
+          -112
+        ],
+        [
+          8,
+          81,
+          -112
+        ],
+        [
+          -8,
+          81,
+          -112
+        ],
+        [
+          -8,
+          -81,
+          -112
+        ],
+        [
+          8,
+          -81,
+          112
+        ],
+        [
+          8,
+          81,
+          112
+        ],
+        [
+          -8,
+          81,
+          112
+        ],
+        [
+          -8,
+          -81,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        200,
+        -211,
+        352
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "cc47a4cd-b5b4-44fd-9fb8-7dfbbc3bacab",
+      "kind": "brush",
+      "name": "@upper Upper laboratory · Wall 2 lintel 2",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -40,
+          -56
+        ],
+        [
+          8,
+          40,
+          -56
+        ],
+        [
+          -8,
+          40,
+          -56
+        ],
+        [
+          -8,
+          -40,
+          -56
+        ],
+        [
+          8,
+          -40,
+          56
+        ],
+        [
+          8,
+          40,
+          56
+        ],
+        [
+          -8,
+          40,
+          56
+        ],
+        [
+          -8,
+          -40,
+          56
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        200,
+        -90,
+        408
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "97d90e55-025b-4ca0-8904-301ec478f595",
+      "kind": "brush",
+      "name": "@upper Upper laboratory · Wall 2 main 3",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -171,
+          -112
+        ],
+        [
+          8,
+          171,
+          -112
+        ],
+        [
+          -8,
+          171,
+          -112
+        ],
+        [
+          -8,
+          -171,
+          -112
+        ],
+        [
+          8,
+          -171,
+          112
+        ],
+        [
+          8,
+          171,
+          112
+        ],
+        [
+          -8,
+          171,
+          112
+        ],
+        [
+          -8,
+          -171,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        200,
+        121,
+        352
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "e4428048-8885-4915-93f7-9008f0558765",
+      "kind": "brush",
+      "name": "@upper Upper laboratory · Wall 3 main 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -348,
+          -8,
+          -112
+        ],
+        [
+          348,
+          -8,
+          -112
+        ],
+        [
+          332,
+          8,
+          -112
+        ],
+        [
+          -332,
+          8,
+          -112
+        ],
+        [
+          -348,
+          -8,
+          112
+        ],
+        [
+          348,
+          -8,
+          112
+        ],
+        [
+          332,
+          8,
+          112
+        ],
+        [
+          -332,
+          8,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        20,
+        -300,
+        352
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "9af17914-f6c4-482a-86f5-d6f9e23df4ba",
+      "kind": "brush",
+      "name": "@upper Upper laboratory · Wall 4 main 1 · Exterior",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -292,
+          -112
+        ],
+        [
+          8,
+          292,
+          -112
+        ],
+        [
+          -8,
+          308,
+          -112
+        ],
+        [
+          -8,
+          -308,
+          -112
+        ],
+        [
+          8,
+          -292,
+          112
+        ],
+        [
+          8,
+          292,
+          112
+        ],
+        [
+          -8,
+          308,
+          112
+        ],
+        [
+          -8,
+          -308,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -320,
+        0,
+        352
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "ee668e7c-59af-4ceb-87fb-e0fda9c3cb69",
+      "kind": "brush",
+      "name": "@upper Upper storage · Wall 5 main 1 · Exterior",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -308,
+          -112
+        ],
+        [
+          8,
+          308,
+          -112
+        ],
+        [
+          -8,
+          292,
+          -112
+        ],
+        [
+          -8,
+          -292,
+          -112
+        ],
+        [
+          8,
+          -308,
+          112
+        ],
+        [
+          8,
+          308,
+          112
+        ],
+        [
+          -8,
+          292,
+          112
+        ],
+        [
+          -8,
+          -292,
+          112
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        360,
+        0,
+        352
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "e1cef541-9091-47fc-9aef-4765c308b8fd",
+      "kind": "brush",
+      "name": "@upper Upper laboratory Ceiling 1.1 cut 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -260,
+          -300,
+          -8
+        ],
+        [
+          260,
+          -300,
+          -8
+        ],
+        [
+          260,
+          300,
+          -8
+        ],
+        [
+          -260,
+          300,
+          -8
+        ],
+        [
+          -260,
+          -300,
+          8
+        ],
+        [
+          260,
+          -300,
+          8
+        ],
+        [
+          260,
+          300,
+          8
+        ],
+        [
+          -260,
+          300,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -60,
+        0,
+        472
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "0410a60e-56c7-4470-956a-7bfa95c68975",
+      "kind": "brush",
+      "name": "@upper Upper storage Ceiling 1.1 cut 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -80,
+          -300,
+          -8
+        ],
+        [
+          80,
+          -300,
+          -8
+        ],
+        [
+          80,
+          300,
+          -8
+        ],
+        [
+          -80,
+          300,
+          -8
+        ],
+        [
+          -80,
+          -300,
+          8
+        ],
+        [
+          80,
+          -300,
+          8
+        ],
+        [
+          80,
+          300,
+          8
+        ],
+        [
+          -80,
+          300,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        280,
+        0,
+        472
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "75096bbd-ffd6-47f4-978f-01c44cbc2fed",
+      "kind": "brush",
+      "name": "Main staircase · Step 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -10,
+          -44,
+          -7.5
+        ],
+        [
+          10,
+          -44,
+          -7.5
+        ],
+        [
+          10,
+          44,
+          -7.5
+        ],
+        [
+          -10,
+          44,
+          -7.5
+        ],
+        [
+          -10,
+          -44,
+          7.5
+        ],
+        [
+          10,
+          -44,
+          7.5
+        ],
+        [
+          10,
+          44,
+          7.5
+        ],
+        [
+          -10,
+          44,
+          7.5
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -230,
+        50,
+        7.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "a55c53fa-5b9a-457b-8932-35ba90081892",
+      "kind": "brush",
+      "name": "Main staircase · Step 2",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -10,
+          -44,
+          -15
+        ],
+        [
+          10,
+          -44,
+          -15
+        ],
+        [
+          10,
+          44,
+          -15
+        ],
+        [
+          -10,
+          44,
+          -15
+        ],
+        [
+          -10,
+          -44,
+          15
+        ],
+        [
+          10,
+          -44,
+          15
+        ],
+        [
+          10,
+          44,
+          15
+        ],
+        [
+          -10,
+          44,
+          15
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -210,
+        50,
+        15
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "dffc0022-bf8d-4143-8fd6-9e53724f8651",
+      "kind": "brush",
+      "name": "Main staircase · Step 3",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -10,
+          -44,
+          -22.5
+        ],
+        [
+          10,
+          -44,
+          -22.5
+        ],
+        [
+          10,
+          44,
+          -22.5
+        ],
+        [
+          -10,
+          44,
+          -22.5
+        ],
+        [
+          -10,
+          -44,
+          22.5
+        ],
+        [
+          10,
+          -44,
+          22.5
+        ],
+        [
+          10,
+          44,
+          22.5
+        ],
+        [
+          -10,
+          44,
+          22.5
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -190,
+        50,
+        22.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "3858eafe-330b-4344-a7f8-54c487de0a32",
+      "kind": "brush",
+      "name": "Main staircase · Step 4",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -10,
+          -44,
+          -30
+        ],
+        [
+          10,
+          -44,
+          -30
+        ],
+        [
+          10,
+          44,
+          -30
+        ],
+        [
+          -10,
+          44,
+          -30
+        ],
+        [
+          -10,
+          -44,
+          30
+        ],
+        [
+          10,
+          -44,
+          30
+        ],
+        [
+          10,
+          44,
+          30
+        ],
+        [
+          -10,
+          44,
+          30
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -170,
+        50,
+        30
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "6e5d0304-6cd3-4601-8eb9-8594be97cd09",
+      "kind": "brush",
+      "name": "Main staircase · Step 5",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -10,
+          -44,
+          -37.5
+        ],
+        [
+          10,
+          -44,
+          -37.5
+        ],
+        [
+          10,
+          44,
+          -37.5
+        ],
+        [
+          -10,
+          44,
+          -37.5
+        ],
+        [
+          -10,
+          -44,
+          37.5
+        ],
+        [
+          10,
+          -44,
+          37.5
+        ],
+        [
+          10,
+          44,
+          37.5
+        ],
+        [
+          -10,
+          44,
+          37.5
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -150,
+        50,
+        37.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "ea5c6da5-ad0c-4204-9cb5-c4889f3188ba",
+      "kind": "brush",
+      "name": "Main staircase · Step 6",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -10,
+          -44,
+          -45
+        ],
+        [
+          10,
+          -44,
+          -45
+        ],
+        [
+          10,
+          44,
+          -45
+        ],
+        [
+          -10,
+          44,
+          -45
+        ],
+        [
+          -10,
+          -44,
+          45
+        ],
+        [
+          10,
+          -44,
+          45
+        ],
+        [
+          10,
+          44,
+          45
+        ],
+        [
+          -10,
+          44,
+          45
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -130,
+        50,
+        45
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "7f54688f-cc58-4ae9-916b-9f619a141f6c",
+      "kind": "brush",
+      "name": "Main staircase · Step 7",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -10,
+          -44,
+          -52.5
+        ],
+        [
+          10,
+          -44,
+          -52.5
+        ],
+        [
+          10,
+          44,
+          -52.5
+        ],
+        [
+          -10,
+          44,
+          -52.5
+        ],
+        [
+          -10,
+          -44,
+          52.5
+        ],
+        [
+          10,
+          -44,
+          52.5
+        ],
+        [
+          10,
+          44,
+          52.5
+        ],
+        [
+          -10,
+          44,
+          52.5
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -110,
+        50,
+        52.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "ba6f2b15-e615-45c9-92fd-d7096fd8755c",
+      "kind": "brush",
+      "name": "Main staircase · Step 8",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -10,
+          -44,
+          -60
+        ],
+        [
+          10,
+          -44,
+          -60
+        ],
+        [
+          10,
+          44,
+          -60
+        ],
+        [
+          -10,
+          44,
+          -60
+        ],
+        [
+          -10,
+          -44,
+          60
+        ],
+        [
+          10,
+          -44,
+          60
+        ],
+        [
+          10,
+          44,
+          60
+        ],
+        [
+          -10,
+          44,
+          60
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -90,
+        50,
+        60
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "1a123a59-2567-4c6a-9ae7-c77d15955b56",
+      "kind": "brush",
+      "name": "Main staircase · Step 9",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -10,
+          -44,
+          -67.5
+        ],
+        [
+          10,
+          -44,
+          -67.5
+        ],
+        [
+          10,
+          44,
+          -67.5
+        ],
+        [
+          -10,
+          44,
+          -67.5
+        ],
+        [
+          -10,
+          -44,
+          67.5
+        ],
+        [
+          10,
+          -44,
+          67.5
+        ],
+        [
+          10,
+          44,
+          67.5
+        ],
+        [
+          -10,
+          44,
+          67.5
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -70,
+        50,
+        67.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "40113d6e-e451-4ec0-990a-d78894781cb2",
+      "kind": "brush",
+      "name": "Main staircase · Step 10",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -10,
+          -44,
+          -75
+        ],
+        [
+          10,
+          -44,
+          -75
+        ],
+        [
+          10,
+          44,
+          -75
+        ],
+        [
+          -10,
+          44,
+          -75
+        ],
+        [
+          -10,
+          -44,
+          75
+        ],
+        [
+          10,
+          -44,
+          75
+        ],
+        [
+          10,
+          44,
+          75
+        ],
+        [
+          -10,
+          44,
+          75
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -50,
+        50,
+        75
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "30c7ceb1-3ea4-4f13-95fb-7b7c3fe77090",
+      "kind": "brush",
+      "name": "Main staircase · Step 11",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -10,
+          -44,
+          -82.5
+        ],
+        [
+          10,
+          -44,
+          -82.5
+        ],
+        [
+          10,
+          44,
+          -82.5
+        ],
+        [
+          -10,
+          44,
+          -82.5
+        ],
+        [
+          -10,
+          -44,
+          82.5
+        ],
+        [
+          10,
+          -44,
+          82.5
+        ],
+        [
+          10,
+          44,
+          82.5
+        ],
+        [
+          -10,
+          44,
+          82.5
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -30,
+        50,
+        82.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "cd503490-5f7d-4cea-a39f-895cead0b09b",
+      "kind": "brush",
+      "name": "Main staircase · Step 12",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -10,
+          -44,
+          -90
+        ],
+        [
+          10,
+          -44,
+          -90
+        ],
+        [
+          10,
+          44,
+          -90
+        ],
+        [
+          -10,
+          44,
+          -90
+        ],
+        [
+          -10,
+          -44,
+          90
+        ],
+        [
+          10,
+          -44,
+          90
+        ],
+        [
+          10,
+          44,
+          90
+        ],
+        [
+          -10,
+          44,
+          90
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -10,
+        50,
+        90
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "70bc57d6-f067-441e-8cb9-95158ccfd4f7",
+      "kind": "brush",
+      "name": "Main staircase · Step 13",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -10,
+          -44,
+          -97.5
+        ],
+        [
+          10,
+          -44,
+          -97.5
+        ],
+        [
+          10,
+          44,
+          -97.5
+        ],
+        [
+          -10,
+          44,
+          -97.5
+        ],
+        [
+          -10,
+          -44,
+          97.5
+        ],
+        [
+          10,
+          -44,
+          97.5
+        ],
+        [
+          10,
+          44,
+          97.5
+        ],
+        [
+          -10,
+          44,
+          97.5
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        10,
+        50,
+        97.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "a7fbaadd-18cd-4e56-818b-66b63fe227c8",
+      "kind": "brush",
+      "name": "Main staircase · Step 14",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -10,
+          -44,
+          -105
+        ],
+        [
+          10,
+          -44,
+          -105
+        ],
+        [
+          10,
+          44,
+          -105
+        ],
+        [
+          -10,
+          44,
+          -105
+        ],
+        [
+          -10,
+          -44,
+          105
+        ],
+        [
+          10,
+          -44,
+          105
+        ],
+        [
+          10,
+          44,
+          105
+        ],
+        [
+          -10,
+          44,
+          105
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        30,
+        50,
+        105
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "6a219b81-74ec-4388-9a7a-9fe4add7c817",
+      "kind": "brush",
+      "name": "Main staircase · Step 15",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -10,
+          -44,
+          -112.5
+        ],
+        [
+          10,
+          -44,
+          -112.5
+        ],
+        [
+          10,
+          44,
+          -112.5
+        ],
+        [
+          -10,
+          44,
+          -112.5
+        ],
+        [
+          -10,
+          -44,
+          112.5
+        ],
+        [
+          10,
+          -44,
+          112.5
+        ],
+        [
+          10,
+          44,
+          112.5
+        ],
+        [
+          -10,
+          44,
+          112.5
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        50,
+        50,
+        112.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "b0340964-ae21-47b5-8423-413cb0d89503",
+      "kind": "brush",
+      "name": "Main staircase · Step 16",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -10,
+          -44,
+          -120
+        ],
+        [
+          10,
+          -44,
+          -120
+        ],
+        [
+          10,
+          44,
+          -120
+        ],
+        [
+          -10,
+          44,
+          -120
+        ],
+        [
+          -10,
+          -44,
+          120
+        ],
+        [
+          10,
+          -44,
+          120
+        ],
+        [
+          10,
+          44,
+          120
+        ],
+        [
+          -10,
+          44,
+          120
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        70,
+        50,
+        120
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "9c5a437e-5c01-43ce-91cc-b5f9bd25375c",
+      "kind": "brush",
+      "name": "Upper laboratory Roof gable 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -130,
+          300,
+          -44
+        ],
+        [
+          -130,
+          -300,
+          -44
+        ],
+        [
+          130,
+          -300,
+          -44
+        ],
+        [
+          130,
+          300,
+          -44
+        ],
+        [
+          -130,
+          300,
+          -36
+        ],
+        [
+          -130,
+          -300,
+          -36
+        ],
+        [
+          130,
+          -300,
+          44
+        ],
+        [
+          130,
+          300,
+          44
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -190,
+        0,
+        524
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    },
+    {
+      "id": "da008ec0-c588-4b03-b4e6-fdc3296082c5",
+      "kind": "brush",
+      "name": "Upper laboratory Roof gable 2",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -130,
+          300,
+          -44
+        ],
+        [
+          -130,
+          -300,
+          -44
+        ],
+        [
+          130,
+          -300,
+          -44
+        ],
+        [
+          130,
+          300,
+          -44
+        ],
+        [
+          -130,
+          300,
+          44
+        ],
+        [
+          -130,
+          -300,
+          44
+        ],
+        [
+          130,
+          -300,
+          -36
+        ],
+        [
+          130,
+          300,
+          -36
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        70,
+        0,
+        524
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint 8fe13370"
+    }
+  ],
+  "world": {
+    "classname": "worldspawn",
+    "wad": "svstudio.wad;",
+    "message": "Blueprint two-floor stairwell validation"
+  },
+  "wadNames": [
+    "svstudio.wad"
+  ],
+  "blueprintPlans": [
+    {
+      "id": "8fe13370-b41a-4838-8c20-48cfe1839079",
+      "name": "Black Mesa - Two Floor Building",
+      "imageWidth": 800,
+      "imageHeight": 800,
+      "unitsPerPixel": 1,
+      "origin": [
+        0,
+        0
+      ],
+      "baseZ": 0,
+      "wallHeight": 224,
+      "wallThickness": 16,
+      "slabThickness": 16,
+      "texture": "SV_BRICK01",
+      "strokes": [
+        {
+          "id": "lab0",
+          "name": "Ground laboratory",
+          "kind": "room",
+          "levelId": "ground",
+          "points": [
+            [
+              80,
+              100
+            ],
+            [
+              600,
+              100
+            ],
+            [
+              600,
+              700
+            ],
+            [
+              80,
+              700
+            ]
+          ],
+          "openings": [
+            {
+              "id": "e2905dad-195e-4745-b3aa-566bc4e5657f",
+              "edge": 1,
+              "kind": "door",
+              "t": 0.65,
+              "width": 80,
+              "height": 112,
+              "sill": 0
+            }
+          ],
+          "floor": true,
+          "ceiling": true
+        },
+        {
+          "id": "store0",
+          "name": "Ground storage",
+          "kind": "room",
+          "levelId": "ground",
+          "points": [
+            [
+              600,
+              100
+            ],
+            [
+              760,
+              100
+            ],
+            [
+              760,
+              700
+            ],
+            [
+              600,
+              700
+            ]
+          ],
+          "openings": [
+            {
+              "id": "d2584765-d134-421d-a84a-c795ab572086",
+              "edge": 3,
+              "kind": "door",
+              "t": 0.35,
+              "width": 80,
+              "height": 112,
+              "sill": 0
+            }
+          ],
+          "floor": true,
+          "ceiling": true
+        },
+        {
+          "id": "lab1",
+          "name": "Upper laboratory",
+          "kind": "room",
+          "levelId": "upper",
+          "points": [
+            [
+              80,
+              100
+            ],
+            [
+              600,
+              100
+            ],
+            [
+              600,
+              700
+            ],
+            [
+              80,
+              700
+            ]
+          ],
+          "openings": [
+            {
+              "id": "1272bcdb-cb69-4aaf-90cb-09020ddc0e6b",
+              "edge": 1,
+              "kind": "door",
+              "t": 0.65,
+              "width": 80,
+              "height": 112,
+              "sill": 0
+            }
+          ],
+          "floor": true,
+          "ceiling": true,
+          "roof": {
+            "kind": "gable",
+            "rise": 80
+          }
+        },
+        {
+          "id": "store1",
+          "name": "Upper storage",
+          "kind": "room",
+          "levelId": "upper",
+          "points": [
+            [
+              600,
+              100
+            ],
+            [
+              760,
+              100
+            ],
+            [
+              760,
+              700
+            ],
+            [
+              600,
+              700
+            ]
+          ],
+          "openings": [
+            {
+              "id": "6e0fb029-e194-4865-8e42-00673bf71341",
+              "edge": 3,
+              "kind": "door",
+              "t": 0.35,
+              "width": 80,
+              "height": 112,
+              "sill": 0
+            }
+          ],
+          "floor": true,
+          "ceiling": true
+        }
+      ],
+      "memberIds": [
+        "9bdfa05c-d2f0-423a-9d60-b25243191f67",
+        "8d761fe0-67be-4374-9fd8-2116910e91da",
+        "9673af58-8db6-4abb-9b89-87c2aee86ddf",
+        "11dfcd50-c7cc-4b96-9d2a-8ffeb1286756",
+        "16c74aef-e15b-42b6-825b-3c5945cd4db1",
+        "002c2548-adb6-4b4b-bc1f-efa71a7a06e0",
+        "c29bb9b4-4743-4447-bc4a-94ffb9d8895d",
+        "7d0cdd79-3d8e-45fb-9ae7-bb455d3d759a",
+        "0eaec626-ab97-4ba1-81ea-5f826685cfe1",
+        "e4af4ea5-1239-4f05-b2e7-6db8883ddaed",
+        "6c0c1b8b-90b3-4358-9e60-81b8f42fbe6c",
+        "84f79d8e-92f7-4fe6-a608-b519022ce276",
+        "b4035654-a18c-4318-9262-396f4bb344f3",
+        "e767ce11-3939-4c4a-9785-6aa9c63c1e69",
+        "afed8d12-5181-4256-89ef-6670f055c2be",
+        "49cc9a1b-36e0-4cac-8ea9-7e8d80fda9e0",
+        "48d9d27e-02e2-46b7-a2be-b518541fea53",
+        "cc47a4cd-b5b4-44fd-9fb8-7dfbbc3bacab",
+        "97d90e55-025b-4ca0-8904-301ec478f595",
+        "e4428048-8885-4915-93f7-9008f0558765",
+        "9af17914-f6c4-482a-86f5-d6f9e23df4ba",
+        "ee668e7c-59af-4ceb-87fb-e0fda9c3cb69",
+        "e1cef541-9091-47fc-9aef-4765c308b8fd",
+        "0410a60e-56c7-4470-956a-7bfa95c68975",
+        "75096bbd-ffd6-47f4-978f-01c44cbc2fed",
+        "a55c53fa-5b9a-457b-8932-35ba90081892",
+        "dffc0022-bf8d-4143-8fd6-9e53724f8651",
+        "3858eafe-330b-4344-a7f8-54c487de0a32",
+        "6e5d0304-6cd3-4601-8eb9-8594be97cd09",
+        "ea5c6da5-ad0c-4204-9cb5-c4889f3188ba",
+        "7f54688f-cc58-4ae9-916b-9f619a141f6c",
+        "ba6f2b15-e615-45c9-92fd-d7096fd8755c",
+        "1a123a59-2567-4c6a-9ae7-c77d15955b56",
+        "40113d6e-e451-4ec0-990a-d78894781cb2",
+        "30c7ceb1-3ea4-4f13-95fb-7b7c3fe77090",
+        "cd503490-5f7d-4cea-a39f-895cead0b09b",
+        "70bc57d6-f067-441e-8cb9-95158ccfd4f7",
+        "a7fbaadd-18cd-4e56-818b-66b63fe227c8",
+        "6a219b81-74ec-4388-9a7a-9fe4add7c817",
+        "b0340964-ae21-47b5-8423-413cb0d89503",
+        "9c5a437e-5c01-43ce-91cc-b5f9bd25375c",
+        "da008ec0-c588-4b03-b4e6-fdc3296082c5"
+      ],
+      "signatures": [
+        "467:3a2ea311",
+        "461:75ff8a37",
+        "452:43f499c3",
+        "468:6e6210d2",
+        "468:74ce7266",
+        "467:d4331b7e",
+        "466:600e4b1d",
+        "465:2303e13a",
+        "469:1cbcccf3",
+        "460:e12bbc19",
+        "469:de61365c",
+        "452:38d0d9f5",
+        "457:da88931f",
+        "461:91d88be2",
+        "460:e462ed0c",
+        "467:fca82677",
+        "461:cc9c436d",
+        "452:32fac12e",
+        "468:2100c764",
+        "468:605f74dc",
+        "467:937b3ff8",
+        "466:b3097f27",
+        "466:5674b412",
+        "458:b7c7d59",
+        "468:7184d1db",
+        "459:89e67903",
+        "477:bc11839d",
+        "459:3121ed4d",
+        "477:db9d897b",
+        "459:b1dc1595",
+        "477:c6dc34e6",
+        "458:68e5dbad",
+        "476:b19a4297",
+        "458:68dbf827",
+        "476:78f7ae52",
+        "458:a3e6fda",
+        "475:5e112ccb",
+        "466:c021180a",
+        "484:bb66eb8d",
+        "466:3a673887",
+        "477:8532f4a4",
+        "475:2a66944"
+      ],
+      "smartWalls": true,
+      "levels": [
+        {
+          "id": "ground",
+          "name": "Planta baja",
+          "offsetZ": 0
+        },
+        {
+          "id": "upper",
+          "name": "Piso 2",
+          "offsetZ": 240
+        }
+      ],
+      "stairs": [
+        {
+          "id": "stair_main",
+          "name": "Main staircase",
+          "fromLevelId": "ground",
+          "toLevelId": "upper",
+          "start": [
+            160,
+            350
+          ],
+          "direction": 0,
+          "width": 88,
+          "length": 320,
+          "steps": 16
+        }
+      ]
+    }
+  ]
+}

@@ -25,21 +25,31 @@ export async function browserWadsForSmartBuild(project:Project,assets:readonly T
   let cached:File[]=[];
   try{cached=await loadSavedWadFiles();}catch{/* no IndexedDB permission: on-disk WAD fallback */}
   let sum=0;
+  const maxBrowserWad=13*1024*1024;
   for(const filename of [...needed].sort()){
     const file=cached.find(f=>base(f.name)===filename);
     let bytes:Uint8Array|undefined;
-    if(file)bytes=new Uint8Array(await file.arrayBuffer());
+    if(file){
+      if(file.size>maxBrowserWad)continue; // Prefer the installed WAD; avoid reading huge cache blobs.
+      bytes=new Uint8Array(await file.arrayBuffer());
+    }
     else {
       const prefab=prefabs.find(p=>base(p.wad?.filename||'')===filename&&typeof p.wad?.base64==='string');
       if(prefab?.wad?.base64){
+        if(prefab.wad.base64.length>Math.ceil(maxBrowserWad*4/3)+4)continue;
         // An embedded prefab may have been saved before the browser WAD cache.
         const binary=atob(prefab.wad.base64);bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));
       }
     }
     if(!bytes)continue; // server may have it on disk
-    sum+=bytes.length;
-    if(bytes.length>14*1024*1024||sum>20*1024*1024||out.length>=20)throw Error('Smart WAD: demasiados WAD cargados en el navegador para esta compilación. Instalá los más grandes o reducí recursos.');
     if(bytes.length<12||String.fromCharCode(...bytes.subarray(0,4))!=='WAD3')throw Error(`No es WAD3: ${filename}`);
+    // Large browser caches (often halflife.wad) should not block a build.
+    // The local compiler resolves these WADs from the configured game/SDK
+    // folders. If a WAD is absent there, the server's source lookup reports
+    // the actual missing resource instead of an unrelated browser quota.
+    // Keep each encoded payload below the server's 18 MB base64 limit.
+    if(bytes.length>maxBrowserWad||sum+bytes.length>20*1024*1024||out.length>=20)continue;
+    sum+=bytes.length;
     out.push({name:filename,base64:encode(bytes)});
   }
   return out;

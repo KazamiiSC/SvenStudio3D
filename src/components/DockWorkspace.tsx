@@ -314,6 +314,8 @@ export function LayoutModal({onClose}:{onClose:()=>void}){
     <input className="layout-scale-slider" aria-label={t('Font size')} type="range" min="0.9" max="1.2" step="0.05" value={layout.fontScale} onChange={e=>layout.setFontScale(Number(e.target.value))}/>
     <div className="layout-subtitle">{t('Large map performance')}</div>
     <div className="layout-performance-options">{(['quality','balanced','large'] as const).map(id=><button key={id} className={layout.performancePreset===id?'chosen':''} onClick={()=>layout.setPerformancePreset(id)}>{t(id==='quality'?'Quality':id==='balanced'?'Balanced':'Large maps')}</button>)}</div>
+    <label className="adaptive-layout-setting"><input type="checkbox" checked={layout.opaqueBrushBatching} onChange={e=>layout.setOpaqueBrushBatching(e.target.checked)}/><span>{t('Batch opaque brushes (HF17 HF1)')}</span></label>
+    <p className="modal-subtext">{t('Batching merges compatible opaque surfaces for fewer GPU draw calls. Disable it here to compare FPS or if a visual problem appears. It never changes MAP geometry.')}</p>
     <p className="modal-subtext">{t('Performance settings affect only viewport previews, never compiled map content.')}</p>
     <div className="layout-bottom-buttons"><button onClick={layout.resetLayout}><RotateCcw size={16}/>{t('Reset layout')}</button><button className="primary-action" onClick={onClose}>{t('Done')}</button></div>
   </div></div>;

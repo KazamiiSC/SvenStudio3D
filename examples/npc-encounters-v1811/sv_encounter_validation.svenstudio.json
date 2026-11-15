@@ -1,0 +1,9871 @@
+{
+  "version": 1,
+  "target": "svengine",
+  "name": "sv_encounter_validation",
+  "world": {
+    "classname": "worldspawn",
+    "mapversion": "220",
+    "message": "SvenStudio 3D - Smart NPC Encounters 2.0 test map",
+    "skyname": "desert",
+    "wad": "svstudio.wad;"
+  },
+  "wadNames": [
+    "svstudio.wad"
+  ],
+  "objects": [
+    {
+      "id": "747121f0-d91a-4aa0-8533-8fdac084fa7d",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Foundation / continuous world seal",
+      "position": [
+        0,
+        0,
+        -32
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -960,
+          -704,
+          -32
+        ],
+        [
+          960,
+          -704,
+          -32
+        ],
+        [
+          960,
+          704,
+          -32
+        ],
+        [
+          -960,
+          704,
+          -32
+        ],
+        [
+          -960,
+          -704,
+          32
+        ],
+        [
+          960,
+          -704,
+          32
+        ],
+        [
+          960,
+          704,
+          32
+        ],
+        [
+          -960,
+          704,
+          32
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_TILE01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "8b7c1efa-b2f7-48ff-b261-eec25d2c65bd",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Ceiling / hide in editor to inspect map",
+      "position": [
+        0,
+        0,
+        416
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -960,
+          -704,
+          -32
+        ],
+        [
+          960,
+          -704,
+          -32
+        ],
+        [
+          960,
+          704,
+          -32
+        ],
+        [
+          -960,
+          704,
+          -32
+        ],
+        [
+          -960,
+          -704,
+          32
+        ],
+        [
+          960,
+          -704,
+          32
+        ],
+        [
+          960,
+          704,
+          32
+        ],
+        [
+          -960,
+          704,
+          32
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry",
+      "hidden": true
+    },
+    {
+      "id": "01ff1769-02ba-40bb-b6a3-490ec8c9ad60",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Exterior reinforced wall",
+      "position": [
+        -992,
+        0,
+        192
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -32,
+          -736,
+          -192
+        ],
+        [
+          32,
+          -736,
+          -192
+        ],
+        [
+          32,
+          736,
+          -192
+        ],
+        [
+          -32,
+          736,
+          -192
+        ],
+        [
+          -32,
+          -736,
+          192
+        ],
+        [
+          32,
+          -736,
+          192
+        ],
+        [
+          32,
+          736,
+          192
+        ],
+        [
+          -32,
+          736,
+          192
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "1a709b03-dfb1-41b4-8fc6-e757d606e3d8",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Exterior reinforced wall",
+      "position": [
+        992,
+        0,
+        192
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -32,
+          -736,
+          -192
+        ],
+        [
+          32,
+          -736,
+          -192
+        ],
+        [
+          32,
+          736,
+          -192
+        ],
+        [
+          -32,
+          736,
+          -192
+        ],
+        [
+          -32,
+          -736,
+          192
+        ],
+        [
+          32,
+          -736,
+          192
+        ],
+        [
+          32,
+          736,
+          192
+        ],
+        [
+          -32,
+          736,
+          192
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "6e7b9b4b-b9eb-408a-b715-146e36b747a4",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Exterior reinforced wall",
+      "position": [
+        0,
+        -736,
+        192
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -1024,
+          -32,
+          -192
+        ],
+        [
+          1024,
+          -32,
+          -192
+        ],
+        [
+          1024,
+          32,
+          -192
+        ],
+        [
+          -1024,
+          32,
+          -192
+        ],
+        [
+          -1024,
+          -32,
+          192
+        ],
+        [
+          1024,
+          -32,
+          192
+        ],
+        [
+          1024,
+          32,
+          192
+        ],
+        [
+          -1024,
+          32,
+          192
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "7d1b57e0-2598-48a7-aafa-590a84d82788",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Exterior reinforced wall",
+      "position": [
+        0,
+        736,
+        192
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -1024,
+          -32,
+          -192
+        ],
+        [
+          1024,
+          -32,
+          -192
+        ],
+        [
+          1024,
+          32,
+          -192
+        ],
+        [
+          -1024,
+          32,
+          -192
+        ],
+        [
+          -1024,
+          -32,
+          192
+        ],
+        [
+          1024,
+          -32,
+          192
+        ],
+        [
+          1024,
+          32,
+          192
+        ],
+        [
+          -1024,
+          32,
+          192
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "db49ea95-9d1c-4bc0-9bac-73a09bb70804",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Hall partition - lower bay",
+      "position": [
+        -440,
+        -440,
+        192
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -24,
+          -248,
+          -192
+        ],
+        [
+          24,
+          -248,
+          -192
+        ],
+        [
+          24,
+          248,
+          -192
+        ],
+        [
+          -24,
+          248,
+          -192
+        ],
+        [
+          -24,
+          -248,
+          192
+        ],
+        [
+          24,
+          -248,
+          192
+        ],
+        [
+          24,
+          248,
+          192
+        ],
+        [
+          -24,
+          248,
+          192
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "e0cea40c-bdf2-43b4-b3a8-1fa8bf8f0a84",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Hall partition - upper bay",
+      "position": [
+        -440,
+        440,
+        192
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -24,
+          -248,
+          -192
+        ],
+        [
+          24,
+          -248,
+          -192
+        ],
+        [
+          24,
+          248,
+          -192
+        ],
+        [
+          -24,
+          248,
+          -192
+        ],
+        [
+          -24,
+          -248,
+          192
+        ],
+        [
+          24,
+          -248,
+          192
+        ],
+        [
+          24,
+          248,
+          192
+        ],
+        [
+          -24,
+          248,
+          192
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "747e2df9-9993-4c12-b043-f1b24cbede4e",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Upper doorway bulkhead",
+      "position": [
+        -440,
+        0,
+        316
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -24,
+          -192,
+          -68
+        ],
+        [
+          24,
+          -192,
+          -68
+        ],
+        [
+          24,
+          192,
+          -68
+        ],
+        [
+          -24,
+          192,
+          -68
+        ],
+        [
+          -24,
+          -192,
+          68
+        ],
+        [
+          24,
+          -192,
+          68
+        ],
+        [
+          24,
+          192,
+          68
+        ],
+        [
+          -24,
+          192,
+          68
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "557e46e1-6df2-4522-b4a6-7efdd65eff05",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Hall partition - lower bay",
+      "position": [
+        440,
+        -440,
+        192
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -24,
+          -248,
+          -192
+        ],
+        [
+          24,
+          -248,
+          -192
+        ],
+        [
+          24,
+          248,
+          -192
+        ],
+        [
+          -24,
+          248,
+          -192
+        ],
+        [
+          -24,
+          -248,
+          192
+        ],
+        [
+          24,
+          -248,
+          192
+        ],
+        [
+          24,
+          248,
+          192
+        ],
+        [
+          -24,
+          248,
+          192
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "648bbfd7-a8aa-4747-854c-385467e63e7a",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Hall partition - upper bay (door pocket)",
+      "position": [
+        440,
+        550,
+        192
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -24,
+          -138,
+          -192
+        ],
+        [
+          24,
+          -138,
+          -192
+        ],
+        [
+          24,
+          138,
+          -192
+        ],
+        [
+          -24,
+          138,
+          -192
+        ],
+        [
+          -24,
+          -138,
+          192
+        ],
+        [
+          24,
+          -138,
+          192
+        ],
+        [
+          24,
+          138,
+          192
+        ],
+        [
+          -24,
+          138,
+          192
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "f49d92ee-ac61-4216-bd79-35dafed6a3fd",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Upper doorway bulkhead",
+      "position": [
+        440,
+        0,
+        316
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -24,
+          -192,
+          -68
+        ],
+        [
+          24,
+          -192,
+          -68
+        ],
+        [
+          24,
+          192,
+          -68
+        ],
+        [
+          -24,
+          192,
+          -68
+        ],
+        [
+          -24,
+          -192,
+          68
+        ],
+        [
+          24,
+          -192,
+          68
+        ],
+        [
+          24,
+          192,
+          68
+        ],
+        [
+          -24,
+          192,
+          68
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "257f012e-4bc5-4fc8-a068-83b202878846",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Doorway shoulder",
+      "position": [
+        -440,
+        -156,
+        124
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -24,
+          -36,
+          -124
+        ],
+        [
+          24,
+          -36,
+          -124
+        ],
+        [
+          24,
+          36,
+          -124
+        ],
+        [
+          -24,
+          36,
+          -124
+        ],
+        [
+          -24,
+          -36,
+          124
+        ],
+        [
+          24,
+          -36,
+          124
+        ],
+        [
+          24,
+          36,
+          124
+        ],
+        [
+          -24,
+          36,
+          124
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "b1740f6b-164f-4642-a8ef-409e476aa114",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Doorway shoulder",
+      "position": [
+        -440,
+        156,
+        124
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -24,
+          -36,
+          -124
+        ],
+        [
+          24,
+          -36,
+          -124
+        ],
+        [
+          24,
+          36,
+          -124
+        ],
+        [
+          -24,
+          36,
+          -124
+        ],
+        [
+          -24,
+          -36,
+          124
+        ],
+        [
+          24,
+          -36,
+          124
+        ],
+        [
+          24,
+          36,
+          124
+        ],
+        [
+          -24,
+          36,
+          124
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "03a1850a-bbec-4d76-a8c6-fbf6a1a395df",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Doorway shoulder",
+      "position": [
+        440,
+        -156,
+        124
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -24,
+          -36,
+          -124
+        ],
+        [
+          24,
+          -36,
+          -124
+        ],
+        [
+          24,
+          36,
+          -124
+        ],
+        [
+          -24,
+          36,
+          -124
+        ],
+        [
+          -24,
+          -36,
+          124
+        ],
+        [
+          24,
+          -36,
+          124
+        ],
+        [
+          24,
+          36,
+          124
+        ],
+        [
+          -24,
+          36,
+          124
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "98a16e04-0358-4e23-86de-def3c67d22d7",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Pocket header above sliding gate",
+      "position": [
+        440,
+        300,
+        316
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -24,
+          -120,
+          -68
+        ],
+        [
+          24,
+          -120,
+          -68
+        ],
+        [
+          24,
+          120,
+          -68
+        ],
+        [
+          -24,
+          120,
+          -68
+        ],
+        [
+          -24,
+          -120,
+          68
+        ],
+        [
+          24,
+          -120,
+          68
+        ],
+        [
+          24,
+          120,
+          68
+        ],
+        [
+          -24,
+          120,
+          68
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "52b91e7d-1257-47ea-b37c-ab922d196b2e",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Safety floor stripe",
+      "position": [
+        -725,
+        0,
+        2
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -6,
+          -360,
+          -2
+        ],
+        [
+          6,
+          -360,
+          -2
+        ],
+        [
+          6,
+          360,
+          -2
+        ],
+        [
+          -6,
+          360,
+          -2
+        ],
+        [
+          -6,
+          -360,
+          2
+        ],
+        [
+          6,
+          -360,
+          2
+        ],
+        [
+          6,
+          360,
+          2
+        ],
+        [
+          -6,
+          360,
+          2
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "82961bdb-196a-4f77-9ee5-52cf287e3017",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Safety floor stripe",
+      "position": [
+        -550,
+        0,
+        2
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -6,
+          -360,
+          -2
+        ],
+        [
+          6,
+          -360,
+          -2
+        ],
+        [
+          6,
+          360,
+          -2
+        ],
+        [
+          -6,
+          360,
+          -2
+        ],
+        [
+          -6,
+          -360,
+          2
+        ],
+        [
+          6,
+          -360,
+          2
+        ],
+        [
+          6,
+          360,
+          2
+        ],
+        [
+          -6,
+          360,
+          2
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "0ec1f655-9934-40fc-ae29-23746c78f416",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Safety floor stripe",
+      "position": [
+        -360,
+        0,
+        2
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -6,
+          -360,
+          -2
+        ],
+        [
+          6,
+          -360,
+          -2
+        ],
+        [
+          6,
+          360,
+          -2
+        ],
+        [
+          -6,
+          360,
+          -2
+        ],
+        [
+          -6,
+          -360,
+          2
+        ],
+        [
+          6,
+          -360,
+          2
+        ],
+        [
+          6,
+          360,
+          2
+        ],
+        [
+          -6,
+          360,
+          2
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "3b129004-64a8-441f-bf97-8ef7ab2f8d53",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Safety floor stripe",
+      "position": [
+        0,
+        0,
+        2
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -6,
+          -360,
+          -2
+        ],
+        [
+          6,
+          -360,
+          -2
+        ],
+        [
+          6,
+          360,
+          -2
+        ],
+        [
+          -6,
+          360,
+          -2
+        ],
+        [
+          -6,
+          -360,
+          2
+        ],
+        [
+          6,
+          -360,
+          2
+        ],
+        [
+          6,
+          360,
+          2
+        ],
+        [
+          -6,
+          360,
+          2
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "e3c10913-d6a0-4398-8310-2dffebf9e564",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Safety floor stripe",
+      "position": [
+        360,
+        0,
+        2
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -6,
+          -360,
+          -2
+        ],
+        [
+          6,
+          -360,
+          -2
+        ],
+        [
+          6,
+          360,
+          -2
+        ],
+        [
+          -6,
+          360,
+          -2
+        ],
+        [
+          -6,
+          -360,
+          2
+        ],
+        [
+          6,
+          -360,
+          2
+        ],
+        [
+          6,
+          360,
+          2
+        ],
+        [
+          -6,
+          360,
+          2
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "3d468d48-b7be-4187-b2cd-cd378b42ffaf",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Safety floor stripe",
+      "position": [
+        590,
+        0,
+        2
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -6,
+          -360,
+          -2
+        ],
+        [
+          6,
+          -360,
+          -2
+        ],
+        [
+          6,
+          360,
+          -2
+        ],
+        [
+          -6,
+          360,
+          -2
+        ],
+        [
+          -6,
+          -360,
+          2
+        ],
+        [
+          6,
+          -360,
+          2
+        ],
+        [
+          6,
+          360,
+          2
+        ],
+        [
+          -6,
+          360,
+          2
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "366c4aab-ed92-486d-9cfa-4570185cc099",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Safety floor stripe",
+      "position": [
+        780,
+        0,
+        2
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -6,
+          -360,
+          -2
+        ],
+        [
+          6,
+          -360,
+          -2
+        ],
+        [
+          6,
+          360,
+          -2
+        ],
+        [
+          -6,
+          360,
+          -2
+        ],
+        [
+          -6,
+          -360,
+          2
+        ],
+        [
+          6,
+          -360,
+          2
+        ],
+        [
+          6,
+          360,
+          2
+        ],
+        [
+          -6,
+          360,
+          2
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "c959aa37-978c-4a30-bf14-90d5d2ce06c1",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Combat hall curb",
+      "position": [
+        0,
+        -520,
+        24
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -410,
+          -16,
+          -24
+        ],
+        [
+          410,
+          -16,
+          -24
+        ],
+        [
+          410,
+          16,
+          -24
+        ],
+        [
+          -410,
+          16,
+          -24
+        ],
+        [
+          -410,
+          -16,
+          24
+        ],
+        [
+          410,
+          -16,
+          24
+        ],
+        [
+          410,
+          16,
+          24
+        ],
+        [
+          -410,
+          16,
+          24
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "690d8134-2acb-4cf9-b639-3c5b671133ad",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Combat hall curb",
+      "position": [
+        0,
+        520,
+        24
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -410,
+          -16,
+          -24
+        ],
+        [
+          410,
+          -16,
+          -24
+        ],
+        [
+          410,
+          16,
+          -24
+        ],
+        [
+          -410,
+          16,
+          -24
+        ],
+        [
+          -410,
+          -16,
+          24
+        ],
+        [
+          410,
+          -16,
+          24
+        ],
+        [
+          410,
+          16,
+          24
+        ],
+        [
+          -410,
+          16,
+          24
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "53b8d8b1-df3d-4050-88f5-198221a983d1",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Support column",
+      "position": [
+        -355,
+        -620,
+        148
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -16,
+          -32,
+          -148
+        ],
+        [
+          16,
+          -32,
+          -148
+        ],
+        [
+          16,
+          32,
+          -148
+        ],
+        [
+          -16,
+          32,
+          -148
+        ],
+        [
+          -16,
+          -32,
+          148
+        ],
+        [
+          16,
+          -32,
+          148
+        ],
+        [
+          16,
+          32,
+          148
+        ],
+        [
+          -16,
+          32,
+          148
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "131f1d74-af39-4d66-a213-c04920ca20bf",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Support column foot",
+      "position": [
+        -355,
+        -620,
+        11
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -28,
+          -41,
+          -11
+        ],
+        [
+          28,
+          -41,
+          -11
+        ],
+        [
+          28,
+          41,
+          -11
+        ],
+        [
+          -28,
+          41,
+          -11
+        ],
+        [
+          -28,
+          -41,
+          11
+        ],
+        [
+          28,
+          -41,
+          11
+        ],
+        [
+          28,
+          41,
+          11
+        ],
+        [
+          -28,
+          41,
+          11
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "2fac992c-a0c8-422a-9c34-3ca46b0111a5",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Support column",
+      "position": [
+        -355,
+        620,
+        148
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -16,
+          -32,
+          -148
+        ],
+        [
+          16,
+          -32,
+          -148
+        ],
+        [
+          16,
+          32,
+          -148
+        ],
+        [
+          -16,
+          32,
+          -148
+        ],
+        [
+          -16,
+          -32,
+          148
+        ],
+        [
+          16,
+          -32,
+          148
+        ],
+        [
+          16,
+          32,
+          148
+        ],
+        [
+          -16,
+          32,
+          148
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "71f59fb1-ed78-46bb-af11-07fcfa8328dc",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Support column foot",
+      "position": [
+        -355,
+        620,
+        11
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -28,
+          -41,
+          -11
+        ],
+        [
+          28,
+          -41,
+          -11
+        ],
+        [
+          28,
+          41,
+          -11
+        ],
+        [
+          -28,
+          41,
+          -11
+        ],
+        [
+          -28,
+          -41,
+          11
+        ],
+        [
+          28,
+          -41,
+          11
+        ],
+        [
+          28,
+          41,
+          11
+        ],
+        [
+          -28,
+          41,
+          11
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "171c8ac0-ab13-4573-8c57-d985f51602b1",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Support column",
+      "position": [
+        -100,
+        -620,
+        148
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -16,
+          -32,
+          -148
+        ],
+        [
+          16,
+          -32,
+          -148
+        ],
+        [
+          16,
+          32,
+          -148
+        ],
+        [
+          -16,
+          32,
+          -148
+        ],
+        [
+          -16,
+          -32,
+          148
+        ],
+        [
+          16,
+          -32,
+          148
+        ],
+        [
+          16,
+          32,
+          148
+        ],
+        [
+          -16,
+          32,
+          148
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "54d3871f-434c-41ec-a7cd-0fff149913c4",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Support column foot",
+      "position": [
+        -100,
+        -620,
+        11
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -28,
+          -41,
+          -11
+        ],
+        [
+          28,
+          -41,
+          -11
+        ],
+        [
+          28,
+          41,
+          -11
+        ],
+        [
+          -28,
+          41,
+          -11
+        ],
+        [
+          -28,
+          -41,
+          11
+        ],
+        [
+          28,
+          -41,
+          11
+        ],
+        [
+          28,
+          41,
+          11
+        ],
+        [
+          -28,
+          41,
+          11
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "61e906d4-968f-48bc-afcb-c10e182b227f",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Support column",
+      "position": [
+        -100,
+        620,
+        148
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -16,
+          -32,
+          -148
+        ],
+        [
+          16,
+          -32,
+          -148
+        ],
+        [
+          16,
+          32,
+          -148
+        ],
+        [
+          -16,
+          32,
+          -148
+        ],
+        [
+          -16,
+          -32,
+          148
+        ],
+        [
+          16,
+          -32,
+          148
+        ],
+        [
+          16,
+          32,
+          148
+        ],
+        [
+          -16,
+          32,
+          148
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "cfe513a9-699c-47f7-8332-39289d7252f1",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Support column foot",
+      "position": [
+        -100,
+        620,
+        11
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -28,
+          -41,
+          -11
+        ],
+        [
+          28,
+          -41,
+          -11
+        ],
+        [
+          28,
+          41,
+          -11
+        ],
+        [
+          -28,
+          41,
+          -11
+        ],
+        [
+          -28,
+          -41,
+          11
+        ],
+        [
+          28,
+          -41,
+          11
+        ],
+        [
+          28,
+          41,
+          11
+        ],
+        [
+          -28,
+          41,
+          11
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "d6670618-1cee-475d-b500-baeebc6b692b",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Support column",
+      "position": [
+        160,
+        -620,
+        148
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -16,
+          -32,
+          -148
+        ],
+        [
+          16,
+          -32,
+          -148
+        ],
+        [
+          16,
+          32,
+          -148
+        ],
+        [
+          -16,
+          32,
+          -148
+        ],
+        [
+          -16,
+          -32,
+          148
+        ],
+        [
+          16,
+          -32,
+          148
+        ],
+        [
+          16,
+          32,
+          148
+        ],
+        [
+          -16,
+          32,
+          148
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "368cb565-a397-4a5f-ad88-27246c16ed67",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Support column foot",
+      "position": [
+        160,
+        -620,
+        11
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -28,
+          -41,
+          -11
+        ],
+        [
+          28,
+          -41,
+          -11
+        ],
+        [
+          28,
+          41,
+          -11
+        ],
+        [
+          -28,
+          41,
+          -11
+        ],
+        [
+          -28,
+          -41,
+          11
+        ],
+        [
+          28,
+          -41,
+          11
+        ],
+        [
+          28,
+          41,
+          11
+        ],
+        [
+          -28,
+          41,
+          11
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "6e2b4961-83fa-4d0c-ac68-92570c777cf1",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Support column",
+      "position": [
+        160,
+        620,
+        148
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -16,
+          -32,
+          -148
+        ],
+        [
+          16,
+          -32,
+          -148
+        ],
+        [
+          16,
+          32,
+          -148
+        ],
+        [
+          -16,
+          32,
+          -148
+        ],
+        [
+          -16,
+          -32,
+          148
+        ],
+        [
+          16,
+          -32,
+          148
+        ],
+        [
+          16,
+          32,
+          148
+        ],
+        [
+          -16,
+          32,
+          148
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "51740d52-4f29-4c84-bdf0-92c2cd8018c9",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Support column foot",
+      "position": [
+        160,
+        620,
+        11
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -28,
+          -41,
+          -11
+        ],
+        [
+          28,
+          -41,
+          -11
+        ],
+        [
+          28,
+          41,
+          -11
+        ],
+        [
+          -28,
+          41,
+          -11
+        ],
+        [
+          -28,
+          -41,
+          11
+        ],
+        [
+          28,
+          -41,
+          11
+        ],
+        [
+          28,
+          41,
+          11
+        ],
+        [
+          -28,
+          41,
+          11
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "b57e6104-5f28-4b10-9b67-28ab591b9bf6",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Support column",
+      "position": [
+        350,
+        -620,
+        148
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -16,
+          -32,
+          -148
+        ],
+        [
+          16,
+          -32,
+          -148
+        ],
+        [
+          16,
+          32,
+          -148
+        ],
+        [
+          -16,
+          32,
+          -148
+        ],
+        [
+          -16,
+          -32,
+          148
+        ],
+        [
+          16,
+          -32,
+          148
+        ],
+        [
+          16,
+          32,
+          148
+        ],
+        [
+          -16,
+          32,
+          148
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "0d4e7a01-4b5a-4901-90bb-e634eb693573",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Support column foot",
+      "position": [
+        350,
+        -620,
+        11
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -28,
+          -41,
+          -11
+        ],
+        [
+          28,
+          -41,
+          -11
+        ],
+        [
+          28,
+          41,
+          -11
+        ],
+        [
+          -28,
+          41,
+          -11
+        ],
+        [
+          -28,
+          -41,
+          11
+        ],
+        [
+          28,
+          -41,
+          11
+        ],
+        [
+          28,
+          41,
+          11
+        ],
+        [
+          -28,
+          41,
+          11
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "813fd31b-a7e8-4301-978c-19bb6e850931",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Support column",
+      "position": [
+        350,
+        620,
+        148
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -16,
+          -32,
+          -148
+        ],
+        [
+          16,
+          -32,
+          -148
+        ],
+        [
+          16,
+          32,
+          -148
+        ],
+        [
+          -16,
+          32,
+          -148
+        ],
+        [
+          -16,
+          -32,
+          148
+        ],
+        [
+          16,
+          -32,
+          148
+        ],
+        [
+          16,
+          32,
+          148
+        ],
+        [
+          -16,
+          32,
+          148
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "2c44c3ca-e488-4fc6-b384-2fb3b206df1e",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Support column foot",
+      "position": [
+        350,
+        620,
+        11
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -28,
+          -41,
+          -11
+        ],
+        [
+          28,
+          -41,
+          -11
+        ],
+        [
+          28,
+          41,
+          -11
+        ],
+        [
+          -28,
+          41,
+          -11
+        ],
+        [
+          -28,
+          -41,
+          11
+        ],
+        [
+          28,
+          -41,
+          11
+        ],
+        [
+          28,
+          41,
+          11
+        ],
+        [
+          -28,
+          41,
+          11
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "145a9466-8036-4e1a-91dc-728a357fb8e0",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Overhead structural beam",
+      "position": [
+        -270,
+        0,
+        378
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -12,
+          -648,
+          -20
+        ],
+        [
+          12,
+          -648,
+          -20
+        ],
+        [
+          12,
+          648,
+          -20
+        ],
+        [
+          -12,
+          648,
+          -20
+        ],
+        [
+          -12,
+          -648,
+          20
+        ],
+        [
+          12,
+          -648,
+          20
+        ],
+        [
+          12,
+          648,
+          20
+        ],
+        [
+          -12,
+          648,
+          20
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "0fe4ff0e-a6c9-4fa2-a313-d1ae092f6983",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Overhead structural beam",
+      "position": [
+        0,
+        0,
+        378
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -12,
+          -648,
+          -20
+        ],
+        [
+          12,
+          -648,
+          -20
+        ],
+        [
+          12,
+          648,
+          -20
+        ],
+        [
+          -12,
+          648,
+          -20
+        ],
+        [
+          -12,
+          -648,
+          20
+        ],
+        [
+          12,
+          -648,
+          20
+        ],
+        [
+          12,
+          648,
+          20
+        ],
+        [
+          -12,
+          648,
+          20
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "0cea52d6-2f2a-4c9c-9bb3-d58d52565d2b",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Overhead structural beam",
+      "position": [
+        270,
+        0,
+        378
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -12,
+          -648,
+          -20
+        ],
+        [
+          12,
+          -648,
+          -20
+        ],
+        [
+          12,
+          648,
+          -20
+        ],
+        [
+          -12,
+          648,
+          -20
+        ],
+        [
+          -12,
+          -648,
+          20
+        ],
+        [
+          12,
+          -648,
+          20
+        ],
+        [
+          12,
+          648,
+          20
+        ],
+        [
+          -12,
+          648,
+          20
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "0a4d2568-129c-4402-9857-ddf537b0ded4",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Tactical concrete barricade",
+      "position": [
+        -260,
+        -235,
+        40
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -44,
+          -32,
+          -40
+        ],
+        [
+          44,
+          -32,
+          -40
+        ],
+        [
+          44,
+          32,
+          -40
+        ],
+        [
+          -44,
+          32,
+          -40
+        ],
+        [
+          -44,
+          -32,
+          40
+        ],
+        [
+          44,
+          -32,
+          40
+        ],
+        [
+          44,
+          32,
+          40
+        ],
+        [
+          -44,
+          32,
+          40
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "6d4ad6d7-453f-4b84-8e20-9f545780748f",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Barricade upper edge",
+      "position": [
+        -260,
+        -235,
+        85
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -48,
+          -35,
+          -5
+        ],
+        [
+          48,
+          -35,
+          -5
+        ],
+        [
+          48,
+          35,
+          -5
+        ],
+        [
+          -48,
+          35,
+          -5
+        ],
+        [
+          -48,
+          -35,
+          5
+        ],
+        [
+          48,
+          -35,
+          5
+        ],
+        [
+          48,
+          35,
+          5
+        ],
+        [
+          -48,
+          35,
+          5
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "41d7a905-10d8-4517-9d29-9cedc700c858",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Tactical concrete barricade",
+      "position": [
+        -260,
+        235,
+        40
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -44,
+          -32,
+          -40
+        ],
+        [
+          44,
+          -32,
+          -40
+        ],
+        [
+          44,
+          32,
+          -40
+        ],
+        [
+          -44,
+          32,
+          -40
+        ],
+        [
+          -44,
+          -32,
+          40
+        ],
+        [
+          44,
+          -32,
+          40
+        ],
+        [
+          44,
+          32,
+          40
+        ],
+        [
+          -44,
+          32,
+          40
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "e407f5fc-3ebe-41fe-8cc7-acd819abb4ea",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Barricade upper edge",
+      "position": [
+        -260,
+        235,
+        85
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -48,
+          -35,
+          -5
+        ],
+        [
+          48,
+          -35,
+          -5
+        ],
+        [
+          48,
+          35,
+          -5
+        ],
+        [
+          -48,
+          35,
+          -5
+        ],
+        [
+          -48,
+          -35,
+          5
+        ],
+        [
+          48,
+          -35,
+          5
+        ],
+        [
+          48,
+          35,
+          5
+        ],
+        [
+          -48,
+          35,
+          5
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "188204ca-2466-477e-8e39-09de276287b5",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Tactical concrete barricade",
+      "position": [
+        -40,
+        -300,
+        60
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -44,
+          -32,
+          -60
+        ],
+        [
+          44,
+          -32,
+          -60
+        ],
+        [
+          44,
+          32,
+          -60
+        ],
+        [
+          -44,
+          32,
+          -60
+        ],
+        [
+          -44,
+          -32,
+          60
+        ],
+        [
+          44,
+          -32,
+          60
+        ],
+        [
+          44,
+          32,
+          60
+        ],
+        [
+          -44,
+          32,
+          60
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "666acd79-978e-422f-b955-4234225027d1",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Barricade upper edge",
+      "position": [
+        -40,
+        -300,
+        125
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -48,
+          -35,
+          -5
+        ],
+        [
+          48,
+          -35,
+          -5
+        ],
+        [
+          48,
+          35,
+          -5
+        ],
+        [
+          -48,
+          35,
+          -5
+        ],
+        [
+          -48,
+          -35,
+          5
+        ],
+        [
+          48,
+          -35,
+          5
+        ],
+        [
+          48,
+          35,
+          5
+        ],
+        [
+          -48,
+          35,
+          5
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "55052783-5288-4f74-9c1c-4f944001a8b2",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Tactical concrete barricade",
+      "position": [
+        -40,
+        300,
+        60
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -44,
+          -32,
+          -60
+        ],
+        [
+          44,
+          -32,
+          -60
+        ],
+        [
+          44,
+          32,
+          -60
+        ],
+        [
+          -44,
+          32,
+          -60
+        ],
+        [
+          -44,
+          -32,
+          60
+        ],
+        [
+          44,
+          -32,
+          60
+        ],
+        [
+          44,
+          32,
+          60
+        ],
+        [
+          -44,
+          32,
+          60
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "2c270162-3f26-47bf-970b-1b512e27eb45",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Barricade upper edge",
+      "position": [
+        -40,
+        300,
+        125
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -48,
+          -35,
+          -5
+        ],
+        [
+          48,
+          -35,
+          -5
+        ],
+        [
+          48,
+          35,
+          -5
+        ],
+        [
+          -48,
+          35,
+          -5
+        ],
+        [
+          -48,
+          -35,
+          5
+        ],
+        [
+          48,
+          -35,
+          5
+        ],
+        [
+          48,
+          35,
+          5
+        ],
+        [
+          -48,
+          35,
+          5
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "477d0a5e-a796-44d6-ad27-afea631c1ce0",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Tactical concrete barricade",
+      "position": [
+        70,
+        0,
+        48
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -44,
+          -32,
+          -48
+        ],
+        [
+          44,
+          -32,
+          -48
+        ],
+        [
+          44,
+          32,
+          -48
+        ],
+        [
+          -44,
+          32,
+          -48
+        ],
+        [
+          -44,
+          -32,
+          48
+        ],
+        [
+          44,
+          -32,
+          48
+        ],
+        [
+          44,
+          32,
+          48
+        ],
+        [
+          -44,
+          32,
+          48
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "af5336ca-88d4-4b48-8598-3651f5d3403f",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Barricade upper edge",
+      "position": [
+        70,
+        0,
+        101
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -48,
+          -35,
+          -5
+        ],
+        [
+          48,
+          -35,
+          -5
+        ],
+        [
+          48,
+          35,
+          -5
+        ],
+        [
+          -48,
+          35,
+          -5
+        ],
+        [
+          -48,
+          -35,
+          5
+        ],
+        [
+          48,
+          -35,
+          5
+        ],
+        [
+          48,
+          35,
+          5
+        ],
+        [
+          -48,
+          35,
+          5
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "aa1dad59-8b85-404f-a298-01e9adb207d1",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Tactical concrete barricade",
+      "position": [
+        210,
+        0,
+        56
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -44,
+          -32,
+          -56
+        ],
+        [
+          44,
+          -32,
+          -56
+        ],
+        [
+          44,
+          32,
+          -56
+        ],
+        [
+          -44,
+          32,
+          -56
+        ],
+        [
+          -44,
+          -32,
+          56
+        ],
+        [
+          44,
+          -32,
+          56
+        ],
+        [
+          44,
+          32,
+          56
+        ],
+        [
+          -44,
+          32,
+          56
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "71f94f12-1431-4db8-811c-a6a3502abb4c",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Barricade upper edge",
+      "position": [
+        210,
+        0,
+        117
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -48,
+          -35,
+          -5
+        ],
+        [
+          48,
+          -35,
+          -5
+        ],
+        [
+          48,
+          35,
+          -5
+        ],
+        [
+          -48,
+          35,
+          -5
+        ],
+        [
+          -48,
+          -35,
+          5
+        ],
+        [
+          48,
+          -35,
+          5
+        ],
+        [
+          48,
+          35,
+          5
+        ],
+        [
+          -48,
+          35,
+          5
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "15640576-7e3c-446d-af31-652fd464d719",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Tactical concrete barricade",
+      "position": [
+        0,
+        -90,
+        32
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -44,
+          -32,
+          -32
+        ],
+        [
+          44,
+          -32,
+          -32
+        ],
+        [
+          44,
+          32,
+          -32
+        ],
+        [
+          -44,
+          32,
+          -32
+        ],
+        [
+          -44,
+          -32,
+          32
+        ],
+        [
+          44,
+          -32,
+          32
+        ],
+        [
+          44,
+          32,
+          32
+        ],
+        [
+          -44,
+          32,
+          32
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "cc7aa289-3e7d-4208-bfb7-aa7b478a40dd",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Barricade upper edge",
+      "position": [
+        0,
+        -90,
+        69
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -48,
+          -35,
+          -5
+        ],
+        [
+          48,
+          -35,
+          -5
+        ],
+        [
+          48,
+          35,
+          -5
+        ],
+        [
+          -48,
+          35,
+          -5
+        ],
+        [
+          -48,
+          -35,
+          5
+        ],
+        [
+          48,
+          -35,
+          5
+        ],
+        [
+          48,
+          35,
+          5
+        ],
+        [
+          -48,
+          35,
+          5
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "e62f1c63-b899-44c2-9e4c-11f9b2d743ff",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Tactical concrete barricade",
+      "position": [
+        0,
+        95,
+        32
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -44,
+          -32,
+          -32
+        ],
+        [
+          44,
+          -32,
+          -32
+        ],
+        [
+          44,
+          32,
+          -32
+        ],
+        [
+          -44,
+          32,
+          -32
+        ],
+        [
+          -44,
+          -32,
+          32
+        ],
+        [
+          44,
+          -32,
+          32
+        ],
+        [
+          44,
+          32,
+          32
+        ],
+        [
+          -44,
+          32,
+          32
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "9c1a6e5d-ccae-4149-bdce-f17009b6eb65",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Barricade upper edge",
+      "position": [
+        0,
+        95,
+        69
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -48,
+          -35,
+          -5
+        ],
+        [
+          48,
+          -35,
+          -5
+        ],
+        [
+          48,
+          35,
+          -5
+        ],
+        [
+          -48,
+          35,
+          -5
+        ],
+        [
+          -48,
+          -35,
+          5
+        ],
+        [
+          48,
+          -35,
+          5
+        ],
+        [
+          48,
+          35,
+          5
+        ],
+        [
+          -48,
+          35,
+          5
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "242b8a8c-279d-4c58-a57e-4a2d633241e5",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Spawn equipment bench",
+      "position": [
+        -760,
+        -310,
+        30
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -90,
+          -36,
+          -30
+        ],
+        [
+          90,
+          -36,
+          -30
+        ],
+        [
+          90,
+          36,
+          -30
+        ],
+        [
+          -90,
+          36,
+          -30
+        ],
+        [
+          -90,
+          -36,
+          30
+        ],
+        [
+          90,
+          -36,
+          30
+        ],
+        [
+          90,
+          36,
+          30
+        ],
+        [
+          -90,
+          36,
+          30
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "2e4251fc-ff2d-4843-92ce-7be682cb80b4",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Spawn bench shelf",
+      "position": [
+        -760,
+        -310,
+        72
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -95,
+          -41,
+          -6
+        ],
+        [
+          95,
+          -41,
+          -6
+        ],
+        [
+          95,
+          41,
+          -6
+        ],
+        [
+          -95,
+          41,
+          -6
+        ],
+        [
+          -95,
+          -41,
+          6
+        ],
+        [
+          95,
+          -41,
+          6
+        ],
+        [
+          95,
+          41,
+          6
+        ],
+        [
+          -95,
+          41,
+          6
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_TILE01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "2b161ee2-579e-4b98-b8e1-011d0dd35c43",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Control wall panel",
+      "position": [
+        -780,
+        650,
+        100
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -70,
+          -7,
+          -90
+        ],
+        [
+          70,
+          -7,
+          -90
+        ],
+        [
+          70,
+          7,
+          -90
+        ],
+        [
+          -70,
+          7,
+          -90
+        ],
+        [
+          -70,
+          -7,
+          90
+        ],
+        [
+          70,
+          -7,
+          90
+        ],
+        [
+          70,
+          7,
+          90
+        ],
+        [
+          -70,
+          7,
+          90
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "cfc97e58-e5c7-4092-8a7d-ed6b4f2912db",
+      "kind": "entity",
+      "name": "info_player_start",
+      "classname": "info_player_start",
+      "position": [
+        -770,
+        -128,
+        48
+      ],
+      "props": {
+        "angles": "0 0 0"
+      },
+      "layer": "Gameplay"
+    },
+    {
+      "id": "1f6adcd9-541c-464e-ba4b-1026064f5291",
+      "kind": "entity",
+      "name": "info_player_start",
+      "classname": "info_player_start",
+      "position": [
+        -770,
+        -32,
+        48
+      ],
+      "props": {
+        "angles": "0 0 0"
+      },
+      "layer": "Gameplay"
+    },
+    {
+      "id": "dfb90015-84f1-428d-8ddb-5b0bceb4ca6c",
+      "kind": "entity",
+      "name": "info_player_start",
+      "classname": "info_player_start",
+      "position": [
+        -770,
+        64,
+        48
+      ],
+      "props": {
+        "angles": "0 0 0"
+      },
+      "layer": "Gameplay"
+    },
+    {
+      "id": "f204be93-0269-4093-a04b-8328b33d4ca7",
+      "kind": "entity",
+      "name": "info_player_start",
+      "classname": "info_player_start",
+      "position": [
+        -770,
+        160,
+        48
+      ],
+      "props": {
+        "angles": "0 0 0"
+      },
+      "layer": "Gameplay"
+    },
+    {
+      "id": "35d97bca-a5fb-4b46-a410-b12e70cd0599",
+      "kind": "entity",
+      "name": "weapon_9mmAR",
+      "classname": "weapon_9mmAR",
+      "position": [
+        -780,
+        -265,
+        56
+      ],
+      "props": {},
+      "layer": "Gameplay"
+    },
+    {
+      "id": "0d47448f-fde3-47a1-bdba-a68444441b05",
+      "kind": "entity",
+      "name": "weapon_shotgun",
+      "classname": "weapon_shotgun",
+      "position": [
+        -720,
+        -265,
+        56
+      ],
+      "props": {},
+      "layer": "Gameplay"
+    },
+    {
+      "id": "c9a34ca3-f28c-4678-919d-3e4ede77b47e",
+      "kind": "entity",
+      "name": "ammo_9mmAR",
+      "classname": "ammo_9mmAR",
+      "position": [
+        -650,
+        -265,
+        56
+      ],
+      "props": {},
+      "layer": "Gameplay"
+    },
+    {
+      "id": "bf972aff-989d-431a-8a84-116d7aa1361a",
+      "kind": "entity",
+      "name": "ammo_buckshot",
+      "classname": "ammo_buckshot",
+      "position": [
+        -605,
+        -265,
+        56
+      ],
+      "props": {},
+      "layer": "Gameplay"
+    },
+    {
+      "id": "c9c35a31-6fb4-4d1e-91e2-f75a21068540",
+      "kind": "entity",
+      "name": "item_healthkit",
+      "classname": "item_healthkit",
+      "position": [
+        -570,
+        -265,
+        56
+      ],
+      "props": {},
+      "layer": "Gameplay"
+    },
+    {
+      "id": "9e797b93-bc09-471c-b051-8e234551dc2e",
+      "kind": "entity",
+      "name": "item_battery",
+      "classname": "item_battery",
+      "position": [
+        -530,
+        -265,
+        56
+      ],
+      "props": {},
+      "layer": "Gameplay"
+    },
+    {
+      "id": "5505a24e-3af9-4159-af6e-525590d53783",
+      "kind": "entity",
+      "name": "light",
+      "classname": "light",
+      "position": [
+        -700,
+        0,
+        304
+      ],
+      "props": {
+        "_light": "255 235 205 350"
+      },
+      "layer": "Lighting"
+    },
+    {
+      "id": "53f5d821-74fb-4c86-b2b0-9b0b96ef0439",
+      "kind": "entity",
+      "name": "light",
+      "classname": "light",
+      "position": [
+        -420,
+        0,
+        304
+      ],
+      "props": {
+        "_light": "180 225 255 300"
+      },
+      "layer": "Lighting"
+    },
+    {
+      "id": "7f4eccbf-4559-4ea2-9f27-dea8bed8af3a",
+      "kind": "entity",
+      "name": "light",
+      "classname": "light",
+      "position": [
+        -220,
+        420,
+        304
+      ],
+      "props": {
+        "_light": "225 235 255 320"
+      },
+      "layer": "Lighting"
+    },
+    {
+      "id": "a7f7b0f7-3377-4c1d-8b47-63e320306a82",
+      "kind": "entity",
+      "name": "light",
+      "classname": "light",
+      "position": [
+        0,
+        0,
+        304
+      ],
+      "props": {
+        "_light": "245 230 210 420"
+      },
+      "layer": "Lighting"
+    },
+    {
+      "id": "467f4b43-b5fa-45fe-abb6-c532cd047972",
+      "kind": "entity",
+      "name": "light",
+      "classname": "light",
+      "position": [
+        230,
+        -420,
+        304
+      ],
+      "props": {
+        "_light": "225 230 255 320"
+      },
+      "layer": "Lighting"
+    },
+    {
+      "id": "fd9ada1b-403a-4d68-832f-4d345f3a5acb",
+      "kind": "entity",
+      "name": "light",
+      "classname": "light",
+      "position": [
+        520,
+        0,
+        304
+      ],
+      "props": {
+        "_light": "170 240 255 280"
+      },
+      "layer": "Lighting"
+    },
+    {
+      "id": "61f2da9c-75b5-4e2f-9673-b3187e6e5c32",
+      "kind": "entity",
+      "name": "light",
+      "classname": "light",
+      "position": [
+        735,
+        0,
+        304
+      ],
+      "props": {
+        "_light": "180 255 220 310"
+      },
+      "layer": "Lighting"
+    },
+    {
+      "id": "f5dc4a00-838e-4ad7-9387-fbfc6124cc17",
+      "kind": "entity",
+      "name": "light_spot",
+      "classname": "light_spot",
+      "position": [
+        120,
+        -570,
+        330
+      ],
+      "props": {
+        "_light": "255 230 180 380",
+        "pitch": "-90",
+        "_cone": "45",
+        "_cone2": "70"
+      },
+      "layer": "Lighting"
+    },
+    {
+      "id": "c602ae00-2d36-4c5e-bf5a-e9f50ae74cd5",
+      "kind": "entity",
+      "name": "light_spot",
+      "classname": "light_spot",
+      "position": [
+        120,
+        570,
+        330
+      ],
+      "props": {
+        "_light": "255 230 180 380",
+        "pitch": "-90",
+        "_cone": "45",
+        "_cone2": "70"
+      },
+      "layer": "Lighting"
+    },
+    {
+      "id": "519e3bbe-0de1-44d3-be04-dc42c74ef92c",
+      "kind": "entity",
+      "name": "func_door",
+      "classname": "func_door",
+      "position": [
+        440,
+        0,
+        119
+      ],
+      "props": {
+        "targetname": "test_gate_open",
+        "speed": "145",
+        "wait": "-1",
+        "lip": "8",
+        "angle": "90",
+        "spawnflags": "0"
+      },
+      "layer": "Gameplay"
+    },
+    {
+      "id": "8bac1363-e32d-4199-8274-e87049fb0836",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "func_door: test_gate_open",
+      "position": [
+        440,
+        0,
+        119
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -24,
+          -119,
+          -119
+        ],
+        [
+          24,
+          -119,
+          -119
+        ],
+        [
+          24,
+          119,
+          -119
+        ],
+        [
+          -24,
+          119,
+          -119
+        ],
+        [
+          -24,
+          -119,
+          119
+        ],
+        [
+          24,
+          -119,
+          119
+        ],
+        [
+          24,
+          119,
+          119
+        ],
+        [
+          -24,
+          119,
+          119
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Gameplay",
+      "entityId": "519e3bbe-0de1-44d3-be04-dc42c74ef92c"
+    },
+    {
+      "id": "aaef9ef7-0e58-4781-9ce6-6b4897af56e6",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Exit access frame",
+      "position": [
+        440,
+        -143,
+        135
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -40,
+          -12,
+          -135
+        ],
+        [
+          40,
+          -12,
+          -135
+        ],
+        [
+          40,
+          12,
+          -135
+        ],
+        [
+          -40,
+          12,
+          -135
+        ],
+        [
+          -40,
+          -12,
+          135
+        ],
+        [
+          40,
+          -12,
+          135
+        ],
+        [
+          40,
+          12,
+          135
+        ],
+        [
+          -40,
+          12,
+          135
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "dc6220f3-a16c-4cc4-b934-7d5ea979ca57",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Exit access frame",
+      "position": [
+        440,
+        400,
+        135
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -40,
+          -12,
+          -135
+        ],
+        [
+          40,
+          -12,
+          -135
+        ],
+        [
+          40,
+          12,
+          -135
+        ],
+        [
+          -40,
+          12,
+          -135
+        ],
+        [
+          -40,
+          -12,
+          135
+        ],
+        [
+          40,
+          -12,
+          135
+        ],
+        [
+          40,
+          12,
+          135
+        ],
+        [
+          -40,
+          12,
+          135
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "ab767951-d953-4db1-baad-86cf0740eac0",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Exit indicator lamp frame",
+      "position": [
+        514,
+        0,
+        280
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -8,
+          -85,
+          -10
+        ],
+        [
+          8,
+          -85,
+          -10
+        ],
+        [
+          8,
+          85,
+          -10
+        ],
+        [
+          -8,
+          85,
+          -10
+        ],
+        [
+          -8,
+          -85,
+          10
+        ],
+        [
+          8,
+          -85,
+          10
+        ],
+        [
+          8,
+          85,
+          10
+        ],
+        [
+          -8,
+          85,
+          10
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "699f171d-a95a-48c6-a2aa-8e5d94fc888c",
+      "kind": "entity",
+      "name": "game_text",
+      "classname": "game_text",
+      "position": [
+        -710,
+        90,
+        170
+      ],
+      "props": {
+        "targetname": "test_briefing",
+        "message": "BREACH DRILL: ENTER THE ARENA AND CLEAR ALL WAVES",
+        "x": "-1",
+        "y": "0.32",
+        "color": "120 220 245",
+        "holdtime": "6",
+        "fadein": "0.4",
+        "fadeout": "1",
+        "channel": "3"
+      },
+      "layer": "Gameplay"
+    },
+    {
+      "id": "74c8c4a1-7d04-4c07-8c77-2c00d10f1389",
+      "kind": "entity",
+      "name": "game_text",
+      "classname": "game_text",
+      "position": [
+        0,
+        -40,
+        180
+      ],
+      "props": {
+        "targetname": "test_alarm_message",
+        "message": "SECURITY ALERT! HOSTILES IN THE FACILITY",
+        "x": "-1",
+        "y": "0.31",
+        "color": "255 145 95",
+        "holdtime": "4",
+        "fadein": "0.2",
+        "fadeout": "1",
+        "channel": "3"
+      },
+      "layer": "Gameplay"
+    },
+    {
+      "id": "58129aaa-6a1e-4bd6-8737-d89732a2ffc9",
+      "kind": "entity",
+      "name": "game_text",
+      "classname": "game_text",
+      "position": [
+        40,
+        0,
+        180
+      ],
+      "props": {
+        "targetname": "test_final_message",
+        "message": "CRITICAL THREAT: FINAL WAVE INBOUND",
+        "x": "-1",
+        "y": "0.31",
+        "color": "255 90 90",
+        "holdtime": "4",
+        "fadein": "0.2",
+        "fadeout": "1",
+        "channel": "3"
+      },
+      "layer": "Gameplay"
+    },
+    {
+      "id": "36d00d68-7241-482e-853a-71650d8e6a25",
+      "kind": "entity",
+      "name": "game_text",
+      "classname": "game_text",
+      "position": [
+        740,
+        0,
+        190
+      ],
+      "props": {
+        "targetname": "test_victory",
+        "message": "TEST PASSED! EXTRACTION REACHED. ALL SYSTEMS COMPLETE.",
+        "x": "-1",
+        "y": "0.32",
+        "color": "130 250 190",
+        "holdtime": "9",
+        "fadein": "0.3",
+        "fadeout": "1",
+        "channel": "3"
+      },
+      "layer": "Gameplay"
+    },
+    {
+      "id": "7327ad0b-ff34-4d20-9a8a-2dcf4ee5945b",
+      "kind": "entity",
+      "name": "light",
+      "classname": "light",
+      "position": [
+        0,
+        -575,
+        280
+      ],
+      "props": {
+        "targetname": "test_warning_light",
+        "_light": "255 55 40 260",
+        "spawnflags": "1"
+      },
+      "layer": "Lighting"
+    },
+    {
+      "id": "9c272459-7f81-40d3-8046-c09d6e74234a",
+      "kind": "entity",
+      "name": "light",
+      "classname": "light",
+      "position": [
+        350,
+        575,
+        280
+      ],
+      "props": {
+        "targetname": "test_final_light",
+        "_light": "255 40 40 300",
+        "spawnflags": "1"
+      },
+      "layer": "Lighting"
+    },
+    {
+      "id": "bcceae4d-a1ac-48b6-97a4-68a715100198",
+      "kind": "entity",
+      "name": "trigger_once",
+      "classname": "trigger_once",
+      "position": [
+        -710,
+        0,
+        76
+      ],
+      "props": {
+        "target": "test_briefing",
+        "spawnflags": "0"
+      },
+      "layer": "Gameplay"
+    },
+    {
+      "id": "23eae5de-19d9-426a-bbd4-d58690d1ae4b",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "trigger_once: test_briefing",
+      "position": [
+        -710,
+        0,
+        76
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -80,
+          -140,
+          -72
+        ],
+        [
+          80,
+          -140,
+          -72
+        ],
+        [
+          80,
+          140,
+          -72
+        ],
+        [
+          -80,
+          140,
+          -72
+        ],
+        [
+          -80,
+          -140,
+          72
+        ],
+        [
+          80,
+          -140,
+          72
+        ],
+        [
+          80,
+          140,
+          72
+        ],
+        [
+          -80,
+          140,
+          72
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "AAATRIGGER"
+        }
+      ],
+      "layer": "Gameplay",
+      "entityId": "bcceae4d-a1ac-48b6-97a4-68a715100198"
+    },
+    {
+      "id": "6f74084b-3e1b-41eb-abc1-c414438df01b",
+      "kind": "entity",
+      "name": "trigger_once",
+      "classname": "trigger_once",
+      "position": [
+        690,
+        0,
+        75
+      ],
+      "props": {
+        "target": "sv_ms_ab53dd5c57b441ec80c67d68_done",
+        "spawnflags": "0"
+      },
+      "layer": "Gameplay"
+    },
+    {
+      "id": "c7876bfa-6fb3-4a5d-be2b-2d5223cd9761",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "trigger_once: sv_ms_ab53dd5c57b441ec80c67d68_done",
+      "position": [
+        690,
+        0,
+        75
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -80,
+          -130,
+          -75
+        ],
+        [
+          80,
+          -130,
+          -75
+        ],
+        [
+          80,
+          130,
+          -75
+        ],
+        [
+          -80,
+          130,
+          -75
+        ],
+        [
+          -80,
+          -130,
+          75
+        ],
+        [
+          80,
+          -130,
+          75
+        ],
+        [
+          80,
+          130,
+          75
+        ],
+        [
+          -80,
+          130,
+          75
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "AAATRIGGER"
+        }
+      ],
+      "layer": "Gameplay",
+      "entityId": "6f74084b-3e1b-41eb-abc1-c414438df01b"
+    },
+    {
+      "id": "61496360-bf2d-44aa-b800-ef2329959aa1",
+      "kind": "entity",
+      "name": "multi_manager",
+      "classname": "multi_manager",
+      "position": [
+        -100,
+        -100,
+        96
+      ],
+      "props": {
+        "targetname": "sv_evt_57c257fe74d5436193d0d769",
+        "test_alarm_message": "0.1",
+        "test_warning_light": "0.8#1"
+      },
+      "group": "Dynamic Events: Security lockdown warning",
+      "layer": "Gameplay"
+    },
+    {
+      "id": "55a3ff3f-7f79-4deb-bcdd-09a6ccef2e7b",
+      "kind": "entity",
+      "name": "multi_manager",
+      "classname": "multi_manager",
+      "position": [
+        -100,
+        -200,
+        96
+      ],
+      "props": {
+        "targetname": "sv_evt_d89bb79453c943d5ab14d115",
+        "test_final_message": "0.1",
+        "test_final_light": "1.2#1"
+      },
+      "group": "Dynamic Events: Final assault alert",
+      "layer": "Gameplay"
+    },
+    {
+      "id": "763c65a5-8f83-474c-80fb-e97ec03d1cfc",
+      "kind": "entity",
+      "name": "trigger_relay",
+      "classname": "trigger_relay",
+      "position": [
+        -640,
+        420,
+        128
+      ],
+      "props": {
+        "targetname": "sv_ms_d9e2a357d5ce4fa8a696e583_s",
+        "target": "sv_ms_d9e2a357d5ce4fa8a696e583_m",
+        "triggerstate": "2"
+      },
+      "group": "Mission: Breach drill: hold the sector",
+      "layer": "Gameplay"
+    },
+    {
+      "id": "1598e896-0993-44e5-88ac-86f9041a97b5",
+      "kind": "entity",
+      "name": "game_text",
+      "classname": "game_text",
+      "position": [
+        -608,
+        420,
+        128
+      ],
+      "props": {
+        "targetname": "sv_ms_d9e2a357d5ce4fa8a696e583_hud",
+        "message": "1. Eliminate all hostile waves",
+        "spawnflags": "3",
+        "x": "-1",
+        "y": "0.24",
+        "color": "110 220 255",
+        "fadein": "0.2",
+        "holdtime": "4",
+        "fadeout": "1",
+        "channel": "4"
+      },
+      "group": "Mission: Breach drill: hold the sector",
+      "layer": "Gameplay"
+    },
+    {
+      "id": "b72787e2-f619-4e0e-b9bd-bad62b51ce54",
+      "kind": "entity",
+      "name": "multi_manager",
+      "classname": "multi_manager",
+      "position": [
+        -576,
+        420,
+        128
+      ],
+      "props": {
+        "targetname": "sv_ms_d9e2a357d5ce4fa8a696e583_m",
+        "sv_ms_d9e2a357d5ce4fa8a696e583_hud": "0"
+      },
+      "group": "Mission: Breach drill: hold the sector",
+      "layer": "Gameplay"
+    },
+    {
+      "id": "83866884-349e-4a87-aed4-0db9bad18e46",
+      "kind": "entity",
+      "name": "trigger_relay",
+      "classname": "trigger_relay",
+      "position": [
+        -544,
+        420,
+        128
+      ],
+      "props": {
+        "targetname": "sv_ms_d9e2a357d5ce4fa8a696e583_done",
+        "target": "sv_ms_ab53dd5c57b441ec80c67d68_s",
+        "triggerstate": "2"
+      },
+      "group": "Mission: Breach drill: hold the sector",
+      "layer": "Gameplay"
+    },
+    {
+      "id": "1f7d6ac8-6d0e-4929-b816-ec03cd4f18dd",
+      "kind": "entity",
+      "name": "trigger_relay",
+      "classname": "trigger_relay",
+      "position": [
+        -512,
+        420,
+        128
+      ],
+      "props": {
+        "targetname": "sv_ms_ab53dd5c57b441ec80c67d68_s",
+        "target": "sv_ms_ab53dd5c57b441ec80c67d68_m",
+        "triggerstate": "2"
+      },
+      "group": "Mission: Breach drill: hold the sector",
+      "layer": "Gameplay"
+    },
+    {
+      "id": "183d08dc-624e-46e2-b5db-101670432040",
+      "kind": "entity",
+      "name": "game_text",
+      "classname": "game_text",
+      "position": [
+        -480,
+        420,
+        128
+      ],
+      "props": {
+        "targetname": "sv_ms_ab53dd5c57b441ec80c67d68_hud",
+        "message": "2. Reach extraction",
+        "spawnflags": "3",
+        "x": "-1",
+        "y": "0.24",
+        "color": "110 220 255",
+        "fadein": "0.2",
+        "holdtime": "4",
+        "fadeout": "1",
+        "channel": "4"
+      },
+      "group": "Mission: Breach drill: hold the sector",
+      "layer": "Gameplay"
+    },
+    {
+      "id": "447c45e5-ab9a-4666-ad84-944affcbe276",
+      "kind": "entity",
+      "name": "multi_manager",
+      "classname": "multi_manager",
+      "position": [
+        -640,
+        452,
+        128
+      ],
+      "props": {
+        "targetname": "sv_ms_ab53dd5c57b441ec80c67d68_m",
+        "sv_ms_ab53dd5c57b441ec80c67d68_hud": "0"
+      },
+      "group": "Mission: Breach drill: hold the sector",
+      "layer": "Gameplay"
+    },
+    {
+      "id": "794fe4b0-5658-4a8d-bc3e-ba656dbd5485",
+      "kind": "entity",
+      "name": "trigger_relay",
+      "classname": "trigger_relay",
+      "position": [
+        -608,
+        452,
+        128
+      ],
+      "props": {
+        "targetname": "sv_ms_ab53dd5c57b441ec80c67d68_done",
+        "target": "test_victory",
+        "triggerstate": "2"
+      },
+      "group": "Mission: Breach drill: hold the sector",
+      "layer": "Gameplay"
+    },
+    {
+      "id": "6a1d786d-817a-43e6-ba2c-d56839899bc1",
+      "kind": "entity",
+      "name": "trigger_auto",
+      "classname": "trigger_auto",
+      "position": [
+        -576,
+        452,
+        128
+      ],
+      "props": {
+        "targetname": "",
+        "target": "sv_ms_d9e2a357d5ce4fa8a696e583_s",
+        "delay": "0.5",
+        "spawnflags": "1",
+        "triggerstate": "2"
+      },
+      "group": "Mission: Breach drill: hold the sector",
+      "layer": "Gameplay"
+    },
+    {
+      "id": "2b2142e7-2305-4140-abfb-503bb984234f",
+      "kind": "entity",
+      "name": "trigger_once",
+      "classname": "trigger_once",
+      "position": [
+        -256,
+        0,
+        72
+      ],
+      "props": {
+        "targetname": "sv_en_373dd9b06a864c819d6_entry",
+        "target": "sv_en_373dd9b06a864c819d6_start",
+        "spawnflags": "0"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "9fe26d4f-057f-4397-a02b-158f6b60b657",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Encounter entry trigger",
+      "position": [
+        -256,
+        0,
+        72
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -80,
+          -80,
+          -72
+        ],
+        [
+          80,
+          -80,
+          -72
+        ],
+        [
+          80,
+          80,
+          -72
+        ],
+        [
+          -80,
+          80,
+          -72
+        ],
+        [
+          -80,
+          -80,
+          72
+        ],
+        [
+          80,
+          -80,
+          72
+        ],
+        [
+          80,
+          80,
+          72
+        ],
+        [
+          -80,
+          80,
+          72
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "AAATRIGGER"
+        }
+      ],
+      "layer": "NPC Encounters",
+      "entityId": "2b2142e7-2305-4140-abfb-503bb984234f",
+      "group": "NPC Encounter: Black Mesa: Security Breach"
+    },
+    {
+      "id": "7bf75c39-0de1-4a0f-b0e5-e075def3ff0e",
+      "kind": "entity",
+      "name": "game_counter",
+      "classname": "game_counter",
+      "position": [
+        0,
+        32,
+        112
+      ],
+      "props": {
+        "targetname": "sv_ew_eaa307f8b5a94dd3ab5_dead",
+        "frags": "0",
+        "health": "4",
+        "target": "sv_ew_ddb4a403ecea4a2eb2c_begin",
+        "spawnflags": "1"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "9159efc7-2d08-4d14-9918-3a341f10271c",
+      "kind": "entity",
+      "name": "game_text",
+      "classname": "game_text",
+      "position": [
+        0,
+        64,
+        112
+      ],
+      "props": {
+        "targetname": "sv_ew_eaa307f8b5a94dd3ab5_text",
+        "message": "1/3: HECU security team",
+        "x": "-1",
+        "y": "0.18",
+        "effect": "0",
+        "color": "120 205 240",
+        "color2": "120 205 240",
+        "fadein": "0.3",
+        "fadeout": "1",
+        "holdtime": "3",
+        "fxtime": "0",
+        "channel": "4"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "52d54a74-7e0f-4c0e-addc-10a900a7ac76",
+      "kind": "entity",
+      "name": "squadmaker",
+      "classname": "squadmaker",
+      "position": [
+        70,
+        -360,
+        48
+      ],
+      "props": {
+        "targetname": "sv_ew_eaa307f8b5a94dd3ab5_spawn1",
+        "monstertype": "monster_human_grunt",
+        "monstercount": "1",
+        "delay": "0.5",
+        "m_imaxlivechildren": "1",
+        "spawnflags": "32",
+        "spawn_mode": "0",
+        "trigger_condition": "4",
+        "trigger_target": "sv_ew_eaa307f8b5a94dd3ab5_dead",
+        "is_not_revivable": "1",
+        "is_player_ally": "0",
+        "weapons": "1"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "61fb1522-efb1-4dcc-938a-6fdfef6d5e12",
+      "kind": "entity",
+      "name": "squadmaker",
+      "classname": "squadmaker",
+      "position": [
+        70,
+        360,
+        48
+      ],
+      "props": {
+        "targetname": "sv_ew_eaa307f8b5a94dd3ab5_spawn2",
+        "monstertype": "monster_human_grunt",
+        "monstercount": "1",
+        "delay": "0.5",
+        "m_imaxlivechildren": "1",
+        "spawnflags": "32",
+        "spawn_mode": "0",
+        "trigger_condition": "4",
+        "trigger_target": "sv_ew_eaa307f8b5a94dd3ab5_dead",
+        "is_not_revivable": "1",
+        "is_player_ally": "0",
+        "weapons": "1"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "77d0e9c5-3bd4-4bc0-97bb-1affa45337bd",
+      "kind": "entity",
+      "name": "squadmaker",
+      "classname": "squadmaker",
+      "position": [
+        260,
+        -360,
+        48
+      ],
+      "props": {
+        "targetname": "sv_ew_eaa307f8b5a94dd3ab5_spawn3",
+        "monstertype": "monster_human_grunt",
+        "monstercount": "1",
+        "delay": "0.5",
+        "m_imaxlivechildren": "1",
+        "spawnflags": "32",
+        "spawn_mode": "0",
+        "trigger_condition": "4",
+        "trigger_target": "sv_ew_eaa307f8b5a94dd3ab5_dead",
+        "is_not_revivable": "1",
+        "is_player_ally": "0",
+        "weapons": "1"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "93766c07-8315-4b0d-885a-003a9d3845d5",
+      "kind": "entity",
+      "name": "squadmaker",
+      "classname": "squadmaker",
+      "position": [
+        260,
+        360,
+        48
+      ],
+      "props": {
+        "targetname": "sv_ew_eaa307f8b5a94dd3ab5_spawn4",
+        "monstertype": "monster_human_grunt",
+        "monstercount": "1",
+        "delay": "0.5",
+        "m_imaxlivechildren": "1",
+        "spawnflags": "32",
+        "spawn_mode": "0",
+        "trigger_condition": "4",
+        "trigger_target": "sv_ew_eaa307f8b5a94dd3ab5_dead",
+        "is_not_revivable": "1",
+        "is_player_ally": "0",
+        "weapons": "1"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "96ad2ccd-5fdd-400b-8354-73ef79382030",
+      "kind": "entity",
+      "name": "multi_manager",
+      "classname": "multi_manager",
+      "position": [
+        0,
+        0,
+        152
+      ],
+      "props": {
+        "targetname": "sv_en_373dd9b06a864c819d6_start",
+        "sv_ew_eaa307f8b5a94dd3ab5_text": "0",
+        "sv_ew_eaa307f8b5a94dd3ab5_spawn1": "0",
+        "sv_ew_eaa307f8b5a94dd3ab5_spawn2": "0.15",
+        "sv_ew_eaa307f8b5a94dd3ab5_spawn3": "0.3",
+        "sv_ew_eaa307f8b5a94dd3ab5_spawn4": "0.44999999999999996",
+        "sv_evt_57c257fe74d5436193d0d769": "0"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "bdd72483-2f46-4e90-bcaa-d23803587f9e",
+      "kind": "entity",
+      "name": "game_counter",
+      "classname": "game_counter",
+      "position": [
+        48,
+        32,
+        112
+      ],
+      "props": {
+        "targetname": "sv_ew_ddb4a403ecea4a2eb2c_dead",
+        "frags": "0",
+        "health": "3",
+        "target": "sv_ew_55f849bd04644402b57_begin",
+        "spawnflags": "1"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "89291c27-7969-4bba-bb96-168159d1727e",
+      "kind": "entity",
+      "name": "game_text",
+      "classname": "game_text",
+      "position": [
+        48,
+        64,
+        112
+      ],
+      "props": {
+        "targetname": "sv_ew_ddb4a403ecea4a2eb2c_text",
+        "message": "2/3: Containment breach - zombies",
+        "x": "-1",
+        "y": "0.18",
+        "effect": "0",
+        "color": "120 205 240",
+        "color2": "120 205 240",
+        "fadein": "0.3",
+        "fadeout": "1",
+        "holdtime": "3",
+        "fxtime": "0",
+        "channel": "4"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "444e20ae-57a2-4d22-9bab-b1959c2d79ca",
+      "kind": "entity",
+      "name": "squadmaker",
+      "classname": "squadmaker",
+      "position": [
+        270,
+        -400,
+        48
+      ],
+      "props": {
+        "targetname": "sv_ew_ddb4a403ecea4a2eb2c_spawn1",
+        "monstertype": "monster_zombie",
+        "monstercount": "1",
+        "delay": "0.8",
+        "m_imaxlivechildren": "1",
+        "spawnflags": "32",
+        "spawn_mode": "0",
+        "trigger_condition": "4",
+        "trigger_target": "sv_ew_ddb4a403ecea4a2eb2c_dead",
+        "is_not_revivable": "1",
+        "is_player_ally": "0"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "f1335d10-c6f0-4315-ae3c-77baf114b12f",
+      "kind": "entity",
+      "name": "squadmaker",
+      "classname": "squadmaker",
+      "position": [
+        270,
+        400,
+        48
+      ],
+      "props": {
+        "targetname": "sv_ew_ddb4a403ecea4a2eb2c_spawn2",
+        "monstertype": "monster_zombie",
+        "monstercount": "1",
+        "delay": "0.8",
+        "m_imaxlivechildren": "1",
+        "spawnflags": "32",
+        "spawn_mode": "0",
+        "trigger_condition": "4",
+        "trigger_target": "sv_ew_ddb4a403ecea4a2eb2c_dead",
+        "is_not_revivable": "1",
+        "is_player_ally": "0"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "59e9425d-87ff-4f8a-884a-e1c4ffd6c719",
+      "kind": "entity",
+      "name": "squadmaker",
+      "classname": "squadmaker",
+      "position": [
+        295,
+        130,
+        48
+      ],
+      "props": {
+        "targetname": "sv_ew_ddb4a403ecea4a2eb2c_spawn3",
+        "monstertype": "monster_zombie",
+        "monstercount": "1",
+        "delay": "0.8",
+        "m_imaxlivechildren": "1",
+        "spawnflags": "32",
+        "spawn_mode": "0",
+        "trigger_condition": "4",
+        "trigger_target": "sv_ew_ddb4a403ecea4a2eb2c_dead",
+        "is_not_revivable": "1",
+        "is_player_ally": "0"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "9db8d597-fef7-4deb-abde-92198e2e7d5a",
+      "kind": "entity",
+      "name": "multi_manager",
+      "classname": "multi_manager",
+      "position": [
+        48,
+        0,
+        152
+      ],
+      "props": {
+        "targetname": "sv_ew_ddb4a403ecea4a2eb2c_begin",
+        "sv_ew_ddb4a403ecea4a2eb2c_text": "0",
+        "sv_ew_ddb4a403ecea4a2eb2c_spawn1": "0",
+        "sv_ew_ddb4a403ecea4a2eb2c_spawn2": "0.15",
+        "sv_ew_ddb4a403ecea4a2eb2c_spawn3": "0.3"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "9a479c0b-a06b-4858-a3f0-c2f046d3bfc6",
+      "kind": "entity",
+      "name": "game_counter",
+      "classname": "game_counter",
+      "position": [
+        96,
+        32,
+        112
+      ],
+      "props": {
+        "targetname": "sv_ew_55f849bd04644402b57_dead",
+        "frags": "0",
+        "health": "2",
+        "target": "sv_en_373dd9b06a864c819d6_finish",
+        "spawnflags": "1"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "5a493504-d644-47e4-8c8f-df01c34521d3",
+      "kind": "entity",
+      "name": "game_text",
+      "classname": "game_text",
+      "position": [
+        96,
+        64,
+        112
+      ],
+      "props": {
+        "targetname": "sv_ew_55f849bd04644402b57_text",
+        "message": "3/3: Alien counterattack",
+        "x": "-1",
+        "y": "0.18",
+        "effect": "0",
+        "color": "120 205 240",
+        "color2": "120 205 240",
+        "fadein": "0.3",
+        "fadeout": "1",
+        "holdtime": "3",
+        "fxtime": "0",
+        "channel": "4"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "e1a85055-7f2c-46d8-af21-5ac5793fde18",
+      "kind": "entity",
+      "name": "squadmaker",
+      "classname": "squadmaker",
+      "position": [
+        200,
+        -430,
+        48
+      ],
+      "props": {
+        "targetname": "sv_ew_55f849bd04644402b57_spawn1",
+        "monstertype": "monster_alien_grunt",
+        "monstercount": "1",
+        "delay": "1",
+        "m_imaxlivechildren": "1",
+        "spawnflags": "32",
+        "spawn_mode": "0",
+        "trigger_condition": "4",
+        "trigger_target": "sv_ew_55f849bd04644402b57_dead",
+        "is_not_revivable": "1",
+        "is_player_ally": "0"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "b00e8848-747c-4327-b2d7-0d40c95a9c25",
+      "kind": "entity",
+      "name": "squadmaker",
+      "classname": "squadmaker",
+      "position": [
+        200,
+        430,
+        48
+      ],
+      "props": {
+        "targetname": "sv_ew_55f849bd04644402b57_spawn2",
+        "monstertype": "monster_alien_grunt",
+        "monstercount": "1",
+        "delay": "1",
+        "m_imaxlivechildren": "1",
+        "spawnflags": "32",
+        "spawn_mode": "0",
+        "trigger_condition": "4",
+        "trigger_target": "sv_ew_55f849bd04644402b57_dead",
+        "is_not_revivable": "1",
+        "is_player_ally": "0"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "c89841db-413c-4645-aad8-fd50e7c6923d",
+      "kind": "entity",
+      "name": "multi_manager",
+      "classname": "multi_manager",
+      "position": [
+        96,
+        0,
+        152
+      ],
+      "props": {
+        "targetname": "sv_ew_55f849bd04644402b57_begin",
+        "sv_ew_55f849bd04644402b57_text": "0",
+        "sv_ew_55f849bd04644402b57_spawn1": "0",
+        "sv_ew_55f849bd04644402b57_spawn2": "0.15",
+        "sv_evt_d89bb79453c943d5ab14d115": "0"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "a4885484-071b-4668-afdd-6f6fce40f0a5",
+      "kind": "entity",
+      "name": "game_text",
+      "classname": "game_text",
+      "position": [
+        0,
+        0,
+        224
+      ],
+      "props": {
+        "targetname": "sv_en_373dd9b06a864c819d6_completed",
+        "message": "SECTOR SECURED - ALL WAVES COMPLETE",
+        "x": "-1",
+        "y": "0.20",
+        "effect": "0",
+        "color": "100 240 180",
+        "color2": "100 240 180",
+        "fadein": "0.3",
+        "fadeout": "1",
+        "holdtime": "5",
+        "fxtime": "0",
+        "channel": "4"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    },
+    {
+      "id": "78a6af3d-e9e3-42f1-b937-9b44e256ec9b",
+      "kind": "entity",
+      "name": "multi_manager",
+      "classname": "multi_manager",
+      "position": [
+        0,
+        0,
+        256
+      ],
+      "props": {
+        "targetname": "sv_en_373dd9b06a864c819d6_finish",
+        "sv_en_373dd9b06a864c819d6_completed": "0",
+        "sv_ms_d9e2a357d5ce4fa8a696e583_done": "0.1",
+        "test_gate_open": "0.1"
+      },
+      "group": "NPC Encounter: Black Mesa: Security Breach",
+      "layer": "NPC Encounters"
+    }
+  ],
+  "eventSequences": [
+    {
+      "id": "57c257fe-74d5-4361-93d0-d769e57a3064",
+      "name": "Security lockdown warning",
+      "description": "Announcement followed by a warning light.",
+      "origin": [
+        -100,
+        -100,
+        96
+      ],
+      "cues": [
+        {
+          "id": "7269154d-37fe-4210-88e9-156baa4168bd",
+          "at": 0.1,
+          "target": "test_alarm_message",
+          "mode": "toggle",
+          "note": "Initial warning"
+        },
+        {
+          "id": "021ca234-5c60-41e3-9790-2c7e5fb26db9",
+          "at": 0.8,
+          "target": "test_warning_light",
+          "mode": "on",
+          "note": "Emergency lighting"
+        }
+      ],
+      "memberIds": [
+        "61496360-bf2d-44aa-b800-ef2329959aa1"
+      ],
+      "signatures": [
+        "[\"multi_manager\",[-100,-100,96],{\"targetname\":\"sv_evt_57c257fe74d5436193d0d769\",\"test_alarm_message\":\"0.1\",\"test_warning_light\":\"0.8#1\"},\"Dynamic Events: Security lockdown warning\",\"Gameplay\"]"
+      ]
+    },
+    {
+      "id": "d89bb794-53c9-43d5-ab14-d115b654d78e",
+      "name": "Final assault alert",
+      "description": "Last-wave alarm light and announcement.",
+      "origin": [
+        -100,
+        -200,
+        96
+      ],
+      "cues": [
+        {
+          "id": "08941c75-31c3-4864-8863-0d413181c414",
+          "at": 0.1,
+          "target": "test_final_message",
+          "mode": "toggle",
+          "note": "Final assault starts"
+        },
+        {
+          "id": "b3dc3375-17b3-42fe-96fc-adcd169f49fb",
+          "at": 1.2,
+          "target": "test_final_light",
+          "mode": "on",
+          "note": "Red warning light"
+        }
+      ],
+      "memberIds": [
+        "55a3ff3f-7f79-4deb-bcdd-09a6ccef2e7b"
+      ],
+      "signatures": [
+        "[\"multi_manager\",[-100,-200,96],{\"targetname\":\"sv_evt_d89bb79453c943d5ab14d115\",\"test_final_message\":\"0.1\",\"test_final_light\":\"1.2#1\"},\"Dynamic Events: Final assault alert\",\"Gameplay\"]"
+      ]
+    }
+  ],
+  "missionPlans": [
+    {
+      "id": "e634afc9-1d93-440a-9ee8-e65db82f0c7d",
+      "name": "Breach drill: hold the sector",
+      "autoStart": true,
+      "origin": [
+        -640,
+        420,
+        96
+      ],
+      "stages": [
+        {
+          "id": "d9e2a357-d5ce-4fa8-a696-e583ab0bef06",
+          "title": "Eliminate all hostile waves",
+          "description": "Enter the combat arena and clear three enemy waves. Death counters determine success.",
+          "sequenceId": "",
+          "output": ""
+        },
+        {
+          "id": "ab53dd5c-57b4-41ec-80c6-7d68e333fce4",
+          "title": "Reach extraction",
+          "description": "Proceed through the gate opened after the final enemy dies.",
+          "sequenceId": "",
+          "output": "test_victory"
+        }
+      ],
+      "memberIds": [
+        "763c65a5-8f83-474c-80fb-e97ec03d1cfc",
+        "1598e896-0993-44e5-88ac-86f9041a97b5",
+        "b72787e2-f619-4e0e-b9bd-bad62b51ce54",
+        "83866884-349e-4a87-aed4-0db9bad18e46",
+        "1f7d6ac8-6d0e-4929-b816-ec03cd4f18dd",
+        "183d08dc-624e-46e2-b5db-101670432040",
+        "447c45e5-ab9a-4666-ad84-944affcbe276",
+        "794fe4b0-5658-4a8d-bc3e-ba656dbd5485",
+        "6a1d786d-817a-43e6-ba2c-d56839899bc1"
+      ],
+      "signatures": [
+        "[\"trigger_relay\",[-640,420,128],{\"targetname\":\"sv_ms_d9e2a357d5ce4fa8a696e583_s\",\"target\":\"sv_ms_d9e2a357d5ce4fa8a696e583_m\",\"triggerstate\":\"2\"},\"Mission: Breach drill: hold the sector\",\"Gameplay\"]",
+        "[\"game_text\",[-608,420,128],{\"targetname\":\"sv_ms_d9e2a357d5ce4fa8a696e583_hud\",\"message\":\"1. Eliminate all hostile waves\",\"spawnflags\":\"3\",\"x\":\"-1\",\"y\":\"0.24\",\"color\":\"110 220 255\",\"fadein\":\"0.2\",\"holdtime\":\"4\",\"fadeout\":\"1\",\"channel\":\"4\"},\"Mission: Breach drill: hold the sector\",\"Gameplay\"]",
+        "[\"multi_manager\",[-576,420,128],{\"targetname\":\"sv_ms_d9e2a357d5ce4fa8a696e583_m\",\"sv_ms_d9e2a357d5ce4fa8a696e583_hud\":\"0\"},\"Mission: Breach drill: hold the sector\",\"Gameplay\"]",
+        "[\"trigger_relay\",[-544,420,128],{\"targetname\":\"sv_ms_d9e2a357d5ce4fa8a696e583_done\",\"target\":\"sv_ms_ab53dd5c57b441ec80c67d68_s\",\"triggerstate\":\"2\"},\"Mission: Breach drill: hold the sector\",\"Gameplay\"]",
+        "[\"trigger_relay\",[-512,420,128],{\"targetname\":\"sv_ms_ab53dd5c57b441ec80c67d68_s\",\"target\":\"sv_ms_ab53dd5c57b441ec80c67d68_m\",\"triggerstate\":\"2\"},\"Mission: Breach drill: hold the sector\",\"Gameplay\"]",
+        "[\"game_text\",[-480,420,128],{\"targetname\":\"sv_ms_ab53dd5c57b441ec80c67d68_hud\",\"message\":\"2. Reach extraction\",\"spawnflags\":\"3\",\"x\":\"-1\",\"y\":\"0.24\",\"color\":\"110 220 255\",\"fadein\":\"0.2\",\"holdtime\":\"4\",\"fadeout\":\"1\",\"channel\":\"4\"},\"Mission: Breach drill: hold the sector\",\"Gameplay\"]",
+        "[\"multi_manager\",[-640,452,128],{\"targetname\":\"sv_ms_ab53dd5c57b441ec80c67d68_m\",\"sv_ms_ab53dd5c57b441ec80c67d68_hud\":\"0\"},\"Mission: Breach drill: hold the sector\",\"Gameplay\"]",
+        "[\"trigger_relay\",[-608,452,128],{\"targetname\":\"sv_ms_ab53dd5c57b441ec80c67d68_done\",\"target\":\"test_victory\",\"triggerstate\":\"2\"},\"Mission: Breach drill: hold the sector\",\"Gameplay\"]",
+        "[\"trigger_auto\",[-576,452,128],{\"targetname\":\"\",\"target\":\"sv_ms_d9e2a357d5ce4fa8a696e583_s\",\"delay\":\"0.5\",\"spawnflags\":\"1\",\"triggerstate\":\"2\"},\"Mission: Breach drill: hold the sector\",\"Gameplay\"]"
+      ]
+    }
+  ],
+  "encounterPlans": [
+    {
+      "id": "373dd9b0-6a86-4c81-9d60-db736c25f554",
+      "name": "Black Mesa: Security Breach",
+      "description": "Arena encounter: HECU soldiers, zombies, alien grunts; native death counters progress waves.",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "start": "trigger",
+      "waves": [
+        {
+          "id": "eaa307f8-b5a9-4dd3-ab53-0fda1ad5bf8b",
+          "name": "HECU security team",
+          "monster": "monster_human_grunt",
+          "count": 4,
+          "maxLive": 4,
+          "delay": 0.5,
+          "spawns": [
+            [
+              70,
+              -360,
+              48
+            ],
+            [
+              70,
+              360,
+              48
+            ],
+            [
+              260,
+              -360,
+              48
+            ],
+            [
+              260,
+              360,
+              48
+            ]
+          ],
+          "ally": false,
+          "health": 0,
+          "weapons": 1,
+          "pathName": "",
+          "guardTarget": "",
+          "eventSequenceId": "57c257fe-74d5-4361-93d0-d769e57a3064"
+        },
+        {
+          "id": "ddb4a403-ecea-4a2e-b2ca-8d12d0585abf",
+          "name": "Containment breach - zombies",
+          "monster": "monster_zombie",
+          "count": 3,
+          "maxLive": 3,
+          "delay": 0.8,
+          "spawns": [
+            [
+              270,
+              -400,
+              48
+            ],
+            [
+              270,
+              400,
+              48
+            ],
+            [
+              295,
+              130,
+              48
+            ]
+          ],
+          "ally": false,
+          "health": 0,
+          "weapons": 0,
+          "pathName": "",
+          "guardTarget": "",
+          "eventSequenceId": ""
+        },
+        {
+          "id": "55f849bd-0464-4402-b579-fc001587ca27",
+          "name": "Alien counterattack",
+          "monster": "monster_alien_grunt",
+          "count": 2,
+          "maxLive": 2,
+          "delay": 1,
+          "spawns": [
+            [
+              200,
+              -430,
+              48
+            ],
+            [
+              200,
+              430,
+              48
+            ]
+          ],
+          "ally": false,
+          "health": 0,
+          "weapons": 0,
+          "pathName": "",
+          "guardTarget": "",
+          "eventSequenceId": "d89bb794-53c9-43d5-ab14-d115b654d78e"
+        }
+      ],
+      "completionTarget": "test_gate_open",
+      "missionStageId": "d9e2a357-d5ce-4fa8-a696-e583ab0bef06",
+      "memberIds": [
+        "2b2142e7-2305-4140-abfb-503bb984234f",
+        "9fe26d4f-057f-4397-a02b-158f6b60b657",
+        "7bf75c39-0de1-4a0f-b0e5-e075def3ff0e",
+        "9159efc7-2d08-4d14-9918-3a341f10271c",
+        "52d54a74-7e0f-4c0e-addc-10a900a7ac76",
+        "61fb1522-efb1-4dcc-938a-6fdfef6d5e12",
+        "77d0e9c5-3bd4-4bc0-97bb-1affa45337bd",
+        "93766c07-8315-4b0d-885a-003a9d3845d5",
+        "96ad2ccd-5fdd-400b-8354-73ef79382030",
+        "bdd72483-2f46-4e90-bcaa-d23803587f9e",
+        "89291c27-7969-4bba-bb96-168159d1727e",
+        "444e20ae-57a2-4d22-9bab-b1959c2d79ca",
+        "f1335d10-c6f0-4315-ae3c-77baf114b12f",
+        "59e9425d-87ff-4f8a-884a-e1c4ffd6c719",
+        "9db8d597-fef7-4deb-abde-92198e2e7d5a",
+        "9a479c0b-a06b-4858-a3f0-c2f046d3bfc6",
+        "5a493504-d644-47e4-8c8f-df01c34521d3",
+        "e1a85055-7f2c-46d8-af21-5ac5793fde18",
+        "b00e8848-747c-4327-b2d7-0d40c95a9c25",
+        "c89841db-413c-4645-aad8-fd50e7c6923d",
+        "a4885484-071b-4668-afdd-6f6fce40f0a5",
+        "78a6af3d-e9e3-42f1-b937-9b44e256ec9b"
+      ],
+      "signatures": [
+        "[\"trigger_once\",[-256,0,72],{\"targetname\":\"sv_en_373dd9b06a864c819d6_entry\",\"target\":\"sv_en_373dd9b06a864c819d6_start\",\"spawnflags\":\"0\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[[-256,0,72],[[-80,-80,-72],[80,-80,-72],[80,80,-72],[-80,80,-72],[-80,-80,72],[80,-80,72],[80,80,72],[-80,80,72]],[{\"indices\":[0,3,2,1],\"texture\":\"AAATRIGGER\"},{\"indices\":[4,5,6,7],\"texture\":\"AAATRIGGER\"},{\"indices\":[0,1,5,4],\"texture\":\"AAATRIGGER\"},{\"indices\":[1,2,6,5],\"texture\":\"AAATRIGGER\"},{\"indices\":[2,3,7,6],\"texture\":\"AAATRIGGER\"},{\"indices\":[3,0,4,7],\"texture\":\"AAATRIGGER\"}],\"2b2142e7-2305-4140-abfb-503bb984234f\"]",
+        "[\"game_counter\",[0,32,112],{\"targetname\":\"sv_ew_eaa307f8b5a94dd3ab5_dead\",\"frags\":\"0\",\"health\":\"4\",\"target\":\"sv_ew_ddb4a403ecea4a2eb2c_begin\",\"spawnflags\":\"1\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"game_text\",[0,64,112],{\"targetname\":\"sv_ew_eaa307f8b5a94dd3ab5_text\",\"message\":\"1/3: HECU security team\",\"x\":\"-1\",\"y\":\"0.18\",\"effect\":\"0\",\"color\":\"120 205 240\",\"color2\":\"120 205 240\",\"fadein\":\"0.3\",\"fadeout\":\"1\",\"holdtime\":\"3\",\"fxtime\":\"0\",\"channel\":\"4\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"squadmaker\",[70,-360,48],{\"targetname\":\"sv_ew_eaa307f8b5a94dd3ab5_spawn1\",\"monstertype\":\"monster_human_grunt\",\"monstercount\":\"1\",\"delay\":\"0.5\",\"m_imaxlivechildren\":\"1\",\"spawnflags\":\"32\",\"spawn_mode\":\"0\",\"trigger_condition\":\"4\",\"trigger_target\":\"sv_ew_eaa307f8b5a94dd3ab5_dead\",\"is_not_revivable\":\"1\",\"is_player_ally\":\"0\",\"weapons\":\"1\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"squadmaker\",[70,360,48],{\"targetname\":\"sv_ew_eaa307f8b5a94dd3ab5_spawn2\",\"monstertype\":\"monster_human_grunt\",\"monstercount\":\"1\",\"delay\":\"0.5\",\"m_imaxlivechildren\":\"1\",\"spawnflags\":\"32\",\"spawn_mode\":\"0\",\"trigger_condition\":\"4\",\"trigger_target\":\"sv_ew_eaa307f8b5a94dd3ab5_dead\",\"is_not_revivable\":\"1\",\"is_player_ally\":\"0\",\"weapons\":\"1\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"squadmaker\",[260,-360,48],{\"targetname\":\"sv_ew_eaa307f8b5a94dd3ab5_spawn3\",\"monstertype\":\"monster_human_grunt\",\"monstercount\":\"1\",\"delay\":\"0.5\",\"m_imaxlivechildren\":\"1\",\"spawnflags\":\"32\",\"spawn_mode\":\"0\",\"trigger_condition\":\"4\",\"trigger_target\":\"sv_ew_eaa307f8b5a94dd3ab5_dead\",\"is_not_revivable\":\"1\",\"is_player_ally\":\"0\",\"weapons\":\"1\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"squadmaker\",[260,360,48],{\"targetname\":\"sv_ew_eaa307f8b5a94dd3ab5_spawn4\",\"monstertype\":\"monster_human_grunt\",\"monstercount\":\"1\",\"delay\":\"0.5\",\"m_imaxlivechildren\":\"1\",\"spawnflags\":\"32\",\"spawn_mode\":\"0\",\"trigger_condition\":\"4\",\"trigger_target\":\"sv_ew_eaa307f8b5a94dd3ab5_dead\",\"is_not_revivable\":\"1\",\"is_player_ally\":\"0\",\"weapons\":\"1\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"multi_manager\",[0,0,152],{\"targetname\":\"sv_en_373dd9b06a864c819d6_start\",\"sv_ew_eaa307f8b5a94dd3ab5_text\":\"0\",\"sv_ew_eaa307f8b5a94dd3ab5_spawn1\":\"0\",\"sv_ew_eaa307f8b5a94dd3ab5_spawn2\":\"0.15\",\"sv_ew_eaa307f8b5a94dd3ab5_spawn3\":\"0.3\",\"sv_ew_eaa307f8b5a94dd3ab5_spawn4\":\"0.44999999999999996\",\"sv_evt_57c257fe74d5436193d0d769\":\"0\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"game_counter\",[48,32,112],{\"targetname\":\"sv_ew_ddb4a403ecea4a2eb2c_dead\",\"frags\":\"0\",\"health\":\"3\",\"target\":\"sv_ew_55f849bd04644402b57_begin\",\"spawnflags\":\"1\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"game_text\",[48,64,112],{\"targetname\":\"sv_ew_ddb4a403ecea4a2eb2c_text\",\"message\":\"2/3: Containment breach - zombies\",\"x\":\"-1\",\"y\":\"0.18\",\"effect\":\"0\",\"color\":\"120 205 240\",\"color2\":\"120 205 240\",\"fadein\":\"0.3\",\"fadeout\":\"1\",\"holdtime\":\"3\",\"fxtime\":\"0\",\"channel\":\"4\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"squadmaker\",[270,-400,48],{\"targetname\":\"sv_ew_ddb4a403ecea4a2eb2c_spawn1\",\"monstertype\":\"monster_zombie\",\"monstercount\":\"1\",\"delay\":\"0.8\",\"m_imaxlivechildren\":\"1\",\"spawnflags\":\"32\",\"spawn_mode\":\"0\",\"trigger_condition\":\"4\",\"trigger_target\":\"sv_ew_ddb4a403ecea4a2eb2c_dead\",\"is_not_revivable\":\"1\",\"is_player_ally\":\"0\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"squadmaker\",[270,400,48],{\"targetname\":\"sv_ew_ddb4a403ecea4a2eb2c_spawn2\",\"monstertype\":\"monster_zombie\",\"monstercount\":\"1\",\"delay\":\"0.8\",\"m_imaxlivechildren\":\"1\",\"spawnflags\":\"32\",\"spawn_mode\":\"0\",\"trigger_condition\":\"4\",\"trigger_target\":\"sv_ew_ddb4a403ecea4a2eb2c_dead\",\"is_not_revivable\":\"1\",\"is_player_ally\":\"0\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"squadmaker\",[295,130,48],{\"targetname\":\"sv_ew_ddb4a403ecea4a2eb2c_spawn3\",\"monstertype\":\"monster_zombie\",\"monstercount\":\"1\",\"delay\":\"0.8\",\"m_imaxlivechildren\":\"1\",\"spawnflags\":\"32\",\"spawn_mode\":\"0\",\"trigger_condition\":\"4\",\"trigger_target\":\"sv_ew_ddb4a403ecea4a2eb2c_dead\",\"is_not_revivable\":\"1\",\"is_player_ally\":\"0\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"multi_manager\",[48,0,152],{\"targetname\":\"sv_ew_ddb4a403ecea4a2eb2c_begin\",\"sv_ew_ddb4a403ecea4a2eb2c_text\":\"0\",\"sv_ew_ddb4a403ecea4a2eb2c_spawn1\":\"0\",\"sv_ew_ddb4a403ecea4a2eb2c_spawn2\":\"0.15\",\"sv_ew_ddb4a403ecea4a2eb2c_spawn3\":\"0.3\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"game_counter\",[96,32,112],{\"targetname\":\"sv_ew_55f849bd04644402b57_dead\",\"frags\":\"0\",\"health\":\"2\",\"target\":\"sv_en_373dd9b06a864c819d6_finish\",\"spawnflags\":\"1\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"game_text\",[96,64,112],{\"targetname\":\"sv_ew_55f849bd04644402b57_text\",\"message\":\"3/3: Alien counterattack\",\"x\":\"-1\",\"y\":\"0.18\",\"effect\":\"0\",\"color\":\"120 205 240\",\"color2\":\"120 205 240\",\"fadein\":\"0.3\",\"fadeout\":\"1\",\"holdtime\":\"3\",\"fxtime\":\"0\",\"channel\":\"4\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"squadmaker\",[200,-430,48],{\"targetname\":\"sv_ew_55f849bd04644402b57_spawn1\",\"monstertype\":\"monster_alien_grunt\",\"monstercount\":\"1\",\"delay\":\"1\",\"m_imaxlivechildren\":\"1\",\"spawnflags\":\"32\",\"spawn_mode\":\"0\",\"trigger_condition\":\"4\",\"trigger_target\":\"sv_ew_55f849bd04644402b57_dead\",\"is_not_revivable\":\"1\",\"is_player_ally\":\"0\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"squadmaker\",[200,430,48],{\"targetname\":\"sv_ew_55f849bd04644402b57_spawn2\",\"monstertype\":\"monster_alien_grunt\",\"monstercount\":\"1\",\"delay\":\"1\",\"m_imaxlivechildren\":\"1\",\"spawnflags\":\"32\",\"spawn_mode\":\"0\",\"trigger_condition\":\"4\",\"trigger_target\":\"sv_ew_55f849bd04644402b57_dead\",\"is_not_revivable\":\"1\",\"is_player_ally\":\"0\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"multi_manager\",[96,0,152],{\"targetname\":\"sv_ew_55f849bd04644402b57_begin\",\"sv_ew_55f849bd04644402b57_text\":\"0\",\"sv_ew_55f849bd04644402b57_spawn1\":\"0\",\"sv_ew_55f849bd04644402b57_spawn2\":\"0.15\",\"sv_evt_d89bb79453c943d5ab14d115\":\"0\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"game_text\",[0,0,224],{\"targetname\":\"sv_en_373dd9b06a864c819d6_completed\",\"message\":\"SECTOR SECURED - ALL WAVES COMPLETE\",\"x\":\"-1\",\"y\":\"0.20\",\"effect\":\"0\",\"color\":\"100 240 180\",\"color2\":\"100 240 180\",\"fadein\":\"0.3\",\"fadeout\":\"1\",\"holdtime\":\"5\",\"fxtime\":\"0\",\"channel\":\"4\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]",
+        "[\"multi_manager\",[0,0,256],{\"targetname\":\"sv_en_373dd9b06a864c819d6_finish\",\"sv_en_373dd9b06a864c819d6_completed\":\"0\",\"sv_ms_d9e2a357d5ce4fa8a696e583_done\":\"0.1\",\"test_gate_open\":\"0.1\"},\"NPC Encounter: Black Mesa: Security Breach\",\"NPC Encounters\"]"
+      ]
+    }
+  ]
+}

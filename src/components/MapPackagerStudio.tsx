@@ -1,3 +1,4 @@
+import {saveStudioBlob} from '../engine/studioFiles';
 import {useState} from 'react';
 import {AlertTriangle,CheckCircle2,Download,FolderSearch,Package,RefreshCw,ShieldCheck,X} from 'lucide-react';
 import {useT} from '../i18n';
@@ -69,10 +70,9 @@ export function MapPackagerStudio({onClose}:{onClose:()=>void}){
     try{
       const input=makeInput();
       const response=await request('/api/packager/download',{...input,selectedPaths:[...selected],acknowledgeMissing:acknowledge});
-      const blob=await response.blob();const url=URL.createObjectURL(blob);const link=document.createElement('a');
-      link.href=url;link.download=`${packageMapName}_SvenCoop.zip`;document.body.append(link);link.click();link.remove();
-      window.setTimeout(()=>URL.revokeObjectURL(url),60000);
-      setMessage(`${t('Package created')}: ${(blob.size/1048576).toFixed(1)} MB. ${t('Review ZIP before sharing')}`);
+      const blob=await response.blob();
+      const saved=await saveStudioBlob(blob,`${packageMapName}_SvenCoop.zip`,'exports');
+      setMessage(`${t('Package created')}: ${(blob.size/1048576).toFixed(1)} MB → ${saved.path}. ${t('Review ZIP before sharing')}`);
     }catch(error){setMessage(String(error instanceof Error?error.message:error))}finally{setBusy(false)}
   };
   const toggle=(path:string)=>setSelected(prev=>{const next=new Set(prev);const key=path.toLowerCase();if(next.has(key))next.delete(key);else next.add(key);return next});

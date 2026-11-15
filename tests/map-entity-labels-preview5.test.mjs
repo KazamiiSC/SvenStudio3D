@@ -25,11 +25,12 @@ test('Preview 5 caps moving label layouts at 18Hz for large maps',()=>{
  assert.equal(mapLabelRefreshDue(false,true,false,.056,true,695),true);
  assert.equal(mapLabelRefreshDue(false,true,false,.034,true,20),true);
 });
-test('Viewport diagnostics works with labels off and with Classic mode',async()=>{
+test('Viewport FPS works with labels off and with Classic mode',async()=>{
  const viewport=await read('src/components/Viewport.tsx');
  const modal=await read('src/components/EntityAppearanceModal.tsx');
- assert.match(viewport,/mapLabelSettings\.diagnostics&&<MapPerformanceMonitor/);
- assert.match(viewport,/labelsEnabled=\{showEntityNames\} mode=\{mapLabelSettings\.mode\}/);
+ assert.match(viewport,/!walkMode&&fpsHudVisible&&<MapPerformanceMonitor\/>/);
+ assert.doesNotMatch(viewport,/mapLabelSettings\.diagnostics&&<MapPerformanceMonitor/);
+ assert.match(modal,/checked=\{fpsHudVisible\}/);
  assert.match(modal,/mapLabels\.lightweight/);
  const overlay=await read('src/components/MapEntityLabelOverlay.tsx');
  assert.match(overlay,/mapLabelRefreshDue\(/);
@@ -38,7 +39,7 @@ test('Viewport diagnostics works with labels off and with Classic mode',async()=
 });
 test('FPS overlay unsubscribes from DOM when hidden and never updates the editor store',async()=>{
  const monitor=await read('src/components/MapPerformanceMonitor.tsx');
- assert.match(monitor,/return\(\)=>\{node\.remove\(\)/);
+ assert.match(monitor,/return\(\)=>\{[\s\S]*badge\.remove\(\);panel\.remove\(\)/);
  assert.match(monitor,/v\.frames\/Math\.max\(\.01,elapsed\)/);
  assert.doesNotMatch(monitor,/setState\(|useEditor\.setState/);
 });

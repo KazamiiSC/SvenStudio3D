@@ -1,6 +1,7 @@
+import {saveStudioBlob} from '../engine/studioFiles';
 import {Canvas,useFrame,useThree,type ThreeEvent} from '@react-three/fiber';
 import {OrbitControls,TransformControls,Html} from '@react-three/drei';
-import {ArrowLeft,FileUp,Layers,Sun,Grid3x3,Move3D,RotateCcw,Info,Box,Tags,Focus,Settings2,Cloud,Package,ShieldCheck,PenTool,Save,Undo2,Redo2,Copy,Trash2,Plus,AlertTriangle,ChevronDown,MousePointer2,X,LibraryBig,PanelLeftClose,PanelLeftOpen,PanelRightClose,PanelRightOpen,Link2,Unlink2,Network,CheckSquare,GripVertical,Grip,Search,Users,SunMedium,Workflow,Boxes,MapPin,ChevronRight} from 'lucide-react';
+import {ArrowLeft,FileUp,Layers,Sun,Grid3x3,Move3D,RotateCcw,Info,Box,Tags,Focus,Settings2,Cloud,Package,ShieldCheck,PenTool,Save,Undo2,Redo2,Copy,Trash2,Plus,AlertTriangle,ChevronDown,MousePointer2,X,LibraryBig,PanelLeftClose,PanelLeftOpen,PanelRightClose,PanelRightOpen,Link2,Unlink2,Network,CheckSquare,GripVertical,Grip,Search,Users,SunMedium,Workflow,Boxes,MapPin,ChevronRight,Eye,EyeOff} from 'lucide-react';
 import {useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react';
 import type {MutableRefObject,PointerEvent as ReactPointerEvent,KeyboardEvent as ReactKeyboardEvent} from 'react';
 import * as THREE from 'three';
@@ -8,7 +9,7 @@ import type {OrbitControls as OrbitControlsImpl,TransformControls as TransformCo
 import type {BspFace,BspMap,BspTexture} from '../engine/bsp';
 import type {TextureAsset} from '../engine/types';
 import {parseWad} from '../engine/wad';
-import {autoWadTexturesToAssets,fetchBspAutoWads} from '../engine/bspAutoWad';
+import {autoWadTexturesToAssets,fetchBspAutoWads,fetchBspPrefabMipTextures} from '../engine/bspAutoWad';
 import {layoutBspLabels,bspLabelPriority} from '../engine/bspLabelLayout';
 import {gameToThree,threeToGame} from '../engine/geometry';
 import {useT} from '../i18n';
@@ -21,12 +22,15 @@ import {bspEntityConnections,bspConnectionPositions,bspConnectEntities,bspFlagVa
 import {parseBsp} from '../engine/bsp';
 import {BspSkyBackground,BspStaticModels,type BspAssetStatus} from './BspViewerAssets';
 import {BspModelLibrary} from './BspModelLibrary';
+import {readBspVisExplorer,decodeBspPvs,bspLeafAtPoint,readGoldSrcPrt,type BspPortalFile} from '../engine/bspVisExplorer';
+import {BspVisOverlay,BspVisLocateCamera,BSP_VIS_LEAF_DRAW_LIMIT,BSP_VIS_PORTAL_DRAW_LIMIT} from './BspVisExplorer';
 import {bspCanConvertModelEntity,bspConvertModelEntity,type BspModelEntitySpec} from '../engine/bspModelPlacement';
 import {bspPaneWidth,readBspPaneWidth} from '../engine/bspPaneLayout';
 import {bspToggleSelection} from '../engine/bspSelection';
 import {bspFaceDiagnostic,bspOriginalFaceIndex,bspToggleFaceSelection,bspTriangleFacePick} from '../engine/bspFaceSelection';
 import {bspSelectSurfaceRegion,bspToggleRegionSelection,BSP_REGION_SELECTION_LIMIT,type BspRegionKind} from '../engine/bspRegionSelection';
 import {extractBspObjectPrefab} from '../engine/bspObjectExtractor';
+import {bspHull0SelectionPlan} from '../engine/bspHull0Selection';
 import {readPrefabFolder,ensurePrefabFolderPermission,writePrefabToFolder} from '../engine/prefabStudioFolder';
 import {downloadText} from '../engine/paths';
 import {bspAllowedFaceTextureIndices,bspCanEditSelectedFaces,bspApplySurfaceOperation,bspFaceIsLightmapped,bspPreviewSurfaceMap,writeBspSurfaceEdits,type BspSurfaceOverrides} from '../engine/bspSurfaceEdit';
@@ -55,6 +59,15 @@ import {readBspFog,normalizeBspDisplayGamma,BSP_DISPLAY_GAMMA_DEFAULT,type BspFo
 import {BSP_LIGHTMAP_UV_CHANNEL,BSP_LIGHTMAP_DEFAULT_INTENSITY,BSP_LIGHTMAP_DEFAULT_AMBIENT,bspLightmapAtlasUv,bspDirectLightmapUv,bspPaddedLightmap} from '../engine/bspLightmap';
 import {goldSrcMaterial,normalizeGoldSrcPreview,readPreviewSettings,savePreviewSettings,type GoldSrcPreviewSettings} from '../engine/previewEnhancements';
 
+const BSP_VIS_UI:Record<string,{title:string;description:string;enable:string;selected:string;goCamera:string;visible:string;showPvs:string;showPortals:string;importPortals:string;clearPortals:string;noVis:string;noSource:string;portalsHint:string;truncated:string;leaf:string;status:string}>={
+  es:{title:'VIS & Portal Explorer',description:'PVS real del BSP30. Las cajas son límites aproximados de hojas, no su geometría exacta.',enable:'Mostrar análisis VIS',selected:'Hoja seleccionada',goCamera:'Hoja en la cámara',visible:'Hojas potencialmente visibles',showPvs:'Dibujar PVS',showPortals:'Dibujar portales PRT',importPortals:'Importar .prt',clearPortals:'Quitar .prt',noVis:'No hay datos VIS válidos para esta hoja. No se inventará visibilidad.',noSource:'Se necesita el archivo BSP original.',portalsHint:'El BSP no contiene los polígonos de portales; importar un .prt del mismo mapa. Los índices PRT no son índices de hojas BSP.',truncated:'Dibujo limitado por rendimiento',leaf:'Hoja',status:'Estado'},
+  en:{title:'VIS & Portal Explorer',description:'Actual BSP30 PVS. Boxes are approximate leaf bounds, not exact hulls.',enable:'Show VIS analysis',selected:'Selected leaf',goCamera:'Leaf at camera',visible:'Potentially visible leaves',showPvs:'Draw PVS',showPortals:'Draw PRT portals',importPortals:'Import .prt',clearPortals:'Remove .prt',noVis:'No valid VIS data for this leaf. Visibility will not be invented.',noSource:'The original BSP file is required.',portalsHint:'BSPs do not store portal polygons; import a matching .prt. PRT leaf IDs are not BSP leaf IDs.',truncated:'Drawing capped for performance',leaf:'Leaf',status:'Status'},
+  ru:{title:'VIS & Portal Explorer',description:'Реальный PVS из BSP30. Рамки — лишь границы листьев.',enable:'Показать анализ VIS',selected:'Выбранный лист',goCamera:'Лист у камеры',visible:'Потенциально видимые листы',showPvs:'Показать PVS',showPortals:'Показать порталы PRT',importPortals:'Импорт .prt',clearPortals:'Удалить .prt',noVis:'Данные VIS отсутствуют или некорректны.',noSource:'Нужен исходный BSP.',portalsHint:'Полигоны порталов не хранятся в BSP. Импортируйте .prt той же карты. Индексы PRT отличаются от индексов BSP.',truncated:'Лимит отрисовки',leaf:'Лист',status:'Статус'},
+  ko:{title:'VIS & Portal Explorer',description:'BSP30 PVS 데이터. 상자는 리프의 대략적인 경계입니다.',enable:'VIS 분석 표시',selected:'선택 리프',goCamera:'카메라 리프',visible:'잠재적으로 보이는 리프',showPvs:'PVS 표시',showPortals:'PRT 포털 표시',importPortals:'.prt 가져오기',clearPortals:'.prt 제거',noVis:'이 리프의 VIS 데이터가 없거나 유효하지 않습니다.',noSource:'원본 BSP 파일이 필요합니다.',portalsHint:'BSP에는 포털 다각형이 없습니다. 해당 맵의 .prt를 가져오세요. PRT 리프 번호는 BSP 리프 번호와 다릅니다.',truncated:'성능상 표시 제한',leaf:'리프',status:'상태'},
+  zh:{title:'VIS & Portal Explorer',description:'BSP30 真实 PVS 数据。方框仅表示叶节点近似边界。',enable:'显示 VIS 分析',selected:'选中叶节点',goCamera:'摄像机所在叶节点',visible:'潜在可见叶节点',showPvs:'显示 PVS',showPortals:'显示 PRT 门户',importPortals:'导入 .prt',clearPortals:'移除 .prt',noVis:'此叶节点缺少有效 VIS 数据。',noSource:'需要原始 BSP 文件。',portalsHint:'BSP 不保存门户多边形，请导入同一地图的 .prt。PRT 编号不是 BSP 叶节点编号。',truncated:'绘制数量受性能限制',leaf:'叶节点',status:'状态'},
+  pt:{title:'VIS & Portal Explorer',description:'PVS real do BSP30. Caixas representam limites aproximados das folhas.',enable:'Mostrar análise VIS',selected:'Folha selecionada',goCamera:'Folha da câmera',visible:'Folhas potencialmente visíveis',showPvs:'Exibir PVS',showPortals:'Exibir portais PRT',importPortals:'Importar .prt',clearPortals:'Remover .prt',noVis:'Sem dados VIS válidos para esta folha.',noSource:'O arquivo BSP original é necessário.',portalsHint:'Portais não são armazenados no BSP; importe um .prt do mesmo mapa. Índices PRT não são índices BSP.',truncated:'Limite de renderização',leaf:'Folha',status:'Estado'}
+};
+
 const BSP_STAGE7_LABELS={
   es:{openLight:'Abrir Lightmap Studio',hideLight:'Ocultar Lightmap Studio',edited:'caras con luz RGB pendiente',brush:'Copiar / pegar brushes BSP',desc:'Solo modelos independientes: func_wall y func_illusionary. Seleccioná varios y elegí el destino haciendo clic en el mapa.',anchor:'Anclaje',bottom:'Base del grupo',center:'Centro del grupo',copy:'Copiar brushes y elegir destino',place:'Clic sobre una superficie para pegar. Escape cancela.',cancel:'Cancelar pegado',notice:'Modelos de brush colocados. Exportá una copia BSP y comprobá el resultado en Sven Co-op; worldspawn no cambia.'},
   en:{openLight:'Open Lightmap Studio',hideLight:'Hide Lightmap Studio',edited:'faces with pending RGB edits',brush:'Copy / paste BSP brushes',desc:'Independent models only: func_wall and func_illusionary. Select several and click a destination in the map.',anchor:'Anchor',bottom:'Group bottom',center:'Group center',copy:'Copy brushes and choose destination',place:'Click a surface to paste. Escape cancels.',cancel:'Cancel paste',notice:'Brush-model instances placed. Export a BSP copy and verify in Sven Co-op; worldspawn is unchanged.'},
@@ -64,13 +77,22 @@ const BSP_STAGE7_LABELS={
   pt:{openLight:'Abrir Lightmap Studio',hideLight:'Ocultar Lightmap Studio',edited:'faces com RGB pendente',brush:'Copiar / colar brushes BSP',desc:'Somente modelos independentes func_wall e func_illusionary. Selecione vários e clique no destino no mapa.',anchor:'Âncora',bottom:'Base do grupo',center:'Centro do grupo',copy:'Copiar brushes e escolher destino',place:'Clique numa superfície para colar. Escape cancela.',cancel:'Cancelar colagem',notice:'Modelos de brush duplicados. Exporte uma cópia BSP e verifique no Sven Co-op.'},
 } as const;
 
+const BSP_HULL0_FEEDBACK={
+  es:{worldspawn:'Hull 0 no está disponible para esta selección: pertenece a worldspawn (*0). Este árbol BSP contiene todo el mapa, no el sólido original de la puerta. Usá «Guardar selección como prefab» para conservar su geometría visible, o Recuperación BSP → BSP a MAP para intentar recuperar sólidos.',mixed:'Hull 0 requiere un único submodelo *N. La selección contiene caras de distintos modelos; elegí solo un submodelo.',missing:'La selección contiene caras BSP inválidas. Volvé a seleccionar el objeto.',tooMany:'El submodelo supera el límite seguro de 256 caras para Hull 0.',tooFew:'El submodelo no tiene las cuatro caras mínimas para intentar reconstruir sólidos.',expand:'Se incluirán todas las caras del submodelo para recuperar sus sólidos.',confirm:'Hull 0 necesita el submodelo completo. ¿Continuar usando todas sus caras?'},
+  en:{worldspawn:'Hull 0 is unavailable for this selection: it belongs to worldspawn (*0). That BSP tree covers the whole map, not the original door solid. Use “Save selection as prefab” for its visible geometry, or BSP Recovery → BSP to MAP for solid reconstruction.',mixed:'Hull 0 requires a single *N submodel. The selection mixes models; select only one submodel.',missing:'The selection contains invalid BSP faces. Select the object again.',tooMany:'This submodel exceeds the safe 256-face Hull 0 limit.',tooFew:'This submodel has fewer than four faces and cannot form a solid.',expand:'All faces in the submodel will be included in solid recovery.',confirm:'Hull 0 requires the complete submodel. Continue with all its faces?'},
+  ru:{worldspawn:'Hull 0 недоступен: дверь является частью worldspawn (*0). Используйте «Сохранить выделение как префаб» для видимых поверхностей или восстановление BSP → MAP.',mixed:'Для Hull 0 нужен один подмодель *N, без смешения моделей.',missing:'Выделение содержит недопустимые грани BSP.',tooMany:'Подмодель превышает безопасный лимит 256 граней.',tooFew:'В подмодели меньше четырёх граней.',expand:'Для восстановления будут использованы все грани подмодели.',confirm:'Hull 0 требует всю подмодель. Продолжить со всеми гранями?'},
+  ko:{worldspawn:'이 문은 worldspawn (*0)의 일부이므로 Hull 0으로 개별 복구할 수 없습니다. 보이는 형상은 프리팹 저장을 이용하거나 BSP→MAP 복구를 사용하세요.',mixed:'Hull 0은 하나의 *N 서브모델만 지원합니다.',missing:'선택에 유효하지 않은 BSP 면이 있습니다.',tooMany:'서브모델이 256면 제한을 초과했습니다.',tooFew:'서브모델의 면이 4개 미만입니다.',expand:'서브모델의 모든 면을 복구에 사용합니다.',confirm:'Hull 0에는 전체 서브모델이 필요합니다. 모든 면을 포함할까요?'},
+  zh:{worldspawn:'此门属于 worldspawn (*0)，无法使用 Hull 0 单独恢复。可用“保存选择为预制件”保存可见几何体，或使用 BSP → MAP 恢复。',mixed:'Hull 0 只能恢复单个 *N 子模型，请不要混选。',missing:'所选 BSP 面无效。',tooMany:'子模型超过 256 面安全限制。',tooFew:'子模型少于 4 面。',expand:'将使用该子模型的全部面进行恢复。',confirm:'Hull 0 需要完整子模型，是否包含所有面？'},
+  pt:{worldspawn:'Hull 0 indisponível para esta porta: ela pertence ao worldspawn (*0). Use “Salvar seleção como prefab” para a geometria visível ou Recuperação BSP → BSP para MAP para tentar recuperar sólidos.',mixed:'Hull 0 exige um único submodelo *N; selecione apenas um.',missing:'A seleção contém faces BSP inválidas.',tooMany:'O submodelo excede o limite seguro de 256 faces.',tooFew:'O submodelo tem menos de quatro faces.',expand:'Todas as faces do submodelo serão incluídas na recuperação.',confirm:'Hull 0 exige o submodelo completo. Continuar com todas as faces?'}
+} as const;
+
 const BSP_REGION_LABELS={
-  es:{title:'Regiones',details:'Seleccionar región',single:'Caras',region:'Regiones',note:'En worldspawn se seleccionan caras visibles conectadas con la misma textura; no es el brush original. En submodelos *N se selecciona el modelo completo. No permite copiar geometría worldspawn todavía.',typeIsland:'Isla de textura (worldspawn)',typeModel:'Submodelo completo',warning:'Un BSP compilado no conserva la agrupación original de brushes. La selección de regiones no reconstruye colisiones ni VIS.',limit:'El grupo supera el límite de selección segura.'},
-  en:{title:'Regions',details:'Region selection',single:'Faces',region:'Regions',note:'For worldspawn, select connected visible faces with the same texture; not the original brush. For *N submodels, select the entire model. Worldspawn geometry cannot yet be copied.',typeIsland:'Texture island (worldspawn)',typeModel:'Entire submodel',warning:'Compiled BSPs do not retain original brush groups. Region selection does not reconstruct collisions or VIS.',limit:'The group exceeds the safe selection limit.'},
-  ru:{title:'Области',details:'Выбор области',single:'Грани',region:'Области',note:'В worldspawn выделяются связанные видимые грани с одной текстурой, а не исходный brush; в *N выделяется вся модель. Копирование геометрии worldspawn пока недоступно.',typeIsland:'Область текстуры (worldspawn)',typeModel:'Вся модель',warning:'BSP не хранит исходные группы brush; коллизия и VIS не восстанавливаются.',limit:'Группа превышает безопасный предел.'},
-  ko:{title:'영역',details:'영역 선택',single:'면',region:'영역',note:'worldspawn은 같은 텍스처의 연결된 보이는 면만 선택합니다. 원래 브러시가 아닙니다. *N은 모델 전체를 선택합니다. worldspawn 복사는 아직 불가합니다.',typeIsland:'텍스처 영역 (worldspawn)',typeModel:'전체 서브모델',warning:'컴파일된 BSP에는 원래 브러시 그룹이 없습니다. 충돌 및 VIS는 재구성하지 않습니다.',limit:'안전 선택 제한 초과.'},
-  zh:{title:'区域',details:'区域选择',single:'面',region:'区域',note:'worldspawn 仅选择使用相同纹理的相连可见面，不代表原始笔刷。*N 则选中整个模型。目前不能复制 worldspawn 几何。',typeIsland:'纹理区域 (worldspawn)',typeModel:'完整子模型',warning:'编译 BSP 不保存原始笔刷分组；此功能不会重建碰撞与 VIS。',limit:'超出安全选择上限。'},
-  pt:{title:'Regiões',details:'Selecionar região',single:'Faces',region:'Regiões',note:'Em worldspawn, seleciona faces visíveis conectadas com a mesma textura, não o brush original. Em *N seleciona todo o modelo. Ainda não copia geometria worldspawn.',typeIsland:'Região da textura (worldspawn)',typeModel:'Submodelo completo',warning:'O BSP compilado não guarda os brushes originais. Não reconstrói colisões nem VIS.',limit:'Grupo acima do limite de seleção segura.'}
+  es:{title:'Regiones',details:'Seleccionar región',single:'Caras',region:'Regiones',note:'En worldspawn se seleccionan caras visibles conectadas con la misma textura; no es el brush original. En submodelos *N se selecciona el modelo completo. Se pueden guardar como prefabs aproximados, sin recuperar los brushes originales.',typeIsland:'Isla de textura (worldspawn)',typeModel:'Submodelo completo',warning:'Un BSP compilado no conserva la agrupación original de brushes. La selección de regiones no reconstruye colisiones ni VIS.',limit:'El grupo supera el límite de selección segura.'},
+  en:{title:'Regions',details:'Region selection',single:'Faces',region:'Regions',note:'For worldspawn, select connected visible faces with the same texture; not the original brush. For *N submodels, select the entire model. Visible worldspawn geometry can be saved as approximate prefabs, not original brushes.',typeIsland:'Texture island (worldspawn)',typeModel:'Entire submodel',warning:'Compiled BSPs do not retain original brush groups. Region selection does not reconstruct collisions or VIS.',limit:'The group exceeds the safe selection limit.'},
+  ru:{title:'Области',details:'Выбор области',single:'Грани',region:'Области',note:'В worldspawn выделяются связанные видимые грани с одной текстурой, а не исходный brush; в *N выделяется вся модель. Видимую геометрию можно сохранить как приблизительный префаб.',typeIsland:'Область текстуры (worldspawn)',typeModel:'Вся модель',warning:'BSP не хранит исходные группы brush; коллизия и VIS не восстанавливаются.',limit:'Группа превышает безопасный предел.'},
+  ko:{title:'영역',details:'영역 선택',single:'면',region:'영역',note:'worldspawn은 같은 텍스처의 연결된 보이는 면만 선택합니다. 원래 브러시가 아닙니다. *N은 모델 전체를 선택합니다. 보이는 형상은 근사 프리팹으로 저장할 수 있습니다.',typeIsland:'텍스처 영역 (worldspawn)',typeModel:'전체 서브모델',warning:'컴파일된 BSP에는 원래 브러시 그룹이 없습니다. 충돌 및 VIS는 재구성하지 않습니다.',limit:'안전 선택 제한 초과.'},
+  zh:{title:'区域',details:'区域选择',single:'面',region:'区域',note:'worldspawn 仅选择使用相同纹理的相连可见面，不代表原始笔刷。*N 则选中整个模型。可将可见几何体保存为近似预制件。',typeIsland:'纹理区域 (worldspawn)',typeModel:'完整子模型',warning:'编译 BSP 不保存原始笔刷分组；此功能不会重建碰撞与 VIS。',limit:'超出安全选择上限。'},
+  pt:{title:'Regiões',details:'Selecionar região',single:'Faces',region:'Regiões',note:'Em worldspawn, seleciona faces visíveis conectadas com a mesma textura, não o brush original. Em *N seleciona todo o modelo. É possível salvar a geometria visível como prefab aproximado.',typeIsland:'Região da textura (worldspawn)',typeModel:'Submodelo completo',warning:'O BSP compilado não guarda os brushes originais. Não reconstrói colisões nem VIS.',limit:'Grupo acima do limite de seleção segura.'}
 } as const;
 
 const BSP_BROWSER_CATEGORIES:readonly {id:BspEntityCategory;label:string}[]=[
@@ -849,10 +871,43 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
   };
   const [entityEdit,setEntityEdit]=useState(false);
   const [surfaceMode,setSurfaceMode]=useState<'entities'|'faces'>('entities');
+  // HF11: independent, read-only visibility viewer. Never mutates map, source or editor history.
+  const [visOpen,setVisOpen]=useState(false);
+  const [visSelected,setVisSelected]=useState(1);
+  const [visShowPvs,setVisShowPvs]=useState(true);
+  const [visShowPortals,setVisShowPortals]=useState(true);
+  const [visPortals,setVisPortals]=useState<BspPortalFile|null>(null);
+  const [visPrtName,setVisPrtName]=useState('');
+  const [visError,setVisError]=useState('');
+  const [visCameraRequest,setVisCameraRequest]=useState(0);
+  const visFileInput=useRef<HTMLInputElement>(null);
+  const visText=BSP_VIS_UI[useEditor.getState().locale]||BSP_VIS_UI.en;
+  const visParsed=useMemo(()=>{
+    if(!visOpen||!source)return null;
+    try{return {data:readBspVisExplorer(source),error:''}}
+    catch(error){return {data:null,error:String(error instanceof Error?error.message:error)}}
+  },[visOpen,source]);
+  const visData=visParsed?.data||null;
+  const visLeafIndex=visData&&visData.worldVisLeaves>0?Math.max(1,Math.min(visSelected,visData.worldVisLeaves)):0;
+  const visPvs=useMemo(()=>visData?decodeBspPvs(visData,visLeafIndex):null,[visData,visLeafIndex]);
+  const importVisPortals=async(file:File|undefined)=>{
+    if(!file)return;
+    try{
+      if(!file.name.toLowerCase().endsWith('.prt')||file.size>8_000_000)throw new Error('Choose a .prt file no larger than 8 MB.');
+      const parsed=readGoldSrcPrt(await file.text());
+      // A PRT file cannot be verified against an arbitrary BSP just by its name.
+      if(file.name.toLowerCase().replace(/\.prt$/,'')!==map.name.toLowerCase().replace(/\.bsp$/,''))throw new Error('PRT name must match the opened BSP map.');
+      setVisPortals(parsed);setVisPrtName(file.name);setVisError('');
+    }catch(error){setVisError(String(error instanceof Error?error.message:error))}
+  };
+  useEffect(()=>{setVisSelected(1);setVisPortals(null);setVisPrtName('');setVisError('')},[source]);
+
   const [facePickMode,setFacePickMode]=useState<'face'|'region'>('face');
   const [regionKind,setRegionKind]=useState<BspRegionKind|null>(null);
   const [regionSelectionError,setRegionSelectionError]=useState('');
   const [objectExtractError,setObjectExtractError]=useState('');
+  const [objectExtractNotice,setObjectExtractNotice]=useState('');
+  const [objectExtractBusy,setObjectExtractBusy]=useState(false);
   const [selectedFaces,setSelectedFaces]=useState<number[]>([]);
   const [lightmapHistory,setLightmapHistory]=useState<{past:BspLightmapOverrides[];present:BspLightmapOverrides;future:BspLightmapOverrides[]}>({past:[],present:{},future:[]});
   const [lightmapStudioOpen,setLightmapStudioOpen]=useState(false);
@@ -1139,13 +1194,39 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
   };
   const undoLightmapEdit=()=>setLightmapHistory(old=>old.past.length?{past:old.past.slice(0,-1),present:old.past[old.past.length-1],future:[old.present,...old.future].slice(0,80)}:old);
   const redoLightmapEdit=()=>setLightmapHistory(old=>old.future.length?{past:[...old.past,old.present].slice(-80),present:old.future[0],future:old.future.slice(1)}:old);
-  const extractSelectedObject=async(mode:'exact'|'surface-shell'|'hull0-solid'='exact')=>{
+  const extractSelectedObject=async(mode:'exact'|'surface-shell'|'hull0-solid'|'auto'='auto',faceIds:readonly number[]=selectedFaces)=>{
+    if(objectExtractBusy)return;
+    setObjectExtractError('');setObjectExtractNotice('');
     try{
       if(!source)throw Error('No BSP source data is loaded.');
       const title=window.prompt('BSP Object Extractor — nombre del objeto / Object name:',map.name.replace(/\.bsp$/i,'')+'_objeto');
       if(title===null)return;
       if(!title.trim())throw Error('Choose a non-empty object name.');
-      const prefab=extractBspObjectPrefab(surfaceMap,source,selectedFaces,title.trim(),importedWadData.map(w=>w.bytes),{mode});
+      setObjectExtractBusy(true);
+      let prefab;
+      const userWads=importedWadData.map(w=>w.bytes);
+      try{
+        prefab=extractBspObjectPrefab(surfaceMap,source,faceIds,title.trim(),userWads,{mode});
+      }catch(error){
+        // The BSP viewer already locates installed WAD textures for preview.
+        // On explicit prefab Save, look up the original binary MIPTEX pixels as
+        // well. Previews alone cannot reconstruct exact mipmaps and palettes.
+        if(!gameDir.trim()||!String(error).includes('original WAD3 bytes are not loaded'))throw error;
+        const names=new Set<string>();
+        for(const id of faceIds){
+          const face=surfaceMap.faces.find((entry,i)=>bspOriginalFaceIndex(entry,i)===id);
+          const texture=face&&surfaceMap.textures[face.texture];
+          if(texture)names.add(texture.name);
+        }
+        for(const name of [...names])if((name.startsWith('+')||name.startsWith('-'))&&name.length>2){
+          for(const item of surfaceMap.textures){
+            if(item.name.length===name.length&&item.name[0]===name[0]&&item.name.slice(2).toLowerCase()===name.slice(2).toLowerCase()&&/^[0-9a-j]$/i.test(item.name[1]))names.add(item.name);
+          }
+        }
+        if(names.size>64)throw Error('Prefab requires more than 64 WAD3 textures. Select a smaller object.');
+        const recovered=await fetchBspPrefabMipTextures(gameDir,map.wadNames,[...names]);
+        prefab=extractBspObjectPrefab(surfaceMap,source,faceIds,title.trim(),userWads,{mode,resolvedMipTextures:recovered});
+      }
       const skipped=prefab.recovery?.skippedFaces??[];
       if(skipped.length){
         const example=skipped.slice(0,6).map(item=>`#${item.faceId}: ${item.reason}`).join('\n');
@@ -1159,24 +1240,33 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
           pt:['Recuperação PARCIAL','faces não puderam ser convertidas em painéis válidos. O objeto pode ficar incompleto.','Salvar este prefab incompleto?'],
         };
         const [heading,detail,question]=notices[lang]??notices.en;
-        const warning=`${heading}: ${skipped.length} / ${selectedFaces.length} ${detail}\n${prefab.objects.length} panels / paneles.\n\nBSP faces / caras BSP:\n${example}\n\n${question}`;
+        const warning=`${heading}: ${skipped.length} / ${faceIds.length} ${detail}\n${prefab.objects.length} panels / paneles.\n\nBSP faces / caras BSP:\n${example}\n\n${question}`;
         if(!window.confirm(warning)){
           setObjectExtractError(`${heading}: ${skipped.length} BSP faces (#${skipped.slice(0,8).map(f=>f.faceId).join(', #')}); ${lang==='es'?'exportación cancelada':'export cancelled'}.`);
           return;
         }
       }
       const fileName=(title.trim().replace(/[^a-z0-9_-]/gi,'_').slice(0,40)||'bsp_object')+(skipped.length?`_PARCIAL_${skipped.length}`:mode==='hull0-solid'?'_HULL0':'');
-      let destination='';
-      const folder=await readPrefabFolder().catch(()=>null);
-      if(folder&&await ensurePrefabFolderPermission(folder,true)){
-        destination=await writePrefabToFolder(folder,prefab,`${fileName}.svprefab`);
-      }else{downloadText(JSON.stringify(prefab),`${fileName}.svprefab`,'application/json');destination='Downloads';}
-      setObjectExtractError('');setSurfaceNotice(mode==='hull0-solid'
+      // All extracted BSP prefabs have one predictable per-user destination.
+      // Linked external folders in Prefab Studio remain read-only import sources.
+      const saved=await downloadText(JSON.stringify(prefab),`${fileName}.svprefab`,'application/json');
+      const destination=saved.path;
+      const actualMode=prefab.recovery?.mode??'exact';
+      setObjectExtractError('');setObjectExtractNotice(`${title.trim()}: ${prefab.objects.length} ${actualMode==='surface-shell'?'paneles aproximados / approximate panels':actualMode==='hull0-solid'?'sólidos Hull 0 / Hull 0 solids':'sólidos / solids'} → ${destination}. ${actualMode==='surface-shell'?'Solo geometría visible, sin la lógica original de puertas ni colisiones del BSP. / Visible geometry only; no original door behavior or collision hulls.':''}`);setSurfaceNotice(actualMode==='hull0-solid'
         ?`HULL-0 SOLID PREFAB saved to ${destination}: ${prefab.objects.length} reconstructed convex BSP cells with WAD3. NOT original brushes; material boundaries, collision hulls and baked lighting are not recovered. Validate appearance and compile in Sven Co-op.`
-        :mode==='surface-shell'
+        :actualMode==='surface-shell'
         ?`APPROXIMATE SURFACE PREFAB saved to ${destination}: ${prefab.objects.length} thin editable MAP panels; ${skipped.length} BSP faces omitted (${skipped.slice(0,8).map(f=>`#${f.faceId}`).join(', ')||'none'}). Original texture/UV data on retained panels. This does NOT recover original brush volumes, hidden faces, or collision hulls. Inspect before compiling. Import from MAP Editor → File.`
         :`Prefab saved to ${destination}. Exported: ${prefab.objects.length} validated editable brush(es), ${prefab.wad.filename} with original WAD3 mipmaps and palette. Import from MAP Editor → File.`);
     }catch(error){setObjectExtractError(error instanceof Error?error.message:String(error))}
+    finally{setObjectExtractBusy(false)}
+  };
+  const hull0Plan=useMemo(()=>bspHull0SelectionPlan(surfaceMap,selectedFaces),[surfaceMap,selectedFaces]);
+  const hull0Enabled=hull0Plan.kind==='ready'||hull0Plan.kind==='expand';
+  const hull0Labels=BSP_HULL0_FEEDBACK[useEditor.getState().locale]||BSP_HULL0_FEEDBACK.en;
+  const recoverHull0=()=>{
+    if(hull0Plan.kind!=='ready'&&hull0Plan.kind!=='expand')return;
+    if(hull0Plan.kind==='expand'&&!window.confirm(`${hull0Labels.confirm}\n*${hull0Plan.modelIndex}: ${hull0Plan.selectedCount} / ${hull0Plan.totalFaces}`))return;
+    void extractSelectedObject('hull0-solid',hull0Plan.faceIds);
   };
   const selectedFace=useMemo(()=>selectedFaces.length?bspFaceDiagnostic(surfaceMap,selectedFaces[selectedFaces.length-1]):null,[surfaceMap,selectedFaces]);
   const faceById=useMemo(()=>surfaceMode==='faces'?new Map(map.faces.map((face,index)=>[bspOriginalFaceIndex(face,index),face])):new Map<number,BspFace>(),[map,surfaceMode]);
@@ -1365,7 +1455,7 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
     past:old.past.slice(0,-1),present:old.past[old.past.length-1],future:[old.present,...old.future].slice(0,80)}:old);
   const redoEntityEdit=()=>setEntityHistory(old=>old?.future.length?{
     past:[...old.past,old.present].slice(-80),present:old.future[0],future:old.future.slice(1)}:old);
-  const exportEntityBsp=()=>{
+  const exportEntityBsp=async()=>{
     if(!doc||!source)return;
     try{
       const entitiesBytes=writeNativeBsp(doc);
@@ -1376,11 +1466,8 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
       const check=readNativeBsp(bytes);
       const rendered=parseBsp(bytes,map.name);
       if(check.entities.length!==doc.entities.length||rendered.entities.length!==doc.entities.length)throw Error('Exported BSP entity count mismatch.');
-      const url=URL.createObjectURL(new Blob([bytes],{type:'application/octet-stream'}));
-      const link=document.createElement('a');link.href=url;
-      link.download=map.name.replace(/\.bsp$/i,'')+(lightmapEdited?'_lightmaps.bsp':surfaceEdited?'_visual_surfaces.bsp':'_visual_entities.bsp');
-      document.body.appendChild(link);link.click();link.remove();
-      window.setTimeout(()=>URL.revokeObjectURL(url),15000);
+      const copyName=map.name.replace(/\.bsp$/i,'')+(lightmapEdited?'_lightmaps.bsp':surfaceEdited?'_visual_surfaces.bsp':'_visual_entities.bsp');
+      await saveStudioBlob(new Blob([bytes],{type:'application/octet-stream'}),copyName,'exports');
       setEntityError('');setSurfaceError('');setLightmapEditError('');setEntityNotice(`${t('BSP copy exported. Open it again to inspect the result.')} · ${report.afterBytes.toLocaleString()} bytes (${report.recoveredBytes.toLocaleString()} bytes recovered)`);setSurfaceNotice(`${t('BSP copy exported. Open it again to inspect the result.')} · ${report.afterBytes.toLocaleString()} bytes (${report.recoveredBytes.toLocaleString()} bytes recovered)`);
     }catch(error){setEntityError(String(error instanceof Error?error.message:error));setSurfaceError(String(error instanceof Error?error.message:error));setLightmapEditError(String(error instanceof Error?error.message:error))}
   };
@@ -1478,7 +1565,7 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
       if(fly||modelLibraryOpen||recoveryOpen)return; // Do not delete while a dialog or flight control is active.
       const modifier=event.ctrlKey||event.metaKey;
       if(surfaceMode==='faces'){
-        if(modifier&&(event.code==='KeyZ'||event.code==='KeyY')){
+        if(facePickMode==='face'&&modifier&&(event.code==='KeyZ'||event.code==='KeyY')){
           event.preventDefault();event.stopImmediatePropagation();
           if(event.code==='KeyY'||event.shiftKey)redoSurfaceEdit();else undoSurfaceEdit();return;
         }
@@ -1630,10 +1717,11 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
             setFlyError('');canvas.requestPointerLock().then(()=>setFly(true)).catch(()=>{setFly(false);setFlyError(t('Pointer lock blocked. Click the viewer and try again.'))});
           }}
         }}><Move3D size={15}/>{fly?t('Exit fly'):t('Fly WASD')}</button>}
+        <button type="button" className={visOpen?'bsp-on':''} aria-pressed={visOpen} title={visText.title} onClick={()=>{setVisOpen(v=>!v);setLeftPaneOpen(true)}}><Eye size={15}/><span className="bsp-vis-toolbar-label">VIS</span></button>
         <button type="button" title={t('Tools')} aria-label={t('Tools')} aria-expanded={leftPaneOpen} onClick={()=>setLeftPaneOpen(v=>!v)}>{leftPaneOpen?<PanelLeftClose size={16}/>:<PanelLeftOpen size={16}/>}</button>
         {entityEdit&&<button className="bsp-export-button" disabled={!edited} onClick={exportEntityBsp}><Save size={15}/>{t('Export BSP copy')}</button>}
 
-        <button title={t('BSP Recovery')} disabled={!source||entityEdit} onClick={()=>{if(!source)return;try{readNativeBsp(source);if(fly)documentGlobalExitFly();setRecoveryOpen(true)}catch(e){window.alert(`${t('BSP Recovery cannot edit this map safely')}: ${String(e)}`)}}}><ShieldCheck size={15}/></button>
+        {!entityEdit&&<button type="button" className="bsp-recovery-cta" title={t('Recover BSP to MAP')} aria-label={t('Recover BSP to MAP')} disabled={!source} onClick={()=>{if(!source)return;try{readNativeBsp(source);if(fly)documentGlobalExitFly();setRecoveryOpen(true)}catch(e){window.alert(`${t('BSP Recovery cannot edit this map safely')}: ${String(e)}`)}}}><ShieldCheck size={15}/><span>{t('Recover BSP to MAP')}</span></button>}
         <button type="button" title={t('Entity inspector')} aria-label={t('Entity inspector')} aria-expanded={rightPaneOpen} onClick={()=>setRightPaneOpen(v=>!v)}>{rightPaneOpen?<PanelRightClose size={16}/>:<PanelRightOpen size={16}/>}</button>
       </div>
     </div>
@@ -1670,6 +1758,37 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
               <button onClick={()=>setNavSettings(v=>!v)}><Settings2 size={14}/>{t('Fly settings')}</button>
             </div>
           </section>
+          {visOpen&&<section className="bsp-tool-section bsp-vis-panel" aria-label={visText.title}>
+            <h3><Eye size={15}/>{visText.title}</h3>
+            <small>{visText.description}</small>
+            {!source&&<small className="bsp-warning">{visText.noSource}</small>}
+            {visParsed?.error&&<small role="alert" className="bsp-warning">{visParsed.error}</small>}
+            {visData&&<>
+              <div className="bsp-vis-stats">{visData.worldVisLeaves} world visleaves / {visData.leaves.length} leaves · VIS {visData.visBytes.length.toLocaleString()} B</div>
+              <label htmlFor="bsp-vis-leaf">{visText.selected} · #{visLeafIndex}</label>
+              <div className="bsp-vis-leaf-input">
+                <button type="button" disabled={visLeafIndex<=1} onClick={()=>setVisSelected(v=>Math.max(1,v-1))} aria-label="Previous leaf">−</button>
+                <input id="bsp-vis-leaf" type="number" min={1} max={Math.max(1,visData.worldVisLeaves)} step={1} value={visLeafIndex} onChange={event=>{const n=Number(event.target.value);if(Number.isSafeInteger(n))setVisSelected(Math.max(1,Math.min(n,visData.worldVisLeaves)))}}/>
+                <button type="button" disabled={visLeafIndex>=visData.worldVisLeaves} onClick={()=>setVisSelected(v=>Math.min(visData.worldVisLeaves,v+1))} aria-label="Next leaf">+</button>
+              </div>
+              <button type="button" className="bsp-rail-wide" onClick={()=>setVisCameraRequest(n=>n+1)}><Focus size={14}/>{visText.goCamera}</button>
+              <label className="bsp-vis-check"><input type="checkbox" checked={visShowPvs} onChange={event=>setVisShowPvs(event.target.checked)}/>{visText.showPvs}</label>
+              <small>{visText.status}: {visPvs?.status||'—'}</small>
+              {visPvs?.status==='ok'?<strong>{visText.visible}: {visPvs.indices.length}</strong>:<small className="bsp-warning">{visText.noVis} {visPvs?.message}</small>}
+              {visPvs?.status==='ok'&&visPvs.indices.length>BSP_VIS_LEAF_DRAW_LIMIT&&<small>{visText.truncated}: {BSP_VIS_LEAF_DRAW_LIMIT}</small>}
+              <div className="bsp-vis-legend"><span style={{color:'#ff5a7a'}}>■</span> {visText.leaf} #{visLeafIndex} <span style={{color:'#35c9e7'}}>■</span> PVS <span style={{color:'#efaf4a'}}>■</span> PRT</div>
+            </>}
+            <input ref={visFileInput} type="file" accept=".prt" hidden onChange={event=>{void importVisPortals(event.target.files?.[0]);event.target.value=''}}/>
+            <button type="button" className="bsp-rail-wide" onClick={()=>visFileInput.current?.click()}>{visText.importPortals}</button>
+            {visPortals&&<>
+              <strong>{visPrtName} · {visPortals.portals.length} portals</strong>
+              <label className="bsp-vis-check"><input type="checkbox" checked={visShowPortals} onChange={event=>setVisShowPortals(event.target.checked)}/>{visText.showPortals}</label>
+              {visPortals.portals.length>BSP_VIS_PORTAL_DRAW_LIMIT&&<small>{visText.truncated}: {BSP_VIS_PORTAL_DRAW_LIMIT}</small>}
+              <button type="button" className="bsp-rail-wide" onClick={()=>{setVisPortals(null);setVisPrtName('');setVisError('')}}>{visText.clearPortals}</button>
+            </>}
+            {visError&&<small role="alert" className="bsp-warning">{visError}</small>}
+            <small>{visText.portalsHint}</small>
+          </section>}
           <small className="bsp-rail-tip">{t('Drag panel divider to resize')}</small>
         </aside>
         <div className="bsp-panel-splitter" role="separator" aria-orientation="vertical" aria-label={t('Resize tools panel')} tabIndex={0} aria-valuemin={165} aria-valuemax={470} aria-valuenow={leftPaneWidth}
@@ -1683,7 +1802,7 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
         {showSky&&<BspSkyBackground map={map} gameDir={gameDir} onStatus={setSkyStatus}/>}
         {showModels&&surfaceMode==='entities'&&<BspStaticModels map={viewMap} gameDir={gameDir} onStatus={setModelStatus} onReport={setModelReport} studioByClass={studioByClass} selected={chosen} extraSelected={extraSelected} distance={entityDistance} groundModels={groundModelPreviews} extraModels={localModels} onSelect={entityEdit&&!placement?selectEntity:undefined} onContextEntity={entityEdit?openEntityContext:undefined}/>} 
         {!baked&&<><ambientLight intensity={lightmaps?ambientFill:1.7}/><hemisphereLight args={['#dae4ef','#737e93',lightmaps?.12:1.1]}/></>}
-        <BspSurface map={renderSurfaceMap} overrides={gesturePreview??surfaceOverrides} assets={allAssets} lightmaps={lightmaps} wireframe={wireframe} brightness={lightBrightness} preview={rendererPreview} baked={baked} styleFrame={styleFrame} fog={effectiveFog} displayGamma={displayGamma} lightFilter={lightFilter} onPlace={brushPaste&&!fly?pasteBrushAt:placement&&!fly?placePointAt:undefined} onHover={brushPaste&&!fly?setBrushPasteHover:placement&&!fly?setPlacementHover:undefined} onEmptyClick={entityEdit&&!fly?cancelToolOrSelection:undefined} onFaceClick={entityEdit&&!fly&&surfaceMode==='faces'?selectSurfaceFace:undefined} onAltUvStart={entityEdit&&!fly&&surfaceMode==='faces'&&bspStudioOpen?(id)=>beginUvGesture(selectedFaces.includes(id)?undefined:[id]):undefined} onAltUvMove={(dx,dy)=>updateUvGesture('move',dx,dy,false)} onAltUvEnd={finishUvGesture}/>
+        <BspSurface map={renderSurfaceMap} overrides={gesturePreview??surfaceOverrides} assets={allAssets} lightmaps={lightmaps} wireframe={wireframe} brightness={lightBrightness} preview={rendererPreview} baked={baked} styleFrame={styleFrame} fog={effectiveFog} displayGamma={displayGamma} lightFilter={lightFilter} onPlace={brushPaste&&!fly?pasteBrushAt:placement&&!fly?placePointAt:undefined} onHover={brushPaste&&!fly?setBrushPasteHover:placement&&!fly?setPlacementHover:undefined} onEmptyClick={entityEdit&&!fly?cancelToolOrSelection:undefined} onFaceClick={entityEdit&&!fly&&surfaceMode==='faces'?selectSurfaceFace:undefined} onAltUvStart={entityEdit&&!fly&&surfaceMode==='faces'&&facePickMode==='face'&&bspStudioOpen?(id)=>beginUvGesture(selectedFaces.includes(id)?undefined:[id]):undefined} onAltUvMove={(dx,dy)=>updateUvGesture('move',dx,dy,false)} onAltUvEnd={finishUvGesture}/>
         {surfaceMode==='faces'&&selectedFaces.map(id=>{const face=faceById.get(id);return face?<BspFaceHighlight key={id} face={face}/>:null})}
         {surfaceMode==='entities'&&showConnections&&entityEdit&&!placement&&<BspConnectionLines map={viewMap} edges={selectedConnections}/>}
         {surfaceMode==='entities'&&showEntities&&!placement&&<BspEntities map={viewMap} onSelect={selectEntity} onContextEntity={entityEdit?openEntityContext:undefined} selected={chosen} extraSelected={extraSelected} labels={showLabels} smartLabels={smartLabels} labelLimit={labelLimit} labelDistance={labelDistance} entityDistance={entityDistance}/>}
@@ -1699,9 +1818,17 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
         {entityEdit&&doc&&surfaceMode==='entities'&&<BspPastedBrushInstances map={surfaceMap} doc={doc} assets={allAssets}/>}
         {brushPaste&&brushPasteHover&&doc&&<BspBrushPastePreview map={map} doc={doc} indices={brushPaste.indices} destination={brushPasteHover} anchor={brushPaste.anchor}/>}
         {placement&&placementHover&&<mesh position={gameToThree(placementHover).toArray()} raycast={()=>null}><sphereGeometry args={[9,10,8]}/><meshBasicMaterial color="#51dcb8" transparent opacity={.75} depthTest={false}/></mesh>}
+        {visOpen&&visData&&visPvs&&<>
+          <BspVisOverlay data={visData} selected={visLeafIndex} pvs={visPvs} showPvs={visShowPvs} portals={visPortals} showPortals={visShowPortals}/>
+          <BspVisLocateCamera request={visCameraRequest} onSample={point=>{
+            const index=bspLeafAtPoint(visData,point);
+            if(index!==null&&index>0&&index<=visData.worldVisLeaves){setVisSelected(index);setVisError('')}
+            else setVisError('Camera is outside a non-solid world leaf.');
+          }}/>
+        </>}
         <BspNavigation map={map} fly={fly} uvDragging={uvDragging} reset={reset} flyRef={flyRef} speed={speed} sensitivity={sensitivity} smooth={smooth} focus={focus} view={cameraView}/>
       </Canvas>
-        <BspTextureUVWidget visible={entityEdit&&surfaceMode==='faces'&&bspStudioOpen&&!fly&&selectedFaces.length>0} lit={false} locale={useEditor.getState().locale} onBegin={()=>beginUvGesture()} onMove={updateUvGesture} onFinish={finishUvGesture}/>
+        <BspTextureUVWidget visible={entityEdit&&surfaceMode==='faces'&&facePickMode==='face'&&bspStudioOpen&&!fly&&selectedFaces.length>0} lit={false} locale={useEditor.getState().locale} onBegin={()=>beginUvGesture()} onMove={updateUvGesture} onFinish={finishUvGesture}/>
         {contextMenu&&entityEdit&&surfaceMode==='entities'&&!fly&&<div className="bsp-entity-context" role="menu" style={{left:contextMenu.x,top:contextMenu.y}} onPointerDown={e=>e.stopPropagation()} onContextMenu={e=>e.preventDefault()}>
           <strong>{viewMap.entities[contextMenu.index]?.classname||t('Entity')} #{contextMenu.index}</strong>
           <button role="menuitem" onClick={()=>{setChosen(contextMenu.index);setExtraSelected([]);showBspProperties();setPropertiesTab('attributes');setContextMenu(null)}}>{t('Properties')}</button>
@@ -1728,13 +1855,13 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
         {entityEdit&&surfaceMode==='entities'&&!fly&&<div className="bsp-viewport-help bsp-viewport-help-extra">{t('Right-click an entity for actions · Click empty space to clear selection · Del deletes selected point entities')}</div>}
       </div>
       <input ref={wadInput} hidden multiple type="file" accept=".wad" onChange={e=>{void importWads(e.target.files);e.target.value=''}}/>
-      {entityEdit&&surfaceMode==='faces'&&<BspLightmapStudio locale={useEditor.getState().locale} map={map} visible={lightmapStudioOpen} selected={selectedFaces} edited={Object.keys(lightmapOverrides).length} canUndo={lightmapHistory.past.length>0} canRedo={lightmapHistory.future.length>0} onClose={()=>setLightmapStudioOpen(false)} onApply={applyLightmapEdit} onUndo={undoLightmapEdit} onRedo={redoLightmapEdit} error={lightmapEditError}/>}
-      {entityEdit&&surfaceMode==='faces'&&<BspTextureStudio visible={bspStudioOpen} locale={useEditor.getState().locale} map={surfaceMap} assets={allAssets} selectedFaces={selectedFaces} textureIndex={surfaceTexture} setTextureIndex={setSurfaceTexture} onApply={applyStudioSurface} onClear={()=>changeSurfaceSelection([])} onUndo={undoSurfaceEdit} onRedo={redoSurfaceEdit} canUndo={surfaceHistory.past.length>0} canRedo={surfaceHistory.future.length>0} onImportWad={()=>wadInput.current?.click()} importedWads={importedWadData.map(item=>item.name)} onRemoveImportedWad={removeUnusedImportedWad} importing={loadingWads} notice={surfaceNotice} error={surfaceError||wadError} onGestureBegin={()=>beginUvGesture()} onGestureUpdate={updateUvGesture} onGestureFinish={finishUvGesture}/>}
+      {entityEdit&&surfaceMode==='faces'&&<BspLightmapStudio locale={useEditor.getState().locale} map={map} visible={facePickMode==='face'&&lightmapStudioOpen} selected={selectedFaces} edited={Object.keys(lightmapOverrides).length} canUndo={lightmapHistory.past.length>0} canRedo={lightmapHistory.future.length>0} onClose={()=>setLightmapStudioOpen(false)} onApply={applyLightmapEdit} onUndo={undoLightmapEdit} onRedo={redoLightmapEdit} error={lightmapEditError}/>}
+      {entityEdit&&surfaceMode==='faces'&&<BspTextureStudio visible={facePickMode==='face'&&bspStudioOpen} locale={useEditor.getState().locale} map={surfaceMap} assets={allAssets} selectedFaces={selectedFaces} textureIndex={surfaceTexture} setTextureIndex={setSurfaceTexture} onApply={applyStudioSurface} onClear={()=>changeSurfaceSelection([])} onUndo={undoSurfaceEdit} onRedo={redoSurfaceEdit} canUndo={surfaceHistory.past.length>0} canRedo={surfaceHistory.future.length>0} onImportWad={()=>wadInput.current?.click()} importedWads={importedWadData.map(item=>item.name)} onRemoveImportedWad={removeUnusedImportedWad} importing={loadingWads} notice={surfaceNotice} error={surfaceError||wadError} onGestureBegin={()=>beginUvGesture()} onGestureUpdate={updateUvGesture} onGestureFinish={finishUvGesture}/>}
       {rightPaneOpen&&<>
       <div className="bsp-panel-splitter" role="separator" aria-orientation="vertical" aria-label={t('Resize inspector panel')} tabIndex={0} aria-valuemin={220} aria-valuemax={480} aria-valuenow={rightPaneWidth}
         onPointerDown={event=>startPaneResize('right',event)} onPointerMove={movePaneResize} onPointerUp={finishPaneResize} onPointerCancel={finishPaneResize} onKeyDown={event=>paneKeyResize('right',event)}><span/></div>
       <aside className={entityEdit?'bsp-info bsp-info-edit bsp-info-docked':'bsp-info bsp-info-docked'} style={{width:rightPaneWidth,flexBasis:rightPaneWidth}}>
-        <h3><Info size={16}/>{t(entityEdit?(surfaceMode==='faces'?'BSP face inspector':'BSP entity editor'):'Compiled map')}</h3>
+        <h3><Info size={16}/>{entityEdit?(surfaceMode==='faces'?(facePickMode==='region'?regionLabels.title:t('BSP face inspector')):t('BSP entity editor')):t('Compiled map')}</h3>
         {entityEdit&&surfaceMode==='entities'&&<div className="bsp-fgd-import">
           <input ref={fgdFileInput} type="file" multiple accept=".fgd" hidden onChange={event=>{void importExtraFgd(event.target.files);event.currentTarget.value=''}}/>
           <button onClick={()=>fgdFileInput.current?.click()}><FileUp size={14}/>{t('Import additional FGD')}</button>
@@ -1743,7 +1870,7 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
           {fgdImportError&&<small role="alert">{fgdImportError}</small>}
           <small>{t('Additional FGDs affect this editor session only. They describe entity properties; they do not install NPC AI.')}</small>
         </div>}
-        <p className="bsp-note">{t(entityEdit?(surfaceMode==='faces'?'BSP surface edits are validated before export; unsupported operations are rejected.':'Live entity preview. Only point-entity keyvalues are changed; original BSP and compiled geometry are preserved.'):'Read-only preview. Does not change the editable .MAP or .svenstudio.json project.')}</p>
+        <p className="bsp-note">{t(entityEdit?(surfaceMode==='faces'?(facePickMode==='region'?regionLabels.warning:'BSP surface edits are validated before export; unsupported operations are rejected.'):'Live entity preview. Only point-entity keyvalues are changed; original BSP and compiled geometry are preserved.'):'Read-only preview. Does not change the editable .MAP or .svenstudio.json project.')}</p>
         {entityEdit&&surfaceMode==='entities'&&<div className="bsp-visual-edit-head">
           <strong><PenTool size={14}/>{t('Point entities and NPCs')}</strong>
           {!gameDir.trim()&&<div className="bsp-warning">{t('Set the Sven Co-op game folder in Build Configuration to preview MDL models.')}</div>}
@@ -1764,22 +1891,26 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
           {entityError&&<div className="bsp-warning" role="alert">{entityError}</div>}
           {entityNotice&&<div className="bsp-edit-notice" role="status">{entityNotice}</div>}
         </div>}
-        {entityEdit&&surfaceMode==='faces'&&<button type="button" className="bsp-import" onClick={()=>setBspStudioOpen(v=>!v)}>{bspStudioOpen?t('Hide Texture Studio'):t('Open Texture Studio')}</button>}
-        {entityEdit&&surfaceMode==='faces'&&<button type="button" className="bsp-import" onClick={()=>setLightmapStudioOpen(v=>!v)}><Sun size={14}/>{lightmapStudioOpen?stage7Text.hideLight:stage7Text.openLight}</button>}
-        {entityEdit&&surfaceMode==='faces'&&lightmapEdited&&<small className="bsp-edit-notice">{Object.keys(lightmapOverrides).length} {stage7Text.edited}.</small>}
-        {entityEdit&&surfaceMode==='faces'&&<section className="bsp-face-inspector" aria-label={t('BSP face inspector')}>
-          <strong><Grid3x3 size={16}/>{t('Compiled BSP surfaces')}</strong>
+        {entityEdit&&surfaceMode==='faces'&&facePickMode==='face'&&<button type="button" className="bsp-import" onClick={()=>setBspStudioOpen(v=>!v)}>{bspStudioOpen?t('Hide Texture Studio'):t('Open Texture Studio')}</button>}
+        {entityEdit&&surfaceMode==='faces'&&facePickMode==='face'&&<button type="button" className="bsp-import" onClick={()=>setLightmapStudioOpen(v=>!v)}><Sun size={14}/>{lightmapStudioOpen?stage7Text.hideLight:stage7Text.openLight}</button>}
+        {entityEdit&&surfaceMode==='faces'&&facePickMode==='face'&&lightmapEdited&&<small className="bsp-edit-notice">{Object.keys(lightmapOverrides).length} {stage7Text.edited}.</small>}
+        {entityEdit&&surfaceMode==='faces'&&<section className="bsp-face-inspector" aria-label={facePickMode==='face'?t('BSP face inspector'):regionLabels.title}>
+          <strong><Grid3x3 size={16}/>{facePickMode==='region'?regionLabels.title:t('Compiled BSP surfaces')}</strong>
           <small>{t('Select a visible surface in the viewport. Original BSP face IDs are preserved across triangle batches.')}</small>
           {facePickMode==='region'&&<div className="bsp-region-explanation"><strong>{regionKind==='submodel'?regionLabels.typeModel:regionKind==='material-island'?regionLabels.typeIsland:regionLabels.details}</strong><small>{regionLabels.warning}</small>{regionSelectionError&&<small role="alert" className="bsp-warning">{regionSelectionError}</small>}</div>}
           <div className="bsp-face-selection-count">{selectedFaces.length} {t('faces selected')} / {map.stats.faces}</div>
           <div className="bsp-object-extractor">
-            <strong><Package size={15}/> BSP Object Extractor · 8A HF5</strong>
+            <strong><Package size={15}/> BSP Object Extractor</strong>
+            <button type="button" className="bsp-prefab-save" disabled={!source||!selectedFaces.length||objectExtractBusy} onClick={()=>void extractSelectedObject('auto')}><Save size={14}/>{({es:'Guardar selección como prefab',en:'Save selection as prefab',ru:'Сохранить выделение как префаб',ko:'선택 항목을 프리팹으로 저장',zh:'将选择保存为预制件',pt:'Salvar seleção como prefab'} as Record<string,string>)[useEditor.getState().locale]}{objectExtractBusy?'…':''}</button>
+            <small>{({es:'Para puertas de worldspawn (como esta selección): guarda las caras visibles como paneles editables con espesor, aunque no formen un sólido cerrado. Si la selección encierra un brush válido, conserva el sólido completo. No recupera automáticamente movimiento, sonidos ni eventos de la puerta.',en:'For worldspawn doors: saves visible faces as editable panels even when not a closed solid. Closed convex selections are saved as full brushes. Door movement, sounds and events cannot be recovered automatically.',ru:'Для дверей worldspawn сохраняет видимые поверхности как редактируемые панели. Замкнутые выпуклые объёмы сохраняются как полноценные браши. Поведение дверей не восстанавливается.',ko:'worldspawn 문은 보이는 면을 편집 가능한 패널로 저장합니다. 닫힌 볼록 볼륨은 브러시로 저장합니다. 문 동작은 자동 복구되지 않습니다.',zh:'worldspawn 门可将可见面保存为可编辑面板；封闭凸体保存为完整 Brush。不会自动恢复门的动作与事件。',pt:'Portas worldspawn: salva superfícies visíveis como painéis editáveis; sólidos convexos completos são preservados. Não recupera automaticamente o comportamento da porta.'} as Record<string,string>)[useEditor.getState().locale]}</small>
             <small>{({es:'Seleccioná todas las caras de uno o varios sólidos convexos cerrados (Ctrl/Mayús + clic). Conserva texturas WAD3 originales y UV; rechaza selecciones incompletas. Las regiones del BSP no son brushes originales.',en:'Select every side of one or more closed convex solids (Ctrl/Shift + click). Preserves original WAD3 textures and UV; rejects incomplete selections. BSP regions are not original brushes.',ru:'Выберите все стороны замкнутых выпуклых объектов. Сохраняет WAD3 и UV; неполные выборки отклоняются.',ko:'닫힌 볼록 오브젝트의 모든 면을 선택하세요. WAD3 및 UV 보존. 불완전한 선택은 거부합니다.',zh:'选择封闭凸体的所有面。保留 WAD3 和 UV，拒绝不完整的选择。',pt:'Selecione todas as faces de sólidos convexos fechados. Preserva WAD3 e UV; rejeita seleções incompletas.'} as Record<string,string>)[useEditor.getState().locale]||'Select all sides of closed convex solids.'}</small>
-            <button type="button" disabled={!source||selectedFaces.length<4} onClick={()=>void extractSelectedObject('exact')}><Package size={14}/>{({es:'Extraer sólidos completos a .svprefab',en:'Extract complete solids to .svprefab',ru:'Экспорт замкнутых объектов в .svprefab',ko:'완전한 솔리드 .svprefab 추출',zh:'导出完整实体 .svprefab',pt:'Extrair sólidos completos para .svprefab'} as Record<string,string>)[useEditor.getState().locale]}</button>
+            <button type="button" disabled={!source||objectExtractBusy||selectedFaces.length<4} onClick={()=>void extractSelectedObject('exact')}><Package size={14}/>{({es:'Extraer sólidos completos a .svprefab',en:'Extract complete solids to .svprefab',ru:'Экспорт замкнутых объектов в .svprefab',ko:'완전한 솔리드 .svprefab 추출',zh:'导出完整实体 .svprefab',pt:'Extrair sólidos completos para .svprefab'} as Record<string,string>)[useEditor.getState().locale]}</button>
             <small>{({es:'¿Objeto complejo, como computadora o silla? Los paneles conservan superficies visibles y texturas WAD3 (incluyendo {, + y -). NO recuperan brushes originales, caras ocultas ni colisiones. Para recuperación de sólidos, usá Visor BSP → Recuperación BSP → BSP a MAP con SurfDecomp.',en:'Complex object, such as a computer or chair? Panels preserve visible surfaces and WAD3 textures (including {, + and -), NOT original brush volumes, hidden faces or collision hulls. For solid recovery, use BSP Viewer → BSP Recovery → BSP to MAP with SurfDecomp.',ru:'Сложный объект? Панели сохраняют видимые поверхности и текстуры WAD3 ({, +, -), но НЕ восстанавливают исходные объёмы и коллизии. Для восстановления используйте BSP Recovery с SurfDecomp.',ko:'복잡한 물체는 보이는 표면과 WAD3 텍스처({, +, -)만 패널로 보존합니다. 원본 브러시와 충돌은 복구하지 않습니다. 실제 브러시는 BSP Recovery / SurfDecomp를 사용하세요.',zh:'复杂物体的面板可保留可见面与 WAD3 纹理（{、+、-），但不能恢复原始笔刷、隐藏面或碰撞。真实实体请使用 BSP Recovery / SurfDecomp。',pt:'Objeto complexo? Os painéis preservam superfícies e texturas WAD3 ({, +, -), mas NÃO recuperam brushes, faces ocultas ou colisões. Para sólidos, utilize BSP Recovery com SurfDecomp.'} as Record<string,string>)[useEditor.getState().locale]}</small>
-            <button type="button" disabled={!source||!selectedFaces.length} onClick={()=>void extractSelectedObject('surface-shell')}><Package size={14}/>{({es:'Extraer paneles visibles (aproximado)',en:'Extract visible panels (approximate)',ru:'Извлечь видимые панели (приближённо)',ko:'보이는 패널 추출 (근사)',zh:'导出可见面板（近似）',pt:'Extrair painéis visíveis (aproximado)'} as Record<string,string>)[useEditor.getState().locale]}</button>
+            <button type="button" disabled={!source||objectExtractBusy||!selectedFaces.length} onClick={()=>void extractSelectedObject('surface-shell')}><Package size={14}/>{({es:'Extraer paneles visibles (aproximado)',en:'Extract visible panels (approximate)',ru:'Извлечь видимые панели (приближённо)',ko:'보이는 패널 추출 (근사)',zh:'导出可见面板（近似）',pt:'Extrair painéis visíveis (aproximado)'} as Record<string,string>)[useEditor.getState().locale]}</button>
             <small>{({es:'Sólidos desde submodelo *N: recupera celdas convexas del árbol BSP (Hull 0), no los brushes originales. Podés importarlos como sólidos editables, pero las divisiones de textura, colisiones y luces pueden diferir.',en:'Solid *N model recovery: reconstructs convex BSP hull-0 cells, NOT original brushes. Editable geometry, but material boundaries, collision and lighting may differ.',ru:'Восстановление твёрдых моделей *N по BSP hull-0. Это не исходные кисти; текстуры, коллизии и свет могут отличаться.',ko:'*N 모델의 BSP hull-0 셀을 솔리드로 복구합니다. 원본 브러시가 아니며 텍스처/충돌/조명이 다를 수 있습니다.',zh:'从 *N 子模型的 BSP Hull 0 重建凸实体，非原始笔刷；纹理边界、碰撞与照明可能不同。',pt:'Recupera sólidos convexos do Hull 0 de submodelos *N, não brushes originais. Texturas, colisões e iluminação podem diferir.'} as Record<string,string>)[useEditor.getState().locale]}</small>
-            <button type="button" disabled={!source||selectedFaces.length<4} onClick={()=>void extractSelectedObject('hull0-solid')}><Boxes size={14}/>{({es:'Recuperar sólidos del submodelo (Hull 0)',en:'Recover submodel solids (Hull 0)',ru:'Восстановить тела подмодели (Hull 0)',ko:'서브모델 솔리드 복구 (Hull 0)',zh:'恢复子模型实体（Hull 0）',pt:'Recuperar sólidos do submodelo (Hull 0)'} as Record<string,string>)[useEditor.getState().locale]}</button>
+            <button type="button" disabled={!source||objectExtractBusy||!hull0Enabled} onClick={recoverHull0}><Boxes size={14}/>{({es:'Recuperar sólidos del submodelo (Hull 0)',en:'Recover submodel solids (Hull 0)',ru:'Восстановить тела подмодели (Hull 0)',ko:'서브모델 솔리드 복구 (Hull 0)',zh:'恢复子模型实体（Hull 0）',pt:'Recuperar sólidos do submodelo (Hull 0)'} as Record<string,string>)[useEditor.getState().locale]}</button>
+            {hull0Plan.kind!=='empty'&&<small className={hull0Enabled?'bsp-edit-notice':'bsp-warning'} role="status">{hull0Enabled?`*${hull0Plan.modelIndex}: ${hull0Plan.selectedCount}/${hull0Plan.totalFaces} ${hull0Plan.kind==='expand'?hull0Labels.expand:''}`:hull0Labels[hull0Plan.kind==='worldspawn'?'worldspawn':hull0Plan.kind==='mixed'?'mixed':hull0Plan.kind==='too-many'?'tooMany':hull0Plan.kind==='too-few'?'tooFew':'missing']}</small>}
+            {objectExtractNotice&&<small className="bsp-edit-notice" role="status">{objectExtractNotice}</small>}
             {objectExtractError&&<small className="bsp-warning" role="alert">{objectExtractError}</small>}
           </div>
           {!selectedFace?<div className="bsp-face-empty">{t('No face selected. Click a visible polygon in the BSP.')}</div>:<>
@@ -1802,7 +1933,7 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
             {selectedFaces.length>1&&<small>{t('Last selected face shown. All selected faces are highlighted.')}</small>}
             {surfaceOverrides[selectedFace.index]&&<small className="bsp-edit-notice">{t('Pending change: this face will receive independent texinfo on export.')}</small>}
           </>}
-          <div className="bsp-face-editor">
+          {facePickMode==='face'&&<div className="bsp-face-editor">
             <strong><PenTool size={15}/>{t('Edit compiled surface')}</strong>
             <details className="bsp-surface-advanced"><summary>{t('Advanced numeric UV controls')}</summary>
             <small>{t('Replace with a compatible ordinary BSP or imported WAD3 texture; special textures are locked.')}</small>
@@ -1835,7 +1966,7 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
             {surfaceError&&<div className="bsp-warning" role="alert">{surfaceError}</div>}
             {surfaceNotice&&<div className="bsp-edit-notice" role="status">{surfaceNotice}</div>}
             <small><ShieldCheck size={13}/>{t('Exports a BSP copy. Imported WAD3 textures are embedded when used; baked lightmaps are reprojected if UVs change, without recalculating shadows. Geometry, VIS and collisions stay unchanged.')}</small>
-          </div>
+          </div>}
         </section>}
         <div className="bsp-light-settings">
           <strong>{t('GoldSrc Renderer 2.0')}</strong>

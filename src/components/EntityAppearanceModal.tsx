@@ -1,6 +1,7 @@
 import {useEffect} from 'react';
 import {Palette,RotateCcw,CheckCircle2} from 'lucide-react';
 import {useEditor} from '../store';
+import {useHudLayout} from '../hudLayout';
 import {ENTITY_COLOR_KINDS,ENTITY_MARKER_SHAPES} from '../engine/entityAppearance';
 import {useT} from '../i18n';
 
@@ -14,6 +15,9 @@ export function EntityAppearanceModal({onClose}:{onClose:()=>void}){
   const mapLabels=useEditor(s=>s.mapLabelSettings);
   const updateMapLabels=useEditor(s=>s.setMapLabelSettings);
   const resetMapLabels=useEditor(s=>s.resetMapLabelSettings);
+  // FPS is a viewport HUD preference, not an entity-label diagnostic setting.
+  const fpsHudVisible=useHudLayout(s=>s.items.fps.visible);
+  const updateHud=useHudLayout(s=>s.update);
   useEffect(()=>{
     const esc=(event:KeyboardEvent)=>{if(event.key==='Escape'){event.stopImmediatePropagation();onClose()}};
     window.addEventListener('keydown',esc,true);
@@ -64,7 +68,7 @@ export function EntityAppearanceModal({onClose}:{onClose:()=>void}){
         </div>
         <p className="modal-subtext">{t('Selected labels stay visible beyond limits while in front of the camera. High limits can reduce FPS.')}</p>
       </>}
-      <div className="appearance-switches"><label><input type="checkbox" checked={mapLabels.diagnostics} onChange={e=>updateMapLabels({diagnostics:e.target.checked})}/>{t('Show FPS counter')}</label></div>
+      <div className="appearance-switches"><label><input type="checkbox" checked={fpsHudVisible} onChange={e=>updateHud('fps',{visible:e.target.checked})}/>{t('Show FPS counter')}</label></div>
       <button type="button" className="map-label-reset" onClick={resetMapLabels}><RotateCcw size={14}/>{t('Reset label optimization')}</button>
       <label className="appearance-marker-shape">{t('Marker colors')}
         <select value={appearance.colorMode} onChange={e=>set({colorMode:e.target.value as typeof appearance.colorMode})}>

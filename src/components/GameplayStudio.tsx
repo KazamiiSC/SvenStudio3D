@@ -2,6 +2,9 @@ import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
 import {Activity,AlertTriangle,ArrowRight,BookOpen,CheckCircle2,ChevronLeft,ChevronRight,DoorOpen,Eye,Focus,GitBranch,Layers,ListFilter,Map as MapIcon,MousePointerClick,Plus,RotateCcw,Search,Unlink2,Users,X,ZoomIn,ZoomOut,Play,Route,Compass,PanelRightClose} from 'lucide-react';
 import {useEditor} from '../store';
+import {useMotionPreview} from '../entityMotionPreviewState';
+import {isMotionPreviewSource} from '../engine/entityMotionPreview';
+import {motionLabels} from '../engine/entityMotionPreviewLabels';
 import type {Brush,MapObject,PointEntity,FgdClass} from '../engine/types';
 import {analyzeGameplay} from '../engine/gameplay';
 import {gameplayGraphCategory,getGameplayGraphConnections,gameplayReferenceKind,type GraphCategory} from '../engine/gameplayGraph';
@@ -266,6 +269,7 @@ export function GameplayStudio({onClose}:{onClose:()=>void}){
      {current?<><div className="gds-selected"><span className="gds-big-dot" style={{background:tone(current)}}/><div><strong>{current.props.targetname||entityDisplayName(current,objects)}</strong><small>{current.classname} · {current.layer||'Unassigned'}</small></div></div>
       <button className="gds-action" onClick={()=>{setPage('map');setZoneId(null);setQuery('');setCategory('all');setLayer('all');setFocusNonce(n=>n+1)}}><Focus size={15}/>{es?'Localizar en mapa':'Locate on map'}</button>
       <section className="gds-inspector-section"><h4>{es?'COMPORTAMIENTO NATIVO':'NATIVE BEHAVIOR'}</h4><p>{guide?.summary||current.classname}</p><button className="gds-mini-guide-toggle" aria-expanded={miniGuide} onClick={()=>setMiniGuide(v=>!v)}><BookOpen size={13}/>{es?'Mini guía · Uso y ejemplo':'Mini guide · Usage and example'}</button>{miniGuide&&guide&&<div className="gds-mini-guide"><ol>{guide.steps.slice(0,5).map((step,i)=><li key={i}>{step}</li>)}</ol><p><strong>{es?'Ejemplo':'Example'}:</strong> {guide.example}</p>{guide.caution&&<p>{guide.caution}</p>}</div>}<button className="gds-guide-btn" onClick={()=>setGuideOpen(true)}><BookOpen size={15}/>{es?'Abrir guía de entidad':'Open entity guide'}</button>
+       {isMotionPreviewSource(current.classname)&&<button className="gds-action" onClick={()=>{useMotionPreview.getState().open(current.id);onClose()}}><Play size={14}/>{motionLabels(locale).open}</button>}
        <InlineEdit key={`${current.id}:name`} label="targetname" value={current.props.targetname||''} commit={v=>safe(()=>setProp(current.id,'targetname',v))}/>
        <InlineEdit key={`${current.id}:target`} label="target" value={current.props.target||''} commit={v=>safe(()=>setProp(current.id,'target',v))}/>
        {(['speed','wait','delay','lip','angle','triggerstate'] as const).filter(key=>key in current.props).map(key=><InlineEdit key={`${current.id}:${key}`} label={key} value={current.props[key]||''} commit={v=>safe(()=>setProp(current.id,key,v))}/>)}

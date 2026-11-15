@@ -6,6 +6,7 @@ import {useEditor,textureStudioTargets} from '../store';
 import {type UvHandle} from '../engine/textureStudio';
 import {clampUvWidgetPosition,pinUvAnchor,type ScreenPoint} from '../engine/uvOverlay';
 import type {Brush} from '../engine/types';
+import {SeamlessUvPanel} from './SeamlessUvPanel';
 
 const translations={
   es:{title:'Texture Studio',face:'Cara',faces:'caras',none:'Seleccioná una cara o uno o varios brushes.',mode:'Modo Caras',all:'Todas las caras',clear:'Limpiar caras',texture:'Textura',offset:'Desplazamiento',scale:'Escala',rotate:'Rotación',linked:'Mantener proporciones',fit:'Ajustar a cara',align:'Alinear con primera',repeat:'Repeticiones',repeatU:'Horizontal',repeatV:'Vertical',copy:'Copiar material',paste:'Pegar material',picker:'Cuentagotas',center:'Centrar',reset:'Restablecer UV',flipU:'Invertir U',flipV:'Invertir V',preset:'Presets',name:'Nombre del preset',save:'Guardar',apply:'Aplicar',delete:'Eliminar',hint:'Doble clic en una cara para abrir · Arrastrá la pestaña Mover UV para ubicar el control y conservar su posición al cambiar de cara o mover la cámara.', warning:'El MAP usa los ejes UV de Valve 220. Modificar UV no cambia los brushes.',preview:'Vista previa WAD',unavailable:'Textura sin imagen cargada',close:'Cerrar',error:'Error',total:'Superficies seleccionadas',single:'Cara activa',small:'Pequeño',large:'Grande'},
@@ -42,6 +43,7 @@ function initialTexturePanelPosition(){
 
 export function TextureStudioPanel(){
   const t=useStrings();
+  const locale=useEditor(s=>s.locale);
   const open=useEditor(s=>s.textureStudioOpen),setOpen=useEditor(s=>s.setTextureStudioOpen);
   const objects=useEditor(s=>s.project.objects),selected=useEditor(s=>s.selected),selectedIds=useEditor(s=>s.selectedIds),selectedFace=useEditor(s=>s.selectedFace),faceMode=useEditor(s=>s.faceMode),selectedFaces=useEditor(s=>s.textureFaceSelection);
   const setGeometryMode=useEditor(s=>s.setGeometryMode),selectAll=useEditor(s=>s.selectAllTextureFaces),clear=useEditor(s=>s.clearTextureFaces);
@@ -92,8 +94,12 @@ export function TextureStudioPanel(){
   };
   const numeric=(key:'uShift'|'vShift'|'uScale'|'vScale'|'rotation',label:string,step:number)=>
     <label className="texture-studio-number"><span>{label}</span><input type="number" step={step} value={num(face?.[key]??(key.includes('Scale')?1:0))} disabled={!face} onChange={e=>{const value=Number(e.target.value);if(Number.isFinite(value))run(()=>patch(linked&&face&&(key==='uScale'||key==='vScale')?{uScale:key==='uScale'?value:(face.uScale??1)*(value/(face.vScale??1)),vScale:key==='vScale'?value:(face.vScale??1)*(value/(face.uScale??1))}:{[key]:value}))}} /></label>;
-  return open?createPortal(<div className="texture-studio-panel texture-studio-floating" style={{left:pos.x,top:pos.y,maxHeight:`calc(100dvh - ${pos.y+10}px)`}} onPointerDown={e=>e.stopPropagation()}>
-    <div className="texture-studio-head" onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={stopDrag} onPointerCancel={stopDrag} onLostPointerCapture={stopDrag}><Grip size={14}/><strong>{t.title}</strong><small>v1.4</small><button type="button" aria-label={t.close} onClick={()=>setOpen(false)}><X size={15}/></button></div>
+  // The panel must have a definite available height for its inner flex scroller.
+  // With only max-height, some browser/zoom combinations size the children
+  // to their entire content and clip the bottom instead of enabling scrolling.
+  // Keep the header fixed; the body scrolls independently down to Seamless UV.
+  return open?createPortal(<div className="texture-studio-panel texture-studio-floating" data-texture-map="true" style={{left:pos.x,top:pos.y,height:`min(880px, calc(100dvh - ${pos.y+10}px))`,maxHeight:`calc(100dvh - ${pos.y+10}px)`}} onPointerDown={e=>e.stopPropagation()}>
+    <div className="texture-studio-head" onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={stopDrag} onPointerCancel={stopDrag} onLostPointerCapture={stopDrag}><Grip size={14}/><strong>{t.title}</strong><small>HF16</small><button type="button" aria-label={t.close} onClick={()=>setOpen(false)}><X size={15}/></button></div>
     <div className="texture-studio-body">
       <div className="texture-studio-subtitle"><span>{targets.length} {t.faces}</span><span>{face?`${brush?.name} #${first.face+1}`:t.none}</span></div>
       <div className="texture-studio-preview"><div className="texture-studio-thumbnail">{asset?.dataUrl?<img src={asset.thumbUrl||asset.dataUrl} alt={face?.texture}/>:<span>{t.unavailable}</span>}</div><div><b>{face?.texture||'—'}</b><small>{asset?`${asset.width} × ${asset.height} px · ${asset.wad}`:t.preview}</small><input aria-label={t.texture} disabled={!face} value={face?.texture||''} onChange={e=>run(()=>patch({texture:e.target.value||'NULL'}))}/></div></div>
@@ -103,6 +109,7 @@ export function TextureStudioPanel(){
       <div className="texture-studio-rule"/>
       <b>{t.repeat}</b><div className="texture-studio-pair"><label>{t.repeatU}<input type="number" min="0.05" max="4096" step="1" value={tilesU} onChange={e=>setTilesU(Number(e.target.value))}/></label><label>{t.repeatV}<input type="number" min="0.05" max="4096" step="1" value={tilesV} onChange={e=>setTilesV(Number(e.target.value))}/></label></div>
       <div className="texture-studio-row"><button className="texture-primary" disabled={!face} onClick={()=>run(()=>fit(tilesU,tilesV))}><Crosshair size={13}/>{t.fit}</button><button disabled={targets.length<2} onClick={()=>run(align)}><Link2 size={13}/>{t.align}</button></div>
+      <SeamlessUvPanel objects={objects} targets={targets} locale={locale}/>
       <div className="texture-studio-row"><button disabled={!face} onClick={()=>run(()=>copy(first.id,first.face))}><Copy size={13}/>{t.copy}</button><button disabled={!face||!clipboard} onClick={()=>run(()=>patch(clipboard||{}))}>{t.paste}</button><button className={picker?'texture-primary':''} disabled={!face} onClick={()=>setPicker(!picker)} title={t.picker}><Pipette size={13}/>{t.picker}</button></div>
       <div className="texture-studio-rule"/><b>{t.preset}</b>
       <div className="texture-studio-row"><input placeholder={t.name} value={name} onChange={e=>setName(e.target.value)}/><button disabled={!face||!name.trim()} onClick={()=>run(()=>{savePreset(name);setName('')})}><Save size={14}/>{t.save}</button></div>

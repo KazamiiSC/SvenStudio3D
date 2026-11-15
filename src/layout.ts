@@ -64,6 +64,7 @@ type LayoutState = {
   appearance:AppearanceMode;
   fontScale:number;
   performancePreset:PerformancePreset;
+  opaqueBrushBatching:boolean;
   movePanel:(id:DockPanelId,side:DockSide,before?:DockPanelId)=>void;
   setToolbarDock:(side:DockSide)=>void;
   setCompactTools:(value:boolean)=>void;setFloatRailSide:(side:'left'|'right')=>void;
@@ -76,6 +77,7 @@ type LayoutState = {
   setAppearance:(mode:AppearanceMode)=>void;
   setFontScale:(value:number)=>void;
   setPerformancePreset:(value:PerformancePreset)=>void;
+  setOpaqueBrushBatching:(value:boolean)=>void;
   resetLayout:()=>void;
   usePreset:(preset:'organized'|'classic'|'focus'|'creative'|'wide'|'minimal'|'construction'|'entities'|'bsp')=>void;
 };
@@ -88,7 +90,7 @@ const defaults = () => ({
   compactTools:false,floatRailSide:'left' as 'left'|'right',
   widths:{left:254,right:302},heights:{top:192,bottom:168},
   weights:{assets:1,explorer:1,properties:1,console:1},
-  uiScale:1,autoLayout:true,accent:'nebula' as Accent,interfaceTheme:DEFAULT_INTERFACE_THEME,appearance:'dark' as AppearanceMode,fontScale:1,performancePreset:'balanced' as PerformancePreset
+  uiScale:1,autoLayout:true,accent:'nebula' as Accent,interfaceTheme:DEFAULT_INTERFACE_THEME,appearance:'dark' as AppearanceMode,fontScale:1,performancePreset:'balanced' as PerformancePreset,opaqueBrushBatching:true
 });
 const clamp=(n:number,min:number,max:number)=>Math.min(max,Math.max(min,n));
 const panelIds:DockPanelId[]=['assets','explorer','properties','console'];
@@ -142,7 +144,8 @@ export function mergeSavedLayout(saved:unknown,current:LayoutState):LayoutState{
     accent:accents.includes(data.accent as Accent)?data.accent as Accent:base.accent,
     interfaceTheme:normalizeInterfaceTheme(data.interfaceTheme),
     appearance:'dark',
-    performancePreset:performancePresets.includes(data.performancePreset as PerformancePreset)?data.performancePreset as PerformancePreset:base.performancePreset
+    performancePreset:performancePresets.includes(data.performancePreset as PerformancePreset)?data.performancePreset as PerformancePreset:base.performancePreset,
+    opaqueBrushBatching:typeof data.opaqueBrushBatching==='boolean'?data.opaqueBrushBatching:true
   };
 }
 /** Sanitize a saved profile before it can change a live workspace. */
@@ -220,13 +223,15 @@ export const useStudioLayout=create<LayoutState>()(persist((set)=>({
   setAppearance:()=>set({appearance:'dark'}),
   setFontScale:fontScale=>set({fontScale:clamp(fontScale,.9,1.2)}),
   setPerformancePreset:performancePreset=>set({performancePreset}),
+  setOpaqueBrushBatching:opaqueBrushBatching=>set({opaqueBrushBatching}),
   resetLayout:()=>set(s=>({...defaults(),accent:s.accent,interfaceTheme:s.interfaceTheme,appearance:s.appearance,savedWorkspaces:s.savedWorkspaces,pinnedToolbarGroups:s.pinnedToolbarGroups,entityStampMode:s.entityStampMode})),
   usePreset:preset=>set(s=>{
-    const base={...defaults(),accent:s.accent,interfaceTheme:s.interfaceTheme,appearance:s.appearance,uiScale:s.uiScale,autoLayout:s.autoLayout,fontScale:s.fontScale,performancePreset:s.performancePreset,savedWorkspaces:s.savedWorkspaces,pinnedToolbarGroups:s.pinnedToolbarGroups,entityStampMode:s.entityStampMode};
+    const base={...defaults(),accent:s.accent,interfaceTheme:s.interfaceTheme,appearance:s.appearance,uiScale:s.uiScale,autoLayout:s.autoLayout,fontScale:s.fontScale,performancePreset:s.performancePreset,opaqueBrushBatching:s.opaqueBrushBatching,savedWorkspaces:s.savedWorkspaces,pinnedToolbarGroups:s.pinnedToolbarGroups,entityStampMode:s.entityStampMode};
     if(preset==='construction')return {...base,compactTools:false,toolbarDock:'top',visible:{assets:true,explorer:false,properties:true,console:false},widths:{left:292,right:310}};
     if(preset==='entities')return {...base,compactTools:true,toolbarDock:'top',visible:{assets:true,explorer:true,properties:true,console:false},widths:{left:316,right:294}};
     if(preset==='bsp')return {...base,compactTools:true,toolbarDock:'top',visible:{assets:false,explorer:false,properties:true,console:false},widths:{left:254,right:364}};
     if(preset==='organized')return {...base,compactTools:true,visible:{assets:true,explorer:true,properties:true,console:false},widths:{left:266,right:294}};
+    if(preset==='creative')return {...base,compactTools:false,toolbarDock:'top',order:['assets','properties','explorer','console'],visible:{assets:true,explorer:false,properties:true,console:false},widths:{left:286,right:294},toolbarGroups:['geometry','transform','edit','view','tools','grid','studios']};
     if(preset==='classic')return {...base,compactTools:false,toolbarDock:'top',visible:{assets:true,explorer:true,properties:true,console:false}};
     if(preset==='focus')return {...base,toolbarDock:'left',visible:{assets:false,explorer:false,properties:true,console:false}};
     if(preset==='wide')return {...base,toolbarDock:'right',floatRailSide:'right' as const,visible:{assets:true,explorer:false,properties:true,console:false},widths:{left:310,right:310}};
@@ -239,4 +244,4 @@ export const useStudioLayout=create<LayoutState>()(persist((set)=>({
   if(version<2&&saved&&typeof saved==='object'){
     const old=saved as Record<string,unknown>;return {...old,visible:{...recordOrEmpty(old.visible),assets:true,explorer:true,properties:true}};
   }return saved;
-},merge:mergeSavedLayout,partialize:s=>({sides:s.sides,order:s.order,visible:s.visible,toolbarDock:s.toolbarDock,toolbarGroups:s.toolbarGroups,pinnedToolbarGroups:s.pinnedToolbarGroups,savedWorkspaces:s.savedWorkspaces,entityStampMode:s.entityStampMode,compactTools:s.compactTools,floatRailSide:s.floatRailSide,widths:s.widths,heights:s.heights,weights:s.weights,uiScale:s.uiScale,autoLayout:s.autoLayout,accent:s.accent,interfaceTheme:s.interfaceTheme,fontScale:s.fontScale,performancePreset:s.performancePreset})}));
+},merge:mergeSavedLayout,partialize:s=>({sides:s.sides,order:s.order,visible:s.visible,toolbarDock:s.toolbarDock,toolbarGroups:s.toolbarGroups,pinnedToolbarGroups:s.pinnedToolbarGroups,savedWorkspaces:s.savedWorkspaces,entityStampMode:s.entityStampMode,compactTools:s.compactTools,floatRailSide:s.floatRailSide,widths:s.widths,heights:s.heights,weights:s.weights,uiScale:s.uiScale,autoLayout:s.autoLayout,accent:s.accent,interfaceTheme:s.interfaceTheme,fontScale:s.fontScale,performancePreset:s.performancePreset,opaqueBrushBatching:s.opaqueBrushBatching})}));

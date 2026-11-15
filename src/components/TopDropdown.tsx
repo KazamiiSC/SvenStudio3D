@@ -17,7 +17,7 @@ export function TopDropdown({anchor,open,onClose,align='left',width=240,id,child
   children:ReactNode;
   className?:string;
 }){
-  const [position,setPosition]=useState({left:0,top:0});
+  const [position,setPosition]=useState({left:0,top:0,maxHeight:0});
   // Preserve the latest close callback without rerunning the positioning effect
   // on every parent render (which would otherwise cause a render loop).
   const closeRef=useRef(onClose);closeRef.current=onClose;
@@ -27,11 +27,14 @@ export function TopDropdown({anchor,open,onClose,align='left',width=240,id,child
       const button=anchor.current;
       if(!button)return;
       const rect=button.getBoundingClientRect();
-      const available=Math.max(0,window.innerWidth-width-8);
-      const rawLeft=align==='right'?rect.right-width:rect.left;
+      const menuWidth=Math.min(width,Math.max(0,window.innerWidth-16));
+      const available=Math.max(0,window.innerWidth-menuWidth-8);
+      const rawLeft=align==='right'?rect.right-menuWidth:rect.left;
       const left=Math.max(8,Math.min(available,rawLeft));
-      const top=Math.min(window.innerHeight-12,rect.bottom+6);
-      setPosition(previous=>previous.left===left&&previous.top===top?previous:{left,top});
+      // Keep a useful scroll area even if a floating toolbar sits at the bottom.
+      const top=Math.max(8,Math.min(window.innerHeight-120,rect.bottom+6));
+      const maxHeight=Math.max(0,window.innerHeight-top-8);
+      setPosition(previous=>previous.left===left&&previous.top===top&&previous.maxHeight===maxHeight?previous:{left,top,maxHeight});
     };
     update();
     // Docks and the titlebar can scroll/resize while the dropdown is open.
@@ -54,5 +57,5 @@ export function TopDropdown({anchor,open,onClose,align='left',width=240,id,child
     };
   },[open,anchor,align,width,id]);
   if(!open)return null;
-  return createPortal(<div id={id} className={`topbar-floating-menu ${className}`} role="menu" style={{position:'fixed',left:position.left,top:position.top,width,maxWidth:'calc(100vw - 16px)','--menu-top':`${position.top}px`} as CSSProperties}>{children}</div>,document.body);
+  return createPortal(<div id={id} className={`topbar-floating-menu ${className}`} role="menu" style={{position:'fixed',left:position.left,top:position.top,width,maxWidth:'calc(100vw - 16px)',maxHeight:position.maxHeight,'--menu-top':`${position.top}px`} as CSSProperties}>{children}</div>,document.body);
 }

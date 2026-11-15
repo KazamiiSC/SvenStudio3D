@@ -13,12 +13,13 @@ test('Preview 6 modified React/TypeScript modules parse successfully',async()=>{
   }
 });
 
-test('FPS monitor has only FPS display, updates no React or editor store',async()=>{
+test('FPS monitor keeps FPS display and a read-only optional diagnostics panel',async()=>{
   const src=await read('src/components/MapPerformanceMonitor.tsx');
-  assert.match(src,/node\.textContent=`\$\{fps\} FPS`/);
+  assert.match(src,/nodes\.badge\.textContent=`\$\{fps\} FPS`/);
   assert.match(src,/v\.frames\/Math\.max\(\.01,elapsed\)/);
-  assert.match(src,/return\(\)=>\{node\.remove\(\)/);
-  assert.doesNotMatch(src,/Draw calls|Triangles|Label candidates|Rendered labels|\.setState\(|useEditor\.setState/);
+  assert.match(src,/return\(\)=>\{[\s\S]*badge\.remove\(\);panel\.remove\(\)/);
+  assert.match(src,/gl\.info\.render\.calls/);
+  assert.doesNotMatch(src,/useEditor\.setState|\.setState\(/);
 });
 
 test('FPS uses a movable HUD slot without covering mouse help',async()=>{

@@ -43,6 +43,55 @@ export function spawnFloorZ(spawn:Vec3,objects:MapObject[],fallbackOffset=36):nu
   return Number.isFinite(best)?best:z-fallbackOffset;
 }
 
+/** HF17: pretransform each eligible static world brush only once per MAP
+ * revision. A large co-op map may contain dozens of player starts; repeatedly
+ * transforming every brush for each spawn multiplied startup CPU work.
+ * The geometric ray/triangle rule and 36u fallback are identical to spawnFloorZ.
+ * This index affects marker presentation only, never the exported spawn origin.
+ */
+export function createSpawnFloorIndex(objects:readonly MapObject[]):(spawn:Vec3,fallbackOffset?:number)=>number{
+  const solids:{vertices:Vec3[];faces:Brush['faces'];minX:number;maxX:number;minY:number;maxY:number;minZ:number;maxZ:number}[]=[];
+  for(const object of objects){
+    if(object.kind!=='brush'||object.hidden||object.entityId)continue;
+    const vertices=transformedVertices(object);
+    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity,minZ=Infinity,maxZ=-Infinity;
+    for(const [x,y,z] of vertices){
+      minX=Math.min(minX,x);maxX=Math.max(maxX,x);
+      minY=Math.min(minY,y);maxY=Math.max(maxY,y);
+      minZ=Math.min(minZ,z);maxZ=Math.max(maxZ,z);
+    }
+    // The barycentric test in spawnFloorZ tolerates -.001 outside a face.
+    // Expand the bounding box slightly so the fast reject never removes a hit.
+    const dx=Math.max(1,(maxX-minX)*.004),dy=Math.max(1,(maxY-minY)*.004);
+    solids.push({vertices,faces:object.faces,minX:minX-dx,maxX:maxX+dx,minY:minY-dy,maxY:maxY+dy,minZ,maxZ});
+  }
+  return (spawn,fallbackOffset=36)=>{
+    const [x,y,z]=spawn;let best=-Infinity;
+    for(const solid of solids){
+      if(x<solid.minX||x>solid.maxX||y<solid.minY||y>solid.maxY||solid.minZ>z+12||solid.maxZ<z-256)continue;
+      const {vertices,faces}=solid;
+      for(const face of faces){
+        if(face.indices.length<3)continue;
+        const a=vertices[face.indices[0]];
+        if(!a)continue;
+        for(let i=1;i+1<face.indices.length;i++){
+          const b=vertices[face.indices[i]],c=vertices[face.indices[i+1]];
+          if(!b||!c)continue;
+          const det=(b[1]-c[1])*(a[0]-c[0])+(c[0]-b[0])*(a[1]-c[1]);
+          if(Math.abs(det)<1e-6)continue;
+          const wA=((b[1]-c[1])*(x-c[0])+(c[0]-b[0])*(y-c[1]))/det;
+          const wB=((c[1]-a[1])*(x-c[0])+(a[0]-c[0])*(y-c[1]))/det;
+          const wC=1-wA-wB;
+          if(wA<-.001||wB<-.001||wC<-.001)continue;
+          const height=wA*a[2]+wB*b[2]+wC*c[2];
+          if(height<=z+12&&height>=z-256&&height>best)best=height;
+        }
+      }
+    }
+    return Number.isFinite(best)?best:z-fallbackOffset;
+  };
+}
+
 /** Lowest vertex in the ACTUAL idle pose and active bodygroups shown by StudioModel.
  * Measuring data.meshes in the bind pose can bury the legs when a GoldSrc idle
  * sequence moves the root bone, or when other bodygroups have different bounds.

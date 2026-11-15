@@ -78,7 +78,15 @@ export function buildSmartWadBytes(entries){
  }
  return buffer;
 }
-export async function planSmartWadBuild(source,providerFiles,{workDir,mapName,mode='off'}={}){
+export function smartWadFilename(customName,mapName,hash){
+ if(customName===undefined||customName===null||customName==='')return `ss_${mapName.slice(0,30)}_${hash}.wad`;
+ if(typeof customName!=='string'||!(/^[a-zA-Z][a-zA-Z0-9_-]{0,47}\.wad$/.test(customName)))
+  throw Error('Invalid Smart WAD filename: use 1-48 letters, digits, _ or -, starting with a letter, ending in .wad.');
+ if(['halflife.wad','svstudio.wad','decals.wad','zhlt.wad','sdhlt.wad'].includes(customName.toLowerCase()))
+  throw Error('Reserved WAD name: choose a filename different from the game/editor WADs.');
+ return customName;
+}
+export async function planSmartWadBuild(source,providerFiles,{workDir,mapName,mode='off',wadName=''}={}){
  if(!['embed','external'].includes(mode))throw Error('Choose embed or external Smart WAD mode.');
  const requested=referencedTextures(source);
  if(!requested.size)throw Error('No brush-face textures found in MAP source.');
@@ -113,13 +121,28 @@ export async function planSmartWadBuild(source,providerFiles,{workDir,mapName,mo
  if(conflicts.length)throw Error(`Smart WAD name collision (different pixels for the same GoldSrc name): ${conflicts.slice(0,8).join('; ')}. Resolve WAD priority manually before packing.`);
  const buffer=buildSmartWadBytes(chosen);
  const hash=checksum(buffer).slice(0,12);
- const basename=`ss_${mapName.slice(0,30)}_${hash}.wad`;
+ const basename=smartWadFilename(wadName,mapName,hash);
  const file=path.join(workDir,basename);
  await fs.writeFile(file,buffer,{flag:'wx'});
  return {map:patchWorldWads(source,[file]),file,basename,buffer,mode,hash,textureCount:chosen.length,usedCount:requested.size,
   extraFrames:chosen.length-requested.size,duplicateCount:skippedDuplicates,sourceCount:files.length,toolResolved,
   csgArgs:mode==='embed'?['-wadinclude',basename]:[]};
 }
+/** A friendly filename must not shadow an unrelated WAD in any game layer.
+ * Check read-only; never delete or mutate source files. */
+export async function assertNoInstalledWadCollision(plan,gameDir){
+ if(plan?.mode!=='external')return;
+ const chosen=path.resolve(gameDir);const layer=path.basename(chosen).toLowerCase();
+ const root=['svencoop','svencoop_addon','svencoop_downloads'].includes(layer)?path.dirname(chosen):chosen;
+ const locations=new Set([chosen,root,...['svencoop','svencoop_addon','svencoop_downloads','valve'].map(name=>path.join(root,name))]);
+ for(const dir of locations){
+  const candidate=path.join(dir,plan.basename);
+  try{if(!(await fs.readFile(candidate)).equals(plan.buffer))
+    throw Error(`Smart WAD name collision: ${plan.basename} already exists with different textures in ${candidate}. Choose another WAD name.`);
+  }catch(error){if(error.code!=='ENOENT')throw error}
+ }
+}
+
 /** External WAD is needed by the game. Install only after the BSP build succeeds.
  * Never overwrite another map's WAD. Content-hashed filenames avoid collisions.
  */

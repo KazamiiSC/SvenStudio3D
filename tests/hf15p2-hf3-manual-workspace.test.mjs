@@ -12,8 +12,10 @@ test('HF3: top build configuration replaces duplicate save; File save stays',()=
   assert.doesNotMatch(app,/className="top-save"/);
   assert.match(app,/t\('Save project'\)/);
   assert.match(app,/const compile=async/);
-  assert.match(source('server/index.js'),/path\.join\(gameDir,'maps'\)/);
-  assert.match(source('server/index.js'),/await fs\.copyFile\(`\$\{mapBase\}\.bsp`,output\)/);
+  // HF10 superseded direct installation: compilation writes an isolated build.
+  // The installation path is covered by hf10-isolated-build.test.mjs.
+  assert.match(source('server/index.js'),/writeIsolatedBuild/);
+  assert.match(source('server/index.js'),/\/api\/compile\/install-last/);
 });
 test('HF3: first-run guide is shown once and dismissal is persisted',()=>{
   const app=source('src/App.tsx');
@@ -60,8 +62,7 @@ test('HF3: spawn animation uses 30fps update tick and hides during Gameplay Test
   assert.match(source('src/components/Viewport.tsx'),/!\(walking&&isSpawn\)/);
   assert.match(source('src/components/Viewport.tsx'),/animationSpeed=\{isSpawn\?1\.4:1\}/);
 });
-test('HF3: Spanish Wireframe label is unchanged from English',()=>{
+test('HF22: Spanish Wireframe label remains localized',()=>{
   const i18n=source('src/i18n.ts');
-  assert.doesNotMatch(i18n,/Alámbrico/i);
-  assert.match(i18n,/'Wireframe':'Wireframe'/);
+  assert.match(i18n,/Alámbrico/i);
 });

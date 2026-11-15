@@ -1,3 +1,4 @@
+import {saveStudioText} from './studioFiles';
 /** BuildTogether 3.5. Only Project objects and world metadata are shared.
  * SDK paths, imported WAD binaries, compiler settings and local files stay private.
  * Changes are serialized against server acknowledgements. Independent studio
@@ -106,7 +107,7 @@ export function setBuildTogetherViewCones(show:boolean){useBuildTogether.setStat
 
 // An explicit allowlist prevents imported project extensions from sending
 // local paths or unrelated application state over a multiplayer connection.
-const sharedProjectKeys=new Set(['version','name','world','wadNames','target','graphPositions','cinematicPreviewSpeeds','terrainGroups','pathGroups','architectureLayouts','architectureAssemblies','architectureOpenings','customNpcs','surfaceSounds']);
+const sharedProjectKeys=new Set(['version','name','world','wadNames','target','graphPositions','cinematicPreviewSpeeds','terrainGroups','pathGroups','smartConnections','architectureLayouts','architectureAssemblies','architectureOpenings','customNpcs','surfaceSounds']);
 function normalizedEndpoint(input:string){
  const raw=input.trim().replace(/^https?:\/\//i,'').replace(/^wss?:\/\//i,'').replace(/\/.*$/,'');
  if(!/^(?:\[[a-f\d:]+\]|[a-z\d.-]+)(?::\d{1,5})?$/i.test(raw))throw Error('Enter a server address, such as 192.168.1.10:49178.');
@@ -521,12 +522,11 @@ export function setBuildTogetherFollow(id:string|null){useBuildTogether.setState
 /** Explicit user action: export locally backed-up changes as an editable project.
  * Never silently merge an offline copy over the server's authoritative map.
  */
-export function downloadBuildTogetherBackup(){
+export async function downloadBuildTogetherBackup(){
  try{
   const saved=sessionStorage.getItem(backupKey);if(!saved)return false;
   const project=JSON.parse(saved);if(!project||!Array.isArray(project.objects))return false;
-  const url=URL.createObjectURL(new Blob([saved],{type:'application/json'}));
-  const a=document.createElement('a');a.href=url;a.download='SvenStudio_BuildTogether_Recovery.svenstudio.json';
-  a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);return true;
+  await saveStudioText(saved,'SvenStudio_BuildTogether_Recovery.svenstudio.json','projects');
+  return true;
  }catch{return false;}
 }

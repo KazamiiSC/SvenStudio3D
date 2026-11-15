@@ -125,11 +125,30 @@ export async function storeRecoverySnapshot(snapshot:RecoverySnapshot):Promise<v
 
 /** Preserve save order when multiple edits are made during a slow IDB write. */
 let pendingWrite:Promise<void>=Promise.resolve();
+let resetSuspended=false;
 export function queueRecoveryWrite(snapshot:RecoverySnapshot):Promise<void>{
-  pendingWrite=pendingWrite.catch(()=>{}).then(()=>storeRecoverySnapshot(snapshot));
+  pendingWrite=pendingWrite.catch(()=>{}).then(()=>resetSuspended?undefined:storeRecoverySnapshot(snapshot));
   return pendingWrite;
 }
 export function queueRecoveryBackup(snapshot:RecoverySnapshot):Promise<void>{
-  pendingWrite=pendingWrite.catch(()=>{}).then(()=>storeRecoveryBackup(snapshot));
+  pendingWrite=pendingWrite.catch(()=>{}).then(()=>resetSuspended?undefined:storeRecoveryBackup(snapshot));
   return pendingWrite;
 }
+
+/** Prevent session autosave from resurrecting deleted recovery data during reset. */
+export async function clearRecoveryForFactoryReset():Promise<void>{
+  resetSuspended=true;
+  await pendingWrite.catch(()=>{});
+  if(typeof indexedDB!=='undefined'){
+    const db=await openRecoveryDb();
+    try{await new Promise<void>((resolve,reject)=>{
+      const tx=db.transaction(STORE_NAME,'readwrite');
+      tx.objectStore(STORE_NAME).clear();
+      tx.oncomplete=()=>resolve();
+      tx.onerror=()=>reject(tx.error||new Error('Cannot clear recovery history'));
+      tx.onabort=()=>reject(tx.error||new Error('Recovery reset aborted'));
+    })}finally{db.close()}
+  }
+  try{localStorage.removeItem(FALLBACK_KEY);localStorage.removeItem(BACKUP_FALLBACK_KEY)}catch{}
+}
+export function cancelRecoveryReset(){resetSuspended=false;}

@@ -1,3 +1,4 @@
+import {saveStudioBlob,saveStudioText} from '../engine/studioFiles';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {AlertTriangle,FileDown,FilePlus2,RotateCcw,ShieldCheck,Trash2,X,FileInput,ScanSearch,Merge} from 'lucide-react';
 import {addNativeEntity,addNativeProperty,nativeChanged,nativeClassname,nativeProperty,readNativeBsp,removeNativeEntity,removeNativeProperty,setNativeValue,writeNativeBsp} from '../engine/bspNativeEdit';
@@ -93,12 +94,10 @@ export function BspRecoveryStudio({source,filename,map,knownTextures,onClose,onO
     }
     finally{setBinaryBusy(false)}
   };
-  const downloadBinaryModel=()=>{
+  const downloadBinaryModel=async()=>{
     if(!binaryResult||!binaryConfirmed)return;
-    const blob=new Blob([binaryResult.bytes],{type:'application/octet-stream'});
-    const url=URL.createObjectURL(blob),a=document.createElement('a');
-    a.href=url;a.download=filename.replace(/\.bsp$/i,'')+`_model_${binaryResult.report.destModel}_merged.bsp`;
-    document.body.appendChild(a);a.click();a.remove();window.setTimeout(()=>URL.revokeObjectURL(url),15000);
+    try{const saved=await saveStudioBlob(new Blob([binaryResult.bytes]),filename.replace(/\.bsp$/i,'')+`_model_${binaryResult.report.destModel}_merged.bsp`,'exports');setNotice(saved.path)}
+    catch(e){setBinaryError(String(e))}
   };
   const runGeometryComposition=async()=>{
     if(!composeSource||geometryMerging)return;
@@ -150,11 +149,11 @@ export function BspRecoveryStudio({source,filename,map,knownTextures,onClose,onO
       setGeometryResult(result);
     }catch(e){setGeometryError(describeCompositionError(e))}
   };
-  const downloadGeometryDiagnostics=()=>{
+  const downloadGeometryDiagnostics=async()=>{
     if(!geometryRecovery)return;
     const reports={primaryBSP:filename,sourceBSP:composeName,primary:geometryRecovery.primaryReport,secondary:geometryRecovery.secondaryReport,warning:'Unreconstructable brushes may be caused by SurfDecomp output or MAP reconstruction; original BSP geometry has not been compared.'};
-    const url=URL.createObjectURL(new Blob([JSON.stringify(reports,null,2)],{type:'application/json'}));
-    const a=document.createElement('a');a.href=url;a.download='svenstudio_bsp_recovery_diagnostic.json';document.body.appendChild(a);a.click();a.remove();window.setTimeout(()=>URL.revokeObjectURL(url),15000);
+    try{const saved=await saveStudioText(JSON.stringify(reports,null,2),'svenstudio_bsp_recovery_diagnostic.json','exports');setNotice(saved.path)}
+    catch(e){setGeometryError(String(e))}
   };
   // Reuse the existing v1.9 Large maps viewport profile; never alter source geometry.
   const openCombinedMap=async()=>{
@@ -172,11 +171,10 @@ export function BspRecoveryStudio({source,filename,map,knownTextures,onClose,onO
       setGeometryError(String(e instanceof Error?e.message:e));
     }finally{setOpeningCombined(false)}
   };
-  const downloadGeometryMap=()=>{
+  const downloadGeometryMap=async()=>{
     if(!geometryResult)return;
-    const url=URL.createObjectURL(new Blob([geometryResult.source],{type:'text/plain;charset=utf-8'}));
-    const a=document.createElement('a');a.href=url;a.download=filename.replace(/\.bsp$/i,'')+'_combined.map';
-    document.body.appendChild(a);a.click();a.remove();window.setTimeout(()=>URL.revokeObjectURL(url),15000);
+    try{const saved=await saveStudioText(geometryResult.source,filename.replace(/\.bsp$/i,'')+'_combined.map','maps');setNotice(saved.path)}
+    catch(e){setGeometryError(String(e))}
   };
   const convertBsp=async()=>{
     setConverting(true);setConvertError('');setConverted(null);
@@ -220,24 +218,20 @@ export function BspRecoveryStudio({source,filename,map,knownTextures,onClose,onO
     }catch(error){setConvertError(String(error instanceof Error?error.message:error))}
     finally{setConverting(false)}
   };
-  const downloadMap=()=>{
+  const downloadMap=async()=>{
     if(!converted)return;
-    const url=URL.createObjectURL(new Blob([converted.source],{type:'text/plain;charset=utf-8'}));
-    const link=document.createElement('a');link.href=url;link.download=converted.name;
-    document.body.appendChild(link);link.click();link.remove();
-    window.setTimeout(()=>URL.revokeObjectURL(url),15000);
+    try{const saved=await saveStudioText(converted.source,converted.name,'maps');setNotice(saved.path)}
+    catch(e){setConvertError(String(e))}
   };
 
   const recoveredNames=new Set([...knownTextures.map(t=>t.name.toLowerCase()),...map.textures.filter(t=>!!t.rgba).map(t=>t.name.toLowerCase())]);
   const missingExternal=map.textures.filter(t=>t.external&&!recoveredNames.has(t.name.toLowerCase())).map(t=>t.name);
   const uniqueMissing=[...new Set(missingExternal)];
-  const downloadEmbeddedWad=()=>{
+  const downloadEmbeddedWad=async()=>{
     if(!converted?.embedded)return;
     const {name,bytes}=converted.embedded;
-    const url=URL.createObjectURL(new Blob([new Uint8Array(bytes)],{type:'application/octet-stream'}));
-    const link=document.createElement('a');link.href=url;link.download=name;
-    document.body.appendChild(link);link.click();link.remove();
-    window.setTimeout(()=>URL.revokeObjectURL(url),15000);
+    try{const saved=await saveStudioBlob(new Blob([new Uint8Array(bytes)]),name,'exports');setNotice(saved.path)}
+    catch(e){setConvertError(String(e))}
   };
   const entries=doc.entities;
   const active=entries[Math.min(selected,entries.length-1)];
@@ -245,15 +239,11 @@ export function BspRecoveryStudio({source,filename,map,knownTextures,onClose,onO
   const mutate=(fn:()=>ReturnType<typeof readNativeBsp>)=>{
     try{const next=fn();setDoc(next);setError('');setNotice('');return next}catch(e){setError(String(e instanceof Error?e.message:e));return null}
   };
-  const download=()=>{
+  const download=async()=>{
     try{
       const bytes=writeNativeBsp(doc);
-      const blob=new Blob([bytes],{type:'application/octet-stream'});
-      const url=URL.createObjectURL(blob),link=document.createElement('a');
-      link.href=url;link.download=filename.replace(/\.bsp$/i,'')+'_entities_edited.bsp';
-      document.body.appendChild(link);link.click();link.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),15000);
-      setNotice(t('Edited BSP copy downloaded. Open it in BSP Viewer to inspect changes. Original file untouched.'));
+      const saved=await saveStudioBlob(new Blob([bytes]),filename.replace(/\.bsp$/i,'')+'_entities_edited.bsp','exports');
+      setNotice(`${t('Edited BSP copy downloaded. Open it in BSP Viewer to inspect changes. Original file untouched.')} → ${saved.path}`);
       setError('');
     }catch(e){setError(String(e instanceof Error?e.message:e))}
   };

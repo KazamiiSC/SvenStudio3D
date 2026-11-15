@@ -1,3 +1,4 @@
+import {saveStudioBlob} from '../engine/studioFiles';
 import {useEffect,useRef,useState} from 'react';
 import {CheckCircle2,Download,FileAudio,Headphones,Upload,X,AlertTriangle} from 'lucide-react';
 import {convertAudioBuffer,safeWavName,WAV_PRESETS,type WavSpec} from '../engine/audioConversion';
@@ -19,10 +20,10 @@ export function AudioConverter({onClose,onInstalled}:{onClose:()=>void;onInstall
     setResult(output);setStatus(`${t('Converted successfully')} · ${(output.byteLength/1024).toFixed(0)} KiB`);
   }catch(err){setStatus(String(err))}finally{setBusy(false)}};
   const outputName=safeWavName(customName||file?.name||'custom_sound');
-  const download=()=>{if(!result)return;
-    if(lastUrl.current)URL.revokeObjectURL(lastUrl.current);
-    const url=URL.createObjectURL(new Blob([result],{type:'audio/wav'}));lastUrl.current=url;
-    const a=document.createElement('a');a.href=url;a.download=outputName;a.click();};
+  const download=async()=>{if(!result)return;
+    try{const saved=await saveStudioBlob(new Blob([result],{type:'audio/wav'}),outputName,'exports');setStatus(saved.path)}
+    catch(error){setStatus(String(error))}
+  };
   const install=async()=>{if(!result)return;setBusy(true);try{
     if(!gameDir)throw Error(t('Configure the game directory in Build Settings first.'));
     const url='/api/assets/converted-audio?'+new URLSearchParams({gameDir,name:outputName}).toString();

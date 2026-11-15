@@ -10,6 +10,7 @@ import {validateMissionEventMetadata} from './missionEvents';
 import {validateEncounterMetadata} from './npcEncounters';
 import {validatePuzzleMetadata} from './coopPuzzles';
 import {validateBlueprintMetadata} from './blueprintToMap';
+import {validateLinkedPrefabMetadata} from './linkedPrefabs';
 
 type Obj=Record<string,unknown>;
 const record=(v:unknown):v is Obj=>v!==null&&typeof v==='object'&&!Array.isArray(v);
@@ -69,6 +70,7 @@ export function validateProjectFile(input:unknown):Project{
      !Array.isArray(input.wadNames)||input.wadNames.length>4096||!input.wadNames.every(v=>str(v,1024)))
     bad('unsupported version or missing project fields.');
   if(input.target!==undefined&&input.target!=='svengine')bad('only Sven Co-op / Svengine projects are supported.');
+  if(!optionalBoolean(input.recoveredFromBsp))bad('invalid BSP recovery preview flag.');
   const ids=new Set<string>();
   for(const [i,obj] of input.objects.entries()){
     checkObject(obj,i);
@@ -79,6 +81,7 @@ export function validateProjectFile(input:unknown):Project{
   validateEncounterMetadata(input);
   validatePuzzleMetadata(input);
   validateBlueprintMetadata(input);
+  try{validateLinkedPrefabMetadata(input as unknown as Project)}catch(error){bad(String(error))}
   if(input.customNpcs!==undefined){
     if(!Array.isArray(input.customNpcs)||input.customNpcs.length>80)bad('custom NPC definitions are malformed.');
     const seen=new Set<string>();
@@ -144,6 +147,39 @@ export function validateProjectFile(input:unknown):Project{
       // parts can still open. Regeneration checks provenance and safely refuses.
       if(routeIds.has(route.id))bad('duplicate path group ID.');
       routeIds.add(route.id);
+    }
+  }
+  if(input.smartConnections!==undefined){
+    if(!Array.isArray(input.smartConnections)||input.smartConnections.length>256)bad('Smart Connect records malformed.');
+    const seen=new Set<string>();
+    for(const [index,item] of input.smartConnections.entries()){
+      if(!record(item)||!str(item.id,256)||!item.id||seen.has(item.id)||
+         !record(item.from)||!record(item.to)||!str(item.from.brushId,256)||!str(item.to.brushId,256)||
+         !Number.isInteger(item.from.faceIndex)||!Number.isInteger(item.to.faceIndex)||
+         !bounded(item.from.faceIndex,0,1023)||!bounded(item.to.faceIndex,0,1023)||
+         item.from.brushId===item.to.brushId||!record(item.options)||
+         !Array.isArray(item.options.points)||item.options.points.length<2||item.options.points.length>24||
+         !item.options.points.every(vec3)||![4,8,12].includes(item.options.quality as number)||
+         !['angular','smooth'].includes(String(item.options.mode))||
+         (item.options.transition!==undefined&&!['linear','ease','hold-start','hold-end'].includes(String(item.options.transition)))||!str(item.options.texture,32)||
+         !/^[^\s"()[\]]{1,32}$/.test(item.options.texture)||!bounded(item.options.clearance,0,512)||
+         !Array.isArray(item.brushIds)||!item.brushIds.length||item.brushIds.length>256||
+         !item.brushIds.every(id=>str(id,256))||new Set(item.brushIds).size!==item.brushIds.length||
+         !Array.isArray(item.signatures)||item.signatures.length!==item.brushIds.length||
+         !item.signatures.every(signature=>str(signature,64)))bad(`Smart Connect record ${index+1} malformed.`);
+      if(item.cuts!==undefined){
+        if(!Array.isArray(item.cuts)||item.cuts.length>4||new Set(item.cuts.map((c:unknown)=>record(c)&&record(c.original)?c.original.id:null)).size!==item.cuts.length)
+          bad(`Smart Connect opening ${index+1} malformed.`);
+        for(const [ci,cut] of item.cuts.entries()){
+          if(!record(cut)||!record(cut.original)||!Array.isArray(cut.pieces)||!cut.pieces.length||cut.pieces.length>40||
+             cut.pieces.some(p=>!record(p)||!str(p.id,256)||!str(p.signature,64)))bad(`Smart Connect opening ${index+1}.${ci+1} malformed.`);
+          checkObject(cut.original,ci);
+          if(cut.original.kind!=='brush'||cut.original.locked||cut.original.hidden||cut.original.entityId||
+             cut.original.id===item.from.brushId||cut.original.id===item.to.brushId)
+            bad(`Smart Connect opening ${index+1}.${ci+1} is unsafe.`);
+        }
+      }
+      seen.add(item.id);
     }
   }
   if(input.terrainGroups!==undefined){

@@ -1,3 +1,4 @@
+import {saveStudioBlob} from './studioFiles';
 /** BSP prefab WAD dependency handling shared by Studio and MAP import.
  * Browser previews and compiler files are deliberately separate resources.
  */
@@ -54,11 +55,10 @@ export function appendConfiguredWadPath(current:string,path:string):string{
  if(entries.some(p=>wadBase(p)===name))return current;
  return [...entries,path].join('\n');
 }
-export function downloadPrefabWad(prefab:StudioPrefab):void{
+export async function downloadPrefabWad(prefab:StudioPrefab):Promise<string>{
  const file=prefabWadFile(prefab);
- const url=URL.createObjectURL(file);
- const a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();
- setTimeout(()=>URL.revokeObjectURL(url),2000);
+ const saved=await saveStudioBlob(file,file.name,'exports');
+ return saved.path;
 }
 /** Explicit user-initiated install; API will never replace an existing different file. */
 export async function installPrefabWadForBuild(prefab:StudioPrefab,gameDir:string):Promise<string>{

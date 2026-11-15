@@ -1,3 +1,4 @@
+import {saveStudioText,studioFiles,readStudioText} from '../engine/studioFiles';
 /** Dedicated prefab catalog; never changes the BSP or MAP until explicitly imported. */
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {Canvas,useThree} from '@react-three/fiber';
@@ -7,6 +8,7 @@ import * as THREE from 'three';
 import {Boxes,FolderOpen,FolderPlus,RefreshCw,Save,Search,Upload,Plus,MousePointer2,X,ShieldAlert,FileDown,HardDrive,CheckCircle2,AlertTriangle,Download,Trash2,Layers3} from 'lucide-react';
 import {useEditor} from '../store';
 import {createPrefab,type Prefab} from '../engine/prefabs';
+import {LinkedPrefabsPanel} from './LinkedPrefabsPanel';
 import {decodePrefabWad} from '../engine/bspObjectExtractor';
 import {parseWad} from '../engine/wad';
 import {rememberWadFile,forgetSavedWadFile} from '../engine/wadPersistence';
@@ -14,6 +16,7 @@ import {planMapWadRemoval} from '../engine/mapWadRemoval';
 import {wadBasename} from '../engine/textureWadSelection';
 import {decodePrefabTextures,downloadPrefabWad,installPrefabWadForBuild,prefabWadReport,appendConfiguredWadPath} from '../engine/prefabWadDependencies';
 import {buildMeshGeometry,gameToThree,transformedVertices,toRenderQuaternion} from '../engine/geometry';
+import {deduplicateBspSurfacePanels,repairBspSurfacePanels} from '../engine/bspPrefabPanelRepair';
 import type {Brush,TextureAsset} from '../engine/types';
 import {ensurePrefabFolderPermission,forgetPrefabFolder,isPrefabFile,parseStudioPrefab,readPrefabFolder,rememberPrefabFolder,scanPrefabFolder,writePrefabToFolder,type FolderHandle,type PrefabFolderEntry,type StudioPrefab} from '../engine/prefabStudioFolder';
 
@@ -34,7 +37,7 @@ const EXTRA:Record<string,{remove:string;confirm:string;clean:string;cleanConfir
  pt:{remove:'Remover da biblioteca interna',confirm:'Remover prefab interno? Objetos colocados e arquivos não serão apagados.',clean:'Liberar WAD sem uso',cleanConfirm:'Liberar WAD sem uso? Arquivos do disco não serão removidos.',cleanNone:'Nenhum WAD pode ser liberado com segurança.',smart:'Configure Smart WAD na Configuração de compilação.',duplicates:'Limpar duplicados exatos',duplicateConfirm:'Remover cópias idênticas e manter uma de cada?'}
 };
 type Locale=keyof typeof WORDS;
-type CatalogItem={key:string;name:string;fileName?:string;source:'folder'|'library'|'manual';prefab:StudioPrefab};
+type CatalogItem={key:string;name:string;fileName?:string;source:'folder'|'disk'|'library'|'manual';prefab:StudioPrefab};
 function PreviewCamera({center,radius,signature}:{center:THREE.Vector3;radius:number;signature:string}){
  const {camera,invalidate}=useThree();const control=useRef<any>(null);
  useEffect(()=>{camera.position.set(radius*1.45,radius*.95,radius*1.45);camera.lookAt(0,0,0);camera.updateProjectionMatrix();control.current?.target.set(0,0,0);control.current?.update();invalidate()},[camera,radius,signature,invalidate]);
@@ -49,7 +52,11 @@ function PrefabSolid({brush,center,materials,dimensions}:{brush:Brush;center:THR
  return <mesh geometry={geom} material={faceMats} position={origin.toArray()} quaternion={toRenderQuaternion(brush.rotation)} scale={[brush.scale[0],brush.scale[2],brush.scale[1]]}/>;
 }
 function PrefabView3D({prefab,textureAssets}:{prefab:StudioPrefab;textureAssets:TextureAsset[]}){
- const brushes=useMemo(()=>prefab.objects.filter((o):o is Brush=>o.kind==='brush').slice(0,128),[prefab]);
+ const brushes=useMemo(()=>{
+   const source=prefab.objects.filter((o):o is Brush=>o.kind==='brush').slice(0,128);
+   return prefab.format==='svenstudio-bsp-object'&&prefab.recovery?.mode==='surface-shell'
+     ?repairBspSurfacePanels(deduplicateBspSurfacePanels(source)):source;
+ },[prefab]);
  const entities=useMemo(()=>prefab.objects.filter(o=>o.kind==='entity').slice(0,128),[prefab]);
  const bounds=useMemo(()=>{
    const points=[...brushes.flatMap(b=>transformedVertices(b).map(gameToThree)),...entities.map(e=>gameToThree(e.position))];
@@ -81,10 +88,25 @@ export function PrefabStudio({onClose,onImportPrefab,onStartPlacement}:{onClose:
  const extra=EXTRA[currentLocale]??EXTRA.es;
  const settings=useEditor(s=>s.settings);
  const items=useEditor(s=>s.prefabs),selectedIds=useEditor(s=>s.selectedIds),objects=useEditor(s=>s.project.objects),assetTextures=useEditor(s=>s.textureAssets);
- const [folder,setFolder]=useState<FolderHandle|null>(null),[permission,setPermission]=useState(false),[folderEntries,setFolderEntries]=useState<PrefabFolderEntry[]>([]),[manual,setManual]=useState<CatalogItem[]>([]);
+ const [folder,setFolder]=useState<FolderHandle|null>(null),[permission,setPermission]=useState(false),[folderEntries,setFolderEntries]=useState<PrefabFolderEntry[]>([]),[diskItems,setDiskItems]=useState<CatalogItem[]>([]),[manual,setManual]=useState<CatalogItem[]>([]);
  const [errors,setErrors]=useState<string[]>([]),[message,setMessage]=useState(''),[query,setQuery]=useState(''),[chosen,setChosen]=useState(''),[busy,setBusy]=useState(false),[previewTextures,setPreviewTextures]=useState<TextureAsset[]>([]);
  const fallbackRef=useRef<HTMLInputElement>(null),inputRef=useRef<HTMLInputElement>(null);
  const setError=(error:unknown)=>setMessage(error instanceof Error?error.message:String(error));
+ const refreshDocuments=async()=>{
+   const result=await studioFiles('prefabs');
+   const records:CatalogItem[]=[];
+   // Bound the initial preload to keep giant BSP prefabs from freezing the UI.
+   let remaining=48*1024*1024;
+   for(const file of result.files.slice(0,128)){
+     if(file.bytes>remaining)continue;
+     try{const prefab=parseStudioPrefab(await readStudioText('prefabs',file.name));
+       records.push({key:`disk:${file.name}`,name:prefab.name,fileName:file.name,source:'disk',prefab});remaining-=file.bytes;
+     }catch{/* One corrupt file must not hide the rest. */}
+   }
+   setDiskItems(records);
+ };
+ useEffect(()=>{let alive=true;void refreshDocuments().catch(error=>{if(alive)setError(error)});return()=>{alive=false};/* Read once on opening Studio. */},[]);
+
  const rescan=async(handle:FolderHandle,interactive=false)=>{
    if(!await ensurePrefabFolderPermission(handle,false,interactive)){setPermission(false);setMessage(w.denied);return}
    setPermission(true);const scan=await scanPrefabFolder(handle);
@@ -104,8 +126,9 @@ export function PrefabStudio({onClose,onImportPrefab,onStartPlacement}:{onClose:
  };
  const catalog=useMemo<CatalogItem[]>(()=>[
   ...folderEntries.map(e=>({key:`folder:${e.name}`,name:e.prefab.name,fileName:e.name,source:'folder' as const,prefab:e.prefab})),
+  ...diskItems,
   ...items.map(p=>({key:`library:${p.id}`,name:p.name,source:'library' as const,prefab:p as StudioPrefab})),...manual
- ],[folderEntries,items,manual]);
+ ],[folderEntries,diskItems,items,manual]);
  const filtered=catalog.filter(x=>`${x.name} ${x.fileName??''}`.toLowerCase().includes(query.toLowerCase()));
  const selected=filtered.find(x=>x.key===chosen)??filtered[0]??null;
  useEffect(()=>{let active=true;setPreviewTextures([]);
@@ -142,11 +165,12 @@ export function PrefabStudio({onClose,onImportPrefab,onStartPlacement}:{onClose:
    }catch(err){setError(err)}finally{setBusy(false)}
  };
  const saveToFolder=async(prefab:StudioPrefab)=>{
-   if(!folder){setMessage(w.noFolder);return}
    setBusy(true);try{
-     if(!await ensurePrefabFolderPermission(folder,true,true)){setMessage(w.readonly);return}
-     const filename=await writePrefabToFolder(folder,prefab);
-     await rescan(folder);setChosen(`folder:${filename}`);
+     // The default location is always the current Windows user's Documents.
+     // A separately linked folder is an import source, not an implicit save target.
+     const name=`${prefab.name.trim().replace(/[^a-z0-9_-]/gi,'_').slice(0,50)||'prefab'}.svprefab`;
+     const saved=await saveStudioText(JSON.stringify(prefab,null,2),name,'prefabs');
+     await refreshDocuments();setChosen(`disk:${saved.filename}`);setMessage(saved.path);
    }catch(err){setError(err)}finally{setBusy(false)}
  };
  const addLibrary=()=>{if(!selected)return;try{useEditor.getState().addPrefab(selected.prefab);setMessage(`${selected.name} · ${w.library}`)}catch(err){setError(err)}};
@@ -224,7 +248,7 @@ export function PrefabStudio({onClose,onImportPrefab,onStartPlacement}:{onClose:
  return createPortal(<div className="pfstudio-backdrop" onPointerDown={e=>{if(e.target===e.currentTarget)onClose();e.stopPropagation()}}>
   <section className="pfstudio-dialog" role="dialog" aria-modal="true" aria-label={w.title} onPointerDown={e=>e.stopPropagation()}>
     <header className="pfstudio-head"><Boxes size={24}/><div><strong>{w.title}</strong><small>{w.subtitle}</small></div><button onClick={onClose} title={w.close}><X size={21}/></button></header>
-    <div className="pfstudio-content"><aside className="pfstudio-sidebar"><div className="pfstudio-folder"><h3>{w.folder}</h3><div className="pfstudio-folder-name"><FolderOpen size={17}/>{folder?.name??w.noFolder}</div><div className="pfstudio-row">
+    <div className="pfstudio-content"><aside className="pfstudio-sidebar"><div className="pfstudio-folder"><h3>{w.folder}</h3><div className="pfstudio-folder-name"><FolderOpen size={17}/>{folder?.name??'Documents / SvenStudio3D / Prefabs'}</div><div className="pfstudio-row">
       <button onClick={()=>void chooseFolder()}><FolderPlus size={15}/>{w.choose}</button>
       <button disabled={!folder||busy} title={permission?w.rescan:w.authorize} onClick={()=>{if(folder)void rescan(folder,true).catch(setError)}}><RefreshCw size={15}/></button>
       <button disabled={!folder} title={w.disconnect} onClick={()=>void forgetPrefabFolder().then(()=>{setFolder(null);setFolderEntries([]);setPermission(false);setChosen('')}).catch(setError)}><X size={15}/></button>
@@ -232,10 +256,10 @@ export function PrefabStudio({onClose,onImportPrefab,onStartPlacement}:{onClose:
       <input type="file" hidden ref={inputRef} accept=".svprefab,.json" multiple onChange={e=>void handleInput(e)}/>
       <input type="file" hidden ref={fallbackRef} multiple onChange={e=>void handleInput(e,true)} {...{'webkitdirectory':''} as React.InputHTMLAttributes<HTMLInputElement>}/>
     </div><label className="pfstudio-search"><Search size={15}/><input placeholder={w.search} value={query} onChange={e=>setQuery(e.target.value)}/></label>
-    <div className="pfstudio-list">{filtered.length===0&&<p>{w.empty}</p>}{filtered.map((item,i)=><div key={`${item.key}:${i}`} className="pfstudio-item-wrap">{(i===0||filtered[i-1].source!==item.source)&&<h4>{item.source==='folder'?w.files:item.source==='library'?w.library:w.pick}</h4>}
+    <div className="pfstudio-list">{filtered.length===0&&<p>{w.empty}</p>}{filtered.map((item,i)=><div key={`${item.key}:${i}`} className="pfstudio-item-wrap">{(i===0||filtered[i-1].source!==item.source)&&<h4>{item.source==='folder'||item.source==='disk'?w.files:item.source==='library'?w.library:w.pick}</h4>}
       <button className={`pfstudio-item ${selected?.key===item.key?'selected':''}`} onClick={()=>setChosen(item.key)}><Boxes size={16}/><span>{item.name}<small>{item.prefab.objects.length} {w.count} · {item.fileName??'Local'}</small></span></button>
     </div>)}</div></aside>
-    <div className="pfstudio-main">{selected?<><div className="pfstudio-title"><strong>{selected.name}</strong><span>{selected.prefab.objects.filter(o=>o.kind==='brush').length} brushes · {selected.prefab.objects.filter(o=>o.kind==='entity').length} entities</span></div>
+    <div className="pfstudio-main hf15-prefab-main">{selected?<><div className="pfstudio-title"><strong>{selected.name}</strong><span>{selected.prefab.objects.filter(o=>o.kind==='brush').length} brushes · {selected.prefab.objects.filter(o=>o.kind==='entity').length} entities</span></div>
       {selected.prefab.format==='svenstudio-bsp-object'&&selected.prefab.recovery?.mode==='surface-shell'&&<div className="pfstudio-status" role="status"><ShieldAlert size={15}/>{({es:`Aproximación visual: ${selected.prefab.recovery.panels} paneles delgados; ${selected.prefab.recovery.skippedFaces?.length??0} caras BSP omitidas. No recupera los volúmenes originales, caras ocultas ni colisiones. Revisá antes de compilar.`,en:`Visual approximation: ${selected.prefab.recovery.panels} thin panels; ${selected.prefab.recovery.skippedFaces?.length??0} BSP faces omitted. Original volumes, hidden faces and collision hulls are NOT recovered. Inspect before compiling.`,ru:`Приближённая модель: ${selected.prefab.recovery.panels} тонких панелей. Исходные объёмы, скрытые грани и коллизии не восстановлены.`,ko:`근사 모델: 얇은 패널 ${selected.prefab.recovery.panels}개. 원래 체적, 숨겨진 면, 충돌 복구 안 됨.`,zh:`近似模型：${selected.prefab.recovery.panels} 个薄面板。未恢复原始体积、隐藏面和碰撞。`,pt:`Aproximação visual: ${selected.prefab.recovery.panels} painéis finos. Volumes originais, faces ocultas e colisões NÃO foram recuperados.`} as Record<string,string>)[currentLocale]}</div>}
       {selected.prefab.format==='svenstudio-bsp-object'&&selected.prefab.recovery?.mode==='hull0-solid'&&<div className="pfstudio-status" role="status"><ShieldAlert size={15}/>{({es:`Sólidos Hull 0: ${selected.prefab.recovery.solids} celdas convexas reconstruidas del submodelo *${selected.prefab.recovery.modelIndex}. NO son los brushes originales. Texturas, colisiones y luz pueden diferir; verificá antes de compilar.`,en:`Hull 0 solids: ${selected.prefab.recovery.solids} convex cells recovered from submodel *${selected.prefab.recovery.modelIndex}. NOT the original brushes. Textures, collisions and lighting may differ.`,ru:`Hull 0: ${selected.prefab.recovery.solids} выпуклых фрагментов. Исходные кисти, коллизии и освещение не сохранены.`,ko:`Hull 0: 볼록 솔리드 ${selected.prefab.recovery.solids}개. 원본 브러시, 충돌 및 조명이 다를 수 있습니다.`,zh:`Hull 0：恢复 ${selected.prefab.recovery.solids} 个凸实体。并非原始笔刷，碰撞与光照可能不同。`,pt:`Hull 0: ${selected.prefab.recovery.solids} células convexas reconstruídas. Não são brushes originais; texturas, colisões e luz podem diferir.`} as Record<string,string>)[currentLocale]}</div>}
       <PrefabView3D key={selected.key} prefab={selected.prefab} textureAssets={previewTextures}/><div className="pfstudio-help">{w.preview}</div>
@@ -254,16 +278,17 @@ export function PrefabStudio({onClose,onImportPrefab,onStartPlacement}:{onClose:
           {dependencies.configuredPath&&<code>{dependencies.configuredPath}</code>}</div>
         {dependencies.embedded&&<div className="pfstudio-dep-buttons">
           <button disabled={busy} onClick={()=>{setBusy(true);void prepareTextures(selected.prefab).then(()=>setMessage(`${dependencies.filename}: ${dependencies.materials.length} texture(s) loaded into MAP browser.`)).catch(setError).finally(()=>setBusy(false))}}><CheckCircle2 size={14}/>{({es:'Cargar texturas en MAP',en:'Load textures into MAP',ru:'Загрузить текстуры в MAP',ko:'MAP 텍스처 불러오기',zh:'加载纹理到 MAP',pt:'Carregar texturas no MAP'} as Record<string,string>)[currentLocale]}</button>
-          <button disabled={busy} onClick={()=>{try{downloadPrefabWad(selected.prefab)}catch(err){setError(err)}}}><Download size={14}/>{({es:'Descargar WAD3',en:'Download WAD3',ru:'Скачать WAD3',ko:'WAD3 다운로드',zh:'下载 WAD3',pt:'Baixar WAD3'} as Record<string,string>)[currentLocale]}</button>
+          <button disabled={busy} onClick={()=>void downloadPrefabWad(selected.prefab).then(path=>setMessage(path)).catch(setError)}><Download size={14}/>{({es:'Descargar WAD3',en:'Download WAD3',ru:'Скачать WAD3',ko:'WAD3 다운로드',zh:'下载 WAD3',pt:'Baixar WAD3'} as Record<string,string>)[currentLocale]}</button>
           <button disabled={busy||!settings.gameDir} onClick={()=>void installToGame()}><HardDrive size={14}/>{({es:'Instalar para compilar',en:'Install for compilation',ru:'Установить для сборки',ko:'컴파일용 설치',zh:'安装用于编译',pt:'Instalar para compilar'} as Record<string,string>)[currentLocale]}</button>
         </div>}
         {dependencies.embedded&&!settings.gameDir&&<small>{({es:'Configurá primero la carpeta del juego en Configuración de compilación.',en:'Set the game data folder in Build Configuration first.',ru:'Сначала настройте папку игры.',ko:'먼저 게임 폴더를 설정하세요.',zh:'先配置游戏目录',pt:'Configure a pasta do jogo primeiro.'} as Record<string,string>)[currentLocale]}</small>}
       </section>}
-      <div className="pfstudio-actions"><button disabled={busy} onClick={()=>void importIntoMap()}><Plus size={15}/>{w.import}</button><button disabled={busy} onClick={()=>void startPlacement()}><MousePointer2 size={15}/>{w.place}</button><button disabled={busy} onClick={addLibrary}><Boxes size={15}/>{w.add}</button><button disabled={busy||!folder} onClick={()=>void saveToFolder(selected.prefab)}><Save size={15}/>{w.save}</button>
+      <div className="pfstudio-actions"><button disabled={busy} onClick={()=>void importIntoMap()}><Plus size={15}/>{w.import}</button><button disabled={busy} onClick={()=>void startPlacement()}><MousePointer2 size={15}/>{w.place}</button><button disabled={busy} onClick={addLibrary}><Boxes size={15}/>{w.add}</button><button disabled={busy} onClick={()=>void saveToFolder(selected.prefab)}><Save size={15}/>{w.save}</button>
       {selected.source==='library'&&<button disabled={busy} className="pfstudio-remove" onClick={removeLibrary}><Trash2 size={15}/>{extra.remove}</button>}
       </div>
     </>:<div className="pfstudio-empty">{w.chooseItem}</div>}
-    <div className="pfstudio-footer"><button disabled={!selectedIds.length||busy||!folder} onClick={saveSelection}><FileDown size={15}/>{w.saveSelection}</button><small>{w.tooLarge}</small></div>
+    <LinkedPrefabsPanel/>
+    <div className="pfstudio-footer"><button disabled={!selectedIds.length||busy} onClick={saveSelection}><FileDown size={15}/>{w.saveSelection}</button><small>{w.tooLarge}</small></div>
     <div className="pfstudio-actions pfstudio-maintenance"><button disabled={busy} onClick={()=>void unloadUnused()}><Layers3 size={14}/>{extra.clean}</button><button disabled={busy} onClick={cleanDuplicates}><Trash2 size={14}/>{extra.duplicates}</button><small>{extra.smart}</small></div>
     {(message||errors.length>0)&&<div className="pfstudio-status" role="status"><span>{message}</span>{errors.length>0&&<details><summary><ShieldAlert size={14}/>{w.error} ({errors.length})</summary>{errors.slice(0,30).map((s,i)=><p key={i}>{s}</p>)}</details>}</div>}
     </div></div>

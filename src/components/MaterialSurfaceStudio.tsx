@@ -1,3 +1,4 @@
+import {saveStudioText} from '../engine/studioFiles';
 import {useEffect,useMemo,useState,type ReactNode} from 'react';
 import {Layers3,Volume2,Sun,Clapperboard,AlertTriangle,CheckCircle2,Download,Save,Trash2,Brush as BrushIcon,Info} from 'lucide-react';
 import {useEditor} from '../store';
@@ -15,8 +16,7 @@ function loadSaved():SavedPreset[]{
 }
 function persist(list:SavedPreset[]){try{localStorage.setItem(STORAGE,JSON.stringify(list.slice(0,40)))}catch{/* Storage is optional */}}
 function downloadPlain(name:string,content:string){
- const blob=new Blob([content],{type:'text/plain;charset=us-ascii'}),url=URL.createObjectURL(blob),a=document.createElement('a');
- a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ return saveStudioText(content,name,'exports');
 }
 const text={
  es:{title:'Material & Surface Studio',description:'Materiales nativos de Sven Co-op. El MAP conserva sus UV Valve 220.',surface:'Superficie',sounds:'Sonidos',emission:'Emisión',animation:'Animación',doctor:'Doctor',selected:'Brushes seleccionados',texture:'Textura WAD',paint:'Aplicar esta textura a TODAS las caras (no modifica UV)',amount:'Opacidad / intensidad (1–255)',color:'Color RGB',apply:'Convertir / aplicar preset',note:'Un modo de renderizado afecta a toda la entidad brush, no a una sola cara. Para vidrio solo en una cara, separá primero el brush.',sound:'Sonido de material para textura',save:'Asignar',clear:'Quitar',export:'Descargar materials.txt',link:'Enlazar worldspawn',path:'Instalá el archivo descargado en:',presets:'Presets guardados',presetName:'Nombre del preset',store:'Guardar preset',noBrush:'Seleccioná un brush en el visor 3D.',visual:'Vista previa aproximada',emissionText:'SC-RAD genera la luz real. El navegador no simula un material PBR.',power:'Brillo SC-RAD',emissionAction:'Crear light_surface',animationText:'Las animaciones +0...+9 y +A...+J deben existir dentro del WAD. Esta pestaña no edita archivos WAD.',doctorText:'Advertencias de compatibilidad: no modifica el mapa automáticamente.',warning:'Antes de distribuir el mapa, incluí el WAD y los archivos materials.txt necesarios.'},
@@ -92,7 +92,7 @@ export function MaterialSurfaceStudio(){
    <div className="material-sound-entries">{Object.entries(sounds).sort(([a],[b])=>a.localeCompare(b)).map(([name,code])=><div className="material-save-row" key={name}><span><b>{code}</b> {name}</span><button onClick={()=>applyAction(()=>assign(name,null),`${name} removed`)} aria-label={`Remove ${name}`}><Trash2 size={13}/></button></div>)}</div>
    {invalidSounds.map(s=><p className="material-alert" key={s}>{s}</p>)}
    <p className="material-note">{tr.path}<code>{filePath}</code></p>
-   <button className="soft-button" disabled={!materialText.trim()} onClick={()=>downloadPlain(`${mapName}_materials.txt`,materialText)}><Download size={14}/>{tr.export}</button>
+   <button className="soft-button" disabled={!materialText.trim()} onClick={()=>void downloadPlain(`${mapName}_materials.txt`,materialText).catch(error=>window.alert(String(error)))}><Download size={14}/>{tr.export}</button>
    <button className="soft-button" disabled={!materialText.trim()} onClick={()=>applyAction(()=>link(mapName),`worldspawn.materials_file = ${filePath}`)}>{tr.link}</button>
    <p className="material-note">{locale==='es'?'Descargá e instalá el TXT en svencoop_addon/ o svencoop/. El botón enlaza la ruta en worldspawn; no copia archivos automáticamente.':'Install the downloaded TXT in svencoop_addon/ or svencoop/. Linking changes worldspawn only; it does not install files automatically.'}</p>
   </>}

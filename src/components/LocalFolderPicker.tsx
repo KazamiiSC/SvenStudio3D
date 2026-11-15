@@ -13,7 +13,37 @@ export type FolderKind='game'|'compiler'|'destination'|'resource';
 export function LocalFolderPicker({kind,initial,onPick,onClose,es}:{kind:FolderKind;initial:string;onPick:(path:string)=>void;onClose:()=>void;es:boolean}){
  const [roots,setRoots]=useState<string[]>([]);const [current,setCurrent]=useState<FolderData|null>(null);
  const [target,setTarget]=useState(initial);const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');
- useEffect(()=>{let alive=true;void request<Roots>('/api/setup/roots').then(result=>{if(alive)setRoots(result.roots);}).catch(e=>{if(alive)setMessage(String(e));});return()=>{alive=false}},[]);
+ // Never render the SvenStudio explorer behind the native Windows picker.
+ // The custom directory browser is used only on platforms without this API.
+ const [showFallback,setShowFallback]=useState(false);
+ useEffect(()=>{let alive=true;
+  const nativeError=(detail:string)=>{
+   if(!alive)return;
+   window.alert((es?'No se pudo seleccionar la carpeta en Windows. Podés escribir la ruta manualmente.':'Could not select a Windows folder. You can enter the path manually.')+'\n'+detail);
+   onClose();
+  };
+  void request<Roots>('/api/setup/roots').then(async rootsResponse=>{
+   if(!alive)return;
+   setRoots(rootsResponse.roots);
+   if(rootsResponse.platform!=='win32'){setShowFallback(true);return;}
+   try{
+    const selection=await request<{supported:boolean;cancelled?:boolean;path?:string}>('/api/setup/native-folder',{initial});
+    if(!alive)return;
+    if(selection.cancelled){onClose();return}
+    if(!selection.supported||!selection.path){nativeError('Native folder dialog unavailable.');return}
+    // Verify the selected absolute path on the local server, not in Chrome.
+    const verified=(kind==='game'||kind==='compiler')
+     ?await request<{valid:boolean}>('/api/setup/verify',{kind,path:selection.path})
+     :{valid:Boolean((await request<FolderData>('/api/setup/folders',{path:selection.path})).path)};
+    if(!alive)return;
+    if(!verified.valid){nativeError(es?'La carpeta elegida no corresponde a la instalación seleccionada.':'The selected folder does not match the installation.');return}
+    onPick(selection.path);onClose();
+   }catch(error){nativeError(String(error instanceof Error?error.message:error))}
+  }).catch(error=>nativeError(String(error instanceof Error?error.message:error)));
+  return()=>{alive=false};
+  // Selecting a folder is a one-shot native action for this component mount.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+ },[]);
  const open=async(folder:string)=>{setBusy(true);setMessage('');try{const data=await request<FolderData>('/api/setup/folders',{path:folder});setCurrent(data);setTarget(data.path)}catch(e){setMessage(String(e))}finally{setBusy(false)}};
  const select=async()=>{
   setBusy(true);setMessage('');try{
@@ -22,6 +52,7 @@ export function LocalFolderPicker({kind,initial,onPick,onClose,es}:{kind:FolderK
    onPick(target);onClose();
   }catch(e){setMessage(String(e))}finally{setBusy(false)}
  };
+ if(!showFallback)return null;
  return <div className="modal-backdrop folder-picker-backdrop" onMouseDown={e=>{e.stopPropagation();onClose()}}>
   <section className="modal-card folder-picker" role="dialog" aria-modal="true" aria-label={es?'Buscar carpeta local':'Browse local folder'} onMouseDown={e=>e.stopPropagation()}>
    <div className="modal-title"><HardDrive size={19}/><span>{es?'Buscar carpeta':'Browse folders'} · {kind==='compiler'?'Sven Co-op SDK':kind==='destination'?'Smart Build export':kind==='resource'?'External resources':'Sven Co-op'}</span><button type="button" onClick={onClose} aria-label="Close"><X size={18}/></button></div>

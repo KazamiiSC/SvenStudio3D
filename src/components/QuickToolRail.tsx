@@ -67,8 +67,9 @@ export function QuickToolRail(){
     {menu&&<div className="quick-flyout" role="group" aria-label={t(menu==='modeling'?'Model / CSG':menu==='shapes'?'Shapes':menu==='assets'?'Asset Library':'Panels')}>
       <div className="quick-flyout-title"><strong>{t(menu==='modeling'?'Model / CSG':(menu==='shapes'?'Shapes':menu==='assets'?'Asset Library':'Panels'))}</strong><button type="button" aria-label={t('Close panel')} onClick={()=>setMenu(null)}>×</button></div>
       {menu==='modeling'&&<div className="quick-modeling-panel">
-        <div className="quick-modeling-caption">{t('SVENGINE · Brush editing modes')}</div>
+        <div className="quick-modeling-caption">{t('Geometry editing')} · {t('Edit existing brush')}</div>
         <div className="quick-flyout-grid quick-modeling-modes">{(['object','vertex','edge','face'] as const).map(mode=><button type="button" key={mode} className={editor.geometryMode===mode?'active':''} aria-pressed={editor.geometryMode===mode} onClick={()=>{editor.setGeometryMode(mode);setOperationMessage('')}}>{mode==='face'?'▱':mode==='edge'?'╱':mode==='vertex'?'•':'▣'} {t(mode[0].toUpperCase()+mode.slice(1))}</button>)}</div>
+        <button type="button" onClick={()=>{layout.setVisible('properties',true);setMenu(null)}}>{t('Geometry editing')} · {t('Open Properties panel')}</button>
         <div className="quick-modeling-caption">{t('CSG · select 2 overlapping brushes (first = target)')}</div>
         <div className="quick-flyout-grid">{(['union','subtract','intersect'] as const).map(operation=><button type="button" key={operation} disabled={!twoBrushes} title={t('Select two unlocked brushes with Ctrl/Shift + click')} onClick={()=>apply(operation,()=>editor.booleanSelected(operation))}>{t(operation[0].toUpperCase()+operation.slice(1))}</button>)}</div>
         <div className="quick-modeling-caption">{t('Smart Brush Fusion — all selected brushes')}</div>
@@ -84,7 +85,6 @@ export function QuickToolRail(){
         <div className="quick-flyout-grid"><button type="button" disabled={!edgeReady||!(width>0)} title={t('Edge mode: select an edge first')} onClick={()=>apply('Bevel',()=>editor.bevelSelected(width))}>{t('Bevel edge')}</button><button type="button" disabled={!faceReady||!(width>0)} title={t('Face mode: select a face first')} onClick={()=>apply('Inset',()=>editor.insetSelected(width))}>{t('Inset (taper)')}</button></div>
         <div className="quick-modeling-caption">{t('UV mouse: Alt+drag moves · Alt+Shift rotates · Alt+Ctrl scales. Undo is supported.')}</div>
         <button type="button" disabled={!editor.selectedIds.length} onClick={()=>apply('Snap selection to grid',editor.snapSelectionToGrid)}>{t('Snap selection to grid')}</button>
-        <button type="button" onClick={()=>{layout.setVisible('properties',true);setMenu(null)}}>{t('Open Properties panel')}</button>
         {operationMessage&&<div role="status" className="quick-modeling-status">{operationMessage}</div>}
       </div>}
       {menu==='shapes'&&<div className="quick-flyout-grid">{(['box','wedge','cylinder','arch','vault','cone','pyramid','icosphere','stairs','pipe'] as PlaceableShape[]).map(shape=>

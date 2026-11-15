@@ -15,7 +15,7 @@ const store=`import {create} from './zustand.mjs';export const useEditor=create(
 async function clientAt(dir,id){
  await writeFile(join(dir,`store-${id}.mjs`),store);
  const source=await readFile(new URL('../src/engine/buildTogetherClient.ts',import.meta.url),'utf8');
- const output=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText.replace("from 'zustand'","from './zustand.mjs'").replace("from '../store'",`from './store-${id}.mjs'`);
+ const output=ts.transpileModule(source.replace("from './studioFiles'", "from '"+new URL('../src/engine/studioFiles.ts',import.meta.url).href+"'"),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText.replace("from 'zustand'","from './zustand.mjs'").replace("from '../store'",`from './store-${id}.mjs'`);
  await writeFile(join(dir,`client-${id}.mjs`),output);
  const client=await import(pathToFileURL(join(dir,`client-${id}.mjs`)).href);
  const {useEditor}=await import(pathToFileURL(join(dir,`store-${id}.mjs`)).href);return {client,useEditor};

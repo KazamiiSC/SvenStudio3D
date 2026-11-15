@@ -1661,6 +1661,8 @@ body>.workspace-menu-dropdown .menu-separator{height:1px;width:100%;background:v
 .viewport-frame .hud-fps{z-index:31}
 .viewport-frame .hud-fps .hud-widget-content{pointer-events:none}
 .viewport-frame .map-fps-mount{display:inline-flex;align-items:center;min-width:76px;justify-content:center;min-height:31px}
+/* Show a placeholder while the renderer initializes; the counter replaces it without a React render. */
+.viewport-frame .hud-fps .map-fps-mount:empty::before{content:"— FPS";font:700 12px/1.3 Inter,Segoe UI,Arial,sans-serif;color:var(--ui-ink)}
 .viewport-frame .hud-fps .map-performance-monitor{position:static!important;inset:auto!important;display:inline-flex;align-items:center;justify-content:center;
  min-width:72px;max-width:none;padding:6px 10px;border-radius:var(--skin-radius,8px);border:1px solid var(--theme-line);background:var(--theme-panel);
  font:700 12px/1.3 Inter,Segoe UI,Arial,sans-serif;color:var(--ui-ink);white-space:nowrap;box-shadow:0 3px 10px var(--theme-shadow-color);
@@ -4034,7 +4036,7 @@ html,body,#root{min-height:0}
 .bw-camera-presets label{margin-left:auto;display:flex;align-items:center;gap:7px;color:var(--ui-ink);font-size:12px}
 .bw-camera-presets label input{width:17px;height:17px;accent-color:var(--theme-accent)}
 .bw-3d-stage{position:relative;flex:1;min-height:330px;border:1px solid var(--theme-line);border-radius:var(--skin-radius,10px);overflow:hidden;background:var(--theme-panel);touch-action:none;--ui-ink:var(--theme-text);--ui-muted:var(--theme-muted)}
-.bw-3d-stage>div{width:100%!important;height:100%!important}
+.bw-3d-stage>div:not(.bw-3d-watermark){width:100%!important;height:100%!important}
 .bw-3d-watermark{position:absolute;bottom:8px;left:10px;pointer-events:none;color:var(--ui-ink);background:var(--theme-panel);border-radius:var(--skin-radius,6px);padding:5px 9px;font-size:11px;--ui-ink:var(--theme-text);--ui-muted:var(--theme-muted)}
 .bw-shape-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .bw-shape-grid button{min-height:45px;font-size:13px;text-align:center;line-height:1.25}
@@ -4488,6 +4490,8 @@ html,body,#root{min-height:0}
 .bsp-object-extractor small{font-size:11px;line-height:1.4;color:var(--ui-muted)}
 .bsp-object-extractor button{justify-content:center;padding:8px;border:1px solid var(--theme-line);background:var(--theme-control);color:var(--ui-ink);border-radius:var(--skin-radius,5px);cursor:pointer;--ui-ink:var(--theme-text);--ui-muted:var(--theme-muted)}
 .bsp-object-extractor button:disabled{opacity:1;cursor:not-allowed}
+.bsp-object-extractor button.bsp-prefab-save{border-color:var(--theme-accent);background:var(--theme-selection);color:var(--theme-text);font-weight:650}
+.bsp-object-extractor button.bsp-prefab-save:focus-visible{outline:2px solid var(--theme-accent);outline-offset:2px}
 
 /* Prefab Studio: isolated from MAP/BSP docks, responsive and scroll-safe. */
 .pfstudio-backdrop{position:fixed;inset:0;z-index:17000;background:var(--theme-modal-backdrop);display:flex;align-items:center;justify-content:center;padding:18px}
@@ -4665,3 +4669,260 @@ html,body,#root{min-height:0}
 body:has(:is(.npc-backdrop,.pfstudio-backdrop,.custom-npc-backdrop,.gs-backdrop,.bp-backdrop,.enc-backdrop,.cpz-backdrop,.terrain-backdrop)) .texture-studio-panel.texture-studio-floating {visibility:hidden;pointer-events:none;}
 :is(.bsp-tool-section,.pfstudio-sidebar,.npc-library,.bsp-info,.texture-studio-body) {min-width:0;overflow-wrap:anywhere;}
 
+
+/* HF5 — deliberate local browser reset, never deletes files on disk. */
+.studio-reset-dialog{width:min(560px,96vw);background:var(--theme-panel);border:1px solid var(--theme-line);border-radius:var(--skin-radius,12px);color:var(--theme-text);box-shadow:0 20px 80px var(--theme-shadow-color)}
+.studio-reset-dialog header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--theme-line)}
+.studio-reset-dialog h2{display:flex;align-items:center;gap:10px;font-size:19px;margin:0}
+.studio-reset-dialog button{cursor:pointer;min-height:36px;background:var(--theme-control);color:var(--theme-text);border:1px solid var(--theme-line);border-radius:var(--skin-radius,7px);padding:8px 12px}
+.studio-reset-dialog .studio-reset-body{padding:19px 21px;display:flex;flex-direction:column;gap:12px;line-height:1.5;font-size:13px}
+.studio-reset-dialog p{margin:0}
+.studio-reset-warning{display:flex;gap:10px;align-items:flex-start;padding:12px;background:var(--theme-warning-bg);color:var(--theme-warning-ink);border-radius:var(--skin-radius,7px)}
+.studio-reset-warning svg{flex-shrink:0}
+.studio-reset-preserve{color:var(--theme-muted)}
+.studio-reset-dialog label{display:flex;flex-direction:column;gap:7px;font-weight:600}
+.studio-reset-dialog input{background:var(--theme-input);color:var(--theme-text);border:1px solid var(--theme-line);border-radius:var(--skin-radius,7px);padding:10px;font-size:14px}
+.studio-reset-error{color:var(--theme-danger-ink)}
+.studio-reset-dialog footer{display:flex;gap:9px;justify-content:flex-end;padding:13px 20px 17px}
+.studio-reset-dialog button.danger:not(:disabled){background:var(--theme-danger-bg);color:var(--theme-danger-ink);border-color:var(--theme-danger-ink)}
+.studio-reset-dialog button:disabled{opacity:.5;cursor:not-allowed}
+/* HF5: the overlay label must NEVER inherit the full-size Canvas-wrapper rule. */
+.bw-3d-stage>.bw-3d-watermark{width:max-content!important;height:auto!important;max-width:calc(100% - 20px);z-index:2}
+
+
+/* HF9 — Zoom/DPI-safe header and viewport quick tools.
+   Narrow headers still have a dedicated theme button; the More menu exposes
+   the same action. The 3D quick rail fits its controls without a vertical
+   scrollbar and preserves each tool's title/accessible label and click logic. */
+.app-shell .titlebar[data-header-mode="tight"] .titlebar-right > .top-appearance-button,
+.app-shell .titlebar[data-header-mode="minimal"] .titlebar-right > .top-appearance-button {
+  display: grid !important;
+  place-items: center;
+  flex: 0 0 34px;
+  width: 34px;
+  min-width: 34px;
+  padding: 0;
+}
+.app-shell .titlebar[data-header-mode="minimal"] .titlebar-right > .top-appearance-button svg {
+  width: 17px;
+  height: 17px;
+}
+/* Two columns instead of squeezing fifteen tools into a scrolling strip.
+   This also works with saved per-user HUD scale/position values. */
+.app-shell .studio-body .viewport-frame .hud-widget .quick-rail-shell.quick-rail-hud .quick-rail {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 52px));
+  grid-auto-flow: row;
+  align-content: start;
+  gap: 4px;
+  width: max-content;
+  min-width: 0;
+  height: auto;
+  max-height: none;
+  padding: 6px;
+  overflow: visible;
+  scrollbar-width: none;
+}
+.app-shell .studio-body .viewport-frame .hud-widget .quick-rail-shell.quick-rail-hud .quick-tool {
+  width: 52px;
+  min-width: 0;
+  min-height: 43px;
+  height: 43px;
+  padding: 3px 2px;
+  gap: 2px;
+}
+.app-shell .studio-body .viewport-frame .hud-widget .quick-rail-shell.quick-rail-hud .quick-tool svg {
+  width: 20px;
+  height: 20px;
+}
+.app-shell .studio-body .viewport-frame .hud-widget .quick-rail-shell.quick-rail-hud .quick-tool span {
+  display: block;
+  max-width: 50px;
+  min-height: 9px;
+  font-size: 8.5px;
+  line-height: 1.05;
+}
+.app-shell .studio-body .viewport-frame .hud-widget .quick-rail-shell.quick-rail-hud .quick-divider {
+  grid-column: 1 / -1;
+  width: auto;
+  margin: 1px 3px;
+  min-height: 1px;
+  height: 1px;
+}
+/* For very short browser viewports, add a third column rather than a scrollbar. */
+@media (max-height: 660px) {
+  .app-shell .studio-body .viewport-frame .hud-widget .quick-rail-shell.quick-rail-hud .quick-rail {
+    grid-template-columns: repeat(3, minmax(0, 48px));
+    gap: 3px;
+    padding: 4px;
+  }
+  .app-shell .studio-body .viewport-frame .hud-widget .quick-rail-shell.quick-rail-hud .quick-tool {
+    width: 48px;
+    min-height: 38px;
+    height: 38px;
+  }
+}
+
+/* HF11 — BSP VIS inspector; scoped to avoid affecting existing themes/docks. */
+.bsp-vis-panel { display:flex;flex-direction:column;gap:8px;min-width:0; }
+.bsp-vis-panel small { display:block;overflow-wrap:anywhere;font-size:11px;line-height:1.35; }
+.bsp-vis-panel h3 { display:flex;gap:5px;align-items:center; }
+.bsp-vis-panel .bsp-vis-leaf-input { display:grid;grid-template-columns:30px minmax(0,1fr) 30px;gap:4px; }
+.bsp-vis-panel .bsp-vis-leaf-input input { min-width:0;width:100%;box-sizing:border-box;background:var(--input-bg,var(--panel-bg,#202733));color:inherit;border:1px solid var(--border-color,#657388);border-radius:4px;padding:5px; }
+.bsp-vis-panel .bsp-vis-leaf-input button { min-width:0;padding:4px; }
+.bsp-vis-panel .bsp-vis-check { display:flex;align-items:center;gap:6px;font-size:12px; }
+.bsp-vis-panel .bsp-vis-check input { flex-shrink:0; }
+.bsp-vis-panel .bsp-vis-stats,.bsp-vis-panel .bsp-vis-legend { font-size:11px;overflow-wrap:anywhere; }
+.bsp-vis-panel .bsp-rail-wide { display:flex;align-items:center;justify-content:center;gap:6px;min-width:0; }
+@media (max-width:1200px) { .bsp-vis-toolbar-label { display:none; } }
+
+/* HF13 Co-op Playtest: one collapsible section in Map Doctor, no new global rail. */
+.doctor-mode-tabs{flex-shrink:0}
+.doctor-coop-panel{display:flex;flex-direction:column;gap:10px;min-height:0;overflow-y:auto;flex:1;padding:12px;border:1px solid var(--theme-line);border-radius:var(--skin-radius,10px);background:var(--theme-panel);color:var(--theme-text)}
+.doctor-coop-panel>strong:first-child{display:flex;align-items:center;gap:8px}
+.doctor-coop-panel p,.doctor-coop-panel>small{font-size:12px;color:var(--theme-muted);line-height:1.45}
+.doctor-coop-controls{display:flex;flex-wrap:wrap;align-items:end;gap:8px}
+.doctor-coop-controls label{display:flex;flex-direction:column;gap:4px;font-size:11px;min-width:112px;color:var(--theme-muted)}
+.doctor-coop-controls label:nth-child(2){flex:1;min-width:160px}
+.doctor-coop-controls select{width:100%;max-width:100%;border:1px solid var(--theme-line);background:var(--theme-control);color:var(--theme-text);border-radius:var(--skin-radius,7px);padding:7px 8px}
+.doctor-coop-controls button{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--theme-line);background:var(--theme-control);color:var(--theme-text);border-radius:var(--skin-radius,7px);padding:8px;font-size:11px}
+.doctor-coop-findings{min-height:42px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.doctor-coop-findings .map-doctor-issue{flex-shrink:0}
+.doctor-coop-controls button:disabled{opacity:.48;cursor:default}
+@media(max-width:600px){.doctor-coop-panel{padding:8px}.doctor-coop-controls label{flex-basis:45%}.doctor-coop-controls label:nth-child(2){flex:1}}
+
+/* HF15: linked instances are optional and collapsed until requested.
+   Keep the original 3D preview usable at 125% Windows scaling. */
+.pfstudio-main.hf15-prefab-main{overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+.hf15-prefab-main .pf3d-stage{flex:1 0 160px;min-height:160px}
+.hf15-linked{flex:none;border:1px solid var(--theme-line);border-radius:var(--skin-radius,7px);background:var(--theme-panel2);color:var(--theme-text);min-width:0}
+.hf15-linked>summary{display:flex;align-items:center;gap:8px;cursor:pointer;padding:9px 11px;font-size:12px;font-weight:700;list-style:none}
+.hf15-linked>summary::-webkit-details-marker{display:none}
+.hf15-linked>summary::after{content:'▾';margin-left:auto;color:var(--theme-muted)}
+.hf15-linked:not([open])>summary::after{content:'▸'}
+.hf15-linked>section{border:0!important;border-top:1px solid var(--theme-line)!important;margin:0!important;background:var(--theme-panel)}
+.hf15-linked button,.hf15-linked select,.hf15-linked input:not([type=checkbox]){background:var(--theme-control);color:var(--theme-text);border:1px solid var(--theme-line);border-radius:var(--skin-radius,5px);padding:5px 8px;min-width:0}
+.hf15-linked button{display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+.hf15-linked button:disabled{cursor:default;opacity:.55}
+.hf15-linked button:focus-visible,.hf15-linked input:focus-visible,.hf15-linked select:focus-visible{outline:2px solid var(--theme-accent);outline-offset:1px}
+@media(max-width:760px){.hf15-prefab-main .pf3d-stage{flex:1 0 120px;min-height:120px}.hf15-linked input[type=number]{width:68px!important}}
+
+/* HF16: compact, theme-aware UV continuity preview; no effect on HUD/docks. */
+.texture-seamless-section{border:1px solid var(--theme-line);border-radius:var(--skin-radius,6px);min-width:0;overflow:hidden}
+.texture-studio-body .texture-seamless-toggle{width:100%;border:0!important;justify-content:flex-start!important;border-radius:0!important;background:var(--theme-panel2)!important;font-weight:700!important}
+.texture-seamless-content{display:flex;flex-direction:column;gap:8px;padding:9px;min-width:0}
+.texture-seamless-content>small{color:var(--theme-muted);overflow-wrap:anywhere}
+.texture-seamless-stats{display:flex;flex-wrap:wrap;gap:5px 9px;color:var(--theme-muted);font-size:10px}
+.texture-seamless-preview{max-height:165px;overflow-y:auto;display:flex;flex-direction:column;gap:7px;min-width:0;scrollbar-width:thin}
+.texture-seamless-preview>div{padding:5px 6px;border:1px solid var(--theme-line);border-radius:var(--skin-radius,5px);display:flex;flex-direction:column;gap:3px;min-width:0}
+.texture-seamless-preview strong{font-size:10px;color:var(--theme-text)}
+.texture-seamless-preview small{font-size:9px;color:var(--theme-muted);overflow-wrap:anywhere}
+
+/* HF16 HF1 — Texture Studio MAP: reliable scrolling at Windows 125% zoom.
+   Scope to MAP only; the BSP Texture Studio uses the shared base classes.
+   A definite panel height (set from the current window position) gives this
+   flex child real free space; its contents never shrink to hide controls. */
+.texture-studio-panel[data-texture-map] {
+  box-sizing: border-box;
+  min-height: 0;
+}
+.texture-studio-panel[data-texture-map] > .texture-studio-head {
+  flex: 0 0 auto;
+}
+.texture-studio-panel[data-texture-map] > .texture-studio-body {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+.texture-studio-panel[data-texture-map] > .texture-studio-body > * {
+  flex-shrink: 0;
+}
+
+/* HF17 HF3 diagnostic: read-only, accessible from the existing draggable FPS badge. */
+.viewport-frame .hud-fps .map-performance-monitor{pointer-events:auto;cursor:pointer}
+.viewport-frame .map-render-diagnostic{
+ position:absolute;top:100px;right:15px;z-index:65;width:min(480px,calc(100% - 30px));
+ max-height:min(78vh,calc(100% - 110px));overflow:auto;box-sizing:border-box;
+ background:var(--theme-panel);color:var(--theme-text);border:1px solid var(--theme-line);
+ border-radius:var(--skin-radius,9px);box-shadow:0 8px 36px var(--theme-shadow-color);
+ padding:15px;pointer-events:auto;font-size:12px;
+}
+.viewport-frame .map-render-diagnostic[hidden]{display:none!important}
+.viewport-frame .map-render-diagnostic strong{display:block;font-size:14px;margin:0 0 8px}
+.viewport-frame .map-render-diagnostic p{color:var(--theme-muted);margin:0 0 10px}
+.viewport-frame .map-render-diagnostic pre{margin:0 0 12px;font:11px/1.5 Consolas,monospace;
+ white-space:pre-wrap;overflow-wrap:anywhere;user-select:text}
+.viewport-frame .map-render-diagnostic-actions{display:flex;gap:7px;flex-wrap:wrap}
+.viewport-frame .map-render-diagnostic-actions button{font:inherit;color:var(--theme-text);background:var(--theme-control);
+ border:1px solid var(--theme-line);padding:7px 9px;border-radius:6px;cursor:pointer}
+@media(max-height:720px){.viewport-frame .map-render-diagnostic{top:35px;max-height:calc(100% - 50px)}}
+
+/* HF17 HF5 — explicit BSP→MAP recovery action. Never hide the label, even
+   under 125% Windows scaling. In narrow viewports, the existing BSP toolbar
+   wraps its controls rather than replacing the label with an icon. */
+.bsp-toolbar-end .bsp-recovery-cta{display:inline-flex;gap:6px;align-items:center;justify-content:center;flex-shrink:0;white-space:nowrap;font-weight:650;border-color:var(--theme-line);background:var(--theme-control);color:var(--ui-ink);--ui-ink:var(--theme-text);--ui-muted:var(--theme-muted)}
+.bsp-toolbar-end .bsp-recovery-cta span{display:inline!important;white-space:nowrap;font-size:11px;}
+@media(max-width:1000px){.bsp-toolbar-split{flex-wrap:wrap;max-height:none}.bsp-toolbar-split .bsp-toolbar-start,.bsp-toolbar-split .bsp-toolbar-end{flex:1 1 100%;justify-content:flex-start;flex-wrap:wrap;overflow:visible}.bsp-toolbar-end .bsp-recovery-cta{margin-left:auto}}
+
+/* HF19 — MAP Navigator is part of Explorer, scrolls internally, and never
+   resizes the docked inspector beyond its own available height. */
+.smart-map-navigator{flex:0 0 auto;min-width:0;max-width:100%;border-bottom:1px solid var(--theme-line);color:var(--theme-text);background:var(--theme-panel)}
+.smart-map-navigator button{font:inherit;color:inherit;cursor:pointer}
+.smart-map-navigator button:disabled{opacity:.48;cursor:not-allowed}
+.smart-map-navigator-heading{width:100%;min-height:30px;display:flex;align-items:center;gap:6px;padding:5px 9px;border:0;background:var(--theme-panel2);font-size:10px;text-align:left}
+.smart-map-navigator-heading:hover{background:var(--theme-control-hover)}
+.smart-map-navigator-content{display:flex;flex-direction:column;gap:5px;padding:7px;min-width:0}
+.smart-map-focus-selection{display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 8px;border:1px solid var(--theme-accent);border-radius:var(--skin-radius,5px);background:var(--theme-control);font-size:10px}
+.smart-map-focus-selection:hover:not(:disabled){background:var(--theme-control-hover)}
+.smart-map-navigator-search{display:flex;align-items:center;gap:5px;min-width:0;padding:5px 7px;border:1px solid var(--theme-line);border-radius:var(--skin-radius,5px);background:var(--theme-input)}
+.smart-map-navigator-search input{min-width:0;width:100%;border:0;outline:0;background:transparent;color:var(--theme-text);font:inherit;font-size:10px}
+.smart-map-navigator-filters{display:flex;gap:4px;min-width:0}
+.smart-map-navigator-filters button{flex:1;min-width:0;border:1px solid var(--theme-line);border-radius:var(--skin-radius,4px);background:var(--theme-control);padding:4px 2px;font-size:9px}
+.smart-map-navigator-filters button.active{border-color:var(--theme-accent);background:var(--theme-selection)}
+.smart-map-navigator-count,.smart-map-navigator-hint{font-size:10px;color:var(--theme-muted);margin:3px 1px;line-height:1.4}
+.smart-map-navigator-results{display:flex;flex-direction:column;gap:2px;overflow-y:auto;max-height:min(210px,25vh);min-height:0;overscroll-behavior:contain}
+.smart-map-navigator-results>p{font-size:10px;color:var(--theme-muted);padding:6px;margin:0}
+.smart-map-navigator-result{display:flex;align-items:center;gap:6px;min-width:0;text-align:left;border:1px solid transparent;border-radius:var(--skin-radius,4px);padding:5px;background:transparent;font-size:10px}
+.smart-map-navigator-result.selected{border-color:var(--theme-accent);background:var(--theme-selection)}
+.smart-map-navigator-result:not(:disabled):hover{background:var(--theme-control-hover)}
+.smart-map-navigator-result>span{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}
+.smart-map-navigator-result strong,.smart-map-navigator-result small{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.smart-map-navigator-result small{color:var(--theme-muted);font-size:9px}
+
+/* HF22: one consolidated geometry inspector, not another overlapping Studio. */
+.hf22-geometry-workspace{margin:7px 6px 13px;padding:12px;min-width:0;border:1px solid var(--theme-line);border-radius:var(--skin-radius,9px);background:var(--theme-panel2);color:var(--theme-text);--ui-ink:var(--theme-text);--ui-muted:var(--theme-muted);display:grid;gap:9px;}
+.hf22-geometry-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px}
+.hf22-geometry-heading span{font-size:10px;color:var(--theme-muted)}
+.hf22-geometry-modes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;min-width:0}
+.hf22-geometry-modes button{min-width:0;padding:8px 3px;border-radius:var(--skin-radius,5px);border:1px solid var(--theme-line);background:var(--theme-control);color:var(--theme-text);font-size:11px;cursor:pointer}
+.hf22-geometry-modes button.active{border-color:var(--theme-accent);background:var(--theme-selection);font-weight:700}
+.hf22-geometry-help,.hf22-geometry-validation{font-size:10px;line-height:1.5;margin:0;color:var(--theme-muted)}
+.hf22-geometry-selection{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:5px;font-size:11px}
+.hf22-geometry-selection-actions{display:flex;gap:4px;flex-wrap:wrap}
+.hf22-geometry-workspace button:not(.active){transition:background .1s,border-color .1s}
+.hf22-geometry-selection-actions button,.hf22-delta-actions button,.hf22-geometry-history button{font:inherit;font-size:10px;cursor:pointer;color:var(--theme-text);background:var(--theme-control);border:1px solid var(--theme-line);border-radius:var(--skin-radius,5px);padding:7px 9px}
+.hf22-delta-heading{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:11px;font-weight:700;flex-wrap:wrap}
+.hf22-delta-heading small{color:var(--theme-muted);font-weight:400}
+.hf22-delta-inputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.hf22-delta-inputs label{display:flex;align-items:center;gap:4px;min-width:0;font-size:11px}
+.hf22-delta-inputs label>span{font-weight:700;flex-shrink:0}
+.hf22-delta-inputs input{min-width:0;width:100%;padding:7px 4px;color:var(--theme-text);background:var(--theme-input);border:1px solid var(--theme-line);border-radius:var(--skin-radius,4px);font-size:11px}
+.hf22-delta-actions,.hf22-geometry-history{display:flex;gap:5px;flex-wrap:wrap}
+.hf22-delta-actions button:first-child{flex:1;border-color:var(--theme-accent);font-weight:700}
+.hf22-geometry-history{border-top:1px solid var(--theme-line);padding-top:8px}
+.hf22-geometry-history button{flex:1}
+.hf22-geometry-workspace button:hover:not(:disabled){background:var(--theme-control-hover)}
+.hf22-geometry-workspace button:focus-visible,.hf22-delta-inputs input:focus-visible{outline:2px solid var(--theme-accent);outline-offset:2px}
+.hf22-geometry-workspace button:disabled{opacity:.55;cursor:default}
+.hf22-existing-ops-label{margin:12px 11px 4px;color:var(--theme-muted);font-size:10px;letter-spacing:.02em;font-weight:700}
+@media(max-width:600px){.hf22-geometry-workspace{padding:8px}.hf22-geometry-modes button{font-size:10px;padding:7px 2px}}
+
+.hf22-existing-ops{margin:9px 6px 12px;border:1px solid var(--theme-line);border-radius:var(--skin-radius,7px);min-width:0}
+.hf22-existing-ops>summary{list-style-position:inside;cursor:pointer;background:var(--theme-panel2);border-radius:var(--skin-radius,6px);color:var(--theme-text);padding:10px 12px;font-size:11px;font-weight:700}
+.hf22-existing-ops[open]>summary{border-bottom:1px solid var(--theme-line)}
+.hf22-existing-ops>summary:hover{background:var(--theme-control-hover)}
+.hf22-existing-ops>summary:focus-visible{outline:2px solid var(--theme-accent);outline-offset:2px}

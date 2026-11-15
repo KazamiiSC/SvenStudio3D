@@ -305,6 +305,14 @@ Object.assign(pt,{
   'Automatically adjust docks and toolbars to available space':'Ajustar painéis e barras automaticamente ao espaço disponível',
   'Recommended for Windows 125% / 150% display scaling. Keeps manual panel sizes and restores them when there is more space. Does not alter MAP geometry or browser zoom.':'Recomendado para escala de 125% ou 150% no Windows. Preserva os tamanhos manuais dos painéis e os restaura com mais espaço. Não altera a geometria MAP nem o zoom do navegador.'
 });
+// HF17 HF1: draw-call batching affects only the renderer, not GoldSrc data.
+const BATCHING_LABEL='Batch opaque brushes (HF17 HF1)';
+const BATCHING_HELP='Batching merges compatible opaque surfaces for fewer GPU draw calls. Disable it here to compare FPS or if a visual problem appears. It never changes MAP geometry.';
+Object.assign(es,{[BATCHING_LABEL]:'Agrupar brushes opacos (HF17 HF1)',[BATCHING_HELP]:'Agrupa superficies opacas compatibles para reducir llamadas a la GPU. Desactivá esta opción para comparar FPS o si aparece algún problema visual. Nunca modifica la geometría MAP.'});
+Object.assign(ru,{[BATCHING_LABEL]:'Группировать непрозрачные браши (HF17 HF1)',[BATCHING_HELP]:'Совместимые непрозрачные поверхности объединяются для уменьшения вызовов GPU. Отключите для сравнения FPS или при ошибках отображения. Геометрия MAP не изменяется.'});
+Object.assign(ko,{[BATCHING_LABEL]:'불투명 브러시 일괄 렌더링 (HF17 HF1)',[BATCHING_HELP]:'호환되는 불투명 면을 묶어 GPU 그리기 호출을 줄입니다. FPS를 비교하거나 표시 문제가 발생하면 끄세요. MAP 지오메트리는 변경되지 않습니다.'});
+Object.assign(zh,{[BATCHING_LABEL]:'合并不透明笔刷绘制 (HF17 HF1)',[BATCHING_HELP]:'合并兼容的不透明表面以减少 GPU 绘制调用。如需比较 FPS 或遇到显示问题，可关闭此选项。不会修改 MAP 几何。'});
+Object.assign(pt,{[BATCHING_LABEL]:'Agrupar brushes opacos (HF17 HF1)',[BATCHING_HELP]:'Agrupa superfícies opacas compatíveis para reduzir chamadas de desenho à GPU. Desative para comparar FPS ou caso apareça algum problema visual. A geometria MAP não é alterada.'});
 const dictionaries:Record<Locale,Record<string,string>>={en,es,ru,ko,zh,pt};
 export function translate(locale:Locale,key:string):string{return dictionaries[locale]?.[key]??key}
 // Keep the translator stable while the language is unchanged. Effects depending
@@ -5728,3 +5736,196 @@ Object.assign(pt,{
   'No saved workspaces':'Nenhuma área de trabalho salva','Apply':'Aplicar',
   'Place multiple':'Colocar várias','Recent textures':'Texturas recentes','Inspector sections':'Seções de propriedades'
 });
+
+// v2.0 HF10 — Map Doctor 3.0 (Svengine entity checks; no changes to game identifiers).
+Object.assign(es,{
+ 'No Sven Co-op player spawn found. Add an info_player_deathmatch, info_player_dm2, info_player_coop or info_player_start.':'No hay ningún punto de aparición válido de Sven Co-op. Agregá info_player_deathmatch, info_player_dm2, info_player_coop o info_player_start.'
+});
+Object.assign(en,{
+ 'No Sven Co-op player spawn found. Add an info_player_deathmatch, info_player_dm2, info_player_coop or info_player_start.':'No Sven Co-op player spawn found. Add an info_player_deathmatch, info_player_dm2, info_player_coop or info_player_start.'
+});
+Object.assign(ru,{
+ 'No Sven Co-op player spawn found. Add an info_player_deathmatch, info_player_dm2, info_player_coop or info_player_start.':'Нет точки появления игрока Sven Co-op. Добавьте info_player_deathmatch, info_player_dm2, info_player_coop или info_player_start.'
+});
+Object.assign(ko,{
+ 'No Sven Co-op player spawn found. Add an info_player_deathmatch, info_player_dm2, info_player_coop or info_player_start.':'Sven Co-op 플레이어 시작 지점이 없습니다. info_player_deathmatch, info_player_dm2, info_player_coop 또는 info_player_start를 추가하세요.'
+});
+Object.assign(zh,{
+ 'No Sven Co-op player spawn found. Add an info_player_deathmatch, info_player_dm2, info_player_coop or info_player_start.':'未找到 Sven Co-op 玩家出生点。请添加 info_player_deathmatch、info_player_dm2、info_player_coop 或 info_player_start。'
+});
+Object.assign(pt,{
+ 'No Sven Co-op player spawn found. Add an info_player_deathmatch, info_player_dm2, info_player_coop or info_player_start.':'Nenhum ponto de surgimento de Sven Co-op foi encontrado. Adicione info_player_deathmatch, info_player_dm2, info_player_coop ou info_player_start.'
+});
+
+// HF12 — Smart Snapping 2.0. Editor UI strings only; never transform MAP values.
+Object.assign(es,{
+  'Smart Snapping 2.0':'Ajuste magnético 2.0',
+  'Enable magnetic geometry snapping':'Activar ajuste magnético de geometría',
+  'Magnetic targets':'Objetivos magnéticos',
+  'Faces, vertices and edges':'Caras, vértices y aristas',
+  'Faces and surfaces':'Caras y superficies',
+  'Vertices only':'Solo vértices',
+  'Edges only':'Solo aristas',
+  'Magnetic distance (pixels)':'Distancia magnética (píxeles)',
+  'Magnetism affects only moving brushes and entities with G or the move gizmo. Hold Shift to ignore magnetic snapping. Existing grid snapping stays available; maps and BSP data are unchanged until you confirm the move.':'Funciona al mover brushes y entidades con G o el gizmo. Mantené Shift para ignorarlo. La grilla sigue disponible; el mapa no cambia hasta confirmar.'
+});
+Object.assign(ru,{
+  'Smart Snapping 2.0':'Магнитная привязка 2.0',
+  'Enable magnetic geometry snapping':'Включить магнитную привязку к геометрии',
+  'Magnetic targets':'Цели привязки',
+  'Faces, vertices and edges':'Грани, вершины и рёбра',
+  'Faces and surfaces':'Грани и поверхности',
+  'Vertices only':'Только вершины',
+  'Edges only':'Только рёбра',
+  'Magnetic distance (pixels)':'Радиус привязки (пиксели)',
+  'Magnetism affects only moving brushes and entities with G or the move gizmo. Hold Shift to ignore magnetic snapping. Existing grid snapping stays available; maps and BSP data are unchanged until you confirm the move.':'Работает при перемещении кистей и сущностей через G или манипулятор. Shift временно отключает привязку. Сетка сохраняется; карта меняется только после подтверждения.'
+});
+Object.assign(ko,{
+  'Smart Snapping 2.0':'자석 스냅 2.0',
+  'Enable magnetic geometry snapping':'자석 도형 스냅 사용',
+  'Magnetic targets':'스냅 대상',
+  'Faces, vertices and edges':'면, 꼭짓점 및 모서리',
+  'Faces and surfaces':'면과 표면',
+  'Vertices only':'꼭짓점만',
+  'Edges only':'모서리만',
+  'Magnetic distance (pixels)':'자석 거리 (픽셀)',
+  'Magnetism affects only moving brushes and entities with G or the move gizmo. Hold Shift to ignore magnetic snapping. Existing grid snapping stays available; maps and BSP data are unchanged until you confirm the move.':'G 또는 이동 기즈모로 브러시와 엔티티를 이동할 때 작동합니다. Shift를 누르면 자석 스냅을 무시합니다. 기존 격자는 유지되며 이동을 확정할 때만 맵이 변경됩니다.'
+});
+Object.assign(zh,{
+  'Smart Snapping 2.0':'智能磁吸 2.0',
+  'Enable magnetic geometry snapping':'启用几何磁吸',
+  'Magnetic targets':'磁吸目标',
+  'Faces, vertices and edges':'面、顶点和边',
+  'Faces and surfaces':'面和表面',
+  'Vertices only':'仅顶点',
+  'Edges only':'仅边',
+  'Magnetic distance (pixels)':'磁吸距离（像素）',
+  'Magnetism affects only moving brushes and entities with G or the move gizmo. Hold Shift to ignore magnetic snapping. Existing grid snapping stays available; maps and BSP data are unchanged until you confirm the move.':'仅在使用 G 或移动手柄移动笔刷及实体时生效。按住 Shift 可临时关闭磁吸。原有网格不变，确认移动后才会修改地图。'
+});
+Object.assign(pt,{
+  'Smart Snapping 2.0':'Encaixe magnético 2.0',
+  'Enable magnetic geometry snapping':'Ativar encaixe magnético da geometria',
+  'Magnetic targets':'Alvos magnéticos',
+  'Faces, vertices and edges':'Faces, vértices e arestas',
+  'Faces and surfaces':'Faces e superfícies',
+  'Vertices only':'Somente vértices',
+  'Edges only':'Somente arestas',
+  'Magnetic distance (pixels)':'Distância magnética (pixels)',
+  'Magnetism affects only moving brushes and entities with G or the move gizmo. Hold Shift to ignore magnetic snapping. Existing grid snapping stays available; maps and BSP data are unchanged until you confirm the move.':'Funciona ao mover brushes e entidades com G ou com o gizmo. Segure Shift para ignorar o encaixe. A grade continua disponível; o mapa só muda após confirmar o movimento.'
+});
+
+Object.assign(es,{'Magnetic':'Magnético'});
+Object.assign(ru,{'Magnetic':'Магнит'});
+Object.assign(ko,{'Magnetic':'자석'});
+Object.assign(zh,{'Magnetic':'磁吸'});
+Object.assign(pt,{'Magnetic':'Magnético'});
+
+// HF17 HF5: clearly labelled access exists only in BSP Viewer; the three
+// recovery tools inside the dialog remain unchanged. NULL mode is preview-only.
+Object.assign(es,{'Recover BSP to MAP':'Recuperar BSP → MAP','Hide NULL faces (improves recovered MAP performance)':'Ocultar caras NULL (mejora FPS en mapas recuperados)','Show NULL faces (may reduce FPS)':'Mostrar caras NULL (puede reducir FPS)'});
+Object.assign(ru,{'Recover BSP to MAP':'Восстановить BSP → MAP','Hide NULL faces (improves recovered MAP performance)':'Скрыть NULL-грани (ускоряет восстановленные карты)','Show NULL faces (may reduce FPS)':'Показать NULL-грани (возможна потеря FPS)'});
+Object.assign(ko,{'Recover BSP to MAP':'BSP → MAP 복구','Hide NULL faces (improves recovered MAP performance)':'NULL 면 숨기기 (복구된 맵 성능 개선)','Show NULL faces (may reduce FPS)':'NULL 면 표시 (FPS 저하 가능)'});
+Object.assign(zh,{'Recover BSP to MAP':'恢复 BSP → MAP','Hide NULL faces (improves recovered MAP performance)':'隐藏 NULL 面（提高恢复地图性能）','Show NULL faces (may reduce FPS)':'显示 NULL 面（可能降低帧率）'});
+Object.assign(pt,{'Recover BSP to MAP':'Recuperar BSP → MAP','Hide NULL faces (improves recovered MAP performance)':'Ocultar faces NULL (melhora FPS em mapas recuperados)','Show NULL faces (may reduce FPS)':'Mostrar faces NULL (pode reduzir FPS)'});
+
+// HF19 MAP Navigator — localized, editor-only labels.
+Object.assign(es,{
+ 'Smart Map Navigator':'Navegador inteligente del mapa','Focus selection in 3D':'Enfocar selección en 3D',
+ 'Center camera and highlight selected object':'Centrar cámara y resaltar objeto seleccionado',
+ 'Search map objects':'Buscar objetos del mapa','Search name, class, texture, target...':'Buscar nombre, clase, textura, target...',
+ 'Object type filter':'Filtro de tipo de objeto','All':'Todos','results':'resultados','Showing first':'Mostrando los primeros',
+ 'Hidden':'Oculto','Show hidden object before focusing':'Mostrá el objeto oculto antes de enfocarlo',
+ 'No matching map objects':'No se encontraron objetos',
+ 'Select any object, or search and click a result to frame it in 3D.':'Seleccioná un objeto o buscá y hacé clic en un resultado para enfocarlo en 3D.'
+});
+Object.assign(ru,{
+ 'Smart Map Navigator':'Навигатор карты','Focus selection in 3D':'Навести камеру на выделенное',
+ 'Center camera and highlight selected object':'Центрировать камеру и подсветить объект',
+ 'Search map objects':'Поиск объектов карты','Search name, class, texture, target...':'Имя, класс, текстура, цель...',
+ 'Object type filter':'Тип объекта','All':'Все','results':'результатов','Showing first':'Показаны первые',
+ 'Hidden':'Скрыт','Show hidden object before focusing':'Покажите скрытый объект перед фокусировкой',
+ 'No matching map objects':'Объекты не найдены',
+ 'Select any object, or search and click a result to frame it in 3D.':'Выберите объект или найдите его, затем нажмите, чтобы навести камеру.'
+});
+Object.assign(ko,{
+ 'Smart Map Navigator':'스마트 맵 탐색기','Focus selection in 3D':'선택 항목에 3D 초점',
+ 'Center camera and highlight selected object':'카메라 중앙 맞춤 및 객체 강조',
+ 'Search map objects':'맵 객체 검색','Search name, class, texture, target...':'이름, 클래스, 텍스처, 타겟 검색...',
+ 'Object type filter':'객체 유형 필터','All':'전체','results':'검색 결과','Showing first':'처음 표시',
+ 'Hidden':'숨김','Show hidden object before focusing':'초점을 맞추기 전에 숨김을 해제하세요',
+ 'No matching map objects':'일치하는 객체 없음',
+ 'Select any object, or search and click a result to frame it in 3D.':'객체를 선택하거나 검색 결과를 클릭하여 3D에서 초점을 맞춥니다.'
+});
+Object.assign(zh,{
+ 'Smart Map Navigator':'智能地图导航','Focus selection in 3D':'在 3D 中聚焦所选对象',
+ 'Center camera and highlight selected object':'相机居中并高亮所选对象',
+ 'Search map objects':'搜索地图对象','Search name, class, texture, target...':'搜索名称、类别、纹理、目标...',
+ 'Object type filter':'对象类型筛选','All':'全部','results':'条结果','Showing first':'仅显示前',
+ 'Hidden':'隐藏','Show hidden object before focusing':'聚焦前请先显示隐藏对象',
+ 'No matching map objects':'没有匹配的对象',
+ 'Select any object, or search and click a result to frame it in 3D.':'选择一个对象，或搜索并点击结果以在 3D 中聚焦。'
+});
+Object.assign(pt,{
+ 'Smart Map Navigator':'Navegador inteligente do mapa','Focus selection in 3D':'Focar seleção em 3D',
+ 'Center camera and highlight selected object':'Centralizar câmera e destacar o objeto',
+ 'Search map objects':'Pesquisar objetos do mapa','Search name, class, texture, target...':'Buscar nome, classe, textura, alvo...',
+ 'Object type filter':'Filtro de tipo de objeto','All':'Todos','results':'resultados','Showing first':'Mostrando os primeiros',
+ 'Hidden':'Oculto','Show hidden object before focusing':'Mostre o objeto oculto antes de focar',
+ 'No matching map objects':'Nenhum objeto encontrado',
+ 'Select any object, or search and click a result to frame it in 3D.':'Selecione um objeto ou pesquise e clique num resultado para focá-lo em 3D.'
+});
+
+// HF22 — consolidate existing MAP geometry modes in one inspector; do not
+// introduce another standalone Studio or translate technical FGD identifiers.
+Object.assign(es,{
+ 'Edit existing brush':'Editar brush existente','Geometry modes':'Modos de geometría',
+ 'Click a handle, Shift/Ctrl+click to add or remove. Drag the gizmo or enter a local offset. One edit = one Undo step.':'Hacé clic en un control; Shift/Ctrl+clic agrega o quita. Arrastrá el gizmo o indicá un desplazamiento local. Cada edición equivale a un paso de Deshacer.',
+ 'All vertices':'Todos los vértices','Clear selection':'Limpiar selección','Move selected geometry':'Mover geometría seleccionada',
+ 'Local units':'Unidades locales','Local offset':'Desplazamiento local','Apply movement':'Aplicar movimiento',
+ 'Select a vertex, an edge, or a face first.':'Primero seleccioná un vértice, una arista o una cara.',
+ 'Selected vertex position':'Posición del vértice seleccionado','Existing tools':'Herramientas existentes',
+ 'vertices':'vértices','faces':'caras'
+});
+Object.assign(ru,{
+ 'Edit existing brush':'Редактировать существующий браш','Geometry modes':'Режимы геометрии',
+ 'Click a handle, Shift/Ctrl+click to add or remove. Drag the gizmo or enter a local offset. One edit = one Undo step.':'Щёлкните по маркеру. Shift/Ctrl+щелчок добавляет или убирает. Переместите гизмо или задайте локальное смещение. Каждое действие — один шаг отмены.',
+ 'All vertices':'Все вершины','Clear selection':'Очистить выделение','Move selected geometry':'Переместить геометрию',
+ 'Local units':'Локальные единицы','Local offset':'Локальное смещение','Apply movement':'Применить смещение',
+ 'Select a vertex, an edge, or a face first.':'Сначала выберите вершину, ребро или грань.',
+ 'Selected vertex position':'Положение вершины','Existing tools':'Существующие инструменты',
+ 'vertices':'вершин','faces':'граней'
+});
+Object.assign(ko,{
+ 'Edit existing brush':'기존 브러시 편집','Geometry modes':'기하 모드',
+ 'Click a handle, Shift/Ctrl+click to add or remove. Drag the gizmo or enter a local offset. One edit = one Undo step.':'핸들을 클릭하세요. Shift/Ctrl+클릭으로 추가하거나 제외합니다. 기즈모를 드래그하거나 로컬 오프셋을 입력하세요. 한 번의 편집은 실행 취소 한 단계입니다.',
+ 'All vertices':'모든 꼭짓점','Clear selection':'선택 해제','Move selected geometry':'선택한 기하 이동',
+ 'Local units':'로컬 단위','Local offset':'로컬 오프셋','Apply movement':'이동 적용',
+ 'Select a vertex, an edge, or a face first.':'꼭짓점, 모서리 또는 면을 먼저 선택하세요.',
+ 'Selected vertex position':'선택한 꼭짓점 위치','Existing tools':'기존 도구',
+ 'vertices':'꼭짓점','faces':'면'
+});
+Object.assign(zh,{
+ 'Edit existing brush':'编辑现有笔刷','Geometry modes':'几何模式',
+ 'Click a handle, Shift/Ctrl+click to add or remove. Drag the gizmo or enter a local offset. One edit = one Undo step.':'点击控制点；按 Shift/Ctrl 点击可增减选择。拖动操作轴或输入局部偏移。每次编辑可独立撤销。',
+ 'All vertices':'全部顶点','Clear selection':'清除选择','Move selected geometry':'移动所选几何体',
+ 'Local units':'局部单位','Local offset':'局部偏移','Apply movement':'应用移动',
+ 'Select a vertex, an edge, or a face first.':'请先选择一个顶点、边或面。',
+ 'Selected vertex position':'所选顶点的位置','Existing tools':'现有工具',
+ 'vertices':'顶点','faces':'面'
+});
+Object.assign(pt,{
+ 'Edit existing brush':'Editar brush existente','Geometry modes':'Modos de geometria',
+ 'Click a handle, Shift/Ctrl+click to add or remove. Drag the gizmo or enter a local offset. One edit = one Undo step.':'Clique em um controle; Shift/Ctrl+clique adiciona ou remove. Arraste o gizmo ou informe o deslocamento local. Cada edição equivale a uma etapa de desfazer.',
+ 'All vertices':'Todos os vértices','Clear selection':'Limpar seleção','Move selected geometry':'Mover geometria selecionada',
+ 'Local units':'Unidades locais','Local offset':'Deslocamento local','Apply movement':'Aplicar movimento',
+ 'Select a vertex, an edge, or a face first.':'Primeiro selecione um vértice, aresta ou face.',
+ 'Selected vertex position':'Posição do vértice selecionado','Existing tools':'Ferramentas existentes',
+ 'vertices':'vértices','faces':'faces'
+});
+
+// HF22: group legacy actions in a collapsible inspector section; never remove them.
+Object.assign(es,{'Existing cutting and prefab tools':'Cortes, vaciado y prefabs · herramientas existentes'});
+Object.assign(ru,{'Existing cutting and prefab tools':'Разрезы, полости и префабы · прежние инструменты'});
+Object.assign(ko,{'Existing cutting and prefab tools':'절단, 속 비우기, 프리팹 · 기존 도구'});
+Object.assign(zh,{'Existing cutting and prefab tools':'切割、镂空与预制件 · 现有工具'});
+Object.assign(pt,{'Existing cutting and prefab tools':'Cortes, cavidades e prefabs · ferramentas existentes'});

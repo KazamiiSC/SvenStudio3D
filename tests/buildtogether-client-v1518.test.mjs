@@ -15,7 +15,7 @@ test('BT 2.0 client: coalesces frequent drags and serializes multi-batch edits a
  const temp=await mkdtemp(resolve('.tmp-bt-client-'));
  const previousLocation=globalThis.location;globalThis.location={protocol:'http:'};
  const source=await readFile(new URL('../src/engine/buildTogetherClient.ts',import.meta.url),'utf8');
- const compiled=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText.replace("from '../store'","from './fakeStore.mjs'");
+ const compiled=ts.transpileModule(source.replace("from './studioFiles'", "from '"+new URL('../src/engine/studioFiles.ts',import.meta.url).href+"'"),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText.replace("from '../store'","from './fakeStore.mjs'");
  await writeFile(join(temp,'client.mjs'),compiled);
  await writeFile(join(temp,'fakeStore.mjs'),`import {create} from 'zustand';\nexport const useEditor=create(()=>({project:${JSON.stringify(base)},selected:null,selectedIds:[],history:[],future:[],appendLogs:()=>{}}));`);
  const client=await import(pathToFileURL(join(temp,'client.mjs')).href);const {useEditor}=await import(pathToFileURL(join(temp,'fakeStore.mjs')).href);
@@ -60,7 +60,7 @@ test('BT 2.0 client: automatic reconnect resumes identity and editing after a dr
  globalThis.WebSocket=class CapturedWebSocket extends NativeWebSocket {constructor(...args){super(...args);sockets.push(this);}};
  const saved=new Map();globalThis.sessionStorage={setItem(k,v){saved.set(k,v);},getItem(k){return saved.get(k)??null;}};
  const source=await readFile(new URL('../src/engine/buildTogetherClient.ts',import.meta.url),'utf8');
- const compiled=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText.replace("from '../store'","from './fakeStore.mjs'");
+ const compiled=ts.transpileModule(source.replace("from './studioFiles'", "from '"+new URL('../src/engine/studioFiles.ts',import.meta.url).href+"'"),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText.replace("from '../store'","from './fakeStore.mjs'");
  await writeFile(join(temp,'client.mjs'),compiled);
  await writeFile(join(temp,'fakeStore.mjs'),`import {create} from 'zustand';\nexport const useEditor=create(()=>({project:${JSON.stringify(base)},selected:null,selectedIds:[],history:[],future:[],appendLogs:()=>{}}));`);
  const client=await import(pathToFileURL(join(temp,'client.mjs')).href);

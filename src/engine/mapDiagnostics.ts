@@ -1,6 +1,7 @@
 import type {MapObject,PointEntity,Project,TextureAsset,FgdClass} from './types';
 import {validateBrush} from './exportMap';
 import {transformedVertices,safeFaceTextureAxes} from './geometry';
+import {hasStaticSvenTarget,isSvenPlayerSpawn} from './svenEntitySemantics';
 
 export type MapIssue={severity:'error'|'warning'|'info';category:'geometry'|'entities'|'textures'|'environment';message:string;objectId?:string;code:string;template?:string;params?:Record<string,string|number>};
 export type MapReport={issues:MapIssue[];brushes:number;entities:number;faces:number;textures:number;unknownTextures:number};
@@ -33,7 +34,7 @@ export function analyzeMap(project:Project,assets:TextureAsset[]=[],fgd:FgdClass
  const brushes=project.objects.filter((o):o is Extract<MapObject,{kind:'brush'}>=>o.kind==='brush');
  const entities=project.objects.filter((o):o is PointEntity=>o.kind==='entity');
  if(!brushes.length)push('error','geometry','NO_BRUSHES','Map has no world or entity brushes.');
- if(!entities.some(e=>e.classname==='info_player_start'))push('error','entities','NO_SPAWN','Map has no info_player_start.');
+ if(!entities.some(e=>isSvenPlayerSpawn(e.classname)))push('error','entities','NO_SPAWN','Map has no Sven Co-op player spawn (info_player_deathmatch, info_player_dm2, info_player_coop or info_player_start).',undefined,'No Sven Co-op player spawn found. Add an info_player_deathmatch, info_player_dm2, info_player_coop or info_player_start.');
  brushes.forEach(b=>{
   validateBrush(b).forEach(problem=>push('error','geometry','BRUSH_INVALID',problem,b.id));
   const vertices=transformedVertices(b);
@@ -49,14 +50,15 @@ export function analyzeMap(project:Project,assets:TextureAsset[]=[],fgd:FgdClass
  // swallow the spawn/light, leaving SC-RAD with zero visible light patches.
  for(const brush of brushes){
   if(brush.entityId||!brush.faces.length||!brush.faces.every(face=>face.texture.toUpperCase()==='SKY'))continue;
-  const enclosed=entities.find(entity=>['info_player_start','light','light_spot','light_environment'].includes(entity.classname)&&isInsideSolidBrush(brush,entity.position));
+  const enclosed=entities.find(entity=>(isSvenPlayerSpawn(entity.classname)||['light','light_spot','light_environment'].includes(entity.classname))&&isInsideSolidBrush(brush,entity.position));
   if(enclosed)push('error','environment','SOLID_SKY_SPACE',`Solid SKY brush contains ${enclosed.classname}. A solid cube fills playable space; create a hollow sky enclosure instead.`,brush.id,'Solid SKY brush contains {classname}. Replace it with a hollow sky enclosure.',{classname:enclosed.classname});
  }
 
  const names=new Map<string,PointEntity[]>();
  for(const e of entities){const name=e.props.targetname?.trim();if(name){const group=names.get(name)||[];group.push(e);names.set(name,group);}}
+ const targetnames=new Set(names.keys());
  entities.forEach(e=>{
-  for(const key of ['target','killtarget']){const target=e.props[key]?.trim();if(target&&!names.has(target))push('warning','entities','MISSING_TARGET',`${e.classname}: ${key} = "${target}" has no matching targetname.`,e.id,'Entity target is missing: {classname}.{key} → {target}',{classname:e.classname,key,target});}
+  for(const key of ['target','killtarget']){const target=e.props[key]?.trim();if(target&&!hasStaticSvenTarget(target,targetnames))push('warning','entities','MISSING_TARGET',`${e.classname}: ${key} = "${target}" has no matching targetname.`,e.id,'Entity target is missing: {classname}.{key} → {target}',{classname:e.classname,key,target});}
   if(fgdLoaded&&!fgd.some(c=>c.name.toLowerCase()===e.classname.toLowerCase()))push('info','entities','UNKNOWN_FGD',`${e.classname} is not defined in the loaded FGD.`,e.id,'Class not found in loaded FGD: {classname}',{classname:e.classname});
  });
  for(const [name,members] of names)if(members.length>1)push('info','entities','SHARED_TARGET',`targetname "${name}" is shared by ${members.length} entities (may be intentional).`,members[0].id,'Shared targetname: {name} ({count} entities; may be intentional)',{name,count:members.length});

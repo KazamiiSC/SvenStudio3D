@@ -1,3 +1,4 @@
+import {saveStudioText} from '../engine/studioFiles';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import type {PointerEvent as ReactPointerEvent,WheelEvent as ReactWheelEvent} from 'react';
 import {Canvas,useFrame,useThree,type ThreeEvent} from '@react-three/fiber';
@@ -437,14 +438,11 @@ export function BlueprintToMapStudio({onClose}:{onClose:()=>void}){
       setNotice(locale==='es'?'Copia independiente creada; sus brushes todavía no se generaron.':'Independent copy created; its brushes have not been generated.');
     }catch(error){setNotice(String(error instanceof Error?error.message:error))}
   };
-  const exportPlan=()=>{
+  const exportPlan=async()=>{
     try{
       const asset=exportBlueprintAsset(draft);
-      const blob=new Blob([JSON.stringify(asset,null,2)],{type:'application/json'});
-      const url=URL.createObjectURL(blob),link=document.createElement('a');
-      link.href=url;link.download=(draft.name.trim().replace(/[^a-z0-9_-]+/gi,'_').slice(0,55)||'blueprint')+'.svenblueprint.json';
-      document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
-      setNotice(locale==='es'?'Copia editable exportada.':'Editable blueprint exported.');
+      const saved=await saveStudioText(JSON.stringify(asset,null,2),(draft.name.trim().replace(/[^a-z0-9_-]+/gi,'_').slice(0,55)||'blueprint')+'.svenblueprint.json','exports');
+      setNotice((locale==='es'?'Copia editable exportada: ':'Editable blueprint exported: ')+saved.path);
     }catch(error){setNotice(String(error instanceof Error?error.message:error))}
   };
   const importPlan=async(file?:File)=>{

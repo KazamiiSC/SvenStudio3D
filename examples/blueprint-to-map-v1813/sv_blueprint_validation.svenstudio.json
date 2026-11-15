@@ -1,0 +1,2688 @@
+{
+  "version": 1,
+  "target": "svengine",
+  "name": "sv_blueprint_validation",
+  "world": {
+    "classname": "worldspawn",
+    "wad": "svstudio.wad;",
+    "message": "Blueprint to Map 1.8.13 validation"
+  },
+  "wadNames": [
+    "svstudio.wad"
+  ],
+  "objects": [
+    {
+      "id": "11985fad-923d-4099-8e27-693f3212556c",
+      "kind": "brush",
+      "name": "Exterior · sealed room · Wall 1 main 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -376,
+          -8,
+          -128
+        ],
+        [
+          376,
+          -8,
+          -128
+        ],
+        [
+          392,
+          8,
+          -128
+        ],
+        [
+          -392,
+          8,
+          -128
+        ],
+        [
+          -376,
+          -8,
+          128
+        ],
+        [
+          376,
+          -8,
+          128
+        ],
+        [
+          392,
+          8,
+          128
+        ],
+        [
+          -392,
+          8,
+          128
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        0,
+        256,
+        128
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint demo_blu"
+    },
+    {
+      "id": "5795f706-950b-4599-8a63-e9114c8bcc2e",
+      "kind": "brush",
+      "name": "Exterior · sealed room · Wall 2 main 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -8,
+          248,
+          -128
+        ],
+        [
+          -8,
+          -248,
+          -128
+        ],
+        [
+          8,
+          -264,
+          -128
+        ],
+        [
+          8,
+          264,
+          -128
+        ],
+        [
+          -8,
+          248,
+          128
+        ],
+        [
+          -8,
+          -248,
+          128
+        ],
+        [
+          8,
+          -264,
+          128
+        ],
+        [
+          8,
+          264,
+          128
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        384,
+        0,
+        128
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint demo_blu"
+    },
+    {
+      "id": "7ef1dc49-ee31-4287-9786-f8f83d06ad7f",
+      "kind": "brush",
+      "name": "Exterior · sealed room · Wall 3 main 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          376,
+          8,
+          -128
+        ],
+        [
+          -376,
+          8,
+          -128
+        ],
+        [
+          -392,
+          -8,
+          -128
+        ],
+        [
+          392,
+          -8,
+          -128
+        ],
+        [
+          376,
+          8,
+          128
+        ],
+        [
+          -376,
+          8,
+          128
+        ],
+        [
+          -392,
+          -8,
+          128
+        ],
+        [
+          392,
+          -8,
+          128
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        0,
+        -256,
+        128
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint demo_blu"
+    },
+    {
+      "id": "a68a3062-37d1-47db-b0d3-b2782c36de7e",
+      "kind": "brush",
+      "name": "Exterior · sealed room · Wall 4 main 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          8,
+          -248,
+          -128
+        ],
+        [
+          8,
+          248,
+          -128
+        ],
+        [
+          -8,
+          264,
+          -128
+        ],
+        [
+          -8,
+          -264,
+          -128
+        ],
+        [
+          8,
+          -248,
+          128
+        ],
+        [
+          8,
+          248,
+          128
+        ],
+        [
+          -8,
+          264,
+          128
+        ],
+        [
+          -8,
+          -264,
+          128
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -384,
+        0,
+        128
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint demo_blu"
+    },
+    {
+      "id": "ba6b58e4-33bb-4a4d-bacf-02fafd7dce80",
+      "kind": "brush",
+      "name": "Exterior · sealed room Floor 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -384,
+          -256,
+          -8
+        ],
+        [
+          384,
+          -256,
+          -8
+        ],
+        [
+          384,
+          256,
+          -8
+        ],
+        [
+          -384,
+          256,
+          -8
+        ],
+        [
+          -384,
+          -256,
+          8
+        ],
+        [
+          384,
+          -256,
+          8
+        ],
+        [
+          384,
+          256,
+          8
+        ],
+        [
+          -384,
+          256,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        0,
+        0,
+        -8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint demo_blu"
+    },
+    {
+      "id": "4a825a36-e7d7-479a-ad81-33247f1528e2",
+      "kind": "brush",
+      "name": "Exterior · sealed room Ceiling 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -384,
+          -256,
+          -8
+        ],
+        [
+          384,
+          -256,
+          -8
+        ],
+        [
+          384,
+          256,
+          -8
+        ],
+        [
+          -384,
+          256,
+          -8
+        ],
+        [
+          -384,
+          -256,
+          8
+        ],
+        [
+          384,
+          -256,
+          8
+        ],
+        [
+          384,
+          256,
+          8
+        ],
+        [
+          -384,
+          256,
+          8
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        0,
+        0,
+        264
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint demo_blu"
+    },
+    {
+      "id": "399fdf26-fdd9-448f-ac55-dd7d00ffd81a",
+      "kind": "brush",
+      "name": "Central partition + door · Wall 1 side 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -8,
+          104,
+          -128
+        ],
+        [
+          -8,
+          -104,
+          -128
+        ],
+        [
+          8,
+          -104,
+          -128
+        ],
+        [
+          8,
+          104,
+          -128
+        ],
+        [
+          -8,
+          104,
+          128
+        ],
+        [
+          -8,
+          -104,
+          128
+        ],
+        [
+          8,
+          -104,
+          128
+        ],
+        [
+          8,
+          104,
+          128
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        0,
+        152,
+        128
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint demo_blu"
+    },
+    {
+      "id": "7405aaef-3208-44da-80d1-9cb8d058011c",
+      "kind": "brush",
+      "name": "Central partition + door · Wall 1 lintel 2",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -8,
+          48,
+          -56
+        ],
+        [
+          -8,
+          -48,
+          -56
+        ],
+        [
+          8,
+          -48,
+          -56
+        ],
+        [
+          8,
+          48,
+          -56
+        ],
+        [
+          -8,
+          48,
+          56
+        ],
+        [
+          -8,
+          -48,
+          56
+        ],
+        [
+          8,
+          -48,
+          56
+        ],
+        [
+          8,
+          48,
+          56
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        0,
+        0,
+        200
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint demo_blu"
+    },
+    {
+      "id": "5f9f547a-d6b1-466f-8361-1fbe794513ce",
+      "kind": "brush",
+      "name": "Central partition + door · Wall 1 main 3",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -8,
+          104,
+          -128
+        ],
+        [
+          -8,
+          -104,
+          -128
+        ],
+        [
+          8,
+          -104,
+          -128
+        ],
+        [
+          8,
+          104,
+          -128
+        ],
+        [
+          -8,
+          104,
+          128
+        ],
+        [
+          -8,
+          -104,
+          128
+        ],
+        [
+          8,
+          -104,
+          128
+        ],
+        [
+          8,
+          104,
+          128
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        0,
+        -152,
+        128
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint demo_blu"
+    },
+    {
+      "id": "1361d266-d5a7-4a9b-9775-5064132d78c5",
+      "kind": "brush",
+      "name": "East inspection window · Wall 1 side 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -81.60000000000001,
+          -8,
+          -128
+        ],
+        [
+          81.60000000000001,
+          -8,
+          -128
+        ],
+        [
+          81.60000000000001,
+          8,
+          -128
+        ],
+        [
+          -81.60000000000001,
+          8,
+          -128
+        ],
+        [
+          -81.60000000000001,
+          -8,
+          128
+        ],
+        [
+          81.60000000000001,
+          -8,
+          128
+        ],
+        [
+          81.60000000000001,
+          8,
+          128
+        ],
+        [
+          -81.60000000000001,
+          8,
+          128
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        81.60000000000001,
+        120,
+        128
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint demo_blu"
+    },
+    {
+      "id": "e3e40aa4-ea3b-4dfc-8378-9cfa36ec02cc",
+      "kind": "brush",
+      "name": "East inspection window · Wall 1 sill 2",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -48.00000000000003,
+          -8,
+          -48
+        ],
+        [
+          48,
+          -8,
+          -48
+        ],
+        [
+          48,
+          8,
+          -48
+        ],
+        [
+          -48.00000000000003,
+          8,
+          -48
+        ],
+        [
+          -48.00000000000003,
+          -8,
+          48
+        ],
+        [
+          48,
+          -8,
+          48
+        ],
+        [
+          48,
+          8,
+          48
+        ],
+        [
+          -48.00000000000003,
+          8,
+          48
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        211.20000000000005,
+        120,
+        48
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint demo_blu"
+    },
+    {
+      "id": "a6bfed4b-ba17-4b08-9a54-536d33e47ff4",
+      "kind": "brush",
+      "name": "East inspection window · Wall 1 lintel 3",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -48.00000000000003,
+          -8,
+          -40
+        ],
+        [
+          48,
+          -8,
+          -40
+        ],
+        [
+          48,
+          8,
+          -40
+        ],
+        [
+          -48.00000000000003,
+          8,
+          -40
+        ],
+        [
+          -48.00000000000003,
+          -8,
+          40
+        ],
+        [
+          48,
+          -8,
+          40
+        ],
+        [
+          48,
+          8,
+          40
+        ],
+        [
+          -48.00000000000003,
+          8,
+          40
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        211.20000000000005,
+        120,
+        216
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint demo_blu"
+    },
+    {
+      "id": "98ebfa40-cd89-4026-b67a-67374321d65c",
+      "kind": "brush",
+      "name": "East inspection window · Wall 1 main 4",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -62.39999999999998,
+          -8,
+          -128
+        ],
+        [
+          62.39999999999998,
+          -8,
+          -128
+        ],
+        [
+          62.39999999999998,
+          8,
+          -128
+        ],
+        [
+          -62.39999999999998,
+          8,
+          -128
+        ],
+        [
+          -62.39999999999998,
+          -8,
+          128
+        ],
+        [
+          62.39999999999998,
+          -8,
+          128
+        ],
+        [
+          62.39999999999998,
+          8,
+          128
+        ],
+        [
+          -62.39999999999998,
+          8,
+          128
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        321.6,
+        120,
+        128
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint demo_blu"
+    },
+    {
+      "id": "6875db44-21b8-4db9-bdea-27630f60c704",
+      "kind": "brush",
+      "name": "West access opening · Wall 1 side 1",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -72,
+          -8,
+          -128
+        ],
+        [
+          72,
+          -8,
+          -128
+        ],
+        [
+          72,
+          8,
+          -128
+        ],
+        [
+          -72,
+          8,
+          -128
+        ],
+        [
+          -72,
+          -8,
+          128
+        ],
+        [
+          72,
+          -8,
+          128
+        ],
+        [
+          72,
+          8,
+          128
+        ],
+        [
+          -72,
+          8,
+          128
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -312,
+        -132,
+        128
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint demo_blu"
+    },
+    {
+      "id": "099c03e6-43b5-4dc1-8124-35a9fcc8fbe0",
+      "kind": "brush",
+      "name": "West access opening · Wall 1 lintel 2",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -48,
+          -8,
+          -56
+        ],
+        [
+          48,
+          -8,
+          -56
+        ],
+        [
+          48,
+          8,
+          -56
+        ],
+        [
+          -48,
+          8,
+          -56
+        ],
+        [
+          -48,
+          -8,
+          56
+        ],
+        [
+          48,
+          -8,
+          56
+        ],
+        [
+          48,
+          8,
+          56
+        ],
+        [
+          -48,
+          8,
+          56
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -192,
+        -132,
+        200
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint demo_blu"
+    },
+    {
+      "id": "46fadeda-07c1-4684-ac0e-c8ea5a9b706c",
+      "kind": "brush",
+      "name": "West access opening · Wall 1 main 3",
+      "primitive": "poly",
+      "vertices": [
+        [
+          -72,
+          -8,
+          -128
+        ],
+        [
+          72,
+          -8,
+          -128
+        ],
+        [
+          72,
+          8,
+          -128
+        ],
+        [
+          -72,
+          8,
+          -128
+        ],
+        [
+          -72,
+          -8,
+          128
+        ],
+        [
+          72,
+          -8,
+          128
+        ],
+        [
+          72,
+          8,
+          128
+        ],
+        [
+          -72,
+          8,
+          128
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            3,
+            2,
+            1,
+            0
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "position": [
+        -72,
+        -132,
+        128
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "layer": "Blueprint",
+      "group": "Blueprint demo_blu"
+    },
+    {
+      "id": "7c8eabc7-40ff-445f-a9db-16a50ac61fc4",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Test crate 1",
+      "position": [
+        -300,
+        150,
+        20
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -25,
+          -25,
+          -20
+        ],
+        [
+          25,
+          -25,
+          -20
+        ],
+        [
+          25,
+          25,
+          -20
+        ],
+        [
+          -25,
+          25,
+          -20
+        ],
+        [
+          -25,
+          -25,
+          20
+        ],
+        [
+          25,
+          -25,
+          20
+        ],
+        [
+          25,
+          25,
+          20
+        ],
+        [
+          -25,
+          25,
+          20
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "974cbea5-40bd-4558-be6d-3b5a2c7d34de",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Test crate 2",
+      "position": [
+        298,
+        -170,
+        20
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -25,
+          -25,
+          -20
+        ],
+        [
+          25,
+          -25,
+          -20
+        ],
+        [
+          25,
+          25,
+          -20
+        ],
+        [
+          -25,
+          25,
+          -20
+        ],
+        [
+          -25,
+          -25,
+          20
+        ],
+        [
+          25,
+          -25,
+          20
+        ],
+        [
+          25,
+          25,
+          20
+        ],
+        [
+          -25,
+          25,
+          20
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "e7da05d6-7d8f-473a-9292-abbb2b0f40fa",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Test crate 3",
+      "position": [
+        -300,
+        -195,
+        20
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -25,
+          -25,
+          -20
+        ],
+        [
+          25,
+          -25,
+          -20
+        ],
+        [
+          25,
+          25,
+          -20
+        ],
+        [
+          -25,
+          25,
+          -20
+        ],
+        [
+          -25,
+          -25,
+          20
+        ],
+        [
+          25,
+          -25,
+          20
+        ],
+        [
+          25,
+          25,
+          20
+        ],
+        [
+          -25,
+          25,
+          20
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "71170f08-08e9-4a5b-8a3b-eb51b4b0e103",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Test crate 4",
+      "position": [
+        320,
+        150,
+        20
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -25,
+          -25,
+          -20
+        ],
+        [
+          25,
+          -25,
+          -20
+        ],
+        [
+          25,
+          25,
+          -20
+        ],
+        [
+          -25,
+          25,
+          -20
+        ],
+        [
+          -25,
+          -25,
+          20
+        ],
+        [
+          25,
+          -25,
+          20
+        ],
+        [
+          25,
+          25,
+          20
+        ],
+        [
+          -25,
+          25,
+          20
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "84f4e74e-24e6-49e3-a082-b0c4461117a2",
+      "kind": "entity",
+      "name": "info_player_start",
+      "classname": "info_player_start",
+      "position": [
+        -280,
+        20,
+        40
+      ],
+      "props": {
+        "angles": "0 0 0"
+      },
+      "layer": "Gameplay"
+    },
+    {
+      "id": "cdb20c2c-3230-4f6e-a77a-e0ed3710eb6e",
+      "kind": "entity",
+      "name": "light",
+      "classname": "light",
+      "position": [
+        -240,
+        110,
+        202
+      ],
+      "props": {
+        "_light": "255 236 205 240",
+        "targetname": "blueprint_light_1"
+      },
+      "layer": "Gameplay"
+    },
+    {
+      "id": "0f06e3d9-e56e-484c-a047-0cb963f500ed",
+      "kind": "entity",
+      "name": "light",
+      "classname": "light",
+      "position": [
+        250,
+        100,
+        202
+      ],
+      "props": {
+        "_light": "255 236 205 240",
+        "targetname": "blueprint_light_2"
+      },
+      "layer": "Gameplay"
+    },
+    {
+      "id": "053f4623-40b7-4e80-a82b-943ddbcc9854",
+      "kind": "entity",
+      "name": "light",
+      "classname": "light",
+      "position": [
+        -240,
+        -175,
+        202
+      ],
+      "props": {
+        "_light": "255 236 205 240",
+        "targetname": "blueprint_light_3"
+      },
+      "layer": "Gameplay"
+    },
+    {
+      "id": "2efc89c1-b5b9-44f4-8158-8dcb08cb395f",
+      "kind": "entity",
+      "name": "light",
+      "classname": "light",
+      "position": [
+        250,
+        -175,
+        202
+      ],
+      "props": {
+        "_light": "255 236 205 240",
+        "targetname": "blueprint_light_4"
+      },
+      "layer": "Gameplay"
+    }
+  ],
+  "blueprintPlans": [
+    {
+      "id": "demo_blueprint_v1813",
+      "name": "Black Mesa · Room & Corridor Blueprint",
+      "imageWidth": 1024,
+      "imageHeight": 768,
+      "unitsPerPixel": 1,
+      "origin": [
+        0,
+        0
+      ],
+      "baseZ": 0,
+      "wallHeight": 256,
+      "wallThickness": 16,
+      "slabThickness": 16,
+      "texture": "SV_BRICK01",
+      "strokes": [
+        {
+          "id": "outer",
+          "name": "Exterior · sealed room",
+          "kind": "room",
+          "points": [
+            [
+              128,
+              128
+            ],
+            [
+              896,
+              128
+            ],
+            [
+              896,
+              640
+            ],
+            [
+              128,
+              640
+            ]
+          ],
+          "openings": [],
+          "floor": true,
+          "ceiling": true
+        },
+        {
+          "id": "center",
+          "name": "Central partition + door",
+          "kind": "wall",
+          "points": [
+            [
+              512,
+              128
+            ],
+            [
+              512,
+              640
+            ]
+          ],
+          "openings": [
+            {
+              "id": "door-center",
+              "kind": "door",
+              "edge": 0,
+              "t": 0.5,
+              "width": 96,
+              "height": 144,
+              "sill": 0
+            }
+          ],
+          "floor": false,
+          "ceiling": false
+        },
+        {
+          "id": "east",
+          "name": "East inspection window",
+          "kind": "wall",
+          "points": [
+            [
+              512,
+              264
+            ],
+            [
+              896,
+              264
+            ]
+          ],
+          "openings": [
+            {
+              "id": "east-window",
+              "kind": "window",
+              "edge": 0,
+              "t": 0.55,
+              "width": 96,
+              "height": 80,
+              "sill": 96
+            }
+          ],
+          "floor": false,
+          "ceiling": false
+        },
+        {
+          "id": "west",
+          "name": "West access opening",
+          "kind": "wall",
+          "points": [
+            [
+              128,
+              516
+            ],
+            [
+              512,
+              516
+            ]
+          ],
+          "openings": [
+            {
+              "id": "west-door",
+              "kind": "door",
+              "edge": 0,
+              "t": 0.5,
+              "width": 96,
+              "height": 144,
+              "sill": 0
+            }
+          ],
+          "floor": false,
+          "ceiling": false
+        }
+      ],
+      "memberIds": [
+        "11985fad-923d-4099-8e27-693f3212556c",
+        "5795f706-950b-4599-8a63-e9114c8bcc2e",
+        "7ef1dc49-ee31-4287-9786-f8f83d06ad7f",
+        "a68a3062-37d1-47db-b0d3-b2782c36de7e",
+        "ba6b58e4-33bb-4a4d-bacf-02fafd7dce80",
+        "4a825a36-e7d7-479a-ad81-33247f1528e2",
+        "399fdf26-fdd9-448f-ac55-dd7d00ffd81a",
+        "7405aaef-3208-44da-80d1-9cb8d058011c",
+        "5f9f547a-d6b1-466f-8361-1fbe794513ce",
+        "1361d266-d5a7-4a9b-9775-5064132d78c5",
+        "e3e40aa4-ea3b-4dfc-8378-9cfa36ec02cc",
+        "a6bfed4b-ba17-4b08-9a54-536d33e47ff4",
+        "98ebfa40-cd89-4026-b67a-67374321d65c",
+        "6875db44-21b8-4db9-bdea-27630f60c704",
+        "099c03e6-43b5-4dc1-8124-35a9fcc8fbe0",
+        "46fadeda-07c1-4684-ac0e-c8ea5a9b706c"
+      ],
+      "signatures": [
+        "466:dd5cecda",
+        "466:c8acad62",
+        "467:b9a6d915",
+        "467:463f5aa5",
+        "463:e5979a5d",
+        "464:8f7c18fa",
+        "466:10a84843",
+        "448:74e050d0",
+        "467:c2172b18",
+        "594:7e7d6184",
+        "526:9e6982d8",
+        "527:861a0a0f",
+        "582:100a5236",
+        "462:c574b9a5",
+        "454:3a12cb48",
+        "461:edef8cf4"
+      ],
+      "imageDataUrl": "data:image/png;base64,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",
+      "calibration": {
+        "a": [
+          128,
+          128
+        ],
+        "b": [
+          896,
+          128
+        ],
+        "units": 768
+      }
+    }
+  ]
+}

@@ -17,7 +17,7 @@ async function waitFor(check,timeout=13000){const start=Date.now();while(!check(
 async function createClient(dir,name){
  await writeFile(join(dir,`store-${name}.mjs`),fakeStore);
  const source=await readFile(new URL('../src/engine/buildTogetherClient.ts',import.meta.url),'utf8');
- const js=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText
+ const js=ts.transpileModule(source.replace("from './studioFiles'", "from '"+new URL('../src/engine/studioFiles.ts',import.meta.url).href+"'"),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText
   .replace("from 'zustand'","from './zustand.mjs'").replace("from '../store'",`from './store-${name}.mjs'`);
  await writeFile(join(dir,`client-${name}.mjs`),js);
  const client=await import(pathToFileURL(join(dir,`client-${name}.mjs`)).href);

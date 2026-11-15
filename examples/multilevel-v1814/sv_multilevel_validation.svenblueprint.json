@@ -1,0 +1,205 @@
+{
+  "format": "svenstudio-blueprint",
+  "version": 1,
+  "plan": {
+    "id": "8fe13370-b41a-4838-8c20-48cfe1839079",
+    "name": "Black Mesa - Two Floor Building",
+    "imageWidth": 800,
+    "imageHeight": 800,
+    "unitsPerPixel": 1,
+    "origin": [
+      0,
+      0
+    ],
+    "baseZ": 0,
+    "wallHeight": 224,
+    "wallThickness": 16,
+    "slabThickness": 16,
+    "texture": "SV_BRICK01",
+    "strokes": [
+      {
+        "id": "lab0",
+        "name": "Ground laboratory",
+        "kind": "room",
+        "levelId": "ground",
+        "points": [
+          [
+            80,
+            100
+          ],
+          [
+            600,
+            100
+          ],
+          [
+            600,
+            700
+          ],
+          [
+            80,
+            700
+          ]
+        ],
+        "openings": [
+          {
+            "id": "e2905dad-195e-4745-b3aa-566bc4e5657f",
+            "edge": 1,
+            "kind": "door",
+            "t": 0.65,
+            "width": 80,
+            "height": 112,
+            "sill": 0
+          }
+        ],
+        "floor": true,
+        "ceiling": true
+      },
+      {
+        "id": "store0",
+        "name": "Ground storage",
+        "kind": "room",
+        "levelId": "ground",
+        "points": [
+          [
+            600,
+            100
+          ],
+          [
+            760,
+            100
+          ],
+          [
+            760,
+            700
+          ],
+          [
+            600,
+            700
+          ]
+        ],
+        "openings": [
+          {
+            "id": "d2584765-d134-421d-a84a-c795ab572086",
+            "edge": 3,
+            "kind": "door",
+            "t": 0.35,
+            "width": 80,
+            "height": 112,
+            "sill": 0
+          }
+        ],
+        "floor": true,
+        "ceiling": true
+      },
+      {
+        "id": "lab1",
+        "name": "Upper laboratory",
+        "kind": "room",
+        "levelId": "upper",
+        "points": [
+          [
+            80,
+            100
+          ],
+          [
+            600,
+            100
+          ],
+          [
+            600,
+            700
+          ],
+          [
+            80,
+            700
+          ]
+        ],
+        "openings": [
+          {
+            "id": "1272bcdb-cb69-4aaf-90cb-09020ddc0e6b",
+            "edge": 1,
+            "kind": "door",
+            "t": 0.65,
+            "width": 80,
+            "height": 112,
+            "sill": 0
+          }
+        ],
+        "floor": true,
+        "ceiling": true,
+        "roof": {
+          "kind": "gable",
+          "rise": 80
+        }
+      },
+      {
+        "id": "store1",
+        "name": "Upper storage",
+        "kind": "room",
+        "levelId": "upper",
+        "points": [
+          [
+            600,
+            100
+          ],
+          [
+            760,
+            100
+          ],
+          [
+            760,
+            700
+          ],
+          [
+            600,
+            700
+          ]
+        ],
+        "openings": [
+          {
+            "id": "6e0fb029-e194-4865-8e42-00673bf71341",
+            "edge": 3,
+            "kind": "door",
+            "t": 0.35,
+            "width": 80,
+            "height": 112,
+            "sill": 0
+          }
+        ],
+        "floor": true,
+        "ceiling": true
+      }
+    ],
+    "memberIds": [],
+    "signatures": [],
+    "smartWalls": true,
+    "levels": [
+      {
+        "id": "ground",
+        "name": "Planta baja",
+        "offsetZ": 0
+      },
+      {
+        "id": "upper",
+        "name": "Piso 2",
+        "offsetZ": 240
+      }
+    ],
+    "stairs": [
+      {
+        "id": "stair_main",
+        "name": "Main staircase",
+        "fromLevelId": "ground",
+        "toLevelId": "upper",
+        "start": [
+          160,
+          350
+        ],
+        "direction": 0,
+        "width": 88,
+        "length": 320,
+        "steps": 16
+      }
+    ]
+  }
+}

@@ -1,3 +1,4 @@
+import {saveStudioBlob} from '../engine/studioFiles';
 import {useMemo,useRef,useState} from 'react';
 import {AlertTriangle,CheckCircle2,Download,FileCode2,FolderOpen,PackagePlus,Save,ShieldCheck,Trash2,X} from 'lucide-react';
 import {useEditor} from '../store';
@@ -71,10 +72,8 @@ export function CustomNpcImporter({onClose}:{onClose:()=>void}){
       const resourceFiles:PackageFile[]=[];
       for(const file of assets){const path=assetRelativePath(getPath(file));resourceFiles.push({path,bytes:new Uint8Array(await file.arrayBuffer())})}
       const {files,mapScript}=customNpcFiles(definition,projectName,resourceFiles);
-      const url=URL.createObjectURL(makeZip(files));const link=document.createElement('a');
-      link.href=url;link.download=`SvenStudio_CustomNPC_${definition.classname}.zip`;document.body.append(link);link.click();link.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),60_000);
-      setNotice(`ZIP created. Extract into svencoop_addon/ and add «map_script ${mapScript}» to the EXISTING maps/${projectName}.cfg. Do not overwrite the CFG.`);
+      const saved=await saveStudioBlob(makeZip(files),`SvenStudio_CustomNPC_${definition.classname}.zip`,'exports');
+      setNotice(`ZIP saved: ${saved.path}. Extract into svencoop_addon/ and add «map_script ${mapScript}» to the EXISTING maps/${projectName}.cfg. Do not overwrite the CFG.`);
     }catch(error){setNotice(String(error instanceof Error?error.message:error))}
   };
   return <div className="modal-backdrop custom-npc-backdrop" onMouseDown={onClose}>

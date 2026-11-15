@@ -1,3 +1,4 @@
+import {saveStudioText} from '../engine/studioFiles';
 import {ExplorerOrganized} from './ExplorerOrganized';
 import {VirtualTextureGallery} from './VirtualTextureGallery';
 import {useStudioLayout} from '../layout';
@@ -6,8 +7,12 @@ import {MaterialSurfaceStudio} from './MaterialSurfaceStudio';
 import { useEffect,useMemo,useRef,useState,type ChangeEvent } from 'react';
 import {createPortal} from 'react-dom';
 import type React from 'react';
-import { Box,Layers,Image,Search,Plus,Star,Eye,EyeOff,Lock,Unlock,ChevronRight,ChevronDown,FileCode2,FolderOpen,Upload,Trash2,Copy,Unlink,Paintbrush,Sun,UserRound,Info,Settings2,Grid3x3,Brush,Check,DoorOpen,CornerDownRight,Globe2, Skull, Route, Headphones, Layers3 } from 'lucide-react';
+import { Play,Box,Layers,Image,Search,Plus,Star,Eye,EyeOff,Lock,Unlock,ChevronRight,ChevronDown,FileCode2,FolderOpen,Upload,Trash2,Copy,Unlink,Paintbrush,Sun,UserRound,Info,Settings2,Grid3x3,Brush,Check,DoorOpen,CornerDownRight,Globe2, Skull, Route, Headphones, Layers3 } from 'lucide-react';
 import { useEditor } from '../store';
+import {sanitizeGeometryDelta} from '../engine/geometryEditSelection';
+import {useMotionPreview} from '../entityMotionPreviewState';
+import {isMotionPreviewSource} from '../engine/entityMotionPreview';
+import {motionLabels} from '../engine/entityMotionPreviewLabels';
 import {confirmBrushDetach} from './brushEntityActions';
 import { parseWad } from '../engine/wad';
 import {forgetSavedWadFile} from '../engine/wadPersistence';
@@ -282,10 +287,9 @@ function PrefabLibrary(){
     if(file.size>2_000_000){setMessage(t('Prefab file too large (max 2 MB).'));return}
     try{add(JSON.parse(await file.text()));setMessage(t('Prefab imported.'))}catch(error){setMessage(String(error))}
   };
-  const save=(item:(typeof items)[number])=>{
-    const blob=new Blob([JSON.stringify(item,null,2)],{type:'application/json'});
-    const url=URL.createObjectURL(blob);const element=document.createElement('a');
-    element.href=url;element.download=`${item.name.replace(/[^a-z0-9_-]/gi,'_')}.svprefab.json`;element.click();URL.revokeObjectURL(url);
+  const save=async(item:(typeof items)[number])=>{
+    try{const saved=await saveStudioText(JSON.stringify(item,null,2),`${item.name.replace(/[^a-z0-9_-]/gi,'_')}.svprefab.json`,'prefabs');setMessage(saved.path)}
+    catch(error){setMessage(String(error))}
   };
   const current=objects.find(o=>o.id===selected);
   return <div className="prefab-library">
@@ -422,6 +426,7 @@ export function Properties(){
         </div>
         <p className="entity-mode-hint">{entityMode==='basic'?modeText.hint:modeText.all}</p>
         {point.classname==='func_door'&&<DoorMotionControls entity={point}/>}
+        {isMotionPreviewSource(point.classname)&&<button type="button" className="hf18-motion-launch" onClick={()=>useMotionPreview.getState().open(point.id)}><Play size={14}/>{motionLabels(locale).open}</button>}
         <div className="entity-property-intro">{cls?.description||point.classname}</div>
         <EntityAssistant key={point.id} entity={point} definition={cls} showDoorControls={point.classname!=='func_door'}/>
         <button type="button" className="gs-guide-expand property-guide-open" onClick={()=>setPropertyGuideOpen(true)}><BookOpenIcon size={15}/>{fullGuideText}</button>
@@ -454,6 +459,7 @@ export function Properties(){
       </>}
       {brush?.entityId&&<section className="modeling-properties">
         <div className="property-group-title">{t('Brush entity association')}</div>
+        {linkedEntity?.kind==='entity'&&isMotionPreviewSource(linkedEntity.classname)&&<button type="button" className="hf18-motion-launch" onClick={()=>useMotionPreview.getState().open(linkedEntity.id)}><Play size={14}/>{motionLabels(locale).open}</button>}
         {linkedEntity?.kind==='entity'&&<EntityAssistant key={linkedEntity.id} entity={linkedEntity} definition={useEditor.getState().fgdClasses.find(c=>c.name===linkedEntity.classname)}/>}
         <div className="property-meta">{t('Linked entity')}: <strong>{linkedEntity?.kind==='entity'?linkedEntity.classname:t('Missing entity')}</strong> · {linkedBrushCount} {t('brushes')}</div>
         <div className="operation-buttons">
@@ -524,26 +530,52 @@ function AdvancedSelectionPanel(){
 function ModelingPanel({brush}:{brush:BrushObject}){
   const t=useT();
   const mode=useEditor(s=>s.geometryMode),indices=useEditor(s=>s.editIndices);
+  const edgeCount=useEditor(s=>s.editEdgePairs.length);
   const edit=useEditor(s=>s.editVertices),clip=useEditor(s=>s.clipSelected),hollow=useEditor(s=>s.hollowSelected),push=useEditor(s=>s.pushPullFace);
   const bevel=useEditor(s=>s.bevelSelected),inset=useEditor(s=>s.insetSelected),extrudeFace=useEditor(s=>s.extrudeSelected);
   const savePrefab=useEditor(s=>s.saveSelectedPrefab);
   const faceMode=useEditor(s=>s.faceMode),selectedFace=useEditor(s=>s.selectedFace);
   const log=useEditor(s=>s.appendLogs);
+  const setMode=useEditor(s=>s.setGeometryMode),selectIndices=useEditor(s=>s.selectEditIndices);
+  const undo=useEditor(s=>s.undo),redo=useEditor(s=>s.redo);
+  const canUndo=useEditor(s=>s.history.length>0),canRedo=useEditor(s=>s.future.length>0);
   const [axis,setAxis]=useState<0|1|2>(0),[cut,setCut]=useState(brush.position[0]);
   const [thickness,setThickness]=useState(16),[extrude,setExtrude]=useState(16),[bevelWidth,setBevelWidth]=useState(8),[prefabName,setPrefabName]=useState('New Brush');
   const [message,setMessage]=useState('');
+  const [delta,setDelta]=useState<[number,number,number]>([0,0,0]);
   const run=(fn:()=>void)=>{try{fn();setMessage('');log(['Svengine: geometry operation completed.'])}catch(error){const msg=String(error);setMessage(msg);log([`Svengine geometry: ${msg}`])}};
-  const editPos=indices.length===1&&brush.vertices[indices[0]];
+  const editPos=mode==='vertex'&&indices.length===1&&brush.vertices[indices[0]];
+  const effectiveIndices=mode==='face'&&selectedFace!==null?brush.faces[selectedFace]?.indices??[]:mode==='vertex'||mode==='edge'?indices:[];
+  const moveSelected=()=>run(()=>{
+    if(!effectiveIndices.length)throw Error(t('Select a vertex, an edge, or a face first.'));
+    const movement=sanitizeGeometryDelta(delta);
+    if(movement.every(n=>Math.abs(n)<0.00001))return;
+    edit(brush.id,effectiveIndices,movement);setDelta([0,0,0]);
+  });
   return <section className="modeling-properties">
     <div className="property-group-title">{t('Geometry editing')} · Svengine</div>
-    <div className="modeling-note">{t('Only closed convex brushes can be exported to Svengine. Invalid edits are rejected.')}</div>
-    {(mode==='vertex'||mode==='edge')&&<>
-      <p className="property-meta">{t(mode==='vertex'?'Selected vertex':'Selected edge')}: {indices.length?indices.map(n=>n+1).join(', '):'—'} · {t('Move')} (G)</p>
-      {editPos&&<VectorFields label={t('Position')+' (local)'} value={editPos} onChange={pos=>run(()=>edit(brush.id,indices,pos.map((v,i)=>v-editPos[i]) as [number,number,number]))}/>}
-    </>}
+    <div className="hf22-geometry-workspace" aria-label={t('Geometry editing')}>
+      <div className="hf22-geometry-heading"><strong>{t('Edit existing brush')}</strong><span>{brush.vertices.length} {t('vertices')} · {brush.faces.length} {t('faces')}</span></div>
+      <div className="hf22-geometry-modes" role="group" aria-label={t('Geometry modes')}>
+        {(['object','vertex','edge','face'] as const).map(next=><button type="button" key={next} className={mode===next?'active':''} aria-pressed={mode===next} onClick={()=>{setMode(next);setMessage('');setDelta([0,0,0])}}>{next==='object'?'▣':next==='vertex'?'●':next==='edge'?'╱':'▱'} {t(next[0].toUpperCase()+next.slice(1))}</button>)}
+      </div>
+      <p className="hf22-geometry-help">{t('Click a handle, Shift/Ctrl+click to add or remove. Drag the gizmo or enter a local offset. One edit = one Undo step.')}</p>
+      {mode!=='object'&&<>
+        <div className="hf22-geometry-selection"><span>{t('Selected')}: <strong>{mode==='face'?(selectedFace===null?'—':`#${selectedFace+1}`):mode==='edge'?(edgeCount||'—'):(effectiveIndices.length||'—')}</strong></span>
+          {(mode==='vertex'||mode==='edge')&&<span className="hf22-geometry-selection-actions">{mode==='vertex'&&<button type="button" onClick={()=>selectIndices(brush.vertices.map((_,i)=>i))}>{t('All vertices')}</button>}<button type="button" disabled={!indices.length} onClick={()=>selectIndices([])}>{t('Clear selection')}</button></span>}
+        </div>
+        <div className="hf22-delta-heading">{t('Move selected geometry')} <small>XYZ · {t('Local units')}</small></div>
+        <div className="hf22-delta-inputs">{delta.map((value,i)=><label key={i}><span>{'XYZ'[i]}</span><input aria-label={`${'XYZ'[i]} ${t('Local offset')}`} type="number" step="1" value={value} onChange={e=>setDelta(old=>old.map((v,j)=>j===i?Number(e.target.value):v) as [number,number,number])}/></label>)}</div>
+        <div className="hf22-delta-actions"><button type="button" disabled={!effectiveIndices.length||delta.every(n=>n===0)||delta.some(n=>!Number.isFinite(n))} onClick={moveSelected}>{t('Apply movement')}</button><button type="button" disabled={delta.every(n=>n===0)} onClick={()=>setDelta([0,0,0])}>{t('Reset')}</button></div>
+      </>}
+      <div className="hf22-geometry-history"><button type="button" onClick={undo} disabled={!canUndo} title="Ctrl+Z">↶ {t('Undo')}</button><button type="button" onClick={redo} disabled={!canRedo} title="Ctrl+Y">↷ {t('Redo')}</button></div>
+      <p className="hf22-geometry-validation">{t('Only closed convex brushes can be exported to Svengine. Invalid edits are rejected.')}</p>
+    </div>
+    {editPos&&<VectorFields label={t('Selected vertex position')+' (local)'} value={editPos} onChange={pos=>run(()=>edit(brush.id,indices,pos.map((v,i)=>v-editPos[i]) as [number,number,number]))}/>}
     {faceMode&&selectedFace!==null&&<><div className="operation-line"><label>{t('Extrusion distance (E)')}<input type="number" step="1" min="0.01" value={extrude} onChange={e=>setExtrude(Number(e.target.value))}/></label><button onClick={()=>run(()=>extrudeFace(extrude))}>{t('Extrude')}</button><button title={t('Move the face of the existing convex solid')} onClick={()=>run(()=>push(brush.id,selectedFace,extrude))}>{t('Push/Pull')}</button></div><div className="modeling-note">{t('Extrude creates a new adjacent convex brush. Push/Pull modifies the original brush.')}</div></>}
     {(mode==='edge'&&indices.length===2||faceMode&&selectedFace!==null)&&<div className="operation-line"><label>{t('Width (units)')}<input type="number" min="0.01" step="1" value={bevelWidth} onChange={e=>setBevelWidth(Number(e.target.value))}/></label>{mode==='edge'&&indices.length===2&&<button onClick={()=>run(()=>bevel(bevelWidth))}>{t('Bevel edge')}</button>}{faceMode&&selectedFace!==null&&<button onClick={()=>run(()=>inset(bevelWidth))}>{t('Inset (taper)')}</button>}</div>}
     {faceMode&&selectedFace!==null&&<div className="modeling-note">{t('UV mouse: Alt+drag moves · Alt+Shift rotates · Alt+Ctrl scales. Undo is supported.')}</div>}
+    <details className="hf22-existing-ops"><summary>{t('Existing cutting and prefab tools')}</summary>
     <div className="operation-grid">
       <label>{t('Cut axis')}<select value={axis} onChange={e=>{const a=Number(e.target.value) as 0|1|2;setAxis(a);setCut(brush.position[a])}}>{['X','Y','Z'].map((name,i)=><option value={i} key={name}>{name}</option>)}</select></label>
       <label>{t('Cut position')}<input type="number" step="1" value={cut} onChange={e=>setCut(Number(e.target.value))}/></label>
@@ -551,6 +583,7 @@ function ModelingPanel({brush}:{brush:BrushObject}){
     <div className="operation-buttons"><button onClick={()=>run(()=>clip(axis,cut,'both'))}>{t('Split along plane')}</button><button onClick={()=>run(()=>clip(axis,cut,'positive'))}>{t('Clip positive')}</button><button onClick={()=>run(()=>clip(axis,cut,'negative'))}>{t('Clip negative')}</button></div>
     {brush.primitive==='box'&&<div className="operation-line"><label>{t('Hollow thickness')}<input type="number" min="1" step="1" value={thickness} onChange={e=>setThickness(Number(e.target.value))}/></label><button onClick={()=>run(()=>hollow(thickness))}>{t('Hollow')}</button></div>}
     <div className="operation-line"><label>{t('Prefab name')}<input maxLength={64} value={prefabName} onChange={e=>setPrefabName(e.target.value)}/></label><button onClick={()=>run(()=>savePrefab(prefabName))}>{t('Save prefab')}</button></div>
+    </details>
     {message&&<p className="modeling-error" role="alert">{message}</p>}
   </section>;
 }

@@ -6,6 +6,7 @@ import {createPathStructureBrushes,type PathStructureOptions,type PathStructureR
 import {planSmartWorld,type SmartWorldSettings} from './engine/smartWorld';
 import {createRailwayExtras,railwayEntitySignature,checkRailwayGraph} from './engine/railwayBuilder';
 import type {PathEditAxis} from './engine/path3DMath';
+import {connectionCanRegenerate,connectionSignature,protectedOpeningIds,type SmartConnectionRecord,type ConnectionCutDraft} from './engine/smartConnect';
 import {applyRecord,removeRecord,cueIssues,missionIssues,type MissionPlan,type EventSequence} from './engine/missionEvents';
 import {saveEncounter,removeEncounter,type EncounterPlan} from './engine/npcEncounters';
 import {savePuzzle,removePuzzle,type PuzzlePlan} from './engine/coopPuzzles';
@@ -25,6 +26,7 @@ import type { Brush,Face,FgdClass,MapObject,PointEntity,Project,TextureAsset,Vec
 import { starterEntities } from './engine/fgd';
 import {customNpcToFgd,validateCustomNpc,type CustomNpcDefinition} from './engine/customNpc';
 import {editBrushVertices,splitBrush,hollowBox,pushPullFace} from './engine/modeling';
+import {selectedGeometryIndices,selectedGeometryEdges,edgeSelectionVertices} from './engine/geometryEditSelection';
 import {intersectConvex,subtractConvex,unionConvex,bevelEdge,taperInsetFace,extrudeFaceBrush} from './engine/advancedModeling';
 import {createSkyEnclosure,type SkyEnclosureOptions} from './engine/skyEnclosure';
 import {createArchitecture,createMultipleWallOpenings,architecturePartSignature,architectureOpeningCenter,architectureOpeningMetrics,type ArchitectureKind,type ArchitectureOptions,type OpeningPlacement} from './engine/architecture';
@@ -35,6 +37,7 @@ import {previewFusion,type FusionMode} from './engine/brushFusion';
 import {planWorkshop,type WorkshopOperation,type WorkshopShape} from './engine/brushWorkshop';
 import {buildCurvedRamp,curvedBrushSignature,radialArrayBrushes,type CurveSettings,type RadialArrayOptions} from './engine/curvedGeometry';
 import {createPrefab,placePrefab,validatePrefab,readPrefabLibrary,writePrefabLibrary,type Prefab} from './engine/prefabs';
+import {createLinkedPrefab,addLinkedPrefabInstance,planLinkedPrefabSync,repositionLinkedPrefabInstance,detachLinkedPrefab} from './engine/linkedPrefabs';
 import {rotateObjectsForPlacement} from './engine/smartPlacement';
 import {detachBrushEntities as detachBrushEntityObjects} from './engine/brushEntityDetach';
 import type {PlacementAxis,DrawPlane} from './engine/smartPlacementMath';
@@ -43,6 +46,7 @@ import {readShapeDimensions,rememberShapeDimensions} from './engine/shapeDimensi
 import {preferredLocale,readLocalePreference,saveLocalePreference,systemLocale,type Locale,type LocalePreference} from './i18n';
 import {textureSettings} from './engine/geometry';
 import {fitFace,centerFace,flipFace,alignFaceToReference,gesturePatch,faceTexturePatch,sanitizeTexturePatch,isTextureFaceRef,readTexturePresets,writeTexturePresets,type TextureFaceRef,type TextureFacePatch,type TexturePreset,type UvHandle} from './engine/textureStudio';
+import {planSeamlessUV,type SeamlessUvOptions} from './engine/seamlessUV';
 import {preferredTextureAssets,wadBasename} from './engine/textureWadSelection';
 import {planMapWadRemoval,pruneMapWadReferences} from './engine/mapWadRemoval';
 import {DEFAULT_ENTITY_APPEARANCE,loadEntityAppearance,saveEntityAppearance,normalizeEntityAppearance,type EntityAppearanceSettings,type EntityColorKind} from './engine/entityAppearance';
@@ -51,8 +55,8 @@ export type ToolMode='select'|'translate'|'rotate'|'scale';
 export type ResourceView='objects'|'entities'|'textures'|'materials'|'decals'|'models'|'npcs'|'sounds'|'layers';
 export type RadAmbientTest='off'|'0.08'|'0.15'|'0.25';
 export type CompilerEngine='sc'|'sdhlt';
-export type Settings={compilerDir:string;gameDir:string;wadPaths:string;mapName:string;radAmbientTest:RadAmbientTest;compilerEngine?:CompilerEngine;sdhltDir?:string;sdhltAO?:boolean;sdhltPCF?:'off'|'1'|'2'|'4';smartWadMode?:'off'|'embed'|'external';distributionDir?:string;distributionFormat?:'off'|'build'|'folder'|'folder_zip'|'install';resourceRoots?:string[]};
-export const DEFAULT_SETTINGS:Settings={compilerDir:'',gameDir:'',wadPaths:'',mapName:'svstudio_test',radAmbientTest:'off',compilerEngine:'sc',sdhltDir:'',sdhltAO:false,sdhltPCF:'off',smartWadMode:'off',distributionDir:'',distributionFormat:'build',resourceRoots:[]};
+export type Settings={compilerDir:string;gameDir:string;wadPaths:string;mapName:string;radAmbientTest:RadAmbientTest;compilerEngine?:CompilerEngine;sdhltDir?:string;sdhltAO?:boolean;sdhltPCF?:'off'|'1'|'2'|'4';smartWadMode?:'off'|'embed'|'external';smartWadName?:string;distributionDir?:string;distributionFormat?:'off'|'build'|'folder'|'folder_zip'|'install';resourceRoots?:string[]};
+export const DEFAULT_SETTINGS:Settings={compilerDir:'',gameDir:'',wadPaths:'',mapName:'svstudio_test',radAmbientTest:'off',compilerEngine:'sc',sdhltDir:'',sdhltAO:false,sdhltPCF:'off',smartWadMode:'off',smartWadName:'',distributionDir:'',distributionFormat:'build',resourceRoots:[]};
 const BOX='SV_BRICK01';
 function texBrush(b:Brush,t=BOX){return {...b,faces:b.faces.map(f=>({...f,texture:t}))};}
 /** UV tools must use the identical texture dimensions and WAD priority as
@@ -60,6 +64,11 @@ function texBrush(b:Brush,t=BOX){return {...b,faces:b.faces.map(f=>({...f,textur
 function textureStudioAssetSizes(state:Pick<State,'settings'|'project'|'textureAssets'>){
   const paths=state.settings.wadPaths.split(/[\r\n]+/).map(path=>path.trim()).filter(Boolean);
   return preferredTextureAssets(state.textureAssets,paths,state.project.wadNames);
+}
+/** An empty map for File > New. Unlike the welcome demo, it carries no
+ * geometry, entities, WAD references or map-specific metadata. */
+export function emptyProject():Project{
+ return {version:1,target:'svengine',name:'Untitled Map',world:{classname:'worldspawn',mapversion:'220',message:'',skyname:''},wadNames:[],objects:[]};
 }
 export function demoProject():Project{
   const floor=texBrush(createBrush('box',[0,0,-16],[544,544,32],'Floor'),'SV_TILE01');
@@ -84,12 +93,13 @@ function moveObjectWithTextureLock(object:MapObject,position:Vec3):MapObject{
 
 interface State{
   locale:Locale;localePreference:LocalePreference;setLocale:(locale:LocalePreference)=>void;
-  geometryMode:'object'|'vertex'|'edge'|'face';editIndices:number[];setGeometryMode:(mode:'object'|'vertex'|'edge'|'face')=>void;selectEditIndices:(indices:number[])=>void;
+  geometryMode:'object'|'vertex'|'edge'|'face';editIndices:number[];editEdgePairs:[number,number][];setGeometryMode:(mode:'object'|'vertex'|'edge'|'face')=>void;selectEditIndices:(indices:number[],additive?:boolean)=>void;
   editVertices:(id:string,indices:number[],delta:Vec3)=>void;pushPullFace:(id:string,face:number,distance:number)=>void;clipSelected:(axis:0|1|2,at:number,side:'both'|'positive'|'negative')=>void;hollowSelected:(thickness:number)=>void;
   booleanSelected:(operation:'union'|'subtract'|'intersect')=>void;bevelSelected:(width:number)=>void;insetSelected:(width:number)=>void;extrudeSelected:(distance:number)=>void;
   groupSelected:(name:string)=>void;ungroupSelected:()=>void;selectGroup:(name:string)=>void;toggleGroupVisibility:(name:string)=>void;toggleGroupLocked:(name:string)=>void;
   prefabs:Prefab[];saveSelectedPrefab:(name:string)=>void;addPrefab:(prefab:Prefab)=>void;removePrefab:(id:string)=>void;instantiatePrefab:(id:string,position:Vec3)=>void;
   placementPrefabId:string|null;setPlacementPrefab:(id:string|null)=>void;placePrefabAt:(position:Vec3,autoYaw?:number)=>void;
+  createLinkedFromSelection:(name:string)=>void;placeLinkedCopy:(id:string,at:Vec3,yaw?:number)=>void;syncLinked:(id:string,selectedIds?:string[])=>void;repositionLinkedCopy:(id:string,copyId:string,at:Vec3,yaw:number)=>void;detachLinked:(id:string,copyId?:string)=>void;
   placementAxis:PlacementAxis;placementAngle:number;placementAutoAlign:boolean;placementRepeat:boolean;
   universalPlacement:UniversalPlacementSettings;
   universalPlacementHover:Vec3|null;
@@ -102,10 +112,11 @@ interface State{
   textureStudioOpen:boolean;setTextureStudioOpen:(open:boolean)=>void;texturePickerActive:boolean;setTexturePickerActive:(enabled:boolean)=>void;sampleTextureStudioFace:(id:string,face:number)=>void;textureFaceSelection:TextureFaceRef[];selectTextureStudioFace:(id:string,face:number,additive:boolean)=>void;selectAllTextureFaces:()=>void;clearTextureFaces:()=>void;
   texturePresets:TexturePreset[];saveTexturePreset:(name:string)=>void;removeTexturePreset:(id:string)=>void;applyTexturePreset:(id:string)=>void;
   applyTextureStudioPatch:(patch:TextureFacePatch)=>void;fitTextureStudio:(tilesU:number,tilesV:number)=>void;alignTextureStudio:()=>void;centerTextureStudio:()=>void;flipTextureStudio:(axis:'u'|'v')=>void;
+  applySeamlessTextureAlignment:(options:SeamlessUvOptions)=>void;
   beginTextureStudioGesture:()=>void;updateTextureStudioGesture:(handle:UvHandle,dx:number,dy:number,keepRatio:boolean)=>void;
   textureDragSnapshot:Project|null;beginTextureDrag:(id:string,faceIndex:number)=>void;updateTextureDrag:(id:string,faceIndex:number,u:number,v:number)=>void;updateTextureTransform:(id:string,faceIndex:number,mode:'rotate'|'scale',dx:number,dy:number)=>void;finishTextureDrag:(commit:boolean)=>void;
   registerCustomNpc:(definition:CustomNpcDefinition)=>void;removeCustomNpc:(classname:string)=>void;
-  project:Project; selected:string|null; selectedIds:string[]; selectedFace:number|null; mode:ToolMode;showTransformGizmo:boolean;setShowTransformGizmo:(enabled:boolean)=>void;activateGizmoMode:(mode:Exclude<ToolMode,'select'>)=>void;toggleShortcutGizmo:(mode:'translate'|'rotate'|'scale')=>void; snap:number; snapping:boolean; gridDisplayStep:number;
+  project:Project; selected:string|null; selectedIds:string[]; selectedFace:number|null; navigatorFocusedId:string|null; focusNavigatorObject:(id:string)=>boolean; mode:ToolMode;showTransformGizmo:boolean;setShowTransformGizmo:(enabled:boolean)=>void;activateGizmoMode:(mode:Exclude<ToolMode,'select'>)=>void;toggleShortcutGizmo:(mode:'translate'|'rotate'|'scale')=>void; snap:number; snapping:boolean; gridDisplayStep:number;
   scaleAnchor:'center'|'xmin'|'xmax'|'ymin'|'ymax'|'zmin'|'zmax';setScaleAnchor:(anchor:State['scaleAnchor'])=>void;
   modalTransform:{mode:Exclude<ToolMode,'select'>;serial:number}|null;modalFinish:{serial:number;commit:boolean}|null;
   toggleModalTransform:(mode:Exclude<ToolMode,'select'>)=>void;finishModalTransform:(commit:boolean)=>void;completeModalTransform:()=>void;
@@ -185,6 +196,8 @@ interface State{
   saveCoopPuzzle:(record:PuzzlePlan)=>void;removeCoopPuzzle:(id:string,detach?:boolean)=>void;
   saveBlueprint:(record:BlueprintPlan)=>void;saveBlueprintDraft:(record:BlueprintPlan)=>void;removeBlueprint:(id:string,detach?:boolean)=>void;
   blueprintPlacementId:string|null;setBlueprintPlacement:(id:string|null)=>void;placeBlueprintAt:(position:Vec3)=>void;
+  saveSmartConnection:(record:SmartConnectionRecord,brushes:Brush[],cuts?:ConnectionCutDraft[])=>void;
+  detachSmartConnection:(id:string)=>void;
   addObjects:(o:MapObject[])=>void;updateObject:(id:string,changes:Partial<MapObject>)=>void;
   changeFace:(id:string,face:number,changes:Partial<Face>)=>void;paintSelected:(texture:string)=>void;
   removeSelected:()=>void;duplicateSelected:()=>void;brushClipboard:Brush[];brushPasteCount:number;copySelectedBrushes:()=>void;pasteCopiedBrushes:()=>void;setObjectProp:(id:string,key:string,value:string)=>void;
@@ -221,14 +234,23 @@ const mutate=(state:State,objects:MapObject[]):Pick<State,'project'|'history'|'f
 export const useEditor=create<State>((set,get)=>({
   locale:preferredLocale(),localePreference:readLocalePreference(),
   setLocale:localePreference=>set(()=>{saveLocalePreference(localePreference);return {localePreference,locale:localePreference==='auto'?systemLocale():localePreference}}),
-  geometryMode:'object',editIndices:[],
-  setGeometryMode:mode=>set({geometryMode:mode,faceMode:mode==='face',editIndices:[],selectedFace:null,textureFaceSelection:[],mode:'select',drawMode:false}),
-  selectEditIndices:editIndices=>set({editIndices,mode:'translate'}),
+  geometryMode:'object',editIndices:[],editEdgePairs:[],
+  setGeometryMode:mode=>set({geometryMode:mode,faceMode:mode==='face',editIndices:[],editEdgePairs:[],selectedFace:null,textureFaceSelection:[],mode:'select',drawMode:false}),
+  selectEditIndices:(clicked,additive=false)=>set(s=>{
+    if(s.geometryMode==='edge'&&clicked.length===2){
+      const pairs=selectedGeometryEdges(s.editIndices.length?s.editEdgePairs:[],clicked as [number,number],additive);
+      return {editIndices:edgeSelectionVertices(pairs),editEdgePairs:pairs,mode:'translate'};
+    }
+    return {editIndices:selectedGeometryIndices(s.editIndices,clicked,additive),editEdgePairs:[],mode:'translate'};
+  }),
   editVertices:(id,indices,delta)=>set(s=>{
     const obj=s.project.objects.find(o=>o.id===id);
     if(!obj||obj.kind!=='brush'||obj.locked)throw Error('Select an unlocked brush.');
     const edited=editBrushVertices(obj,indices,delta);
-    return {...mutate(s,s.project.objects.map(o=>o.id===id?edited:o)),editIndices:indices};
+    return {...mutate(s,s.project.objects.map(o=>o.id===id?edited:o)),editIndices:s.geometryMode==='face'?[]:indices,
+      // Convex hull rebuilding can reorder face indices; never leave a stale
+      // selected face pointing to a different surface after a face drag.
+      selectedFace:s.geometryMode==='face'?null:s.selectedFace,textureFaceSelection:s.geometryMode==='face'?[]:s.textureFaceSelection};
   }),
   pushPullFace:(id,face,distance)=>set(s=>{
     const obj=s.project.objects.find(o=>o.id===id);
@@ -240,13 +262,13 @@ export const useEditor=create<State>((set,get)=>({
     const obj=s.project.objects.find(o=>o.id===s.selected);
     if(!obj||obj.kind!=='brush'||obj.locked)throw Error('Select an unlocked brush.');
     const parts=splitBrush(obj,axis,at,side);
-    return {...mutate(s,s.project.objects.flatMap(o=>o.id===obj.id?parts:[o])),selected:parts[0].id,selectedIds:parts.map(o=>o.id),selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
+    return {...mutate(s,s.project.objects.flatMap(o=>o.id===obj.id?parts:[o])),selected:parts[0].id,selectedIds:parts.map(o=>o.id),selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false};
   }),
   hollowSelected:thickness=>set(s=>{
     const obj=s.project.objects.find(o=>o.id===s.selected);
     if(!obj||obj.kind!=='brush'||obj.locked)throw Error('Select an unlocked brush.');
     const parts=hollowBox(obj,thickness);
-    return {...mutate(s,s.project.objects.flatMap(o=>o.id===obj.id?parts:[o])),selected:parts[0].id,selectedIds:parts.map(o=>o.id),selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
+    return {...mutate(s,s.project.objects.flatMap(o=>o.id===obj.id?parts:[o])),selected:parts[0].id,selectedIds:parts.map(o=>o.id),selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false};
   }),
   booleanSelected:operation=>set(s=>{
     if(s.selectedIds.length!==2)throw Error('Select exactly two brushes with Shift+click. First = target; second = cutter.');
@@ -257,25 +279,25 @@ export const useEditor=create<State>((set,get)=>({
     if(!overlap)throw Error('These brushes do not intersect.');
     const result=operation==='union'?unionConvex(a,b):operation==='subtract'?subtractConvex(a,b):[{...overlap,name:`${a.name} Intersect`,entityId:a.entityId,layer:a.layer}];
     const removal=new Set([a.id,b.id]);
-    return {...mutate(s,[...s.project.objects.filter(o=>!removal.has(o.id)),...result]),selected:result[0]?.id??null,selectedIds:result.map(o=>o.id),selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
+    return {...mutate(s,[...s.project.objects.filter(o=>!removal.has(o.id)),...result]),selected:result[0]?.id??null,selectedIds:result.map(o=>o.id),selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false};
   }),
   bevelSelected:width=>set(s=>{
     const brush=s.project.objects.find(o=>o.id===s.selected);
     if(!brush||brush.kind!=='brush'||brush.locked||s.editIndices.length!==2)throw Error('Select an unlocked brush edge in Edge mode.');
     const next=bevelEdge(brush,s.editIndices[0],s.editIndices[1],width);
-    return {...mutate(s,s.project.objects.map(o=>o.id===brush.id?next:o)),selected:next.id,selectedIds:[next.id],editIndices:[],selectedFace:null,geometryMode:'object',faceMode:false};
+    return {...mutate(s,s.project.objects.map(o=>o.id===brush.id?next:o)),selected:next.id,selectedIds:[next.id],editIndices:[],editEdgePairs:[],selectedFace:null,geometryMode:'object',faceMode:false};
   }),
   insetSelected:width=>set(s=>{
     const brush=s.project.objects.find(o=>o.id===s.selected);
     if(!brush||brush.kind!=='brush'||brush.locked||s.selectedFace===null)throw Error('Select an unlocked face in Face mode.');
     const next=taperInsetFace(brush,s.selectedFace,width);
-    return {...mutate(s,s.project.objects.map(o=>o.id===brush.id?next:o)),selected:next.id,selectedIds:[next.id],editIndices:[],selectedFace:null,geometryMode:'object',faceMode:false};
+    return {...mutate(s,s.project.objects.map(o=>o.id===brush.id?next:o)),selected:next.id,selectedIds:[next.id],editIndices:[],editEdgePairs:[],selectedFace:null,geometryMode:'object',faceMode:false};
   }),
   extrudeSelected:distance=>set(s=>{
     const brush=s.project.objects.find(o=>o.id===s.selected);
     if(!brush||brush.kind!=='brush'||brush.locked||s.selectedFace===null)throw Error('Select an unlocked brush face in Face mode.');
     const added=extrudeFaceBrush(brush,s.selectedFace,distance);
-    return {...mutate(s,[...s.project.objects,added]),selected:added.id,selectedIds:[added.id],editIndices:[],selectedFace:null,geometryMode:'object',faceMode:false};
+    return {...mutate(s,[...s.project.objects,added]),selected:added.id,selectedIds:[added.id],editIndices:[],editEdgePairs:[],selectedFace:null,geometryMode:'object',faceMode:false};
   }),
   groupSelected:name=>set(s=>{
     const label=name.trim().slice(0,64);
@@ -290,7 +312,7 @@ export const useEditor=create<State>((set,get)=>({
     if((s.project.brushComposites||[]).some(r=>r.memberIds.some(id=>selected.has(id))))throw Error('Use Separate composite to preserve the previous groups.');
     return {...mutate(s,s.project.objects.map(o=>selected.has(o.id)&&!o.locked?{...o,group:undefined}:o))};
   }),
-  selectGroup:name=>set(s=>{const ids=s.project.objects.filter(o=>o.group===name).map(o=>o.id);return {selected:ids.at(-1)??null,selectedIds:ids,selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};}),
+  selectGroup:name=>set(s=>{const ids=s.project.objects.filter(o=>o.group===name).map(o=>o.id);return {selected:ids.at(-1)??null,selectedIds:ids,selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false};}),
   toggleGroupVisibility:name=>set(s=>{
     const members=s.project.objects.filter(o=>o.group===name);
     const hidden=members.some(o=>!o.hidden);
@@ -320,7 +342,7 @@ export const useEditor=create<State>((set,get)=>({
     const next=additive?(exists?prior.filter(r=>r.id!==id||r.face!==face):[...prior,ref]):[ref];
     const selected=next.at(-1)||ref;
     const selectedIds=[...new Set(next.map(r=>r.id))];
-    return {textureFaceSelection:next,selected:selected.id,selectedIds,selectedFace:next.length===1?selected.face:null,editIndices:[]};
+    return {textureFaceSelection:next,selected:selected.id,selectedIds,selectedFace:next.length===1?selected.face:null,editIndices:[],editEdgePairs:[]};
   }),
   clearTextureFaces:()=>set({textureFaceSelection:[]}),
   selectAllTextureFaces:()=>set(s=>({textureFaceSelection:s.project.objects.filter(o=>s.selectedIds.includes(o.id)&&o.kind==='brush'&&!o.locked&&!o.hidden).flatMap(o=>o.kind==='brush'?o.faces.map((_,face)=>({id:o.id,face})):[]),selectedFace:null})),
@@ -366,6 +388,17 @@ export const useEditor=create<State>((set,get)=>({
       if(!patches.has(ref.id))patches.set(ref.id,new Map());patches.get(ref.id)!.set(ref.face,alignFaceToReference(source,first.face,b,ref.face));
     }
     return applyTexturePatches(s,patches);
+  }),
+  // One batch and one undo step. Recompute from the LIVE project at commit time
+  // so preview plans cannot accidentally apply to a changed selection or map.
+  applySeamlessTextureAlignment:options=>set(s=>{
+    const plan=planSeamlessUV(s.project.objects,textureStudioTargets(s),options);
+    const updates=new Map<string,Map<number,TextureFacePatch>>();
+    for(const {ref,patch} of plan.changes){
+      if(!updates.has(ref.id))updates.set(ref.id,new Map());
+      updates.get(ref.id)!.set(ref.face,patch);
+    }
+    return applyTexturePatches(s,updates);
   }),
   saveTexturePreset:name=>set(s=>{
     const ref=textureStudioTargets(s)[0];const brush=s.project.objects.find(o=>o.id===ref?.id);
@@ -497,7 +530,29 @@ export const useEditor=create<State>((set,get)=>({
     const bspPrefab=prefab as Prefab&{format?:string;wad?:{filename?:string}};
     const nativeWad=bspPrefab.format==='svenstudio-bsp-object'&&typeof bspPrefab.wad?.filename==='string'?bspPrefab.wad.filename:null;
     const nextProject=nativeWad?{...base.project,wadNames:[...new Set([...base.project.wadNames,nativeWad])]}:base.project;
-    return {...base,project:nextProject,selected:copies.at(-1)!.id,selectedIds:copies.map(o=>o.id),selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
+    return {...base,project:nextProject,selected:copies.at(-1)!.id,selectedIds:copies.map(o=>o.id),selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false};
+  }),
+  createLinkedFromSelection:name=>set(s=>{
+    const project=createLinkedPrefab(s.project,s.selectedIds,name);
+    return {...mutate(s,project.objects),project};
+  }),
+  placeLinkedCopy:(id,at,yaw=0)=>set(s=>{
+    const result=addLinkedPrefabInstance(s.project,id,at,yaw);
+    return {...mutate(s,result.project.objects),project:result.project,selected:result.ids.at(-1)??null,
+      selectedIds:result.ids,selectedFace:null,geometryMode:'object',faceMode:false,editIndices:[],editEdgePairs:[],mode:'select'};
+  }),
+  syncLinked:(id,selectedIds)=>set(s=>{
+    const preview=planLinkedPrefabSync(s.project,id,selectedIds);
+    return {...mutate(s,preview.project.objects),project:preview.project,selected:null,selectedIds:[],selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false};
+  }),
+  repositionLinkedCopy:(id,copyId,at,yaw)=>set(s=>{
+    const result=repositionLinkedPrefabInstance(s.project,id,copyId,at,yaw);
+    return {...mutate(s,result.project.objects),project:result.project,selected:result.ids.at(-1)??null,
+      selectedIds:result.ids,selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false};
+  }),
+  detachLinked:(id,copyId)=>set(s=>{
+    const project=detachLinkedPrefab(s.project,id,copyId);
+    return {...mutate(s,project.objects),project};
   }),
   placementPrefabId:null,
   setPlacementPrefab:id=>set(s=>{
@@ -519,7 +574,7 @@ export const useEditor=create<State>((set,get)=>({
     const nativeWad=bspPrefab.format==='svenstudio-bsp-object'&&typeof bspPrefab.wad?.filename==='string'?bspPrefab.wad.filename:null;
     const nextProject=nativeWad?{...base.project,wadNames:[...new Set([...base.project.wadNames,nativeWad])]}:base.project;
     return {...base,project:nextProject,selected:copies.at(-1)!.id,
-      selectedIds:copies.map(o=>o.id),selectedFace:null,editIndices:[],
+      selectedIds:copies.map(o=>o.id),selectedFace:null,editIndices:[],editEdgePairs:[],
       geometryMode:'object',faceMode:false,placementPrefabId:s.placementRepeat?s.placementPrefabId:null};
   }),
   measureMode:false,measurement:{a:null,b:null},
@@ -529,13 +584,13 @@ export const useEditor=create<State>((set,get)=>({
     const point=at.map(n=>s.snapping?Math.round(n/s.snap)*s.snap:Math.round(n*100)/100) as Vec3;
     return {measurement:!s.measurement.a||s.measurement.b?{a:point,b:null}:{a:s.measurement.a,b:point}};
   }),
-  project:demoProject(),selected:null,selectedIds:[],selectedFace:null,brushClipboard:[],brushPasteCount:0,mode:'select',showTransformGizmo:(()=>{try{return localStorage.getItem('svenstudio:gizmo-visible')!=='false'}catch{return true}})(),setShowTransformGizmo:enabled=>set(()=>{try{localStorage.setItem('svenstudio:gizmo-visible',String(enabled))}catch{}return {showTransformGizmo:enabled}}),activateGizmoMode:mode=>set({mode,placementPrefabId:null,walkMode:false,measureMode:false,showTransformGizmo:true,geometryMode:'object',faceMode:false,editIndices:[],drawMode:false,placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,routePlacementFor:null,flyMode:false,modalTransform:null,modalFinish:null,architecturePlacement:null,architectureHoverTarget:null,architecturePreviousMode:null}),
+  project:demoProject(),selected:null,selectedIds:[],selectedFace:null,navigatorFocusedId:null,brushClipboard:[],brushPasteCount:0,mode:'select',showTransformGizmo:(()=>{try{return localStorage.getItem('svenstudio:gizmo-visible')!=='false'}catch{return true}})(),setShowTransformGizmo:enabled=>set(()=>{try{localStorage.setItem('svenstudio:gizmo-visible',String(enabled))}catch{}return {showTransformGizmo:enabled}}),activateGizmoMode:mode=>set({mode,placementPrefabId:null,walkMode:false,measureMode:false,showTransformGizmo:true,geometryMode:'object',faceMode:false,editIndices:[],editEdgePairs:[],drawMode:false,placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,routePlacementFor:null,flyMode:false,modalTransform:null,modalFinish:null,architecturePlacement:null,architectureHoverTarget:null,architecturePreviousMode:null}),
   // Keyboard R/C uses the *persistent* gizmo, not the mouse-follow modal tool.
   // Pressing the same shortcut again returns to normal selection and hides it.
   // No project/history mutation is performed until the user drags a gizmo handle.
   toggleShortcutGizmo:requested=>set(s=>{
     if(s.mode===requested&&s.showTransformGizmo&&!s.modalTransform)return {mode:'select',showTransformGizmo:false};
-    return {mode:requested,placementPrefabId:null,showTransformGizmo:true,walkMode:false,measureMode:false,geometryMode:'object',faceMode:false,editIndices:[],drawMode:false,placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,routePlacementFor:null,flyMode:false,modalTransform:null,modalFinish:null,architecturePlacement:null,architectureHoverTarget:null,architecturePreviousMode:null};
+    return {mode:requested,placementPrefabId:null,showTransformGizmo:true,walkMode:false,measureMode:false,geometryMode:'object',faceMode:false,editIndices:[],editEdgePairs:[],drawMode:false,placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,routePlacementFor:null,flyMode:false,modalTransform:null,modalFinish:null,architecturePlacement:null,architectureHoverTarget:null,architecturePreviousMode:null};
    }),snap:loadEditStep(),snapping:true,gridDisplayStep:loadVisibleGridStep(),scaleAnchor:(()=>{try{const stored=localStorage.getItem('svenstudio:scale-anchor');return ['center','xmin','xmax','ymin','ymax','zmin','zmax'].includes(stored||'')?stored as State['scaleAnchor']:'center'}catch{return 'center'}})(),setScaleAnchor:scaleAnchor=>set(()=>{try{localStorage.setItem('svenstudio:scale-anchor',scaleAnchor)}catch{}return {scaleAnchor}}),drawMode:false,drawHeight:128,drawPlane:'xy',drawSign:1,setDrawPlane:drawPlane=>set({drawPlane,drawSign:1}),setDrawSign:drawSign=>set({drawSign}),
   environmentPlacement:null,environmentPreview:false,fogPreview:true,previewShadows:false,showLightRanges:false,
   setEnvironmentPreview:enabled=>set({environmentPreview:enabled,solidShading:enabled?false:get().solidShading}),setFogPreview:enabled=>set({fogPreview:enabled}),
@@ -594,8 +649,17 @@ export const useEditor=create<State>((set,get)=>({
     mode:'select',geometryMode:'object',faceMode:false
   }:{walkMode:false}),
   issueCameraCommand:action=>set(s=>({cameraCommand:{action,serial:(s.cameraCommand?.serial||0)+1}})),
+  // MAP Navigator: atomic selection + framing, without project mutations or Undo entries.
+  focusNavigatorObject:id=>{
+    const s=get();const object=s.project.objects.find(item=>item.id===id);
+    if(!object||object.hidden)return false;
+    set(state=>({selected:id,selectedIds:[id],selectedFace:null,editIndices:[],editEdgePairs:[],textureFaceSelection:[],focusHiddenId:null,
+      navigatorFocusedId:id,walkMode:false,flyMode:false,
+      cameraCommand:{action:'frame',serial:(state.cameraCommand?.serial||0)+1}}));
+    return true;
+  },
   setCameraLabel:cameraLabel=>set({cameraLabel}),
-  setSelected:(selected,selectedFace=null)=>set({selected,selectedIds:selected?[selected]:[],selectedFace,textureFaceSelection:[],editIndices:[],focusHiddenId:null}),
+  setSelected:(selected,selectedFace=null)=>set({selected,selectedIds:selected?[selected]:[],selectedFace,textureFaceSelection:[],editIndices:[],editEdgePairs:[],focusHiddenId:null,navigatorFocusedId:null}),
   selectObject:(id,additive,selectedFace=null)=>set(s=>{
     // Preserve an existing multi-selection while grabbing a selected brush or
     // the group gizmo. Click an unselected object or empty space to reset it.
@@ -607,14 +671,14 @@ export const useEditor=create<State>((set,get)=>({
       const target=s.project.objects.find(o=>o.id===id);
       if(target?.group?.startsWith('Smart Merge ')&&s.geometryMode==='object'){
         const ids=s.project.objects.filter(o=>o.group===target.group).map(o=>o.id);
-        return {selected:id,selectedIds:ids,selectedFace:null,textureFaceSelection:[],editIndices:[]};
+        return {selected:id,selectedIds:ids,selectedFace:null,textureFaceSelection:[],editIndices:[],editEdgePairs:[],navigatorFocusedId:null};
       }
-      return {selected:id,selectedIds:[id],selectedFace,textureFaceSelection:[],editIndices:[]};
+      return {selected:id,selectedIds:[id],selectedFace,textureFaceSelection:[],editIndices:[],editEdgePairs:[],navigatorFocusedId:null};
     }
     const ids=s.selectedIds.includes(id)?s.selectedIds.filter(x=>x!==id):[...s.selectedIds,id];
-    return {selected:ids.at(-1)??null,selectedIds:ids,selectedFace:ids.length===1?selectedFace:null,textureFaceSelection:[],editIndices:[]};
+    return {selected:ids.at(-1)??null,selectedIds:ids,selectedFace:ids.length===1?selectedFace:null,textureFaceSelection:[],editIndices:[],editEdgePairs:[],navigatorFocusedId:null};
   }),
-  setDrawMode:drawMode=>set({measureMode:false,placementPrefabId:null,walkMode:false,drawMode,placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,routePlacementFor:null,mode:'select',flyMode:false,selected:null,selectedIds:[],selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false}),
+  setDrawMode:drawMode=>set({measureMode:false,placementPrefabId:null,walkMode:false,drawMode,placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,routePlacementFor:null,mode:'select',flyMode:false,selected:null,selectedIds:[],selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false}),
   setDrawHeight:height=>set({drawHeight:Math.max(1,Math.min(131072,height))}),
   addDrawnBox:(from,to)=>set(s=>{
     const brush=s.drawPlane==='xy'&&from[2]===0&&s.drawSign===1?boxFromGroundDrag(from,to,s.drawHeight,s.snapping?s.snap:1,s.currentTexture):boxFromPlaneDrag(from,to,s.drawHeight,s.drawPlane,s.snapping?s.snap:1,s.currentTexture,s.drawSign);
@@ -658,7 +722,7 @@ export const useEditor=create<State>((set,get)=>({
   setSnap:value=>set(()=>{const snap=normalizeGridStep(value,1);saveEditStep(snap);return {snap}}),
   setGridDisplayStep:value=>set(()=>{const gridDisplayStep=normalizeGridStep(value);saveVisibleGridStep(gridDisplayStep);return {gridDisplayStep}}),
   toggleSnap:()=>set(s=>({snapping:!s.snapping})),
-  setFlag:(key,value)=>set(key==='faceMode'?{faceMode:value,geometryMode:value?'face':'object',editIndices:[]}:key==='wireframe'?{wireframe:value,solidShading:value?false:get().solidShading}:{[key]:value}),setResourceView:resourceView=>set({resourceView}),
+  setFlag:(key,value)=>set(key==='faceMode'?{faceMode:value,geometryMode:value?'face':'object',editIndices:[],editEdgePairs:[]}:key==='wireframe'?{wireframe:value,solidShading:value?false:get().solidShading}:{[key]:value}),setResourceView:resourceView=>set({resourceView}),
   applyNativeSurfacePreset:(brushIds,preset,options)=>set(s=>{
     const project=applySurfacePreset(s.project,brushIds,preset,options,uid);
     return {project,history:[...s.history.slice(-70),clone(s.project)],future:[]};
@@ -894,12 +958,12 @@ export const useEditor=create<State>((set,get)=>({
     const plan=previewFusion(members,mode);
     if(plan.kind==='single'){
       const merged={...plan.merged!,group:members.every(b=>b.group===members[0].group)?members[0].group:undefined};
-      return {...mutate(s,[...s.project.objects.filter(o=>!ids.has(o.id)),merged]),selected:merged.id,selectedIds:[merged.id],selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
+      return {...mutate(s,[...s.project.objects.filter(o=>!ids.has(o.id)),merged]),selected:merged.id,selectedIds:[merged.id],selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false};
     }
     const group=`Smart Merge ${uid().slice(0,8)}`;
     const record={id:uid(),group,memberIds:members.map(b=>b.id),previousGroups:Object.fromEntries(members.map(b=>[b.id,b.group??null]))};
     const changed=mutate(s,s.project.objects.map(o=>ids.has(o.id)?{...o,group}:o));
-    return {...changed,project:{...changed.project,brushComposites:[...managed,record]},selected:members[0].id,selectedIds:members.map(b=>b.id),selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
+    return {...changed,project:{...changed.project,brushComposites:[...managed,record]},selected:members[0].id,selectedIds:members.map(b=>b.id),selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false};
   }),
   separateSelectedComposite:()=>set(s=>{
     const id=s.selectedIds[0]??s.selected;
@@ -924,7 +988,7 @@ export const useEditor=create<State>((set,get)=>({
     const created=[...(outcome.replacement??[]),...outcome.additions];
     const objects=outcome.replacement?s.project.objects.flatMap(o=>o.id===brushId?created:[o]):[...s.project.objects,...created];
     const updated=mutate(s,objects);
-    return {...updated,selected:created[0]?.id??brushId,selectedIds:created.map(b=>b.id),selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
+    return {...updated,selected:created[0]?.id??brushId,selectedIds:created.map(b=>b.id),selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false};
   }),
   smartMergeSelected:()=>set(s=>{
     const ids=new Set(s.selectedIds);const members=s.project.objects.filter(o=>ids.has(o.id));
@@ -974,14 +1038,14 @@ export const useEditor=create<State>((set,get)=>({
       const next=[...s.project.objects.filter(o=>o.id!==outcome.removeId),...outcome.objects];
       const ids=outcome.objects.map(o=>o.id);
       return {...mutate(s,next),selected:ids.at(-1)||null,selectedIds:ids,
-        selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
+        selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false};
     }
     const generated=buildArchitectureAssembly(kind,options,wall?[...wall.position]:[0,0,0],s.currentTexture||'SV_BRICK01');
     const next=[...s.project.objects,...generated.objects];
     const base=mutate(s,next);
     const ids=generated.record.memberIds;
     return {...base,project:{...base.project,architectureAssemblies:[...(s.project.architectureAssemblies||[]),generated.record]},
-      selected:ids.at(-1)||null,selectedIds:ids,selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
+      selected:ids.at(-1)||null,selectedIds:ids,selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false};
   }),
   generateSkyEnclosure:options=>set(s=>{
     const output=createSkyEnclosure(s.project.objects,options);
@@ -1133,6 +1197,57 @@ export const useEditor=create<State>((set,get)=>({
     set(s=>({...mutate(s,result.project.objects),project:result.project,blueprintPlacementId:null,
       selected:result.memberIds[0]||null,selectedIds:result.memberIds.length?[result.memberIds[0]]:[]}));},
   removeBlueprint:(id,detach=false)=>set(s=>{const project=removeBlueprintFromProject(s.project,id,detach);return {...mutate(s,project.objects),project,selected:null,selectedIds:[]};}),
+  saveSmartConnection:(record,brushes,cuts=[])=>set(s=>{
+    const previous=s.project.smartConnections?.find(r=>r.id===record.id);
+    if(previous&&!connectionCanRegenerate(previous,s.project.objects))
+      throw Error('Connection or opening pieces were modified. Regeneration cancelled to preserve manual edits.');
+    if(!brushes.length||brushes.length>256||record.brushIds.length!==brushes.length||
+       record.brushIds.some((id,i)=>id!==brushes[i].id))throw Error('Invalid Smart Connect geometry.');
+    const from=s.project.objects.find(o=>o.id===record.from.brushId),to=s.project.objects.find(o=>o.id===record.to.brushId);
+    if(!from||from.kind!=='brush'||from.hidden||from.locked||!to||to.kind!=='brush'||to.hidden||to.locked||from.id===to.id)
+      throw Error('Connection endpoints are unavailable or locked.');
+    if(cuts.length>4||new Set(cuts.map(c=>c.original.id)).size!==cuts.length||
+       (record.cuts?.length??0)!==cuts.length)throw Error('Invalid opening record.');
+    const recordCuts=new Map((record.cuts??[]).map(c=>[c.original.id,c]));
+    const oldCuts=new Map((previous?.cuts??[]).map(c=>[c.original.id,c]));
+    const oldIds=new Set([...(previous?.brushIds??[]),...(previous?.cuts??[]).flatMap(c=>c.pieces.map(p=>p.id))]);
+    const occupied=new Set(s.project.objects.map(o=>o.id));
+    const linked=protectedOpeningIds(s.project);
+    const otherConnected=new Set((s.project.smartConnections??[]).filter(r=>r.id!==record.id)
+       .flatMap(r=>[r.from.brushId,r.to.brushId,...r.brushIds,...(r.cuts??[]).flatMap(c=>[c.original.id,...c.pieces.map(p=>p.id)])]));
+    const newPieces=cuts.flatMap(c=>c.fragments);
+    if([...brushes,...newPieces].some(b=>occupied.has(b.id)&&!oldIds.has(b.id))||
+       new Set([...brushes,...newPieces].map(b=>b.id)).size!==brushes.length+newPieces.length)
+      throw Error('Smart Connect object ID collision.');
+    for(const cut of cuts){
+      const source=cut.original,metadata=recordCuts.get(source.id),old=oldCuts.get(source.id);
+      if(!metadata||!cut.fragments.length||cut.fragments.length>40||
+         metadata.pieces.length!==cut.fragments.length||
+         cut.fragments.some((b,i)=>b.id!==metadata.pieces[i].id||connectionSignature(b)!==metadata.pieces[i].signature))
+        throw Error('Opening preview and linked record disagree.');
+      if(source.id===from.id||source.id===to.id||source.hidden||source.locked||source.entityId||
+         linked.has(source.id)||otherConnected.has(source.id))throw Error('Cannot cut locked, linked or entity geometry.');
+      const current=s.project.objects.find(o=>o.id===source.id);
+      if(old){
+        if(current||connectionSignature(old.original)!==connectionSignature(source))throw Error('Old opening source changed.');
+      }else if(!current||current.kind!=='brush'||connectionSignature(current)!==connectionSignature(source)){
+        throw Error('Opening source was modified or deleted.');
+      }
+    }
+    // Undo/redo encompasses new geometry AND removed/replaced obstacles in one mutate.
+    // An old opening no longer selected is restored to its stored original brush.
+    const replacementSources=new Set(cuts.map(c=>c.original.id));
+    const remove=new Set([...oldIds,...replacementSources]);
+    const restored=(previous?.cuts??[]).filter(c=>!replacementSources.has(c.original.id)).map(c=>c.original);
+    const base=mutate(s,[...s.project.objects.filter(o=>!remove.has(o.id)),...restored,...newPieces,...brushes]);
+    return {...base,project:{...base.project,smartConnections:[...(s.project.smartConnections??[]).filter(r=>r.id!==record.id),record]},
+      selected:brushes[0].id,selectedIds:[brushes[0].id],selectedFace:null};
+  }),
+  detachSmartConnection:id=>set(s=>{
+    if(!s.project.smartConnections?.some(r=>r.id===id))return {};
+    const base=mutate(s,s.project.objects);
+    return {...base,project:{...base.project,smartConnections:s.project.smartConnections.filter(r=>r.id!==id)}};
+  }),
   addObjects:objects=>set(s=>({...mutate(s,[...s.project.objects,...objects]),selected:objects[0]?.id||s.selected,selectedIds:objects.length?[objects[0].id]:s.selectedIds})),
   updateObject:(id,changes)=>set(s=>({...mutate(s,s.project.objects.map(o=>{
     if(o.id!==id)return o;
@@ -1173,7 +1288,7 @@ export const useEditor=create<State>((set,get)=>({
     const kept=s.selectedIds.filter(id=>valid.has(id));
     const selectedIds=kept.length?kept:plan.brushIds;
     return {...mutate(s,objects),selected:selectedIds.at(-1)??null,selectedIds,
-      selectedFace:null,textureFaceSelection:[],editIndices:[],geometryMode:'object',faceMode:false};
+      selectedFace:null,textureFaceSelection:[],editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false};
   }),
   // Keep a snapshot in the editor's own clipboard, not in the browser text clipboard.
   // One paste = one Undo entry. Repeated pastes offset copies so they remain selectable.
@@ -1199,7 +1314,7 @@ export const useEditor=create<State>((set,get)=>({
     });
     return {...mutate(s,[...s.project.objects,...copies]),brushPasteCount:s.brushPasteCount+1,
       selected:copies.at(-1)!.id,selectedIds:copies.map(copy=>copy.id),selectedFace:null,
-      textureFaceSelection:[],geometryMode:'object',faceMode:false,editIndices:[],mode:'select'};
+      textureFaceSelection:[],geometryMode:'object',faceMode:false,editIndices:[],editEdgePairs:[],mode:'select'};
   }),
   duplicateSelected:()=>set(s=>{
     const originals=s.project.objects.filter(o=>s.selectedIds.includes(o.id)&&!o.locked);
@@ -1238,8 +1353,19 @@ export const useEditor=create<State>((set,get)=>({
   setGraphPosition:(id,position)=>set(s=>({project:{...s.project,graphPositions:{...s.project.graphPositions,[id]:position}}})),
   setGraphPositions:positions=>set(s=>({project:{...s.project,graphPositions:{...s.project.graphPositions,...positions}}})),
   changeWorld:(key,value)=>set(s=>({project:{...s.project,world:{...s.project.world,[key]:value}},history:[...s.history.slice(-70),clone(s.project)],future:[]})),
-  newProject:()=>set({pathEditingId:null,textureFaceSelection:[],textureStudioOpen:false,texturePickerActive:false,terrainPlacement:null,cinematicPlacementFor:null,isolationSnapshot:null,project:demoProject(),placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,routePlacementFor:null,routeSolo:null,selected:null,selectedIds:[],selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false,history:[],future:[]}),
-  loadProject:project=>set({pathEditingId:null,textureFaceSelection:[],textureStudioOpen:false,texturePickerActive:false,terrainPlacement:null,cinematicPlacementFor:null,walkMode:false,flyMode:false,architecturePlacement:null,architectureHoverTarget:null,architecturePreviousMode:null,isolationSnapshot:null,project:clone(project),placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,routePlacementFor:null,routeSolo:null,selected:null,selectedIds:[],selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false,history:[],future:[]}),
+  newProject:()=>set(s=>{
+    const settings={...s.settings,mapName:'',wadPaths:'',radAmbientTest:'off' as const,smartWadName:'',resourceRoots:[],distributionDir:'',distributionFormat:'build' as const};
+    try{localStorage.setItem('svenstudio-settings',JSON.stringify(settings))}catch{/* Private mode should not prevent New project. */}
+    return {settings,pathEditingId:null,textureFaceSelection:[],textureStudioOpen:false,texturePickerActive:false,
+      terrainPlacement:null,cinematicPlacementFor:null,isolationSnapshot:null,project:emptyProject(),textureAssets:[],currentTexture:BOX,decalAssets:[],
+      placementPrefabId:null,placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,
+      routePlacementFor:null,routeSolo:null,selected:null,selectedIds:[],selectedFace:null,editIndices:[],editEdgePairs:[],
+      geometryMode:'object',faceMode:false,history:[],future:[],mode:'select',drawMode:false,
+      walkMode:false,flyMode:false,architecturePlacement:null,architectureHoverTarget:null,
+      architecturePreviousMode:null,modalTransform:null,modalFinish:null,measureMode:false,
+      brushClipboard:[],brushPasteCount:0};
+  }),
+  loadProject:project=>set({pathEditingId:null,textureFaceSelection:[],textureStudioOpen:false,texturePickerActive:false,terrainPlacement:null,cinematicPlacementFor:null,walkMode:false,flyMode:false,architecturePlacement:null,architectureHoverTarget:null,architecturePreviousMode:null,isolationSnapshot:null,project:clone(project),navigatorFocusedId:null,placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,routePlacementFor:null,routeSolo:null,selected:null,selectedIds:[],selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false,history:[],future:[]}),
   setName:name=>set(s=>({project:{...s.project,name}})),
   toggleVisibility:id=>set(s=>({...mutate(s,s.project.objects.map(o=>o.id===id?{...o,hidden:!o.hidden}:o)),visibilityListIds:s.visibilityListIds.includes(id)?s.visibilityListIds:[...s.visibilityListIds,id]})),
   toggleLocked:id=>set(s=>({...mutate(s,s.project.objects.map(o=>o.id===id?{...o,locked:!o.locked}:o))})),
@@ -1251,13 +1377,13 @@ export const useEditor=create<State>((set,get)=>({
   setLayer:(id,layer)=>set(s=>({...mutate(s,s.project.objects.map(o=>o.id===id?{...o,layer}:o))})),
   selectSameClass:classname=>set(s=>{
     const ids=s.project.objects.filter(o=>o.kind==='entity'&&o.classname===classname).map(o=>o.id);
-    return {selected:ids.at(-1)??null,selectedIds:ids,selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
+    return {selected:ids.at(-1)??null,selectedIds:ids,selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false};
   }),
   selectSameLayer:layer=>set(s=>{
     const ids=s.project.objects.filter(o=>(o.layer||'Geometry')===layer).map(o=>o.id);
-    return {selected:ids.at(-1)??null,selectedIds:ids,selectedFace:null,editIndices:[],geometryMode:'object',faceMode:false};
+    return {selected:ids.at(-1)??null,selectedIds:ids,selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false};
   }),
-  ghostHidden:false,visibilityListIds:[],focusHiddenId:null,focusHidden:id=>set({focusHiddenId:id,selected:id,selectedIds:[id],selectedFace:null,editIndices:[],cameraCommand:{action:'frame',serial:(get().cameraCommand?.serial||0)+1}}), isolationSnapshot:null,
+  ghostHidden:false,visibilityListIds:[],focusHiddenId:null,focusHidden:id=>set({focusHiddenId:id,selected:id,selectedIds:[id],selectedFace:null,editIndices:[],editEdgePairs:[],cameraCommand:{action:'frame',serial:(get().cameraCommand?.serial||0)+1}}), isolationSnapshot:null,
   toggleGhostHidden:()=>set(s=>({ghostHidden:!s.ghostHidden})),
   hideSelection:()=>set(s=>s.selectedIds.length?{...mutate(s,s.project.objects.map(o=>s.selectedIds.includes(o.id)?{...o,hidden:true}:o)),visibilityListIds:[...new Set([...s.visibilityListIds,...s.selectedIds])],selected:null,selectedIds:[]}:{}),
   toggleTemporaryIsolation:()=>set(s=>{
