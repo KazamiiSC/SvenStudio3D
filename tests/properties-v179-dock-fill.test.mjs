@@ -16,6 +16,6 @@ test('No nested scroll; header is row one and scroll region row two',()=>{
  assert.match(panel,/querySelector\('\.property-scroll'\)/);
 });
 test('Version can be verified in the application rather than relying on a stale label',()=>{
- assert.ok(app.includes(`SvenStudio 3D v${version}`));
+ assert.ok(app.includes(`SvenStudio 3D v${version.split('.').slice(0,2).join('.')}`));
  assert.doesNotMatch(app,/SvenStudio 3D v1\.7\.8/);
 });

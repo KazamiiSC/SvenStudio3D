@@ -13,7 +13,8 @@ function vec(text:string):number[]|null{
  const parts=text.trim().split(/\s+/).map(Number);
  return parts.length===3&&parts.every(Number.isFinite)?parts:null;
 }
-function esc(text:string){return text.replaceAll('\\','\\\\').replaceAll('"','\\"')}
+/** GoldSrc keyvalues have no escapes; quotes and line breaks are rejected before this point. */
+function esc(text:string){if(/["\r\n\0]/.test(text))throw Error('Invalid quote or line break in imported keyvalue.');return text}
 function validOffset(offset:readonly number[]){
  if(offset.length!==3||!offset.every(n=>Number.isFinite(n)&&Math.abs(n)<=32768))throw Error('Invalid offset; use three finite coordinates within ±32768.');
 }

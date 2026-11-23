@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 
 const read=async (file)=>readFile(new URL('../'+file,import.meta.url),'utf8');
 const helperSource=await read('src/engine/cameraKeyboard.ts');

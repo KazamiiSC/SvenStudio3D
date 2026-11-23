@@ -13,13 +13,22 @@ export type OpaqueDrawBatch={material:THREE.Material;geometry:THREE.BufferGeomet
 export type BrushDrawBatchResult={batches:OpaqueDrawBatch[];batchedIds:ReadonlySet<string>;
   batchedFaceIndices:ReadonlyMap<string,ReadonlySet<number>>;fullyBatchedIds:ReadonlySet<string>;sourceTriangles:number};
 
-type Bucket={material:THREE.Material;positions:number[];uvs:number[];normals:number[];ids:Set<string>;triangles:number};
+/** Growable Float32 buffer: avoids huge boxed number[] arrays (and their garbage) on big maps (v2.4). */
+class FloatBuffer{
+  data=new Float32Array(1024);length=0;
+  push3(a:number,b:number,c:number){this.ensure(3);this.data[this.length++]=a;this.data[this.length++]=b;this.data[this.length++]=c;}
+  push2(a:number,b:number){this.ensure(2);this.data[this.length++]=a;this.data[this.length++]=b;}
+  private ensure(n:number){if(this.length+n<=this.data.length)return;const next=new Float32Array(Math.max(this.data.length*2,this.length+n));next.set(this.data.subarray(0,this.length));this.data=next;}
+  result(){return this.data.length===this.length?this.data:this.data.slice(0,this.length);}
+}
+type Bucket={material:THREE.Material;positions:FloatBuffer;uvs:FloatBuffer;normals:FloatBuffer;ids:Set<string>;triangles:number};
 
 export function isOpaqueBatchMaterial(material:THREE.Material|undefined):material is THREE.Material{
   if(!material||!material.visible)return false;
   const candidate=material as THREE.MeshStandardMaterial;
   return !candidate.transparent && candidate.opacity===1 && candidate.depthWrite!==false &&
     !(candidate.alphaTest>0) && candidate.blending===THREE.NormalBlending && material.side===THREE.DoubleSide;
+  // (wireframe materials are opaque too, so wireframe mode is batched as well — v2.4)
 }
 
 export function canBatchBrush(brush:Brush,materials:readonly THREE.Material[]):boolean{
@@ -36,7 +45,8 @@ export function canBatchBrush(brush:Brush,materials:readonly THREE.Material[]):b
  * brush-level exclusions from HF17 HF1.
  */
 function canBatchOpaqueSubset(brush:Brush,materials:readonly THREE.Material[]):boolean{
-  if(brush.hidden||brush.entityId||brush.faces.length===0||brush.faces.some(f=>f.bspPrefabInternalCap))return false;
+  // v2.4: brush-entity brushes are batched too while editing (they only move in Gameplay Test, where batching is off).
+  if(brush.hidden||brush.faces.length===0||brush.faces.some(f=>f.bspPrefabInternalCap))return false;
   if(!brush.scale.every(n=>Number.isFinite(n)&&n>.00001)||
     !brush.position.every(Number.isFinite)||!brush.rotation.every(Number.isFinite)||
     brush.vertices.some(vertex=>!vertex.every(Number.isFinite)))return false;
@@ -78,7 +88,7 @@ export function buildOpaqueBrushBatches(inputs:readonly BrushBatchInput[],sizes?
         const material=materials[group.materialIndex??0];
         if(!isOpaqueBatchMaterial(material))continue;
         let bucket=buckets.get(material);
-        if(!bucket){bucket={material,positions:[],uvs:[],normals:[],ids:new Set(),triangles:0};buckets.set(material,bucket);}
+        if(!bucket){bucket={material,positions:new FloatBuffer(),uvs:new FloatBuffer(),normals:new FloatBuffer(),ids:new Set(),triangles:0};buckets.set(material,bucket);}
         for(let off=group.start;off<group.start+group.count;off+=3){
           if(off+2>=index.count)break;
           // A negative scale reverses winding. Preserve the original DoubleSide
@@ -88,9 +98,9 @@ export function buildOpaqueBrushBatches(inputs:readonly BrushBatchInput[],sizes?
             const v=index.getX(off+j);
             p.fromBufferAttribute(position,v).applyMatrix4(transform);
             n.fromBufferAttribute(normal,v).applyMatrix3(normalMatrix).normalize();
-            bucket.positions.push(p.x,p.y,p.z);
-            bucket.uvs.push(uv.getX(v),uv.getY(v));
-            bucket.normals.push(n.x,n.y,n.z);
+            bucket.positions.push3(p.x,p.y,p.z);
+            bucket.uvs.push2(uv.getX(v),uv.getY(v));
+            bucket.normals.push3(n.x,n.y,n.z);
           }
           bucket.triangles++;triangles++;
         }
@@ -109,9 +119,9 @@ export function buildOpaqueBrushBatches(inputs:readonly BrushBatchInput[],sizes?
   for(const bucket of buckets.values()){
     if(bucket.triangles===0)continue;
     const geometry=new THREE.BufferGeometry();
-    geometry.setAttribute('position',new THREE.Float32BufferAttribute(bucket.positions,3));
-    geometry.setAttribute('uv',new THREE.Float32BufferAttribute(bucket.uvs,2));
-    geometry.setAttribute('normal',new THREE.Float32BufferAttribute(bucket.normals,3));
+    geometry.setAttribute('position',new THREE.BufferAttribute(bucket.positions.result(),3));
+    geometry.setAttribute('uv',new THREE.BufferAttribute(bucket.uvs.result(),2));
+    geometry.setAttribute('normal',new THREE.BufferAttribute(bucket.normals.result(),3));
     geometry.computeBoundingSphere();
     batches.push({material:bucket.material,geometry,sourceBrushes:bucket.ids.size,triangles:bucket.triangles});
   }
@@ -133,4 +143,27 @@ export function reuseOpaqueBrushChunks(brushes:readonly Brush[],previous:readonl
     else result.push(brushes.slice(start,end));
   }
   return result;
+}
+
+/** v2.4: spatial chunks. Brushes are grouped by a coarse world cell (so a chunk is compact and frustum
+ * culling works) and each cell is split into runs of at most `maxPerChunk`. Chunks whose members did not
+ * change keep the previous array, so editing one brush only rebuilds its own chunk. */
+export type SpatialBrushChunk={key:string;brushes:Brush[]};
+export function spatialBrushChunks(brushes:readonly Brush[],previous:ReadonlyMap<string,Brush[]>=new Map(),cell=2048,maxPerChunk=384):SpatialBrushChunk[]{
+  const cells=new Map<string,Brush[]>();
+  for(const b of brushes){
+    let x=0,y=0,z=0;const n=b.vertices.length||1;
+    for(const v of b.vertices){x+=v[0];y+=v[1];z+=v[2];}
+    const cx=b.position[0]+x/n*b.scale[0],cy=b.position[1]+y/n*b.scale[1],cz=b.position[2]+z/n*b.scale[2];
+    const key=`${Math.floor(cx/cell)},${Math.floor(cy/cell)},${Math.floor(cz/cell)}`;
+    (cells.get(key)??cells.set(key,[]).get(key)!).push(b);
+  }
+  const out:SpatialBrushChunk[]=[];
+  for(const [key,list] of [...cells].sort((a,b)=>a[0].localeCompare(b[0]))){
+    for(let start=0,part=0;start<list.length;start+=maxPerChunk,part++){
+      const slice=list.slice(start,start+maxPerChunk),id=`${key}#${part}`,old=previous.get(id);
+      out.push({key:id,brushes:old&&old.length===slice.length&&old.every((item,i)=>item===slice[i])?old:slice});
+    }
+  }
+  return out;
 }

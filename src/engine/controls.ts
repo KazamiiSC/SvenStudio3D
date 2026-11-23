@@ -1,6 +1,6 @@
 /** User-configurable keyboard and camera navigation settings. Key bindings use
  * KeyboardEvent.code so they remain stable with different keyboard layouts. */
-export type ShortcutAction = 'move'|'rotate'|'scale'|'fly'|'frame'|'frameAll'|'front'|'right'|'top'|'projection'|'back'|'left'|'bottom'|'isometric'|'orbitLeft'|'orbitRight'|'orbitUp'|'orbitDown'|'panLeft'|'panRight'|'panUp'|'panDown'|'zoomIn'|'zoomOut'|'resetView';
+export type ShortcutAction = 'move'|'rotate'|'scale'|'fly'|'frame'|'frameAll'|'front'|'right'|'top'|'projection'|'back'|'left'|'bottom'|'isometric'|'orbitLeft'|'orbitRight'|'orbitUp'|'orbitDown'|'panLeft'|'panRight'|'panUp'|'panDown'|'zoomIn'|'zoomOut'|'resetView'|'quadView'|'skybox'|'entityReport'|'textureReplace'|'compileRegion';
 export type CameraPreset = 'blender'|'classic';
 /** Alt + left drag is reserved for face texture offset editing. */
 export function isUvDragGesture(pointer:Pick<PointerEvent,'button'|'altKey'>,faceMode:boolean):boolean{
@@ -46,7 +46,13 @@ export const CONTROL_ACTIONS:{id:ShortcutAction;label:string;description:string}
   {id:'panDown',label:'Pan camera down',description:'Move the viewpoint down'},
   {id:'zoomIn',label:'Camera zoom in',description:'Move closer without changing selection'},
   {id:'zoomOut',label:'Camera zoom out',description:'Move away without changing selection'},
-  {id:'resetView',label:'Reset camera view',description:'Restore the default viewpoint'}
+  {id:'resetView',label:'Reset camera view',description:'Restore the default viewpoint'},
+  // v2.3 HF9: shortcuts for the HF5–HF8 tools (free keys; all can be changed here).
+  {id:'quadView',label:'4 views (Top/Front/Side/3D)',description:'Toggle the 4-view layout'},
+  {id:'skybox',label:'Map skybox in the editor',description:'Show or hide the skyname cube behind the 3D view'},
+  {id:'entityReport',label:'Entity report',description:'Open the entity table with targetname rename'},
+  {id:'textureReplace',label:'Find and replace texture',description:'Open texture find & replace'},
+  {id:'compileRegion',label:'Compile region',description:'Box the selection for a partial build, or remove the box'}
 ];
 export const DEFAULT_CONTROLS:ControlSettings={
   cameraPreset:'blender',orbitSensitivity:1,panSensitivity:1,zoomSensitivity:1,flySpeed:360,invertOrbit:false,
@@ -54,7 +60,7 @@ export const DEFAULT_CONTROLS:ControlSettings={
   gizmoSpace:'world',rotationSnapDegrees:0,scaleSnapStep:0,gizmoSize:0.9,
   transformFineFactor:.15,transformRotationStep:15,transformScaleStep:.1,
   smartSnapEnabled:false,smartSnapMode:'all',smartSnapPixels:12,
-  shortcuts:{move:'KeyG',rotate:'KeyR',scale:'KeyC',fly:'Shift+KeyF',frame:'NumpadDecimal',frameAll:'Home',front:'Numpad1',right:'Numpad3',top:'Numpad7',projection:'Numpad5',back:'Ctrl+Numpad1',left:'Ctrl+Numpad3',bottom:'Ctrl+Numpad7',isometric:'Numpad0',orbitLeft:'Numpad4',orbitRight:'Numpad6',orbitUp:'Numpad8',orbitDown:'Numpad2',panLeft:'Ctrl+Numpad4',panRight:'Ctrl+Numpad6',panUp:'Ctrl+Numpad8',panDown:'Ctrl+Numpad2',zoomIn:'NumpadAdd',zoomOut:'NumpadSubtract',resetView:'Shift+Home'}
+  shortcuts:{move:'KeyG',rotate:'KeyR',scale:'KeyC',fly:'Shift+KeyF',frame:'NumpadDecimal',frameAll:'Home',front:'Numpad1',right:'Numpad3',top:'Numpad7',projection:'Numpad5',back:'Ctrl+Numpad1',left:'Ctrl+Numpad3',bottom:'Ctrl+Numpad7',isometric:'Numpad0',orbitLeft:'Numpad4',orbitRight:'Numpad6',orbitUp:'Numpad8',orbitDown:'Numpad2',panLeft:'Ctrl+Numpad4',panRight:'Ctrl+Numpad6',panUp:'Ctrl+Numpad8',panDown:'Ctrl+Numpad2',zoomIn:'NumpadAdd',zoomOut:'NumpadSubtract',resetView:'Shift+Home',quadView:'Numpad9',skybox:'Shift+KeyK',entityReport:'Shift+KeyI',textureReplace:'Shift+KeyT',compileRegion:'Shift+KeyB'}
 };
 const STORAGE_KEY='svenstudio-controls-v2';
 const LEGACY_STORAGE_KEY='svenstudio-controls-v1';
@@ -72,7 +78,7 @@ export function shortcutAction(config:ControlSettings,code:string):ShortcutActio
 }
 export function displayBinding(binding:string):string{
   const parts=binding.split('+');const code=parts.pop()||'';
-  const keys:Record<string,string>={KeyG:'G',KeyR:'R',KeyS:'S',KeyC:'C',KeyF:'F',NumpadDecimal:'Num .',Numpad1:'Num 1',Numpad3:'Num 3',Numpad7:'Num 7',Numpad5:'Num 5',Numpad0:'Num 0',Numpad2:'Num 2',Numpad4:'Num 4',Numpad6:'Num 6',Numpad8:'Num 8',NumpadAdd:'Num +',NumpadSubtract:'Num -',Home:'Home',Backquote:'`',Period:'.',Space:'Space',Escape:'Esc'};
+  const keys:Record<string,string>={KeyG:'G',KeyR:'R',KeyS:'S',KeyC:'C',KeyF:'F',NumpadDecimal:'Num .',Numpad1:'Num 1',Numpad3:'Num 3',Numpad7:'Num 7',Numpad5:'Num 5',Numpad0:'Num 0',Numpad2:'Num 2',Numpad4:'Num 4',Numpad6:'Num 6',Numpad8:'Num 8',Numpad9:'Num 9',NumpadAdd:'Num +',NumpadSubtract:'Num -',Home:'Home',Backquote:'`',Period:'.',Space:'Space',Escape:'Esc'};
   return [...parts,keys[code]||code.replace(/^Key/,'').replace(/^Digit/,'')].join(' + ');
 }
 export function clampControlNumber(x:number,fallback:number,min:number,max:number):number{return Number.isFinite(x)?Math.min(max,Math.max(min,x)):fallback;}

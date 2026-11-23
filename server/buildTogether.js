@@ -27,8 +27,9 @@ export function validSharedProject(p){return Boolean(p&&typeof p==='object'&&!Ar
 const deep=v=>JSON.parse(JSON.stringify(v));
 // Project fields consumed by the individual studios. Never accept arbitrary
 // property names from a WebSocket packet (including __proto__/constructor).
-const META_FIELDS=new Set(['name','world','wadNames','target','graphPositions','cinematicPreviewSpeeds','terrainGroups','architectureLayouts','architectureAssemblies','architectureOpenings','customNpcs','surfaceSounds']);
-const ARRAY_STUDIOS=['terrainGroups','architectureLayouts','architectureAssemblies','architectureOpenings','customNpcs'];
+// Must list every studio key the client shares (src/engine/buildTogetherClient.ts sharedProjectKeys).
+const META_FIELDS=new Set(['name','world','wadNames','target','graphPositions','cinematicPreviewSpeeds','terrainGroups','pathGroups','smartConnections','architectureLayouts','architectureAssemblies','architectureOpenings','customNpcs','surfaceSounds']);
+const ARRAY_STUDIOS=['terrainGroups','pathGroups','smartConnections','architectureLayouts','architectureAssemblies','architectureOpenings','customNpcs'];
 const RECORD_STUDIOS=['graphPositions','cinematicPreviewSpeeds','surfaceSounds'];
 const own=(object,key)=>Object.prototype.hasOwnProperty.call(object,key);
 const changed=(a,b)=>JSON.stringify(a)!==JSON.stringify(b);
@@ -48,7 +49,7 @@ function applyMetadataPatch(project,patch){
  for(const key of patch.unset)delete next[key];return next;
 }
 function validStudioMetadata(project){
- if(project.target!==undefined&&project.target!=='svengine')return false;
+ if(project.target!==undefined&&project.target!=='svengine'&&project.target!=='cs16')return false;
  if(Object.values(project.world).some(value=>typeof value!=='string'))return false;
  if(project.wadNames.some(name=>typeof name!=='string'||name.length>255))return false;
  for(const key of ARRAY_STUDIOS)if(project[key]!==undefined&&(!Array.isArray(project[key])||project[key].length>25000||project[key].some(value=>!value||typeof value!=='object'||Array.isArray(value))))return false;

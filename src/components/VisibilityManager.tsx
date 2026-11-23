@@ -3,7 +3,8 @@ import {Eye,EyeOff,Focus,Search,Layers,Undo2} from 'lucide-react';
 import {useEditor} from '../store';
 import {useT} from '../i18n';
 
-export function VisibilityManager({onClose}:{onClose:()=>void}){
+/** v2.4: hidden objects, as a section of the Editor Preferences window. */
+export function HiddenObjectsSettings({onClose}:{onClose:()=>void}){
   const t=useT();
   const objects=useEditor(s=>s.project.objects),toggle=useEditor(s=>s.toggleVisibility);
   const tracked=useEditor(s=>s.visibilityListIds),focusHidden=useEditor(s=>s.focusHidden);
@@ -13,10 +14,8 @@ export function VisibilityManager({onClose}:{onClose:()=>void}){
   const [query,setQuery]=useState(''),[limit,setLimit]=useState(100);
   const hidden=useMemo(()=>objects.filter(o=>o.hidden||tracked.includes(o.id)).filter(o=>!query||`${o.id} ${o.name} ${o.kind} ${o.position.join(' ')}`.toLowerCase().includes(query.toLowerCase())),[objects,tracked,query]);
   const allHidden=objects.filter(o=>o.hidden).length;
-  return <div className="modal-backdrop" onMouseDown={onClose}>
-    <section className="modal-card visibility-manager" role="dialog" aria-modal="true" aria-label={t('Visibility manager')} onMouseDown={e=>e.stopPropagation()}>
-      <div className="modal-title"><Eye size={19}/><span>{t('Visibility manager')} · {allHidden} {t('Hidden objects')}</span><button onClick={onClose} aria-label={t('Close')}>×</button></div>
-      <p className="modal-subtext">{t('Hidden and previously hidden objects remain listed. Focus shows hidden brushes as ghosts without unhiding them.')}</p>
+  return <section className="pref-card visibility-manager" aria-label={t('Visibility manager')}>
+      <header><strong>{allHidden} {t('Hidden objects')}</strong><small>{t('Hidden and previously hidden objects remain listed. Focus shows hidden brushes as ghosts without unhiding them.')}</small></header>
       <div className="visibility-actions">
         <button onClick={reveal}><Eye size={15}/>{t('Show all')} (Alt+H)</button>
         <button className={ghost?'active':''} onClick={toggleGhost}><EyeOff size={15}/>{t('Ghost mode')}: {ghost?t('On'):t('Off')}</button>
@@ -33,7 +32,5 @@ export function VisibilityManager({onClose}:{onClose:()=>void}){
         {!hidden.length&&<p className="visibility-empty">{t('No hidden objects')}</p>}
         {hidden.length>limit&&<button className="visibility-more" onClick={()=>setLimit(v=>v+100)}>{t('Load more')} ({hidden.length-limit})</button>}
       </div>
-      <div className="modal-footer"><button className="primary-action" onClick={onClose}>{t('Close')}</button></div>
-    </section>
-  </div>;
+    </section>;
 }

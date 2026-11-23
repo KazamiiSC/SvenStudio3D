@@ -1,5 +1,6 @@
 import type {FgdClass,MapObject,PointEntity} from './types';
 import {readDoorOrientation} from './doorDirection.ts';
+import {encyclopediaEntry} from './entityEncyclopedia/index.ts';
 
 /** Advisory only: all editable values remain native Svengine/GoldSrc keyvalues.
  * A loaded FGD is the authority for additional classes and property choices.
@@ -11,6 +12,9 @@ export type EntityGuide = {
  example:string;
  keys:string[];
  caution?:string;
+ /** v2.6: ideas and extra wiring examples from the full Entity guide (Help → Entity guide). */
+ ideas?:string[];
+ examples?:string[];
 };
 const known:Record<string,EntityGuide>={
  func_button:{category:'interaction',summary:'Botón que dispara su target cuando un jugador lo usa, toca o activa según sus flags.',steps:['Poné un targetname en la entidad que querés activar.','Asigná ese nombre al target del botón.','Elegí un sonido en sounds o un WAV personalizado en noise.','Usá el flag Don’t move si querés un botón fijo.'],example:'func_button.target = door_01 → func_door.targetname = door_01',keys:['target','sounds','noise','wait','speed','spawnflags'],caution:'No alcanza con que ambas entidades estén juntas: los nombres target y targetname deben coincidir.'},
@@ -95,6 +99,20 @@ const fallback=(name:string,type?:FgdClass['type']):EntityGuide=>{
  return {category:info[0],summary:info[1],steps:[info[2],'Probá el comportamiento real en Sven Co-op.'],example:`${name}: consultar definición FGD`,keys:[]};
 };
 export function guideForClass(classname:string,definition?:FgdClass):EntityGuide{
+ return enrich(classname,baseGuideForClass(classname,definition));
+}
+/** v2.6: every class gets ideas, extra examples and a tip from the Entity guide encyclopedia. */
+function enrich(classname:string,guide:EntityGuide):EntityGuide{
+ const e=encyclopediaEntry(classname);if(!e)return guide;
+ const examples=(e.ex??[]).map(([title,recipe])=>`${title}: ${recipe}`).filter(x=>!x.endsWith(guide.example));
+ return {...guide,ideas:e.ideas?.slice(0,4),examples:examples.slice(0,3),caution:guide.caution??e.tips?.[0]};
+}
+function baseGuideForClass(classname:string,definition?:FgdClass):EntityGuide{
+ const encyclopedia=encyclopediaEntry(classname);
+ if(!known[classname.toLowerCase()]&&!extended[classname.toLowerCase()]&&encyclopedia){
+  const steps=encyclopedia.how??[...(encyclopedia.ideas??[]).slice(0,2).map(x=>`Idea: ${x}`),'Revisá sus keyvalues en el FGD y probalo en Sven Co-op.'];
+  return {category:encyclopedia.cat,summary:encyclopedia.s,steps,example:encyclopedia.ex?.[0]?.[1]??`${classname}: ver Ayuda → Guía de entidades`,keys:(encyclopedia.keys??[]).map(([k])=>k).filter(k=>/^[A-Za-z_][\w]*$/.test(k))};
+ }
  const guide=known[classname.toLowerCase()]??extended[classname.toLowerCase()]??fallback(classname,definition?.type);
  const props=definition?.props??{};
  // Unknown classes still get a concrete usage path without making up keyvalues.
@@ -206,8 +224,10 @@ const english:Record<string,[string,string[],string]>={
 export function localizedGuideForClass(classname:string,definition:FgdClass|undefined,locale:string):EntityGuide{
  const guide=guideForClass(classname,definition);
  if(locale==='es')return guide;
+ // The detailed ideas/examples are Spanish; other locales get the English summary and steps.
  const entry=english[classname.toLowerCase()];
- if(entry)return {...guide,summary:entry[0],steps:entry[1],example:entry[2],caution:undefined};
+ if(entry)return {...guide,summary:entry[0],steps:entry[1],example:entry[2],caution:undefined,ideas:undefined,examples:undefined};
  const category=guide.category;
- return {...guide,summary:definition?.description||`Entity defined by the game FGD (${category}).`,steps:[`Inspect the ${classname} class and its native keyvalues.`, 'Test its behavior in Sven Co-op.'],example:`${classname}: consult FGD`,caution:undefined};
+ const encyclopedia=encyclopediaEntry(classname);
+ return {...guide,ideas:undefined,examples:undefined,summary:encyclopedia?.en||definition?.description||`Entity defined by the game FGD (${category}).`,steps:[`Inspect the ${classname} class and its native keyvalues.`, 'Test its behavior in Sven Co-op.'],example:`${classname}: consult FGD`,caution:undefined};
 }

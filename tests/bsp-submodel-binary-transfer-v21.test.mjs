@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 
 const root=new URL('../',import.meta.url);
 const text=name=>readFileSync(new URL(name,root),'utf8');

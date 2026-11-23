@@ -19,7 +19,7 @@ export function bspBrushCopyEligibility(map:BspMap,doc:NativeBsp,indices:readonl
    const source=doc.entities[index];
    if(!source||index<1)return {ok:false,reason:'Cannot copy worldspawn or a missing entity.'};
    const cls=nativeProperty(source,'classname');
-   if(!['func_wall','func_illusionary'].includes(cls))return {ok:false,reason:`${cls}: only func_wall and func_illusionary can be pasted in this safe mode.`};
+   if(cls==='worldspawn')return {ok:false,reason:'worldspawn cannot be pasted.'};
    const model=modelOf(doc,index);
    if(model<1||model>=map.stats.models||!map.faces.some(face=>face.model===model))
      return {ok:false,reason:'Selected entity has no valid compiled BSP submodel geometry.'};
@@ -31,8 +31,9 @@ export function bspBrushCopyEligibility(map:BspMap,doc:NativeBsp,indices:readonl
 }
 export function bspBrushPasteBounds(map:BspMap,doc:NativeBsp,indices:readonly number[]):{min:BspVec3;max:BspVec3}{
  const valid=bspBrushCopyEligibility(map,doc,indices);if(!valid.ok)throw Error(valid.reason);
- const models=new Set(indices.map(index=>modelOf(doc,index)));
- const points=map.faces.filter(f=>models.has(f.model)).flatMap(f=>f.points);
+ // Faces are stored relative to the entity origin (origin brushes), so add it back.
+ const offsets=new Map(indices.map(index=>{const o=nativeProperty(doc.entities[index],'origin').trim().split(/\s+/).map(Number);return [modelOf(doc,index),o.length===3&&o.every(Number.isFinite)?o:[0,0,0]] as const;}));
+ const points=map.faces.filter(f=>offsets.has(f.model)).flatMap(f=>{const o=offsets.get(f.model)!;return f.points.map(p=>[p[0]+o[0],p[1]+o[1],p[2]+o[2]]);});
  if(!points.length)throw Error('No renderable brush-model geometry.');
  const min:BspVec3=[Infinity,Infinity,Infinity],max:BspVec3=[-Infinity,-Infinity,-Infinity];
  for(const p of points)for(let a=0;a<3;a++){min[a]=Math.min(min[a],p[a]);max[a]=Math.max(max[a],p[a])}

@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 const require=createRequire(import.meta.url);
 require.extensions['.ts']=(mod,path)=>mod._compile(ts.transpileModule(readFileSync(path,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText,path);
 const {bspRecommendedNpcClass,bspModelEntitySpec,defaultBspModelSettings}=require('../src/engine/bspModelPlacement.ts');
@@ -62,7 +62,9 @@ test('multi-selection Delete removes only point entities in descending index ord
  const lumpBytes=doc=>[...new Uint8Array(doc.source,doc.lumps[2].offset,doc.lumps[2].length)];
  assert.deepEqual(lumpBytes(output),lumpBytes(doc));assert.deepEqual(lumpBytes(output),[9,5,4,7]);
  assert.equal(readNativeBsp(src).entities.length,4);
- assert.throws(()=>bspDeletePoint(doc,3),/Only point entities/);
+ // v2.6: brush entities can be deleted too (their *N model stays unused); worldspawn cannot.
+ assert.equal(readNativeBsp(writeNativeBsp(bspDeletePoint(doc,3))).entities.length,3);
+ assert.throws(()=>bspDeletePoint(doc,0),/worldspawn/);
 });
 test('viewport registers right-click entity menu, surface/empty deselection, Escape and Delete input guard',()=>{
  assert.match(ui,/onContextMenu=\{event=>\{event\.stopPropagation\(\);event\.nativeEvent\.preventDefault\(\)/);

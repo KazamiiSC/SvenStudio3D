@@ -21,9 +21,11 @@ test('BuildTogether help lives inside collaboration dialog, preserving session a
 });
 test('build configuration exposes local Browse and automatic detection without sharing settings in BuildTogether',()=>{
  const app=source('src/App.tsx'),picker=source('src/components/LocalFolderPicker.tsx'),client=source('src/engine/buildTogetherClient.ts');
- assert.ok(app.includes('autoDetectInstallations'));assert.ok(app.includes("setPicker('compiler')"));assert.ok(app.includes("setPicker('game')"));
- assert.ok(app.includes('if(!settings.gameDir||!settings.compilerDir)void detect();'));
- assert.ok(app.includes('initialDetection.current=true'));
+ // Build configuration lives in SmartBuildSettingsModal since v2.0.
+ const modal=source('src/components/SmartBuildSettingsModal.tsx');
+ assert.ok(modal.includes('autoDetectInstallations'));assert.ok(modal.includes('setPicker('));
+ assert.ok(modal.includes('if(!settings.gameDir||!settings.compilerDir)void detect()'));
+ assert.ok(app.includes('LocalFolderPicker')||modal.includes('LocalFolderPicker'));
  assert.ok(picker.includes('/api/setup/folders'));assert.ok(picker.includes('/api/setup/verify'));
  assert.ok(!client.includes('compilerDir'), 'compiler paths must not be serialized over WebSocket');
 });

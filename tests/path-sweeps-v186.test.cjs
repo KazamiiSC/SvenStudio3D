@@ -1,4 +1,4 @@
-const fs=require('node:fs'),ts=require('typescript'),assert=require('node:assert/strict');
+const fs=require('node:fs'),ts=require('./support/typescript.cjs'),assert=require('node:assert/strict');
 require.extensions['.ts']=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,file);
 const {createPathStructureBrushes,validatePathStructure,samplePath,sampleCableSag,sweepFrames3D}=require('../src/engine/pathStructures.ts');
 const {validateBrush}=require('../src/engine/exportMap.ts');

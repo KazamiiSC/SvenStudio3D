@@ -1,14 +1,17 @@
+import {withSplitParts} from './support/splitParts.cjs';
+import {extractFunction} from './support/extractFunction.cjs';
 import test from 'node:test';
 import {normalizedUvAt} from '../src/engine/valve220UV.ts';
+import {isBspSyntheticClosure} from '../src/engine/bspPrefabSurfaceFlags.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
-const ts=require('typescript');
-const viewport=fs.readFileSync(new URL('../src/components/Viewport.tsx',import.meta.url),'utf8');
+const ts=require('./support/typescript.cjs');
+const viewport=withSplitParts(fs.readFileSync(new URL('../src/components/Viewport.tsx',import.meta.url),'utf8'),'Viewport');
 const geometry=fs.readFileSync(new URL('../src/engine/geometry.ts',import.meta.url),'utf8');
-const app=fs.readFileSync(new URL('../src/App.tsx',import.meta.url),'utf8');
+const app=withSplitParts(fs.readFileSync(new URL('../src/App.tsx',import.meta.url),'utf8'),'App');
 
 function traverse(n,fn){fn(n);ts.forEachChild(n,c=>traverse(c,fn));}
 const tree=ts.createSourceFile('Viewport.tsx',viewport,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
@@ -20,7 +23,7 @@ test('Preview 2 HF2: updated viewport, geometry, and App parse as TS/TSX',()=>{
  }
 });
 
-test('all preview map callbacks pass only the brush, never the map index as textureSizes',()=>{
+test('all preview map callbacks pass only the brush, never the map index as textureSizes',{skip:!ts.hasAst&&'needs the TypeScript compiler AST (npm install typescript)'},()=>{
  let fixed=0;
  traverse(tree,node=>{
   if(!ts.isCallExpression(node)||!ts.isPropertyAccessExpression(node.expression)||node.expression.name.text!=='map')return;
@@ -50,10 +53,9 @@ test('each preview and normal brush uses WAD texture dimensions; GhostBrush has 
 // Execute the real geometry builder in isolation using a minimal THREE geometry
 // adapter, because the full app requires browser/WebGL dependencies.
 function compileGeometryBuilder(){
- const ast=ts.createSourceFile('geometry.ts',geometry,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
- const fn=ast.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name?.text==='buildMeshGeometry');
- assert.ok(fn,'buildMeshGeometry must exist');
- const code=ts.transpileModule(fn.getText(ast).replace(/^export /,''),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None}}).outputText;
+ const fnText=extractFunction(geometry,'buildMeshGeometry');
+ assert.ok(fnText,'buildMeshGeometry must exist');
+ const code=ts.transpileModule(fnText.replace(/^export /,''),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None}}).outputText;
  class BufferGeometry{
   attributes={};groups=[];userData={};
   setAttribute(name,attribute){this.attributes[name]=attribute;return this;}
@@ -66,7 +68,7 @@ function compileGeometryBuilder(){
   transformedVertices:b=>b.vertices,
   gameToThree:p=>({x:p[0],y:p[2],z:-p[1]}),
   safeFaceTextureAxes:(_points,face)=>({u:[1,0,0],v:[0,1,0],uShift:face.uShift||0,vShift:face.vShift||0}),
-  dot3:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],normalizedUvAt};
+  dot3:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],normalizedUvAt,isBspSyntheticClosure};
  return vm.runInNewContext(code+'\nbuildMeshGeometry;',context);
 }
 const brush={vertices:[[0,0,0],[64,0,0],[64,32,0]],faces:[{texture:'BRICK',indices:[0,1,2],uScale:1,vScale:1}]};
@@ -89,4 +91,4 @@ test('invalid optional size lookup cannot crash the viewport',()=>{
  }
 });
 
-test('version label identifies current release version 1.6.0',()=>assert.match(app,/v1\.6\.0/));
+test('version label identifies the current release version',()=>assert.ok(app.includes(`v${JSON.parse(fs.readFileSync(new URL('../package.json',import.meta.url),'utf8')).version.split('.').slice(0,2).join('.')}`)));

@@ -1,4 +1,4 @@
-const fs=require('node:fs'),Module=require('node:module'),ts=require('typescript'),assert=require('node:assert/strict');
+const fs=require('node:fs'),Module=require('node:module'),ts=require('./support/typescript.cjs'),assert=require('node:assert/strict');
 require.extensions['.ts']=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,file);
 const {defaultTerrain,createTerrainBrushes,terrainBrushCount,terrainRecord}=require('../src/engine/terrain.ts');
 const {validateBrush,exportMap}=require('../src/engine/exportMap.ts');

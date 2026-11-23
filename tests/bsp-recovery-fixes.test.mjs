@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createRequire} from 'node:module';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 const require=createRequire(import.meta.url);
 require.extensions['.ts']=(mod,filename)=>mod._compile(ts.transpileModule(fs.readFileSync(filename,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText,filename);
 const {extractEmbeddedBspWad,appendRecoveryWadToMap}=require('../src/engine/bspEmbeddedWad.ts');

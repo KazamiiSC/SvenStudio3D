@@ -14,7 +14,8 @@ import {prepareCompileWads,patchWorldWads} from './compileWads.js';
 import {planSmartWadBuild,smartWadFilename,assertNoInstalledWadCollision} from './smartWadBuild.js';
 import {installPrefabWad} from './prefabWadInstall.js';
 import {resolveCompilerProfile} from './sdhltCompiler.js';
-import {inspectBspFile} from './bspAudit.js';
+import {isCS16GameDirectory,loadCS16Fgd} from './cs16Profile.js';
+import {inspectBspFile,bspLimitReport} from './bspAudit.js';
 import {createHash} from 'node:crypto';
 import {readBuildLeakPointfile} from './leakPointfile.js';
 import {inspectMapPackage,createMapPackage} from './mapPackager.js';
@@ -30,9 +31,18 @@ import {createLightingPreviewRecord,isPreviewCompile,lightingPreviewAvailable} f
 import {studioFolders,saveStudioFile,listStudioFiles,readStudioFile,studioDirectory} from './studioDocuments.js';
 import {pickWindowsFolder} from './nativeWindowsDialogs.js';
 import {listHistory,createHistorySnapshot,readHistorySnapshot} from './projectHistory.js';
+import {gameIconPng} from './gameIcons.js';
+import {localApiGuard,allowedPorts,isLocalOrigin} from './localGuard.js';
+import {launchGame} from './gameLauncher.js';
+import {projectPath} from './paths.js';
+import {readSharedSettings,writeSharedSettings} from './sharedSettings.js';
 
-const app=express();app.use(express.json({limit:'36mb'}));
-const PORT=Number(process.env.SVEN_API_PORT||49177);let active=null;let lastLightingPreview=null;let lastCompiledOutput=null;
+const PORT=Number(process.env.SVEN_API_PORT||49177);
+const app=express();
+app.disable('x-powered-by');
+// Every route answers only the local UI (see server/localGuard.js).
+app.use(localApiGuard(PORT));
+app.use(express.json({limit:'36mb'}));let active=null;let lastLightingPreview=null;let lastCompiledOutput=null;
 const stages=['CSG','BSP','VIS','RAD'];
 const validMapName=s=>typeof s==='string'&&/^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/.test(s);
 const isDir=async p=>{try{return (await fs.stat(p)).isDirectory()}catch{return false}};
@@ -44,7 +54,8 @@ app.get('/api/health',(_req,res)=>res.json({ok:true,platform:process.platform,st
 const studioOriginAllowed=req=>{
  const origin=req.headers.origin;
  if(!origin)return true;
- try{const parsed=new URL(origin);return ['127.0.0.1','localhost'].includes(parsed.hostname)&&parsed.port==='5173'}catch{return false}
+ // v2.4: the desktop app serves the UI from the API port itself, so allow the same local ports as the guard.
+ return isLocalOrigin(origin,allowedPorts(PORT));
 };
 app.get('/api/studio-files/paths',async(req,res)=>{
  try{return res.json(await studioFolders(true))}catch(error){return res.status(500).json({error:String(error.message||error)})}
@@ -147,13 +158,12 @@ app.post('/api/packager/download',async(req,res)=>{
       .setHeader('Cache-Control','no-store').type('application/zip').send(zip);
   }catch(error){return res.status(400).json({error:String(error?.message||error)});}
 });
-app.post('/api/cancel',(_req,res)=>{
-  if(active){active.cancelled=true;if(active.child){
-    if(process.platform==='win32')execFile('taskkill',['/PID',String(active.child.pid),'/T','/F'],()=>{});
-    else active.child.kill('SIGTERM');
-  }return res.json({cancelled:true});}
-  return res.json({cancelled:false});
-});
+// Stop a running build and its compiler process tree.
+const cancelTask=task=>{if(!task)return false;task.cancelled=true;if(task.child){
+  if(process.platform==='win32')execFile('taskkill',['/PID',String(task.child.pid),'/T','/F'],()=>{});
+  else task.child.kill('SIGTERM');
+ }return true;};
+app.post('/api/cancel',(_req,res)=>res.json({cancelled:cancelTask(active)}));
 // Post-build actions use ONLY the last output produced by this server process.
 // Re-installing an already compiled map never executes SC-CSG/BSP/VIS/RAD.
 app.post('/api/compile/install-last',async(req,res)=>{
@@ -163,7 +173,7 @@ app.post('/api/compile/install-last',async(req,res)=>{
     req.body?.gameDir!==last.gameDir)return res.status(400).json({error:'Confirm installation of the last compiled map first.'});
  try{
   const resourceRoots=await validateExternalRoots(req.body?.resourceRoots||last.resourceRoots||[]);
-  const result=await writeDistribution({gameDir:last.gameDir,mapName:last.mapName,destinationDir:last.gameDir,format:'install',resourceRoots,
+  const result=await writeDistribution({gameDir:last.gameDir,mapName:last.mapName,destinationDir:last.gameDir,format:'install',resourceRoots,gameProfile:last.gameProfile||'svengine',
     compiledBspPath:last.file,inlineBinaryFiles:last.inlineBinaryFiles||[]});
   return res.json({installed:true,destination:result.destination,files:result.files});
  }catch(error){return res.status(400).json({error:`Installation rejected: ${error.message||error}`})}
@@ -209,12 +219,21 @@ app.post('/api/svengine/fgd',async(req,res)=>{
     return res.type('text/plain; charset=utf-8').send(await load(path.basename(file)));
   }catch(error){return res.status(500).json({error:`Cannot read Sven Co-op FGD: ${String(error)}`})}
 });
+// CS 1.6 FGD: prefer the user's legitimate local file; provide an explicitly
+// limited editor-owned fallback when the game installation has no FGD.
+app.post('/api/cs16/fgd',async(req,res)=>{
+ try{
+  const dir=req.body?.gameDir;
+  const {contents,source}=await loadCS16Fgd(dir,projectPath('server','cs16-basic.fgd'));
+  return res.set('X-FGD-Source',source).type('text/plain; charset=utf-8').send(contents);
+ }catch(error){return res.status(400).json({error:String(error.message||error)});}
+});
 // Read only the fixed engine resource decals.wad, never a client-provided file name.
 app.post('/api/assets/decals',async(req,res)=>{
   const gameDir=req.body?.gameDir;
   if(typeof gameDir!=='string'||gameDir.length>1024||!(await isDir(gameDir)))
     return res.status(400).json({error:'Configure the local Sven Co-op game directory first.'});
-  const candidates=[path.join(gameDir,'decals.wad'),path.join(gameDir,'..','svencoop','decals.wad')];
+  const candidates=[path.join(gameDir,'decals.wad'),path.join(gameDir,'..','svencoop','decals.wad'),...(path.basename(path.resolve(gameDir)).toLowerCase()==='cstrike'?[path.join(gameDir,'..','valve','decals.wad')]:[])];
   try{
     const file=candidates.find(existsSync);
     if(!file)return res.status(404).json({error:'decals.wad not found. Import the game file manually.'});
@@ -226,6 +245,19 @@ app.post('/api/assets/decals',async(req,res)=>{
     return res.setHeader('Cache-Control','no-store').type('application/octet-stream').send(bytes);
   }catch(error){return res.status(500).json({error:`Cannot read decals.wad: ${String(error)}`})}
 });
+// Test in game: start the installed game on an already installed map (fixed executables only).
+app.post('/api/game/launch',async(req,res)=>{
+  try{return res.json(await launchGame({gameProfile:req.body?.gameProfile,gameDir:req.body?.gameDir,mapName:req.body?.mapName}));}
+  catch(error){return res.status(400).json({error:String(error?.message||error)})}
+});
+// Home screen: original game icon from the user's own installation (read-only, PNG in memory).
+app.get('/api/assets/game-icon',async(req,res)=>{
+  try{
+    const png=await gameIconPng(String(req.query.game||''),String(req.query.gameDir||''));
+    if(!png)return res.status(404).set('Cache-Control','no-store').json({error:'Game not installed.'});
+    return res.set('Cache-Control','private, max-age=86400').type('image/png').send(png);
+  }catch(error){return res.status(400).json({error:String(error?.message||error)})}
+});
 // Read-only asset access restricted to Sven Co-op's model directories.
 app.post('/api/assets/models',async(req,res)=>{
   try{return res.json(await listModels(req.body?.gameDir,req.body?.query||'',req.body?.limit,{refresh:req.body?.refresh===true}));}
@@ -236,7 +268,12 @@ app.post('/api/assets/model',async(req,res)=>{
     const data=await openModel(req.body?.gameDir,req.body?.source,req.body?.path);
     res.setHeader('Cache-Control','private, max-age=300');
     return res.type('application/octet-stream').send(data);
-  }catch(error){return res.status(400).json({error:String(error?.message||error)});}
+  }catch(error){
+    // Optional probes (texture companions T.mdl, animation groups 01.mdl…) search folder by folder:
+    // a file that is simply not in this folder is "no content", not a failed request.
+    if(req.body?.optional===true&&(error?.code==='ENOENT'||/Invalid model source/.test(String(error?.message))))return res.status(204).end();
+    return res.status(400).json({error:String(error?.message||error)});
+  }
 });
 // Sven Co-op sound inventory and read-only local preview (no uploads or mutations).
 app.post('/api/assets/sounds',async(req,res)=>{
@@ -295,10 +332,31 @@ app.post('/api/prefab-wad/install',express.raw({type:'application/octet-stream',
   }catch(error){return res.status(400).json({error:String(error?.message||error)})}
 });
 
+// Builds are staged in the OS temp folder and copied to Documents/Builds or the chosen output.
+// Remove stale staging folders (e.g. after a crash) when the service starts.
+const BUILD_ROOT=path.join(os.tmpdir(),'svenstudio-builds');
+const removeBuildDir=dir=>dir&&path.dirname(dir)===BUILD_ROOT?fs.rm(dir,{recursive:true,force:true}).catch(()=>{}):Promise.resolve();
+(async()=>{try{const cutoff=Date.now()-24*3600*1000;for(const name of await fs.readdir(BUILD_ROOT)){const dir=path.join(BUILD_ROOT,name);const stat=await fs.stat(dir).catch(()=>null);if(stat?.isDirectory()&&stat.mtimeMs<cutoff)await removeBuildDir(dir);}}catch{/* no staging folder yet */}})();
+// The lock is taken before any await so two requests can never start two builds.
+let compileStarting=false;
 app.post('/api/compile',async(req,res)=>{
+  if(active||compileStarting)return res.status(409).json({error:'Another compile is already running.'});
+  compileStarting=true;
+  try{await compileRequest(req,res);}finally{compileStarting=false;}
+});
+async function compileRequest(req,res){
   if(active)return res.status(409).json({error:'Another compile is already running.'});
-  const {mapName:requestedMapName,mapData,compilerDir,gameDir,wadPaths,fullVis=true,extraRad=true,radAmbientTest='off',previewOnly=false,compilerEngine='sc',sdhltDir='',sdhltAO=false,sdhltPCF='off',smartWadMode='off',smartWadName='',browserWads=[],distributionDir='',distributionFormat='off',resourceRoots=[]}=req.body||{};
+  const {mapName:requestedMapName,mapData,compilerDir,gameDir,wadPaths,buildQuality='final',overview=null,fullVis:fullVisRequest=true,extraRad:extraRadRequest=true,radAmbientTest='off',previewOnly=false,gameProfile='svengine',compilerEngine='sc',sdhltDir='',sdhltAO=false,sdhltPCF='off',smartWadMode='off',smartWadName='',browserWads=[],distributionDir='',distributionFormat='off',resourceRoots=[]}=req.body||{};
+  if(!['svengine','cs16'].includes(gameProfile))return res.status(400).json({error:'Unknown target game profile.'});
+  if(gameProfile==='cs16'&&(compilerEngine!=='zhlt'||radAmbientTest!=='off'))return res.status(400).json({error:'CS 1.6 requires the ZHLT compilers and does not use the Svengine SC-RAD lighting test.'});
+  if(gameProfile==='svengine'&&compilerEngine==='zhlt')return res.status(400).json({error:'ZHLT compilers are available only for CS 1.6 builds.'});
   if(previewOnly!==false&&!isPreviewCompile(previewOnly))return res.status(400).json({error:'Invalid previewOnly flag.'});
+  // Build quality: final = -full VIS + -extra RAD; fast = normal VIS/RAD; geometry = CSG+BSP only (no lighting).
+  // A lighting preview always needs RAD, so it never runs as geometry-only.
+  if(!['final','fast','geometry'].includes(buildQuality))return res.status(400).json({error:'Invalid build quality.'});
+  const quality=previewOnly&&buildQuality==='geometry'?'fast':buildQuality;
+  const fullVis=quality==='final'?fullVisRequest!==false:false,extraRad=quality==='final'?extraRadRequest!==false:false;
+  const runStages=quality==='geometry'?stages.slice(0,2):stages;
   if(!['off','embed','external'].includes(smartWadMode))return res.status(400).json({error:'Invalid Smart WAD mode.'});
   if(smartWadMode!=='off'){try{smartWadFilename(smartWadName,'validation','123456789abc')}catch(error){return res.status(400).json({error:error.message})}}
   if(!['off','build','folder','folder_zip','install'].includes(distributionFormat)||typeof distributionDir!=='string'||distributionDir.length>1024)return res.status(400).json({error:'Invalid distribution settings.'});
@@ -311,6 +369,7 @@ app.post('/api/compile',async(req,res)=>{
   if(!validMapName(mapName)||typeof mapData!=='string'||mapData.length<40||mapData.length>20_000_000)
     return res.status(400).json({error:'Invalid map name or source.'});
   if(!await isDir(gameDir))return res.status(400).json({error:'Game directory must exist on this PC.'});
+  if(gameProfile==='cs16'&&!await isCS16GameDirectory(gameDir))return res.status(400).json({error:'Select your installed Counter-Strike 1.6 cstrike folder.'});
   let profile;
   try{profile=resolveCompilerProfile({compilerEngine,compilerDir,sdhltDir,sdhltAO,sdhltPCF});}
   catch(error){return res.status(400).json({error:error.message});}
@@ -327,12 +386,12 @@ app.post('/api/compile',async(req,res)=>{
   const executables=profile.executablePaths;
   // Only a user-selected local compiler is executed; service listens on loopback only.
   // Every compile gets an isolated directory. Never reuse .bsp/.p0/.prt from older builds.
-  const workRoot=path.join(os.tmpdir(),'svenstudio-builds');
+  const workRoot=BUILD_ROOT;
   let workDir;
   try{await fs.mkdir(workRoot,{recursive:true});workDir=await fs.mkdtemp(path.join(workRoot,`${mapName}-`));}
   catch(e){return res.status(500).json({error:`Cannot create build folder: ${e.message}`});}
   const mapBase=path.join(workDir,mapName);
-  const builtInWad=path.resolve('public','svstudio.wad');
+  const builtInWad=projectPath('public','svstudio.wad');
   let source=mapData, wadPlan, smartPlan=null,smartExternalPath=null;const stagedExtras=[];
   try{
     // The browser may hold an imported prefab WAD in IndexedDB without a matching
@@ -349,9 +408,9 @@ app.post('/api/compile',async(req,res)=>{
         // Never shadow a different WAD already installed in the game or
         // explicitly configured by the user. Preview may have a stale version.
         const configured=Array.isArray(wadPaths)?wadPaths:[];
-        const gameRoot=['svencoop','svencoop_addon','svencoop_downloads'].includes(path.basename(path.resolve(gameDir)).toLowerCase())?path.dirname(path.resolve(gameDir)):path.resolve(gameDir);
+        const gameRoot=['svencoop','svencoop_addon','svencoop_downloads','cstrike'].includes(path.basename(path.resolve(gameDir)).toLowerCase())?path.dirname(path.resolve(gameDir)):path.resolve(gameDir);
         const candidates=[...configured.filter(p=>typeof p==='string'&&path.win32.basename(p.replaceAll('\\','/')).toLowerCase()===key),
-          ...['svencoop','svencoop_addon','svencoop_downloads'].map(layer=>path.join(gameRoot,layer,wad.name))];
+          ...(gameProfile==='cs16'?['cstrike','valve']:['svencoop','svencoop_addon','svencoop_downloads']).map(layer=>path.join(gameRoot,layer,wad.name))];
         for(const candidate of candidates){
           if(existsSync(candidate)&&!(await fs.readFile(candidate)).equals(bytes))throw Error(`WAD conflict: ${wad.name} differs between the browser and disk. Resolve it in the prefab resources before compiling.`);
         }
@@ -359,7 +418,7 @@ app.post('/api/compile',async(req,res)=>{
         const file=path.join(dir,wad.name);await fs.writeFile(file,bytes,{flag:'wx'});injectedWads.push(file);
       }
     }
-    wadPlan=await prepareCompileWads(source,{gameDir,compilerDir:profile.dir,builtInWad,configuredWadPaths:[...(Array.isArray(wadPaths)?wadPaths:[]),...externalWadSearchFolders(externalRoots),...injectedWads,...(profile.engine==='sdhlt'&&existsSync(profile.requiredWad)?[profile.requiredWad]:[])]});
+    wadPlan=await prepareCompileWads(source,{gameDir,gameProfile,compilerDir:profile.dir,builtInWad,configuredWadPaths:[...(Array.isArray(wadPaths)?wadPaths:[]),...externalWadSearchFolders(externalRoots),...injectedWads,...(profile.engine==='sdhlt'&&existsSync(profile.requiredWad)?[profile.requiredWad]:[])]});
     source=wadPlan.map;
     if(wadPlan.missingWads.length&&smartWadMode==='off'){
       throw new Error(`Missing WAD files: ${wadPlan.missingWads.join(', ')}. Set full local WAD paths in Settings (WAD paths) or install the WAD files in svencoop_addon/ or svencoop/. The compiler must be able to read the WAD files. The project and its textures were not modified.`);
@@ -379,21 +438,32 @@ app.post('/api/compile',async(req,res)=>{
     }
     // HF10: no game writes here. Source textures, bundled WAD and demo sounds
     // are compiler inputs only; runtime resources must be packaged explicitly.
+    // CS 1.6 spectator overview generated by the editor: fixed names, 8-bit 1024x768 BMP + small TXT.
+    if(overview&&!previewOnly){
+      if(gameProfile!=='cs16')throw Error('Overviews are generated only for Counter-Strike 1.6.');
+      const bmp=typeof overview.bmpBase64==='string'&&overview.bmpBase64.length<1_500_000?Buffer.from(overview.bmpBase64,'base64'):null;
+      if(!bmp||bmp.length<1078||bmp.toString('ascii',0,2)!=='BM'||bmp.readInt32LE(18)!==1024||bmp.readInt32LE(22)!==768||bmp.readUInt16LE(28)!==8)throw Error('Invalid overview image (expected 8-bit 1024x768 BMP).');
+      if(typeof overview.txt!=='string'||overview.txt.length>4096||!overview.txt.includes(`overviews/${mapName}.bmp`))throw Error('Invalid overview description.');
+      stagedExtras.push({path:`overviews/${mapName}.bmp`,bytes:bmp},{path:`overviews/${mapName}.txt`,bytes:Buffer.from(overview.txt,'utf8')});
+    }
     for(const sample of ['studio_hum.wav','studio_chime.wav']){
       if(previewOnly||!source.includes(`"message" "svstudio/${sample}"`))continue;
-      const bundled=path.resolve('public','starter-sounds','svstudio',sample);
+      const bundled=projectPath('public','starter-sounds','svstudio',sample);
       if(existsSync(bundled))stagedExtras.push({path:`sound/svstudio/${sample}`,bytes:await fs.readFile(bundled)});
     }
   await fs.writeFile(`${mapBase}.map`,source,'utf8');
-  }catch(e){return res.status(500).json({error:`Cannot prepare build files: ${e.message}`});}
+  }catch(e){void removeBuildDir(workDir);return res.status(500).json({error:`Cannot prepare build files: ${e.message}`});}
   res.status(200);res.setHeader('Content-Type','application/x-ndjson; charset=utf-8');
   res.setHeader('Cache-Control','no-cache');res.setHeader('X-Accel-Buffering','no');
   active={child:null,cancelled:false};const task=active;
+  // Closing the tab or losing the connection stops the compiler instead of leaving it running.
+  res.on('close',()=>{if(!res.writableEnded&&active===task)cancelTask(task);});
+  let keepWorkDir=false;
   const buildLogLines=[];
   // Keep a capped, self-contained log for the isolated output.
   const logBuild=(line)=>{if(buildLogLines.length<12000)buildLogLines.push(line)};
   send(res,'info',`Working directory: ${workDir}`);
-  send(res,'info',`Compiler engine: ${profile.engine==='sc'?'Sven Co-op SDK':'SDHLT (experimental)'}; selected directory: ${profile.dir}`);
+  send(res,'info',`Target game: ${gameProfile==='cs16'?'Counter-Strike 1.6':'Sven Co-op'}; compiler: ${profile.engine==='sc'?'Sven Co-op SDK':profile.engine==='zhlt'?'ZHLT GoldSrc':'SDHLT (experimental)'}; selected directory: ${profile.dir}`);
   if(profile.engine==='sdhlt')send(res,'warning','SDHLT targets Half-Life GoldSrc. Compiled maps must be checked in Sven Co-op; use the SC toolchain if SDHLT fails or produces incompatible BSPs.');
   if(lightAmbient!==null)send(res,'warning',`SC-RAD LIGHT TEST ONLY: -ambient ${lightAmbient} ${lightAmbient} ${lightAmbient}. Output ${mapName}.bsp; base BSP ${requestedMapName}.bsp remains untouched. Lighting is diagnostic, not a restoration of original lightmaps.`);
   send(res,'info',`MAP SHA-256: ${createHash('sha256').update(source).digest('hex')}`);
@@ -412,15 +482,20 @@ app.post('/api/compile',async(req,res)=>{
     send(res,'diagnostic',`Compiler pointfile ${mapName}${trace.extension} loaded (${trace.points.length} points).`,{kind:'leak',stage:'BSP',points:trace.points});
   };
   try{
-    for(let i=0;i<stages.length;i++){
+    if(quality!=='final')send(res,'info',quality==='geometry'?'Geometry-only build: SC/ZHLT CSG + BSP (no VIS/RAD). The map loads without lighting; use it to check shapes and leaks.':'Fast build: normal VIS and RAD (no -full / -extra).');
+    for(let i=0;i<runStages.length;i++){
       if(task.cancelled)throw new Error('Build cancelled by user.');
       const stage=stages[i];
-      const args=[...(stage==='CSG'&&smartPlan?smartPlan.csgArgs:[]),mapBase];if(stage==='VIS'&&fullVis)args.push('-full');if(stage==='RAD'&&extraRad)args.push('-extra');
+      const args=[...(stage==='CSG'&&smartPlan?smartPlan.csgArgs:[])];
+      const flags=[...(stage==='VIS'&&fullVis?['-full']:[]),...(stage==='RAD'&&extraRad?['-extra']:[])];
+      if(profile.engine==='zhlt')args.push(...flags,mapBase);
+      else args.push(mapBase,...flags); // preserve SC/SDHLT argument ordering
       if(stage==='RAD'){args.push(...lightTestRadArgs(lightAmbient));args.push(...profile.radArgs);}
-      send(res,'stage',`Starting ${profile.engine==='sc'?'SC':'SDHLT'}-${stage}...`,{stage});
-      let illegalBrush=false;
-      await new Promise((resolve,reject)=>{
-        const child=spawn(executables[i],args,{cwd:workDir,windowsHide:true,stdio:['ignore','pipe','pipe']});
+      send(res,'stage',`Starting ${profile.engine==='sc'?'SC':profile.engine==='zhlt'?'ZHLT':'SDHLT'}-${stage}...`,{stage});
+      let illegalBrush=false,corruptLeafMapping=false;
+      // v2.6: some SDHLT builds fail 'fixprt' with 'Corrupted leaf mapping'; VIS then works with -nofixprt.
+      const runStage=(stageArgs)=>new Promise((resolve,reject)=>{
+        const child=spawn(executables[i],stageArgs,{cwd:workDir,windowsHide:true,stdio:['ignore','pipe','pipe']});
         task.child=child;
         const push=stream=>{
           let pending='';
@@ -428,6 +503,7 @@ app.post('/api/compile',async(req,res)=>{
             pending+=chunk.toString();const lines=pending.split(/\r?\n/);pending=lines.pop()??'';
             for(const line of lines)if(line.trim()){
               if(stage==='CSG'&&/Illegal Brush|plane with no normal|has a coplanar plane/i.test(line))illegalBrush=true;
+              if(stage==='VIS'&&/Corrupted leaf mapping/i.test(line))corruptLeafMapping=true;
               logBuild(`[${stage}] ${line}`);send(res,'log',line);
             }
           });
@@ -441,10 +517,16 @@ app.post('/api/compile',async(req,res)=>{
           else if(code===0)resolve();else reject(new Error(`${stage} exited with code ${code}. Check log for leaks or invalid brushes.`));
         });
       });
+      try{await runStage(args);}
+      catch(error){
+        if(!(stage==='VIS'&&corruptLeafMapping&&profile.engine!=='zhlt'&&!args.includes('-nofixprt')))throw error;
+        send(res,'info','VIS: the portal file could not be fixed (Corrupted leaf mapping). Retrying VIS with -nofixprt...');
+        await runStage(['-nofixprt',...args]);
+      }
       if(stage==='CSG'&&illegalBrush){
         throw new Error('CSG detected an invalid brush. Build stopped before BSP. Check brush face winding/planarity in your MAP source.');
       }
-      send(res,'stage',`${profile.engine==='sc'?'SC':'SDHLT'}-${stage} finished successfully.`,{stage});
+      send(res,'stage',`${profile.engine==='sc'?'SC':profile.engine==='zhlt'?'ZHLT':'SDHLT'}-${stage} finished successfully.`,{stage});
       if(stage==='BSP')await sendLeak();
     }
     if(!existsSync(`${mapBase}.bsp`))throw new Error('Compilers finished but did not create a .bsp file.');
@@ -455,6 +537,10 @@ app.post('/api/compile',async(req,res)=>{
       send(res,'info',`BSP SKY audit: skyname=${audit.skyname||'(unset)'}, SKY faces=${audit.skyFaces}, special=${audit.skySpecialFaces}, CONTENTS_SKY leaves=${audit.skyLeaves}, SKY lightmapped=${audit.lightmappedSkyFaces}`);
       send(res,'info',`BSP embedded WAD references: ${audit.worldWads.join('; ')||'(none)'}`);
       for(const warning of audit.warnings)send(res,'warning',warning);
+      // Engine capacity: real counts from the compiled BSP. Warn from 85% on classic GoldSrc (CS 1.6).
+      const limits=bspLimitReport(audit.counts);
+      send(res,'info',`BSP size: ${limits.slice(0,6).map(l=>`${l.name} ${l.count}`).join(', ')}.`);
+      if(gameProfile==='cs16')for(const l of limits.filter(l=>l.percent>=85))send(res,'warning',`BSP limit: ${l.name} ${l.count}/${l.max} (${l.percent}%). Classic GoldSrc may fail to load or compile the map beyond 100%.`);
       const plannedWads=smartPlan?[smartPlan.basename.toLowerCase()]:[...new Set(wadPlan.wadList.map(x=>path.win32.basename(x.replaceAll('\\','/')).toLowerCase()))];
       const extras=audit.worldWads.filter(x=>!plannedWads.includes(x));
       if(extras.length)send(res,'warning',`BSP contains WAD references not present in the prepared MAP: ${extras.join('; ')}. Inspect compiler configuration and source MAP.`);
@@ -466,7 +552,9 @@ app.post('/api/compile',async(req,res)=>{
     if(previewOnly){
       const compiled=path.join(workDir,`${mapName}.bsp`);
       const stat=await fs.stat(compiled);
-      lastLightingPreview=createLightingPreviewRecord(compiled,stat.size);
+      const previousPreview=lastLightingPreview;
+      lastLightingPreview=createLightingPreviewRecord(compiled,stat.size);keepWorkDir=true;
+      if(previousPreview?.file)void removeBuildDir(path.dirname(previousPreview.file));
       send(res,'complete',`${profile.engine==='sc'?'SC-RAD':'SDHLT RAD'} preview ready: ${mapName}.bsp (not installed in the game).`,{previewId:lastLightingPreview.id});
       return;
     }
@@ -483,7 +571,7 @@ app.post('/api/compile',async(req,res)=>{
     const compiledLog=buildLogLines.join('\n')+'\n';
     if(outputMode==='install'){
       // Installation is the ONLY mode authorized to modify Sven Co-op.
-      const installed=await writeDistribution({gameDir,mapName,destinationDir:gameDir,format:'install',resourceRoots:externalRoots,
+      const installed=await writeDistribution({gameDir,mapName,destinationDir:gameDir,format:'install',resourceRoots:externalRoots,gameProfile,
         compiledBspPath:compiledBsp,inlineBinaryFiles:stagedExtras,manualPaths:smartPlan?.mode==='external'?[smartPlan.basename]:[]});
       saved={destination:installed.destination,output:path.join(installed.destination,'maps',`${mapName}.bsp`),files:installed.files,missing:0};
       send(res,'info',`Explicit installation completed in ${saved.destination}.`);
@@ -492,25 +580,40 @@ app.post('/api/compile',async(req,res)=>{
       try{
         saved=await writeIsolatedBuild({gameDir,mapName,compiledBspPath:compiledBsp,sourceMapPath:originalMapPath,buildLog:compiledLog,
           destinationDir:target,format:outputMode,resourceRoots:externalRoots,inlineBinaryFiles:stagedExtras,
-          writeDistribution});
-        send(res,'info',`Isolated output created in ${saved.destination}. Sven Co-op files were not modified.`);
+          gameProfile,writeDistribution:options=>writeDistribution({...options,gameProfile})});
+        send(res,'info',`Isolated output created in ${saved.destination}. ${gameProfile==='cs16'?'Counter-Strike 1.6':'Sven Co-op'} files were not modified.`);
         for(const warning of (saved.warnings||[]).slice(0,8))send(res,'warning',`Packaging: ${warning}`);
       }catch(packageError){
         send(res,'warning',`Full package unavailable: ${packageError.message||String(packageError)}. Preserving compiled BSP and available generated WAD in isolated output.`);
         saved=await writeIsolatedBuild({gameDir,mapName,compiledBspPath:compiledBsp,sourceMapPath:originalMapPath,buildLog:compiledLog,
-          destinationDir:target,format:'build',resourceRoots:externalRoots,inlineBinaryFiles:stagedExtras});
+          destinationDir:target,format:'build',resourceRoots:externalRoots,inlineBinaryFiles:stagedExtras,gameProfile});
       }
     }
-    lastCompiledOutput={mapName,gameDir:path.resolve(gameDir),file:saved.output,destination:saved.destination,resourceRoots:externalRoots,inlineBinaryFiles:stagedExtras};
+    lastCompiledOutput={mapName,gameProfile,gameDir:path.resolve(gameDir),file:saved.output,destination:saved.destination,resourceRoots:externalRoots,inlineBinaryFiles:stagedExtras};
     send(res,'package',`Build saved: ${saved.destination}`,{destination:saved.destination,files:saved.files});
     send(res,'complete',`BSP compiled: ${saved.output}`,{output:saved.output,installed:outputMode==='install'});
   }catch(e){
     try{await sendLeak()}catch{/* diagnostic is best-effort; preserve the compiler error */}
     send(res,'error',e.message||String(e));
   }
-  finally{active=null;res.end()}
+  finally{active=null;res.end();if(!keepWorkDir)void removeBuildDir(workDir);}
+}
+// Preferences shared by the browser version and the desktop app (Documents/SvenStudio3D/settings.json).
+app.get('/api/shared-settings',async(_req,res)=>{try{return res.json(await readSharedSettings()??{version:1,revision:0,values:{}});}catch(error){return res.status(500).json({error:String(error?.message||error)});}});
+app.put('/api/shared-settings',async(req,res)=>{try{return res.json(await writeSharedSettings(req.body));}catch(error){return res.status(400).json({error:String(error?.message||error)});}});
+// Desktop app (Electron): serve the compiled UI (dist/) from this same local origin, so the
+// window, the API and the guard all use http://127.0.0.1:<PORT>. The browser version keeps using Vite.
+const SERVED_DIST=process.env.SVEN_SERVE_DIST==='1'?projectPath('dist'):null;
+if(SERVED_DIST&&existsSync(projectPath('dist','index.html'))){
+  app.use(express.static(SERVED_DIST,{index:false,maxAge:'1h'}));
+  app.get(/^(?!\/api\/).*/,(_req,res)=>res.sendFile(projectPath('dist','index.html')));
+}
+export const serverReady=new Promise((resolve,reject)=>{
+  const server=app.listen(PORT,'127.0.0.1',()=>{console.log(`Sven Studio compiler service running on http://127.0.0.1:${PORT}`);resolve(server);});
+  server.on('error',reject);
 });
-app.listen(PORT,'127.0.0.1',()=>console.log(`Sven Studio compiler service running on http://127.0.0.1:${PORT}`));
+// Plain `node server/index.js` must still exit loudly if the port is taken.
+if(!process.versions.electron)serverReady.catch(error=>{console.error(error);process.exit(1);});
 
 // Dedicated authenticated collaboration port: no filesystem/compilation API exposed.
 attachBuildTogether(app,{port:Number(process.env.SVEN_BUILDTOGETHER_PORT||49178)});

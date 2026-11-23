@@ -57,7 +57,7 @@ test('refuse symlink History directory; never write through a redirected folder'
  await fs.mkdir(path.join(root,'Projects'),{recursive:true});
  const external=await fs.mkdtemp(path.join(os.tmpdir(),'sven-hf14-outside-'));
  try{
-  await fs.symlink(external,path.join(root,'Projects','History'));
+  await fs.symlink(external,path.join(root,'Projects','History'),'junction'); // junctions are reparse points too and need no admin rights
   await assert.rejects(()=>createHistorySnapshot({project:sample()},{root}),/Unsafe History/);
   assert.deepEqual(await fs.readdir(external),[]);
  }finally{await fs.rm(external,{recursive:true,force:true})}
@@ -65,7 +65,8 @@ test('refuse symlink History directory; never write through a redirected folder'
 
 test('project history feature is integrated without replacing browser autosave',async()=>{
  const base=new URL('../src/',import.meta.url);
- const main=await fs.readFile(new URL('main.tsx',base),'utf8');
+ // v2.4: main.tsx applies shared preferences, then loads boot.tsx (the former start-up code).
+  const main=(await fs.readFile(new URL('main.tsx',base),'utf8'))+(await fs.readFile(new URL('boot.tsx',base),'utf8'));
  const app=await fs.readFile(new URL('App.tsx',base),'utf8');
  const session=await fs.readFile(new URL('engine/sessionManager.ts',base),'utf8');
  assert.match(main,/startRecoveryAutosave\(\)/);

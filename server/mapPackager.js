@@ -7,8 +7,14 @@ import {createHash} from 'node:crypto';
 import {validateExternalRoots,locateExternalResource} from './externalResources.js';
 
 const MAX_BYTES=220*1024*1024,MAX_FILE=128*1024*1024,MAX_ITEMS=480;
-const SAFE_ROOTS=['maps/','models/','sound/','sprites/','gfx/','scripts/maps/','events/'];
-const GAME_LAYERS=['svencoop_addon','svencoop_downloads','svencoop'];
+const SAFE_ROOTS=['maps/','models/','sound/','sprites/','gfx/','scripts/maps/','events/','overviews/'];
+// Search order per game. 'base' layers are the game's own content: referenced, never packaged.
+const PROFILES={
+  svengine:{layers:['svencoop_addon','svencoop_downloads','svencoop'],base:['svencoop'],name:'Sven Co-op',companions:m=>[`maps/${m}.cfg`,`maps/${m}.gmr`,`maps/${m}.gsr`,`maps/${m}.res`]},
+  cs16:{layers:['cstrike_addon','cstrike_downloads','cstrike','valve'],base:['cstrike','valve'],name:'Counter-Strike 1.6',companions:m=>[`maps/${m}.txt`,`maps/${m}.res`,`overviews/${m}.txt`,`overviews/${m}.bmp`]}
+};
+export const packagerProfile=value=>PROFILES[value==='cs16'?'cs16':'svengine'];
+const GAME_LAYERS=[...new Set(Object.values(PROFILES).flatMap(p=>p.layers))];
 const MAP_NAME=/^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/;
 const SKY_SIDES=['bk','dn','ft','lf','rt','up'];
 /** Sven Co-op RES lists client-downloadable resources, NOT server scripts/CFG/BSP. */
@@ -63,13 +69,13 @@ function externalTextures(buffer){
   }
   return false;
 }
-async function gameRoots(gameDir){
-  if(typeof gameDir!=='string'||gameDir.length>1024)throw Error('Configure the Sven Co-op game folder first.');
+async function gameRoots(gameDir,profile=PROFILES.svengine){
+  if(typeof gameDir!=='string'||gameDir.length>1024)throw Error(`Configure the ${profile.name} game folder first.`);
   const real=await fs.realpath(gameDir);if(!(await fs.stat(real)).isDirectory())throw Error('Game folder not found.');
   const base=path.basename(real).toLowerCase();
   const parent=GAME_LAYERS.includes(base)?path.dirname(real):real;
   const roots=[];
-  for(const layer of GAME_LAYERS){try{const root=await fs.realpath(path.join(parent,layer));if((await fs.stat(root)).isDirectory())roots.push({layer,root})}catch{}}
+  for(const layer of profile.layers){try{const root=await fs.realpath(path.join(parent,layer));if((await fs.stat(root)).isDirectory())roots.push({layer,root})}catch{}}
   if(!roots.length)roots.push({layer:'local',root:real});
   return roots;
 }
@@ -180,7 +186,7 @@ async function parseReferencedText(bytes,filename,add,warnings){
 function virtualFiles(input){
   if(!Array.isArray(input)||input.length>90)throw Error('Too many project scripts.');
   let total=0;const map=new Map();
-  for(const file of input){const p=cleanRelative(file?.path);if(!p.startsWith('scripts/maps/')&&!/\.txt$/i.test(p))throw Error('Only map scripts or guide TXT can be supplied from project data.');
+  for(const file of input){const p=cleanRelative(file?.path);if(!p.startsWith('scripts/maps/')&&!/\.txt$/i.test(p)&&!/^maps\/[A-Za-z0-9_-]{1,64}\.cfg$/.test(p))throw Error('Only map scripts, the map CFG or guide TXT can be supplied from project data.');
     if(typeof file.content!=='string'||file.content.length>2_000_000)throw Error('Invalid AngelScript content.');
     const data=Buffer.from(file.content,'utf8');total+=data.length;
     if(total>8_000_000)throw Error('Project scripts exceed the 8 MB limit.');
@@ -204,9 +210,9 @@ function binaryInputs(input){
  return map;
 }
 export async function inspectMapPackage(input={}){
-  const {gameDir,mapName}=input;
+  const {gameDir,mapName}=input;const profile=packagerProfile(input.gameProfile);
   if(typeof mapName!=='string'||!MAP_NAME.test(mapName))throw Error('Invalid map name. Use letters, numbers, - or _.');
-  const roots=await gameRoots(gameDir),externalRoots=await validateExternalRoots(input.resourceRoots||[]),manual=input.manualPaths||[];
+  const roots=await gameRoots(gameDir,profile),externalRoots=await validateExternalRoots(input.resourceRoots||[]),manual=input.manualPaths||[];
   if(!Array.isArray(manual)||manual.length>120)throw Error('Too many manual resources.');
   const virtual=virtualFiles(input.inlineFiles||[]),binary=binaryInputs(input);
   const mapPath=`maps/${mapName}.bsp`,bspFile=input.compiledBspPath?await stagedBsp(input.compiledBspPath):await locate(roots,mapPath);
@@ -215,7 +221,8 @@ export async function inspectMapPackage(input={}){
   const warnings=[...warn];refs.delete(mapPath.toLowerCase());
   const put=(p,reason,required=false)=>add(p,reason,required);
   for(const p of manual)put(cleanRelative(p),'Manual resource',true);
-  for(const p of [`maps/${mapName}.cfg`,`maps/${mapName}.gmr`,`maps/${mapName}.gsr`,`maps/${mapName}.res`]){
+  if(profile===PROFILES.cs16)warnings.push('CS 1.6: files found only in cstrike/ or valve/ are treated as game content and are not packaged. Keep custom resources in cstrike_addon, cstrike_downloads or an external resource folder, or embed textures with Smart WAD.');
+  for(const p of profile.companions(mapName)){
     if(await locateWithExternal(roots,externalRoots,p))put(p,'Companion map file');
   }
   for(const f of virtual.values())put(f.path,'Custom NPC Importer script');
@@ -250,7 +257,7 @@ export async function inspectMapPackage(input={}){
     if(found?.caseMismatch)warnings.push(`${ref.path}: file on disk is ${found.actual}; ZIP will use the referenced spelling (Linux-safe).`);
     const size=virtualFile?.data.length??found.size;
     if(size>MAX_FILE){warnings.push(`${ref.path}: file exceeds per-file limit.`);pushEntry({...ref,status:'oversize',size,layer:found?.layer||'project'});continue}
-    const isBase=found?.layer==='svencoop';
+    const isBase=profile.base.includes(found?.layer);
     pushEntry({...ref,status:isBase?'builtin':'ready',size,layer:virtualFile?'project':found.layer});
     if((/\.(as|cfg|gmr|gsr|txt|res)$/i).test(ref.path)&&!isBase){
       const data=virtualFile?.data??await fs.readFile(found.full);
@@ -285,7 +292,7 @@ function archiveZip(files){
 export async function createMapPackage(input={}){
   const inventory=await inspectMapPackage(input);
   if(inventory.missing&&!input.acknowledgeMissing)throw Error(`${inventory.missing} resources missing. Confirm the warning before packaging.`);
-  const roots=await gameRoots(input.gameDir),externalRoots=await validateExternalRoots(input.resourceRoots||[]),virtual=virtualFiles(input.inlineFiles||[]),binary=binaryInputs(input);
+  const profile=packagerProfile(input.gameProfile);const roots=await gameRoots(input.gameDir,profile),externalRoots=await validateExternalRoots(input.resourceRoots||[]),virtual=virtualFiles(input.inlineFiles||[]),binary=binaryInputs(input);
   const included=Array.isArray(input.selectedPaths)?new Set(input.selectedPaths.map(cleanRelative).map(p=>p.toLowerCase())):null;
   const files=[],checked=new Set();let size=0;
   for(const entry of inventory.entries){
@@ -296,7 +303,7 @@ export async function createMapPackage(input={}){
     if(checked.has(key))throw Error(`Duplicate archive member: ${name}`);checked.add(key);
     let bytes=virtual.get(key)?.data||binary.get(key)?.data;
     if(key===`maps/${inventory.mapName}.bsp`.toLowerCase()&&input.compiledBspPath)bytes=await fs.readFile(input.compiledBspPath);
-    if(!bytes){const candidate=key===`maps/${inventory.mapName}.bsp`.toLowerCase()?await locate(roots,name):await locateWithExternal(roots,externalRoots,name);if(!candidate||candidate.conflict||candidate.size>MAX_FILE||candidate.layer==='svencoop'&&key!==`maps/${inventory.mapName}.bsp`.toLowerCase())throw Error(`File changed while preparing ZIP: ${name}`);bytes=await fs.readFile(candidate.full)}
+    if(!bytes){const candidate=key===`maps/${inventory.mapName}.bsp`.toLowerCase()?await locate(roots,name):await locateWithExternal(roots,externalRoots,name);if(!candidate||candidate.conflict||candidate.size>MAX_FILE||profile.base.includes(candidate.layer)&&key!==`maps/${inventory.mapName}.bsp`.toLowerCase())throw Error(`File changed while preparing ZIP: ${name}`);bytes=await fs.readFile(candidate.full)}
     size+=bytes.length;if(size>MAX_BYTES)throw Error('Package exceeds 220 MB uncompressed. Reduce resources.');
     files.push({path:name,bytes});
   }
@@ -317,7 +324,8 @@ export async function createMapPackage(input={}){
     const setup=`SvenStudio 3D — Custom NPC script setup\n\nThe scripts are included as source files, but Sven Co-op must load them from a map CFG.\nEdit your EXISTING maps/${inventory.mapName}.cfg (or create it manually if needed) and add any lines not already present:\n\n${scriptLines.join('\n')}\n\nDo not replace an existing map CFG or run unknown AngelScript without inspecting it first.\n`;
     files.push({path:'SVENSTUDIO_CUSTOM_NPC_SETUP.txt',bytes:Buffer.from(setup)});
   }
-  const guide=`SVENSTUDIO 3D — MAP PACKAGER\nMap: ${inventory.mapName}\nGenerated RES entries: ${generatedRes.length} (${input.generateRes===false?'disabled':'enabled'})\n\nExtract the archive contents into Sven Co-op/svencoop_addon/ (folder names are at ZIP root).\nDo not extract third-party assets into svencoop/.\nVerify third-party licenses before redistributing models, sounds, WADs or AngelScript.\nMissing references detected: ${missing.length}\n${missing.join('\n')}\n\nDetected by static scanning of BSP, CFG and selected resources.\nAngelScript dynamic dependencies and in-game runtime behavior cannot be guaranteed.\nMap configurations and scripts have not been edited.\n`;
+  const installHint=profile===PROFILES.cs16?'Extract the archive contents into Half-Life/cstrike_downloads/ (or cstrike/) — folder names are at ZIP root.\nDo not overwrite files that already exist in cstrike/ or valve/.\n':'Extract the archive contents into Sven Co-op/svencoop_addon/ (folder names are at ZIP root).\nDo not extract third-party assets into svencoop/.\n';
+  const guide=`SVENSTUDIO 3D — MAP PACKAGER (${profile.name})\nMap: ${inventory.mapName}\nGenerated RES entries: ${generatedRes.length} (${input.generateRes===false?'disabled':'enabled'})\n\n${installHint}Verify third-party licenses before redistributing models, sounds, WADs or AngelScript.\nMissing references detected: ${missing.length}\n${missing.join('\n')}\n\nDetected by static scanning of BSP, CFG and selected resources.\nAngelScript dynamic dependencies and in-game runtime behavior cannot be guaranteed.\nMap configurations and scripts have not been edited.\n`;
   files.push({path:'SVENSTUDIO_PACKAGING_REPORT.txt',bytes:Buffer.from(guide)});
   const hash=createHash('sha256');for(const f of files){hash.update(f.path).update(f.bytes)}
   return {zip:archiveZip(files),count:files.length,checksum:hash.digest('hex'),inventory,generatedRes,...(input.returnFiles===true?{files}:{} )};

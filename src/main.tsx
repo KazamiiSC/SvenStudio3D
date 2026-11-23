@@ -1,14 +1,10 @@
-import React from 'react';
-import {createRoot} from 'react-dom/client';
-import App from './App';
-import {restoreOnLaunch,startRecoveryAutosave} from './engine/sessionManager';
-import {startProjectHistoryAutosave} from './engine/projectHistory';
-import {ErrorBoundary} from './components/ErrorBoundary';
-const root=document.getElementById('root');if(!root)throw Error('Missing #root');
-async function bootstrap(){
-  try{await restoreOnLaunch();}catch(error){console.warn('Recovery unavailable:',error);}
-  startRecoveryAutosave();
-  startProjectHistoryAutosave();
-  createRoot(root!).render(<ErrorBoundary label="SvenStudio 3D"><App/></ErrorBoundary>);
+/** Entry point. Shared preferences (Documents/SvenStudio3D/settings.json) are written to
+ * localStorage first; only then are the editor modules loaded, because their stores read
+ * localStorage when they are created. */
+import {applySharedPreferences} from './engine/sharedSettings';
+async function start(){
+  await applySharedPreferences();
+  const {bootstrap}=await import('./boot');
+  await bootstrap();
 }
-void bootstrap();
+void start();

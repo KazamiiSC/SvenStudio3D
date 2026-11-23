@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdtemp,readFile,writeFile,rm} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 import express from 'express';
 import {attachBuildTogether} from '../server/buildTogether.js';
 import {setTimeout as sleep} from 'node:timers/promises';
@@ -38,14 +38,15 @@ test('BT 2.0 client: coalesces frequent drags and serializes multi-batch edits a
   const initialRevision=client.useBuildTogether.getState().revision;
   const many=Array.from({length:270},(_,i)=>({kind:'entity',id:`new-${i}`,name:'test',classname:'info_player_start',position:[i,0,32],props:{},layer:'Gameplay'}));
   useEditor.setState(s=>({project:{...s.project,objects:[...s.project.objects,...many]}}));
-  await until(()=>client.useBuildTogether.getState().revision>=initialRevision+3&&client.useBuildTogether.getState().pendingChanges===0,7000);
+  // Since BuildTogether 3.5 (v1.6.4) up to 512 objects travel in one acknowledged batch.
+  await until(()=>client.useBuildTogether.getState().revision>=initialRevision+1&&client.useBuildTogether.getState().pendingChanges===0,7000);
   const after=await fetch(`http://127.0.0.1:${api.address().port}/api/buildtogether/create`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({project:base})});
   assert.equal(after.status,409,'Original collaborative room must remain active');
   const late=new WebSocket(`ws://127.0.0.1:${port}/buildtogether`);await new Promise(ok=>late.addEventListener('open',ok,{once:true}));
   const snapshot=next(late,'snapshot');late.send(JSON.stringify({type:'join',code,name:'late'}));const latest=await snapshot;late.close();
   assert.equal(latest.project.objects.length,271);
   assert.equal(latest.project.objects.find(o=>o.id==='one').position[0],18);
-  assert.equal(record.events.filter(e=>e.revision>initialRevision).length,3,'270 objects must be sent in three acknowledged batches');
+  assert.equal(record.events.filter(e=>e.revision>initialRevision).length,1,'270 objects fit in one acknowledged batch (max 512)');
   record.stop();
  }finally{
   client.leaveBuildTogether();host?.close();await sleep(80);service.closeRoom();await new Promise(ok=>api.close(ok));await new Promise(ok=>service.server.close(ok));
@@ -77,13 +78,17 @@ test('BT 2.0 client: automatic reconnect resumes identity and editing after a dr
   const {useEditor}=await import(pathToFileURL(join(temp,'fakeStore.mjs')).href);
   useEditor.setState(s=>({project:{...s.project,objects:s.project.objects.map(o=>({...o,position:[99,99,99]}))}}));
   await until(()=>client.useBuildTogether.getState().status==='online'&&sockets.length>=2,6500);
-  assert.equal(client.useBuildTogether.getState().hasRecoveryBackup,true);
-  assert.equal(JSON.parse(saved.get('svenstudio:buildtogether-disconnected-backup')).objects[0].position[0],99);
+  // Since v1.6.2 conflict-free offline edits are reconciled and resent instead of parked in a backup.
+  assert.equal(client.useBuildTogether.getState().hasRecoveryBackup,false);
   assert.equal(client.useBuildTogether.getState().selfId,oldId);
-  const events=next(host,'change');
+  // The reconciled offline edit (99) may still be in flight, so wait for the follow-up edit itself.
+  const record=changed(host);
   // Continue normal edits with the resumed channel.
   useEditor.setState(s=>({project:{...s.project,objects:s.project.objects.map(o=>({...o,position:[9,9,9]}))}}));
-  assert.equal((await events).ops[0].object.position[0],9);
+  await until(()=>record.events.some(e=>e.ops.some(op=>op.object?.position?.[0]===9)),3000);
+  record.stop();
+  const last=record.events.at(-1).ops.find(op=>op.id==='one');
+  assert.equal(last.object.position[0],9,'the newest edit is the last one delivered');
  }finally{
   client.leaveBuildTogether();host?.close();await sleep(80);service.closeRoom();await new Promise(ok=>api.close(ok));await new Promise(ok=>service.server.close(ok));
   globalThis.WebSocket=NativeWebSocket;globalThis.location=previousLocation;globalThis.sessionStorage=oldStorage;await rm(temp,{recursive:true,force:true});

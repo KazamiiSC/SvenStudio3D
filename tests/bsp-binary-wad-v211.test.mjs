@@ -1,10 +1,11 @@
+import {legacyI18nSource} from './support/legacyI18n.cjs';
 /** Regression: 2.1 originally refused a valid -0babtech7 texture even when
  * halflife.wad was used to compile both MAPs. A WAD selected for the binary
  * transfer must now be read and the texture embedded in a NEW BSP copy. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 const root=new URL('../',import.meta.url);
 const compile=name=>ts.transpileModule(readFileSync(new URL(name,root),'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText;
 const uri=js=>'data:text/javascript;base64,'+Buffer.from(js).toString('base64');
@@ -105,7 +106,7 @@ test('invalid or excessively large WAD3 selection cannot create a BSP',()=>{
 });
 test('UI contains explicit source WAD picker and six language translations',()=>{
  const ui=readFileSync(new URL('src/components/BspRecoveryStudio.tsx',root),'utf8');
- const i18n=readFileSync(new URL('src/i18n.ts',root),'utf8');
+ const i18n=legacyI18nSource();
  assert.match(ui,/binaryWads/);assert.match(ui,/type="file" accept="\.wad" multiple/);
  assert.match(ui,/Textures resolved from WAD3/);
  for(const locale of ['es','en','ru','ko','zh','pt'])assert.match(i18n,new RegExp(`Object\\.assign\\(${locale},\\{[^\\n]*WAD3 files for missing external textures`));
@@ -126,7 +127,7 @@ test('regression v2.1.2: missing WAD texture and an unlit face with unused light
 
 test('UI diagnostics for normalized no-lightmap faces and malformed styles are localized in six languages',()=>{
  const ui=readFileSync(new URL('src/components/BspRecoveryStudio.tsx',root),'utf8');
- const i18n=readFileSync(new URL('src/i18n.ts',root),'utf8');
+ const i18n=legacyI18nSource();
  for(const key of ['Invalid BSP lightstyles on source face','Unlit faces with unused lighting offsets normalized','Non-contiguous lightstyles cannot be transferred safely.']){
   assert.ok(ui.includes(`t('${key}')`),`Missing UI key ${key}`);
   for(const locale of ['es','en','ru','ko','zh','pt'])

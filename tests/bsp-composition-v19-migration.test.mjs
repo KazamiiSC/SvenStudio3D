@@ -1,14 +1,15 @@
+import {legacyI18nSource} from './support/legacyI18n.cjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const read=(path)=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 const component=read('src/components/BspRecoveryStudio.tsx');
-const locale=read('src/i18n.ts');
+const locale=legacyI18nSource();
 const style=read('src/style.css');
 const server=read('server/index.js');
 const project=JSON.parse(read('package.json'));
 test('migration stays on the true v1.9 base and preserves existing controls',()=>{
- assert.equal(project.version,'1.9.0');
+ assert.match(project.version,/^(?:1\.(?:9|[1-9]\d)|[2-9])\./,'v1.9 composition base or later');
  assert.match(read('src/components/ExplorerOrganized.tsx'),/EMPTY_BRUSH_COMPOSITES/);
  assert.match(component,/nativeChanged\(doc\)/);
  assert.match(component,/writeNativeBsp/);

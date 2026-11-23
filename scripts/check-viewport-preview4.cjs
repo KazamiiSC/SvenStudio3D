@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
-const ts=require('typescript');
+const ts=require('../tests/support/typescript.cjs');
 require.extensions['.ts']=(mod,filename)=>mod._compile(ts.transpileModule(fs.readFileSync(filename,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,filename);
 const {createBrush,createSizedPlaceableShape,defaultShapeSize,shapeBounds,transformedVertices}=require('../src/engine/geometry.ts');
 const THREE=require('three');

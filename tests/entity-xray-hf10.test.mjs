@@ -1,3 +1,4 @@
+import {legacyI18nSource} from './support/legacyI18n.cjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -55,14 +56,14 @@ test('brush-linked entity indicator is pickable as an entity',()=>{
 });
 test('object selection only: UV face editing and architecture keep priority',()=>{
  const v=source('src/components/Viewport.tsx');
- assert.match(v,/!architecturePlacement&&!measureMode&&!faceMode&&geometryMode==='object'&&!texturePickerActive/);
+ assert.match(v,/!ed\(\)\.architecturePlacement&&!ed\(\)\.measureMode&&!faceMode&&ed\(\)\.geometryMode==='object'&&!ed\(\)\.texturePickerActive/);
  assert.match(v,/pointerOnSelectedGizmo\(e\)\)return;/);
  assert.match(v,/selectOccludedEntity\(e\.intersections/);
 });
 test('modal has toggle and explanation in all six languages',()=>{
  const u=source('src/components/EntityAppearanceModal.tsx');
  assert.match(u,/appearance\.markerOcclusion/);assert.match(u,/value="normal"/);assert.match(u,/value="xray"/);
- const l=source('src/i18n.ts');for(const locale of ['es','en','ru','ko','zh','pt'])assert.ok(l.includes(`Object.assign(${locale},{`));
+ const l=legacyI18nSource();for(const locale of ['es','en','ru','ko','zh','pt'])assert.ok(l.includes(`Object.assign(${locale},{`));
 });
 test('MAP exporter and BSP viewer are isolated from entity display settings',()=>{
  const exp=source('src/engine/exportMap.ts'),bsp=source('src/components/BspViewer.tsx');

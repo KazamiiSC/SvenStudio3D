@@ -1,3 +1,4 @@
+import {legacyI18nSource} from './support/legacyI18n.cjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -31,7 +32,7 @@ test('HF17 HF5: recovered flag survives project JSON but never goes to Valve 220
 
 test('HF17 HF5: BSP→MAP direct open stores provenance but never edits MAP files',()=>{
   const app=text('src/App.tsx');
-  assert.match(app,/loadProject\(\{\.\.\.next,recoveredFromBsp:true\}\)/);
+  assert.match(app,/loadProject\(\{\.\.\.next,recoveredFromBsp:true[,}]/);
   const viewport=text('src/components/Viewport.tsx');
   assert.equal((viewport.match(/useEditor\(s=>isRecoveredBspProject\(s\.project\)\)/g)||[]).length,3);
   assert.match(viewport,/const \[hideRecoveryNull,setHideRecoveryNull\]=useState\(true\)/);
@@ -49,7 +50,7 @@ test('HF17 HF5: recovery CTA is labelled and only rendered in BSP viewer, never 
   assert.match(bsp,/setRecoveryOpen\(true\)/);
   const css=text('src/style.css');
   assert.match(css,/\.bsp-toolbar-end \.bsp-recovery-cta span\{display:inline!important/);
-  const i18n=text('src/i18n.ts');
+  const i18n=legacyI18nSource();
   for(const locale of ['es','ru','ko','zh','pt'])assert.match(i18n,new RegExp(`Object\\.assign\\(${locale},\\{'Recover BSP to MAP':`));
   assert.match(i18n,/Recuperar BSP → MAP/);
 });

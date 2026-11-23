@@ -7,13 +7,14 @@ export async function modelRoots(gameDir) {
   if (typeof gameDir !== 'string' || !gameDir || gameDir.length > 1024) throw new Error('Configure the Sven Co-op game directory in Build Settings.');
   const resolved=path.resolve(gameDir);
   const base=path.basename(resolved).toLowerCase();
-  const parent=['svencoop','svencoop_addon','svencoop_downloads','svencoop_hd'].includes(base)?path.dirname(resolved):resolved;
+  const parent=['svencoop','svencoop_addon','svencoop_downloads','svencoop_hd','cstrike'].includes(base)?path.dirname(resolved):resolved;
+  const layers=base==='cstrike'?['cstrike','valve']:['svencoop_addon','svencoop_downloads','svencoop','svencoop_hd','valve'];
   const roots=[];
-  for(const folder of ['svencoop_addon','svencoop_downloads','svencoop','svencoop_hd','valve']){
+  for(const folder of layers){
     const root=path.join(parent,folder,'models');
     try{if((await fs.stat(root)).isDirectory())roots.push({folder,root:await fs.realpath(root)})}catch{}
   }
-  if(!roots.length)throw new Error('No models folder found. Choose the Sven Co-op/ svencoop game directory.');
+  if(!roots.length)throw new Error('No models folder found in the selected game installation.');
   return roots;
 }
 export function validModelName(value){return typeof value==='string'&&value.length>0&&value.length<300&&value.toLowerCase().endsWith('.mdl')&&

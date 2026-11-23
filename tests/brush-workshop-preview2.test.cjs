@@ -1,4 +1,4 @@
-const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),ts=require('typescript');
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),ts=require('./support/typescript.cjs');
 require.extensions['.ts']=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText,f);
 const {createBrush}=require('../src/engine/geometry.ts');
 const {planWorkshop,workshopFootprint}=require('../src/engine/brushWorkshop.ts');

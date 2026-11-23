@@ -1,4 +1,4 @@
-import ts from 'typescript';
+import ts from '../tests/support/typescript.cjs';
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 const source=readFileSync(new URL('../src/engine/fgd.ts',import.meta.url),'utf8');

@@ -1,7 +1,8 @@
+import {withSplitParts} from './support/splitParts.cjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-const viewport=await readFile(new URL('../src/components/Viewport.tsx',import.meta.url),'utf8');
+const viewport=withSplitParts(await readFile(new URL('../src/components/Viewport.tsx',import.meta.url),'utf8'),'Viewport');
 const panel=await readFile(new URL('../src/components/ArchitectureModePanel.tsx',import.meta.url),'utf8');
 test('architecture top view keeps drawing elevation and the orbit pivot in sync',()=>{
  assert.match(viewport,/if\(action==='top'&&useArchitectureMode\.getState\(\)\.mode!=='off'\)target\.y=useArchitectureMode\.getState\(\)\.options\.baseZ/);

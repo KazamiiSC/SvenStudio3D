@@ -1,3 +1,4 @@
+import {withSplitParts} from './support/splitParts.cjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -5,7 +6,7 @@ import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
 // Run the real engine in Node without requiring Vite/Rollup native binaries.
 // Import extensions remain those of the actual TypeScript project.
-const ts=require('../node_modules/typescript/lib/typescript.js');
+const ts=require('./support/typescript.cjs');
 require.extensions['.ts']=(module,filename)=>{
   const source=readFileSync(filename,'utf8');
   const result=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,allowImportingTsExtensions:true,esModuleInterop:true}});
@@ -87,7 +88,7 @@ test('deleting a tracked layout removes only that layout and its pieces',()=>{
   assert.deepEqual(next.objects.map(o=>o.id),others.objects.map(o=>o.id));
 });
 test('the viewport connects one-shot draw and safe 3D corner edit without nested state loop',()=>{
-  const view=read('src/components/Viewport.tsx'),mode=read('src/architectureModeState.ts'),panel=read('src/components/ArchitectureModePanel.tsx');
+  const view=withSplitParts(read('src/components/Viewport.tsx'),'Viewport'),mode=read('src/architectureModeState.ts'),panel=read('src/components/ArchitectureModePanel.tsx');
   assert.match(view,/function ArchitectureDrawingPlane/);assert.match(view,/function ArchitectureCornerHandles/);
   assert.match(view,/onPointerCancel/);assert.match(view,/edit\(record\.id,pending,record\.options\)/);
   assert.match(mode,/const EMPTY_POINTS/);assert.doesNotMatch(mode,/=>s\.points\|\|\[\]/);
@@ -95,6 +96,6 @@ test('the viewport connects one-shot draw and safe 3D corner edit without nested
 });
 test('the old generators remain accessible but Architecture Mode is the primary workflow',()=>{
   const shape=read('src/components/ShapePalette.tsx');
-  assert.match(shape,/<ArchitectureModePanel/);assert.match(shape,/<ArchitectureBuilder\/>/);
+  assert.match(shape,/<ArchitectureModePanel/);assert.match(shape,/<ArchitectureBuilder( onStart=\{[^}]+\})?\/>/);
   assert.match(shape,/const \[category,setCategory\]=useState<[^>]+>\('smart'\)/);
 });

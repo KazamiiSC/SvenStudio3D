@@ -1,6 +1,6 @@
 /* World Builder v1.9 regression tests: pure operations and real MAP geometry. */
 const test=require('node:test'),assert=require('node:assert/strict');
-const fs=require('node:fs'),ts=require('typescript');
+const fs=require('node:fs'),ts=require('./support/typescript.cjs');
 require.extensions['.ts']=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,file);
 const {defaultTerrain,validateTerrainDraft,createTerrainBrushes,terrainBrushCount,terrainRecord}=require('../src/engine/terrain.ts');
 const {generateWorldHeights,heightsFromRgba,transformWorldHeights,sampleTerrainHeight,worldTerrainStats}=require('../src/engine/worldBuilderTerrain.ts');

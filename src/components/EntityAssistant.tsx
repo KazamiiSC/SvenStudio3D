@@ -1,3 +1,4 @@
+import {translate} from '../i18n';
 import {useEffect,useMemo,useState} from 'react';
 import {BookOpen,ChevronDown,ChevronUp,Headphones,Link2,Search,Volume2,AlertTriangle} from 'lucide-react';
 import {useEditor} from '../store';
@@ -58,6 +59,7 @@ function NativeSounds({entity,definition,update,locale}:{entity:PointEntity;defi
 }
 export function EntityAssistant({entity,definition,initiallyOpen=false,compact=false,showDoorControls=true}:{entity:PointEntity|null;definition?:FgdClass;initiallyOpen?:boolean;compact?:boolean;showDoorControls?:boolean}){
  const locale=useEditor(s=>s.locale) as Locale,tx=strings[locale]||strings.en;
+ const cs16=useEditor(s=>s.settings.gameProfile==='cs16');
  const updateStore=useEditor(s=>s.setObjectProp),connect=useEditor(s=>s.connectGameplay),objects=useEditor(s=>s.project.objects);
  const [opened,setOpened]=useState(initiallyOpen),[showAdvanced,setShowAdvanced]=useState(!compact),[keySearch,setKeySearch]=useState(''),[targetQuery,setTargetQuery]=useState('');
  useEffect(()=>setTargetQuery(''),[entity?.id]);
@@ -75,15 +77,18 @@ export function EntityAssistant({entity,definition,initiallyOpen=false,compact=f
   {opened&&<div className="ea-content">
    <div className="ea-section"><h5>{tx.use}</h5><p>{guide.summary}</p></div>
    {capabilities.length>0&&<div className="ea-section"><h5>{tx.settings}</h5><ul className="ea-capabilities">{capabilities.map(x=><li key={x}>{x}</li>)}</ul></div>}
-   <div className="ea-section"><h5>{tx.how}</h5><ol>{guide.steps.map((s,i)=><li key={i}>{s}</li>)}</ol><p className="ea-example"><strong>{tx.example}: </strong><code>{guide.example}</code></p></div>
+   <div className="ea-section"><h5>{tx.how}</h5><ol>{guide.steps.map((s,i)=><li key={i}>{s}</li>)}</ol><p className="ea-example"><strong>{tx.example}: </strong><code>{guide.example}</code></p>
+    {guide.examples?.map((x,i)=><p key={i} className="ea-example"><code>{x}</code></p>)}</div>
+   {!!guide.ideas?.length&&<div className="ea-section ea-ideas"><h5>{translate(locale,'What you can build')}</h5><ul>{guide.ideas.map((x,i)=><li key={i}>{x}</li>)}</ul></div>}
+   <button type="button" className="ea-full-guide" onClick={()=>document.dispatchEvent(new CustomEvent('svenstudio:entity-guide',{detail:classname}))}><BookOpen size={14}/>{translate(locale,'Open the full entity guide')}</button>
    {!!entity&&<div className="ea-section"><h5>{tx.quick}</h5>
     {showTarget&&entity&&<div className="ea-target-search">
       <label className="ea-field"><span><Link2 size={12}/>{tx.connect} <code>target</code></span>
-        <input aria-label="Search named destination" placeholder={locale==='es'?'Buscar por nombre, classname o targetname…':'Search by name, classname or targetname…'} value={targetQuery} onChange={e=>setTargetQuery(e.target.value)} onKeyDown={e=>e.stopPropagation()}/></label>
+        <input aria-label="Search named destination" placeholder={translate(locale,'Search by name, classname or targetname…')} value={targetQuery} onChange={e=>setTargetQuery(e.target.value)} onKeyDown={e=>e.stopPropagation()}/></label>
       <select aria-label="Choose named destination" value={targets.find(x=>x.props.targetname&&x.props.targetname===entity.props.target)?.id||''} onChange={e=>{if(!e.target.value){update('target','');return;}try{connect(entity.id,e.target.value,true)}catch(error){window.alert(String(error))}}}>
         <option value="">{entity.props.target?`${entity.props.target} · ${tx.none}`:tx.none}</option>
         {matchedTargets.map(target=><option value={target.id} key={target.id}>{entityConnectionLabel(target,objects)}</option>)}
-      </select><small>{matchedTargets.length}/{targets.length} · {locale==='es'?'El nombre es del editor; targetname se asigna para Svengine.':'Editor names are searchable; targetname is used by Svengine.'}</small>
+      </select><small>{matchedTargets.length}/{targets.length} · {locale==='es'?`El nombre es del editor; targetname se utiliza en ${cs16?'GoldSrc':'Svengine'}.`:`Editor names are searchable; targetname is used by ${cs16?'GoldSrc':'Svengine'}.`}</small>
     </div>}
     {classname==='func_door'&&showDoorControls&&<DoorMotionControls entity={entity} compact={compact}/>}
     {keys.filter(key=>key!=='target'&&key!=='targetname'&&!editableSoundKeys(classname,definition).includes(key)&&key!=='spawnflags'&&key!=='sounds'&&!(classname==='func_door'&&['angle','angles','speed','wait','lip'].includes(key))).slice(0,7).map(key=><Field key={`${entity.id}:${key}`} entity={entity} field={key} definition={definition} update={update}/>)}
@@ -91,15 +96,15 @@ export function EntityAssistant({entity,definition,initiallyOpen=false,compact=f
     <NativeSounds entity={entity} definition={definition} update={update} locale={locale}/>
    </div>}
    {definition&&<div className="ea-section"><button type="button" className="ea-advanced" onClick={()=>setShowAdvanced(v=>!v)} aria-expanded={showAdvanced}>{tx.fgd} · {Object.keys(definition.props).length} {tx.more} {showAdvanced?'▴':'▾'}</button>
-      {showAdvanced&&<><input className="ea-guide-filter" aria-label={locale==='es'?'Buscar parámetro FGD':'Search FGD property'} placeholder={locale==='es'?'Buscar keyvalue, descripción o tipo…':'Search property, label or type…'} value={keySearch} onChange={e=>setKeySearch(e.target.value)} onKeyDown={e=>e.stopPropagation()}/>
-        <div className="ea-fgd-keys ea-fgd-detailed">{Object.entries(definition.props).filter(([k,f])=>`${k} ${f.label} ${f.type}`.toLowerCase().includes(keySearch.toLowerCase())).map(([k,f])=><div key={k}><strong><code>{k}</code> — {f.label}</strong><small>{f.type}{f.defaultValue!==undefined?` · ${locale==='es'?'Predeterminado':'Default'}: ${f.defaultValue}`:''}</small>{!!f.options?.length&&<small>{f.options.slice(0,28).map(o=>`${o.value}: ${o.label}`).join(' · ')}{f.options.length>28?' …':''}</small>}</div>)}</div>
+      {showAdvanced&&<><input className="ea-guide-filter" aria-label={translate(locale,'Search FGD property')} placeholder={translate(locale,'Search property, label or type…')} value={keySearch} onChange={e=>setKeySearch(e.target.value)} onKeyDown={e=>e.stopPropagation()}/>
+        <div className="ea-fgd-keys ea-fgd-detailed">{Object.entries(definition.props).filter(([k,f])=>`${k} ${f.label} ${f.type}`.toLowerCase().includes(keySearch.toLowerCase())).map(([k,f])=><div key={k}><strong><code>{k}</code> — {f.label}</strong><small>{f.type}{f.defaultValue!==undefined?` · ${translate(locale,'Default')}: ${f.defaultValue}`:''}</small>{!!f.options?.length&&<small>{f.options.slice(0,28).map(o=>`${o.value}: ${o.label}`).join(' · ')}{f.options.length>28?' …':''}</small>}</div>)}</div>
       </>}
     </div>}
-   {!definition&&<div className="ea-section"><h5>{tx.fgd}</h5><p>{tx.unknown}</p></div>}
-   <div className="ea-section ea-reference-links"><h5>{locale==='es'?'Documentación y verificación':'Reference documentation'}</h5>
-      <p>{locale==='es'?'Las propiedades se toman del FGD cargado. La referencia externa describe el comportamiento del juego; algunas entidades y scripts personalizados pueden diferir.':'Properties come from the loaded FGD. External documentation describes game behavior; custom entities may differ.'}</p>
-      <a href="https://www.svenmanor.com/entity-guide" target="_blank" rel="noopener noreferrer">Sven Co-op Manor · Entity Guide</a>
-      <a href="https://wiki.svencoop.com/Mapping/Sven_Co-op_FGD" target="_blank" rel="noopener noreferrer">Sven Co-op Wiki · FGD</a>
+   {!definition&&<div className="ea-section"><h5>{tx.fgd}</h5><p>{cs16?(translate(locale,'Import the Counter-Strike 1.6 FGD to view native properties.')):tx.unknown}</p></div>}
+   <div className="ea-section ea-reference-links"><h5>{translate(locale,'Reference documentation')}</h5>
+      <p>{translate(locale,'Properties come from the loaded FGD. External documentation describes game behavior; custom entities may differ.')}</p>
+      {!cs16&&<a href="https://www.svenmanor.com/entity-guide" target="_blank" rel="noopener noreferrer">Sven Co-op Manor · Entity Guide</a>}
+      {!cs16&&<a href="https://wiki.svencoop.com/Mapping/Sven_Co-op_FGD" target="_blank" rel="noopener noreferrer">Sven Co-op Wiki · FGD</a>}
     </div>
    {!!warnings.length&&<div className="ea-section ea-warning"><h5><AlertTriangle size={13}/>{tx.note}</h5>{warnings.map((w,i)=><p key={i}>{w}</p>)}</div>}
    {guide.caution&&<p className="ea-caution">{guide.caution}</p>}

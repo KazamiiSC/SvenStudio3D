@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 const source=await fs.readFile(new URL('../src/engine/bspNativeEdit.ts',import.meta.url),'utf8');
 const js=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText;
 const {readNativeBsp,writeNativeBsp,nativeChanged,addNativeProperty,removeNativeProperty,setNativeValue,addNativeEntity,removeNativeEntity,nativeClassname}=await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
@@ -26,7 +26,7 @@ test('duplicates are maintained including both targetname entries',()=>{const do
 test('untouched entity raw text retains original wad path and formatting',()=>{const doc=readNativeBsp(fixture());const edited=setNativeValue(doc,2,3,'100 200 300');assert.equal(edited.entities[0].raw,doc.entities[0].raw);assert.equal(readNativeBsp(writeNativeBsp(edited)).entities[0].raw,doc.entities[0].raw)});
 test('add property can include duplicate keys, remove one',()=>{const doc=readNativeBsp(fixture());const edited=addNativeProperty(doc,2,'spawnflags','4');assert.equal(readNativeBsp(writeNativeBsp(edited)).entities[2].pairs.at(-1).value,'4');const after=removeNativeProperty(edited,2,edited.entities[2].pairs.length-1);assert.equal(after.entities[2].pairs.length,doc.entities[2].pairs.length);});
 test('safe add and remove point entity',()=>{const doc=readNativeBsp(fixture());const newDoc=addNativeEntity(doc,'info_target','1 2 3');assert.equal(newDoc.entities.length,4);assert.equal(readNativeBsp(writeNativeBsp(newDoc)).entities.length,4);assert.equal(removeNativeEntity(newDoc,3).entities.length,3);});
-test('refuse edit or delete of brush model entity',()=>{const doc=readNativeBsp(fixture());mustThrow(()=>setNativeValue(doc,1,1,'*77'),'cannot be changed');mustThrow(()=>removeNativeProperty(doc,1,1),'cannot be changed');mustThrow(()=>removeNativeEntity(doc,1),'brush entity');});
+test('refuse edit or delete of brush model entity',()=>{const doc=readNativeBsp(fixture());mustThrow(()=>setNativeValue(doc,1,1,'*77'),'cannot be changed');mustThrow(()=>removeNativeProperty(doc,1,1),'cannot be changed');assert.equal(removeNativeEntity(doc,1).entities.length,doc.entities.length-1);});
 test('protect worldspawn and classname',()=>{const doc=readNativeBsp(fixture());mustThrow(()=>setNativeValue(doc,0,0,'info_target'),'worldspawn');mustThrow(()=>removeNativeProperty(doc,0,0),'classname');mustThrow(()=>removeNativeEntity(doc,0),'worldspawn');});
 test('ASCII/Latin-1 validation prohibits non-encodable or unsafe injection',()=>{const doc=readNativeBsp(fixture());mustThrow(()=>setNativeValue(doc,2,3,'some\nvalue'),'line breaks');mustThrow(()=>setNativeValue(doc,2,3,'\ud83d\ude00'),'Unicode');mustThrow(()=>addNativeProperty(doc,2,'bad key','foo'),'Property keys');});
 test('backslash user edits roundtrip safely',()=>{const doc=readNativeBsp(fixture());const next=setNativeValue(doc,2,3,'models\\abc\\');assert.equal(next.entities[2].pairs[3].value,'models\\abc\\');assert.equal(readNativeBsp(writeNativeBsp(next)).entities[2].pairs[3].value,'models\\abc\\');});

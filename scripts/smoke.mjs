@@ -1,5 +1,5 @@
 // Standalone smoke test that does not require Rollup/Vite binaries.
-import ts from 'typescript';
+import ts from '../tests/support/typescript.cjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import {createRequire} from 'node:module';
@@ -22,6 +22,8 @@ for(const filename of fs.readdirSync(path.join(root,'src/engine'))){
   if(filename.endsWith('.ts'))transpile(`src/engine/${filename}`);
 }
 for(const filename of ['src/i18n.ts','src/store.ts'])transpile(filename);
+// v2.3 HF4: translations live in src/locales/*.json (imported by i18n.ts).
+fs.cpSync(path.join(root,'src','locales'),path.join(dst,'src','locales'),{recursive:true});
 fs.writeFileSync(path.join(dst,'package.json'),JSON.stringify({type:'commonjs'}));
 try {
 const require=createRequire(path.join(dst,'test.cjs'));

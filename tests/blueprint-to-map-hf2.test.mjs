@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
-const ts=require('../node_modules/typescript/lib/typescript.js');
+const ts=require('./support/typescript.cjs');
 require.extensions['.ts']=(module,filename)=>{const source=readFileSync(filename,'utf8');const result=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true,allowImportingTsExtensions:true}});module._compile(result.outputText,filename)};
 const {initialBlueprint,validateBlueprintPlan,saveBlueprintDraftToProject,saveBlueprintToProject,fitBlueprintOpening,repairBlueprintOpenings,exportBlueprintAsset,importBlueprintAsset,addBlueprintOpening,buildBlueprintBrushes,blueprintPixelToWorld}=require('../src/engine/blueprintToMap.ts');
 const {validateBrush,exportMap}=require('../src/engine/exportMap.ts');

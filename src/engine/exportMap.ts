@@ -136,8 +136,11 @@ export function validateExportIntegrity(project:Project):string[]{
 
 export function validateProject(project:Project):string[]{
   const errors:string[]=[];
-  if(project.target&&project.target!=='svengine')errors.push('Project target must be Svengine / Sven Co-op.');
-  if(!project.objects.some(o=>o.kind==='entity'&&isSvenPlayerSpawn(o.classname)))errors.push('Add at least one Sven Co-op player spawn (info_player_deathmatch, info_player_dm2, info_player_coop or info_player_start) before compiling.');
+  if(project.target==='cs16'){
+    if(!project.objects.some(o=>o.kind==='entity'&&o.classname==='info_player_start'))errors.push('CS 1.6 needs at least one Counter-Terrorist spawn (info_player_start).');
+    if(!project.objects.some(o=>o.kind==='entity'&&o.classname==='info_player_deathmatch'))errors.push('CS 1.6 needs at least one Terrorist spawn (info_player_deathmatch).');
+  }else if(!project.objects.some(o=>o.kind==='entity'&&isSvenPlayerSpawn(o.classname)))
+    errors.push('Add at least one Sven Co-op player spawn (info_player_deathmatch, info_player_dm2, info_player_coop or info_player_start) before compiling.');
   if(!project.objects.some(o=>o.kind==='brush'))errors.push('Map has no solid brushes.');
   errors.push(...validateExportIntegrity(project));
   return errors;
@@ -159,5 +162,5 @@ export function exportMap(project:Project,wadPaths:string[]=[]):string{
     if(!(groups[e.id]||[]).length)props.origin=e.position.map(fmt).join(' ');
     sections.push(`{\n${pairs(props)}\n${(groups[e.id]||[]).map(exportBrush).join('\n')}\n}`);
   }
-  return `// SvenStudio 3D - Svengine / Sven Co-op 5.x - Valve 220 map\n${sections.join('\n')}\n`;
+  return `// SvenStudio 3D - ${project.target==='cs16'?'Counter-Strike 1.6 / GoldSrc':'Svengine / Sven Co-op 5.x'} - Valve 220 map\n${sections.join('\n')}\n`;
 }

@@ -13,3 +13,9 @@ export async function resolve(specifier,context,nextResolve){
     throw error;
   }
 }
+/** Vite imports JSON without attributes (e.g. src/locales/en.json); Node requires `type: json`. */
+export async function load(url,context,nextLoad){
+  if(url.endsWith('.json')&&context.importAttributes?.type!=='json')
+    return nextLoad(url,{...context,importAttributes:{...context.importAttributes,type:'json'}});
+  return nextLoad(url,context);
+}

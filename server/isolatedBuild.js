@@ -14,20 +14,20 @@ export async function validateBuildDestination(dir,gameDir){
  if(typeof dir!=='string'||!dir.trim()||dir.length>1024||!path.isAbsolute(dir))throw Error('Select an existing, absolute external export folder.');
  const target=await fs.realpath(dir),game=await fs.realpath(gameDir);
  if(!(await fs.stat(target)).isDirectory())throw Error('Export target is not a directory.');
- const layer=path.basename(game).toLowerCase(),base=['svencoop','svencoop_addon','svencoop_downloads'].includes(layer)?path.dirname(game):game;
+ const layer=path.basename(game).toLowerCase(),base=['svencoop','svencoop_addon','svencoop_downloads','cstrike'].includes(layer)?path.dirname(game):game;
  // Never export into the live game install or a parent containing the game.
  if(within(base,target)||within(target,base))throw Error('Choose a separate export folder outside Sven Co-op and its parent.');
  return target;
 }
-async function newFolder(base,mapName){
+async function newFolder(base,mapName,gameProfile='svengine'){
  for(let i=1;i<=999;i++){
-  const name=`${mapName}_SvenCoop${i===1?'':`_${i}`}`,full=path.join(base,name);
+  const name=`${mapName}_${gameProfile==='cs16'?'CS16':'SvenCoop'}${i===1?'':`_${i}`}`,full=path.join(base,name);
   try{await fs.mkdir(full);return full}catch(e){if(e.code!=='EEXIST')throw e}
  }
  throw Error('Too many versions in output folder.');
 }
 /** Source & log included; isolated mode does not demand all runtime assets. */
-export async function writeIsolatedBuild({gameDir,mapName,compiledBspPath,sourceMapPath,buildLog='',destinationDir=null,format='build',resourceRoots=[],inlineBinaryFiles=[],writeDistribution=null}){
+export async function writeIsolatedBuild({gameDir,mapName,compiledBspPath,sourceMapPath,buildLog='',destinationDir=null,format='build',resourceRoots=[],inlineBinaryFiles=[],writeDistribution=null,gameProfile='svengine'}){
  if(!VALID_NAME.test(mapName))throw Error('Invalid map name.');
  if(['folder','folder_zip'].includes(format)&&writeDistribution){
   const result=await writeDistribution({gameDir,mapName,destinationDir,format,resourceRoots,inlineBinaryFiles,
@@ -36,13 +36,13 @@ export async function writeIsolatedBuild({gameDir,mapName,compiledBspPath,source
  }
  const base=destinationDir?await validateBuildDestination(destinationDir,gameDir):await studioDirectory('builds',true);
  if(!destinationDir)await fs.mkdir(base,{recursive:true});
- const destination=await newFolder(base,mapName);
+ const destination=await newFolder(base,mapName,gameProfile);
  try{
   for(const folder of ['Distribucion/maps','Fuentes','Logs'])await fs.mkdir(path.join(destination,...folder.split('/')),{recursive:true});
   const output=path.join(destination,'Distribucion','maps',`${mapName}.bsp`);
   await fs.copyFile(compiledBspPath,output,fs.constants.COPYFILE_EXCL);
   for(const file of inlineBinaryFiles){
-   if(typeof file.path!=='string'||file.path.includes('..')||path.isAbsolute(file.path)||!/^(?:sound\/svstudio\/[a-z_]+\.wav|[a-z0-9_.+~()-]+\.wad)$/i.test(file.path)||!Buffer.isBuffer(file.bytes))throw Error('Unsafe isolated resource.');
+   if(typeof file.path!=='string'||file.path.includes('..')||path.isAbsolute(file.path)||!/^(?:sound\/svstudio\/[a-z_]+\.wav|[a-z0-9_.+~()-]+\.wad|overviews\/[a-z0-9_-]+\.(?:bmp|txt))$/i.test(file.path)||!Buffer.isBuffer(file.bytes))throw Error('Unsafe isolated resource.');
    const full=path.join(destination,'Distribucion',...file.path.split('/'));
    await fs.mkdir(path.dirname(full),{recursive:true});await fs.writeFile(full,file.bytes,{flag:'wx'});
   }

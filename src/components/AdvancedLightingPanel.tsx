@@ -1,10 +1,10 @@
 import {useEffect,useMemo,useState} from 'react';
-import {AlertTriangle,CheckCircle2,Flame,Layers,Lightbulb,Plus,Save,Shield,SlidersHorizontal,Sun,Target,RefreshCcw} from 'lucide-react';
+import {AlertTriangle,CheckCircle2,Flame,Layers,Lightbulb,Plus,Save,Shield,SlidersHorizontal,Sun,Target,RefreshCcw,FileText,Copy,Wand2} from 'lucide-react';
 import {useEditor} from '../store';
 import {useT} from '../i18n';
 import {uid,type PointEntity,type Vec3} from '../engine/types';
 import {hexRgb,rgbHex} from '../engine/environment';
-import {RAD_FIELDS,RAD_PRESETS,radFromProps,validateRadValues,mergeRadProps,textureLightProps,mergeTexlightsProps,validateTextureDraft,createLightingEntity,styleFromProps,mergeStyleProps,validateStyleDraft,LIGHT_STYLES,validateShadowTarget,type RadValues,type TextureLightDraft,type TextureLightKind,type StyleDraft} from '../engine/advancedLighting';
+import {RAD_FIELDS,RAD_PRESETS,radFromProps,validateRadValues,mergeRadProps,textureLightProps,mergeTexlightsProps,validateTextureDraft,createLightingEntity,styleFromProps,mergeStyleProps,validateStyleDraft,LIGHT_STYLES,validateShadowTarget,parseLightsRad,formatLightsRad,mergeRadEntries,emissiveCandidates,suggestedBrightness,type RadEntry,type RadValues,type TextureLightDraft,type TextureLightKind,type StyleDraft} from '../engine/advancedLighting';
 
 type Mode='texture'|'rad'|'styles';
 const DEFAULT_TEXTURE:TextureLightDraft={texture:'',brightness:800,color:[255,235,198],autoColor:true,gap:'3.0',maxDistance:'',targetname:''};
@@ -56,6 +56,31 @@ export function AdvancedLightingPanel({mode}:{mode:Mode}){
  });
  const useSelectedTexture=()=>{if(selectedTexture){setTextureField('texture',selectedTexture);notify(`Using texture ${selectedTexture}.`)}else fail('Select a brush face in MAP Editor, or enter a texture name.')};
 
+ // v2.6 lights.rad bridge + emissive texture detection (average colour from the loaded WAD preview).
+ const textureAssets=useEditor(s=>s.textureAssets);
+ const [radText,setRadText]=useState('');
+ const [avg,setAvg]=useState<Record<string,[number,number,number]>>({});
+ const texlights=texEntities.find(e=>e.classname==='info_texlights');
+ const candidates=useMemo(()=>emissiveCandidates(textureList,texEntities.filter(e=>e.classname==='info_texlights').flatMap(e=>Object.keys(e.props))).slice(0,40),[textureList,texEntities]);
+ useEffect(()=>{
+  let alive=true;
+  for(const name of candidates){
+   if(avg[name])continue;const asset=textureAssets.find(a=>a.name.toLowerCase()===name.toLowerCase());if(!asset?.dataUrl)continue;
+   const img=new Image();img.onload=()=>{if(!alive)return;const c=document.createElement('canvas');c.width=c.height=16;const g=c.getContext('2d');if(!g)return;g.drawImage(img,0,0,16,16);
+    const d=g.getImageData(0,0,16,16).data;let r=0,gg=0,b=0,n=0;for(let i=0;i<d.length;i+=4){const l=d[i]+d[i+1]+d[i+2];if(l<120)continue;r+=d[i];gg+=d[i+1];b+=d[i+2];n++;}
+    const col:[number,number,number]=n?[Math.round(r/n),Math.round(gg/n),Math.round(b/n)]:[255,235,198];setAvg(old=>({...old,[name]:col}));};
+   img.src=asset.dataUrl;
+  }
+  return()=>{alive=false};
+ },[candidates,textureAssets]);
+ const addRadEntries=(entries:RadEntry[])=>go(()=>{
+  if(!entries.length)throw Error('Nothing to add.');
+  if(texlights){updateObject(texlights.id,{props:mergeRadEntries(texlights.props,entries)});setSelected(texlights.id);}
+  else{const e=createLightingEntity(uid(),'info_texlights',getPos(selectedObject),mergeRadEntries({},entries));addObjects([e]);setSelected(e.id);}
+  notify(`${entries.length} texture light(s) saved in info_texlights.`);
+ });
+ const importRad=()=>{const {entries,errors}=parseLightsRad(radText);if(errors.length){fail(errors.slice(0,4).join(' '));return;}addRadEntries(entries);};
+ const exportRad=()=>{const text=texlights?formatLightsRad(texlights.props):'';setRadText(text);if(text&&navigator.clipboard)navigator.clipboard.writeText(text).catch(()=>{});notify(text?'lights.rad text copied to the clipboard.':'There is no info_texlights entity yet.');};
  const radEntities=objects.filter((o):o is PointEntity=>o.kind==='entity'&&o.classname==='info_compile_parameters');
  const radEntity=(selectedEntity?.classname==='info_compile_parameters'?selectedEntity:radEntities[0]);
  const [radDraft,setRadDraft]=useState<RadValues>({});
@@ -105,6 +130,14 @@ export function AdvancedLightingPanel({mode}:{mode:Mode}){
   <div className="lighting-actions"><button className="lighting-primary" onClick={saveTexture}><Save size={16}/>{textureKind==='light_surface'&&selectedEntity?.classname==='light_surface'?t('Update selected surface light'):t('Add / update texture light')}</button></div>
   <h3><Layers size={15}/> Existing texture lighting</h3>
   <div className="al-entity-list">{texEntities.map(e=><button key={e.id} className={selected===e.id?'active':''} onClick={()=>setSelected(e.id)}>{e.classname} · {e.props._tex||Object.keys(e.props).filter(k=>!['origin','classname','targetname'].includes(k)).slice(0,4).join(', ')}</button>)}{!texEntities.length&&<small>No texture lighting entities yet.</small>}</div>
+  <h3><Wand2 size={15}/> {t('Detected light textures')}</h3>
+  <p className="lighting-hint">{t('Textures in this map whose name looks like a lamp, panel, screen or neon and that do not emit light yet. The colour comes from the texture itself.')}</p>
+  <div className="al-rad-candidates">{candidates.map(name=>{const col=avg[name]||[255,235,198];return <div key={name} className="al-rad-row"><span className="al-rad-swatch" style={{background:`rgb(${col.join(',')})`}}/><code>{name}</code><small>{suggestedBrightness(name)}</small><button onClick={()=>addRadEntries([{texture:name,rgb:col,brightness:suggestedBrightness(name)}])}><Plus size={13}/></button></div>})}{!candidates.length&&<small>{t('No undefined light textures found.')}</small>}</div>
+  {candidates.length>1&&<div className="lighting-actions"><button onClick={()=>addRadEntries(candidates.map(name=>({texture:name,rgb:avg[name]||[255,235,198],brightness:suggestedBrightness(name)})))}><Plus size={15}/> {t('Add all detected')}</button></div>}
+  <h3><FileText size={15}/> lights.rad</h3>
+  <p className="lighting-hint">{t('Paste a lights.rad file (TEXTURE R G B BRIGHTNESS per line) to store it inside the map as info_texlights, or export the current entries.')}</p>
+  <textarea className="al-rad-text" rows={5} value={radText} onChange={e=>setRadText(e.target.value)} placeholder={"+0~LIGHT6A 255 235 198 800\n~LAB1 180 200 255 1500"} spellCheck={false}/>
+  <div className="lighting-actions"><button onClick={importRad} disabled={!radText.trim()}><Save size={15}/> {t('Import into info_texlights')}</button><button onClick={exportRad}><Copy size={15}/> {t('Export lights.rad')}</button></div>
   <p className="lighting-hint">For info_texlights, existing per-texture entries are retained when adding another. For light_surface, filter by brush entity name/class through the native property inspector if needed.</p>
  </>}
  {mode==='rad'&&<>

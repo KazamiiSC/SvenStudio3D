@@ -1,3 +1,4 @@
+import {translate} from '../i18n';
 import {saveStudioText} from '../engine/studioFiles';
 import {useEffect,useMemo,useState,type ReactNode} from 'react';
 import {Layers3,Volume2,Sun,Clapperboard,AlertTriangle,CheckCircle2,Download,Save,Trash2,Brush as BrushIcon,Info} from 'lucide-react';
@@ -51,7 +52,7 @@ export function MaterialSurfaceStudio(){
  };
  const presetAction=()=>applyAction(()=>apply(brushes.map(o=>o.id),preset,{amount,color,paintAll,texture,waveHeight:1}),`${brushes.length} brush(es) · ${SURFACE_PRESETS[preset].classname} · Undo/Redo`);
  const addSaved=()=>{
-  const name=presetName.trim().slice(0,48);if(!name){setError(locale==='es'?'Escribí un nombre.':'Enter a name.');return;}
+  const name=presetName.trim().slice(0,48);if(!name){setError(translate(locale,'Enter a name.'));return;}
   const updated=[...saved.filter(p=>p.name.toLowerCase()!==name.toLowerCase()),{name,preset,amount,color,paintAll,texture}].slice(-40);setSaved(updated);persist(updated);setPresetName('');setNotice(name);setError('');
  };
  const usePreset=(p:SavedPreset)=>{setPreset(p.preset);setAmount(p.amount);setColor([...p.color]);setPaintAll(p.paintAll);setTexture(p.texture)};
@@ -67,7 +68,7 @@ export function MaterialSurfaceStudio(){
   </div>
   {(tab==='surface'||tab==='sounds'||tab==='emission')&&<>
    <label className="material-field">{tr.texture}<input value={texture} maxLength={15} spellCheck={false} onChange={e=>setTexture(e.target.value.toUpperCase())} placeholder="WAD_TEXTURE"/></label>
-   {textureAssets.length>0&&<details className="material-assets"><summary>{locale==='es'?'Elegir de WAD cargados':'Pick from loaded WADs'} ({textureAssets.length})</summary><input placeholder={locale==='es'?'Filtrar...':'Filter...'} value={filter} onChange={e=>setFilter(e.target.value)}/><div className="material-asset-list">{assetChoices.map(name=><button type="button" key={name} onClick={()=>{setTexture(name);setFilter('')}}>{name}</button>)}</div></details>}
+   {textureAssets.length>0&&<details className="material-assets"><summary>{translate(locale,'Pick from loaded WADs')} ({textureAssets.length})</summary><input placeholder={translate(locale,'Filter...')} value={filter} onChange={e=>setFilter(e.target.value)}/><div className="material-asset-list">{assetChoices.map(name=><button type="button" key={name} onClick={()=>{setTexture(name);setFilter('')}}>{name}</button>)}</div></details>}
    {textureAsset&&<div className="material-swatch"><img src={textureAsset.thumbUrl||textureAsset.dataUrl} alt={textureAsset.name}/><div><strong>{textureAsset.name}</strong><small>{textureAsset.width}×{textureAsset.height}</small><small>{textureAsset.wad}</small></div></div>}
   </>}
   {tab==='surface'&&<>
@@ -86,7 +87,7 @@ export function MaterialSurfaceStudio(){
    {saved.map(p=><div className="material-save-row" key={p.name}><button onClick={()=>usePreset(p)} title="Load preset">{p.name} <small>({p.preset})</small></button><button title="Delete preset" onClick={()=>{const remaining=saved.filter(x=>x.name!==p.name);setSaved(remaining);persist(remaining)}}><Trash2 size={14}/></button></div>)}
   </>}
   {tab==='sounds'&&<>
-   <p className="material-note">Sven Co-op: <code>materials.txt</code> · ASCII · {locale==='es'?'máximo 12 caracteres de comparación':'12-character matching'}.</p>
+   <p className="material-note">Sven Co-op: <code>materials.txt</code> · ASCII · {translate(locale,'12-character matching')}.</p>
    <label className="material-field">{tr.sound}<select value={sound} onChange={e=>setSound(e.target.value as SurfaceSoundCode)}>{Object.entries(SURFACE_CODES).map(([code,label])=><option key={code} value={code}>{code} · {label}</option>)}</select></label>
    <div className="material-inline"><button className="material-primary" onClick={()=>applyAction(()=>assign(texture,sound),`${texture} → ${sound}`)}>{tr.save}</button><button onClick={()=>applyAction(()=>assign(texture,null),`${texture} removed`)}>{tr.clear}</button></div>
    <div className="material-sound-entries">{Object.entries(sounds).sort(([a],[b])=>a.localeCompare(b)).map(([name,code])=><div className="material-save-row" key={name}><span><b>{code}</b> {name}</span><button onClick={()=>applyAction(()=>assign(name,null),`${name} removed`)} aria-label={`Remove ${name}`}><Trash2 size={13}/></button></div>)}</div>
@@ -94,17 +95,17 @@ export function MaterialSurfaceStudio(){
    <p className="material-note">{tr.path}<code>{filePath}</code></p>
    <button className="soft-button" disabled={!materialText.trim()} onClick={()=>void downloadPlain(`${mapName}_materials.txt`,materialText).catch(error=>window.alert(String(error)))}><Download size={14}/>{tr.export}</button>
    <button className="soft-button" disabled={!materialText.trim()} onClick={()=>applyAction(()=>link(mapName),`worldspawn.materials_file = ${filePath}`)}>{tr.link}</button>
-   <p className="material-note">{locale==='es'?'Descargá e instalá el TXT en svencoop_addon/ o svencoop/. El botón enlaza la ruta en worldspawn; no copia archivos automáticamente.':'Install the downloaded TXT in svencoop_addon/ or svencoop/. Linking changes worldspawn only; it does not install files automatically.'}</p>
+   <p className="material-note">{translate(locale,'Install the downloaded TXT in svencoop_addon/ or svencoop/. Linking changes worldspawn only; it does not install files automatically.')}</p>
   </>}
   {tab==='emission'&&<>
    <p className="material-note">{tr.emissionText}</p>
    <label className="material-field">{tr.power}<input type="number" min="1" max="100000" value={brightness} onChange={e=>setBrightness(Number(e.target.value))}/></label>
    <button className="material-primary" disabled={brushes.length!==1} onClick={()=>applyAction(()=>emissive(brushes[0].id,texture,brightness),`light_surface · ${texture}`)}><Sun size={15}/>{tr.emissionAction}</button>
-   <p className="material-note">{locale==='es'?'Usá Lighting Studio para editar el color, alcance y estilo de light_surface. Recompilá con SC-RAD.':'Use Lighting Studio to edit light_surface color, range and style. Rebuild with SC-RAD.'}</p>
+   <p className="material-note">{translate(locale,'Use Lighting Studio to edit light_surface color, range and style. Rebuild with SC-RAD.')}</p>
   </>}
   {tab==='animation'&&<>
    <p className="material-note">{tr.animationText}</p>
-   {animations.length===0?<p className="material-note">{locale==='es'?'No se encontraron secuencias animadas en los WAD importados.':'No animated sequences found in imported WADs.'}</p>:animations.map(g=><div key={g.base} className="material-animation"><strong>{g.base}</strong><small>+0…+9: {g.regular.join(', ')||'—'} · +A…+J: {g.alternate.join(', ')||'—'}</small>{g.missing.length>0&&<p className="material-alert"><AlertTriangle size={13}/>{g.missing.join(', ')}</p>}</div>)}
+   {animations.length===0?<p className="material-note">{translate(locale,'No animated sequences found in imported WADs.')}</p>:animations.map(g=><div key={g.base} className="material-animation"><strong>{g.base}</strong><small>+0…+9: {g.regular.join(', ')||'—'} · +A…+J: {g.alternate.join(', ')||'—'}</small>{g.missing.length>0&&<p className="material-alert"><AlertTriangle size={13}/>{g.missing.join(', ')}</p>}</div>)}
   </>}
   {tab==='doctor'&&<><p className="material-note">{tr.doctorText}</p>{doctor.length===0?<p className="material-good"><CheckCircle2 size={15}/>No warnings detected.</p>:doctor.map((w,i)=><div className="material-warning" key={i}><AlertTriangle size={15}/><span>{w}</span></div>)}</>}
   {(error||notice)&&<p role="status" className={error?'material-alert':'material-good'}>{error||notice}</p>}

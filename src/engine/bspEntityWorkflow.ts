@@ -3,7 +3,7 @@
  */
 import type {BspEntity} from './bsp';
 import {addNativeProperty,nativeClassname,setNativeValue,type NativeBsp,type NativeEntity} from './bspNativeEdit';
-import {bspEditVector,bspFormatNumber,bspMovePoint,bspPointEditable,bspSetPointField} from './bspVisualEntityEdit';
+import {bspEditVector,bspEntityEditable,bspFormatNumber,bspFormatVector,bspPointEditable,bspSetPointField} from './bspVisualEntityEdit';
 import type {Vec3} from './types';
 
 export type BspConnection={from:number;to:number;key:'target'|'killtarget'|'trigger_target';name:string};
@@ -56,7 +56,7 @@ export function bspConnectEntities(doc:NativeBsp,from:number,to:number,key:BspCo
 /** Transactional batch edit: prevalidate EVERY entity before changing any of them. */
 export function bspSetMultiplePointFields(doc:NativeBsp,indices:readonly number[],key:string,value:string):NativeBsp{
   const unique=[...new Set(indices)];
-  if(!unique.length||unique.length>256||unique.some(i=>!safeIndex(doc,i)||!bspPointEditable(doc.entities[i],i)))throw Error('Select 1–256 editable point entities.');
+  if(!unique.length||unique.length>256||unique.some(i=>!safeIndex(doc,i)||!bspEntityEditable(doc.entities[i],i)))throw Error('Select 1–256 editable entities.');
   if(['classname','model','origin','angles','angle','targetname'].includes(key))throw Error('Bulk editing this field could invalidate compiled models, positions, or entity names.');
   let next=doc;
   for(const i of unique)next=bspSetPointField(next,i,key,value);
@@ -65,13 +65,13 @@ export function bspSetMultiplePointFields(doc:NativeBsp,indices:readonly number[
 /** Preserve relative offsets when moving a group. Every member is validated first. */
 export function bspTranslatePoints(doc:NativeBsp,indices:readonly number[],delta:Vec3):NativeBsp{
   const unique=[...new Set(indices)];
-  if(!unique.length||unique.length>256||unique.some(i=>!safeIndex(doc,i)||!bspPointEditable(doc.entities[i],i)))throw Error('Select 1–256 editable point entities.');
+  if(!unique.length||unique.length>256||unique.some(i=>!safeIndex(doc,i)||!bspEntityEditable(doc.entities[i],i)))throw Error('Select 1–256 editable entities.');
   if(delta.length!==3||delta.some(v=>!Number.isFinite(v)))throw Error('Invalid group displacement.');
   const current=unique.map(i=>bspEditVector(last(doc.entities[i],'origin')||'0 0 0'));
   const destination=current.map(p=>p.map((v,k)=>v+delta[k]) as Vec3);
   for(const position of destination)bspEditVector(position.map(bspFormatNumber).join(' '));
   let next=doc;
-  for(let k=0;k<unique.length;k++)next=bspMovePoint(next,unique[k],destination[k]);
+  for(let k=0;k<unique.length;k++)next=bspSetPointField(next,unique[k],'origin',bspFormatVector(destination[k]));
   return next;
 }
 export function bspFlagValue(value:string,bit:number,enabled:boolean):string{

@@ -15,7 +15,7 @@ test('Appearance is directly accessible from More at any responsive header densi
   const menu=app.slice(start,end);
   assert.ok(start>=0&&end>start);
   assert.match(menu,/setDialog\('layout'\);setExtraMenu\(false\)/);
-  for(const text of ['Apariencia y temas','Appearance & themes','Оформление и темы','모양 및 테마','外观与主题','Aparência e temas']) assert.ok(menu.includes(text));
+  assert.match(menu,/t\('Editor preferences'\)/,'v2.4: Appearance is part of Editor preferences');
   assert.ok(menu.indexOf('setDialog(\'layout\')')<menu.indexOf('setDialog(\'settings\')'));
 });
 test('Theme shortcut remains visible in tight and minimal responsive modes',()=>{

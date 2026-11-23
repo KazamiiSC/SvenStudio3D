@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 
 const source=fs.readFileSync(path.join(process.cwd(),'src/components/ArchitectureBuilder.tsx'),'utf8');
 const ast=ts.createSourceFile('ArchitectureBuilder.tsx',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
@@ -27,7 +27,7 @@ function actualSelector(name){
   return Function(`return (${text})`)();
 }
 
-test('Smart Build selectors return stable snapshots on a new project without optional arrays',()=>{
+test('Smart Build selectors return stable snapshots on a new project without optional arrays',{skip:!ts.hasAst&&'needs the TypeScript compiler AST (npm install typescript)'},()=>{
   const state={project:{version:1,objects:[],world:{},wadNames:[],name:'Untitled Map'}};
   for(const id of ['storedOpenings','storedAssemblies']){
     const selector=actualSelector(id);
@@ -36,7 +36,7 @@ test('Smart Build selectors return stable snapshots on a new project without opt
   }
 });
 
-test('Smart Build selectors preserve the exact stored array reference across reads',()=>{
+test('Smart Build selectors preserve the exact stored array reference across reads',{skip:!ts.hasAst&&'needs the TypeScript compiler AST (npm install typescript)'},()=>{
   const openings=[];
   const assemblies=[];
   const state={project:{architectureOpenings:openings,architectureAssemblies:assemblies}};
@@ -44,7 +44,7 @@ test('Smart Build selectors preserve the exact stored array reference across rea
   assert.strictEqual(actualSelector('storedAssemblies')(state),assemblies);
 });
 
-test('empty fallbacks are stable module-level constants, not allocated during render',()=>{
+test('empty fallbacks are stable module-level constants, not allocated during render',{skip:!ts.hasAst&&'needs the TypeScript compiler AST (npm install typescript)'},()=>{
   for(const id of ['EMPTY_OPENINGS','EMPTY_ASSEMBLIES']){
     const declaration=initializerFor(id);
     assert.ok(ts.isArrayLiteralExpression(declaration));

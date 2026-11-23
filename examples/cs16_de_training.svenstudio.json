@@ -1,0 +1,918 @@
+{
+  "version": 1,
+  "target": "cs16",
+  "name": "cs16_de_training",
+  "world": {
+    "classname": "worldspawn",
+    "mapversion": "220",
+    "message": "SvenStudio 3D - CS 1.6 starter",
+    "skyname": ""
+  },
+  "wadNames": [
+    "svstudio.wad"
+  ],
+  "objects": [
+    {
+      "id": "aa85bea0-719e-4155-a4b3-2ef93c45fcd9",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Floor",
+      "position": [
+        0,
+        0,
+        -16
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -272,
+          -272,
+          -16
+        ],
+        [
+          272,
+          -272,
+          -16
+        ],
+        [
+          272,
+          272,
+          -16
+        ],
+        [
+          -272,
+          272,
+          -16
+        ],
+        [
+          -272,
+          -272,
+          16
+        ],
+        [
+          272,
+          -272,
+          16
+        ],
+        [
+          272,
+          272,
+          16
+        ],
+        [
+          -272,
+          272,
+          16
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_TILE01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_TILE01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "f6788ef3-5ad7-4143-aa6e-3ebf352e3178",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Ceiling",
+      "position": [
+        0,
+        0,
+        288
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -272,
+          -272,
+          -16
+        ],
+        [
+          272,
+          -272,
+          -16
+        ],
+        [
+          272,
+          272,
+          -16
+        ],
+        [
+          -272,
+          272,
+          -16
+        ],
+        [
+          -272,
+          -272,
+          16
+        ],
+        [
+          272,
+          -272,
+          16
+        ],
+        [
+          272,
+          272,
+          16
+        ],
+        [
+          -272,
+          272,
+          16
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_CONCRET"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_CONCRET"
+        }
+      ],
+      "layer": "Geometry",
+      "hidden": true
+    },
+    {
+      "id": "1e492cae-ec71-4782-9a7a-1a4c7c3171b7",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "West Wall",
+      "position": [
+        -272,
+        0,
+        136
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -16,
+          -272,
+          -144
+        ],
+        [
+          16,
+          -272,
+          -144
+        ],
+        [
+          16,
+          272,
+          -144
+        ],
+        [
+          -16,
+          272,
+          -144
+        ],
+        [
+          -16,
+          -272,
+          144
+        ],
+        [
+          16,
+          -272,
+          144
+        ],
+        [
+          16,
+          272,
+          144
+        ],
+        [
+          -16,
+          272,
+          144
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "7ea1feb2-0e8e-4b9e-9d88-497e21479184",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "East Wall",
+      "position": [
+        272,
+        0,
+        136
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -16,
+          -272,
+          -144
+        ],
+        [
+          16,
+          -272,
+          -144
+        ],
+        [
+          16,
+          272,
+          -144
+        ],
+        [
+          -16,
+          272,
+          -144
+        ],
+        [
+          -16,
+          -272,
+          144
+        ],
+        [
+          16,
+          -272,
+          144
+        ],
+        [
+          16,
+          272,
+          144
+        ],
+        [
+          -16,
+          272,
+          144
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "67a8f386-0e1f-47e2-96ba-c1cc8736ebf1",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "North Wall",
+      "position": [
+        0,
+        272,
+        136
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -256,
+          -16,
+          -144
+        ],
+        [
+          256,
+          -16,
+          -144
+        ],
+        [
+          256,
+          16,
+          -144
+        ],
+        [
+          -256,
+          16,
+          -144
+        ],
+        [
+          -256,
+          -16,
+          144
+        ],
+        [
+          256,
+          -16,
+          144
+        ],
+        [
+          256,
+          16,
+          144
+        ],
+        [
+          -256,
+          16,
+          144
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "8c03d379-6097-4369-82bc-8a0f9a4ac795",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "South Wall",
+      "position": [
+        0,
+        -272,
+        136
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -256,
+          -16,
+          -144
+        ],
+        [
+          256,
+          -16,
+          -144
+        ],
+        [
+          256,
+          16,
+          -144
+        ],
+        [
+          -256,
+          16,
+          -144
+        ],
+        [
+          -256,
+          -16,
+          144
+        ],
+        [
+          256,
+          -16,
+          144
+        ],
+        [
+          256,
+          16,
+          144
+        ],
+        [
+          -256,
+          16,
+          144
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_BRICK01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_BRICK01"
+        }
+      ],
+      "layer": "Geometry"
+    },
+    {
+      "id": "e9291435-7439-4609-9a3c-6ea0e46f2877",
+      "kind": "entity",
+      "name": "Counter-Terrorist spawn",
+      "classname": "info_player_start",
+      "position": [
+        0,
+        0,
+        48
+      ],
+      "props": {
+        "angles": "0 0 0"
+      },
+      "layer": "Gameplay"
+    },
+    {
+      "id": "cs16_terrorist_1",
+      "kind": "entity",
+      "name": "Terrorist spawn",
+      "classname": "info_player_deathmatch",
+      "position": [
+        128,
+        0,
+        48
+      ],
+      "props": {
+        "angles": "0 180 0"
+      },
+      "layer": "Gameplay"
+    },
+    {
+      "id": "ddf7e78d-eeb0-4d3c-a814-3be53c47350f",
+      "kind": "entity",
+      "name": "light",
+      "classname": "light",
+      "position": [
+        0,
+        0,
+        208
+      ],
+      "props": {
+        "_light": "255 240 210 350"
+      },
+      "layer": "Lighting"
+    },
+    {
+      "id": "df68fe13-deb5-4a56-9671-fe519f93c1a1",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Bombsite A (func_bomb_target)",
+      "position": [
+        130,
+        80,
+        64
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -32,
+          -8,
+          -64
+        ],
+        [
+          32,
+          -8,
+          -64
+        ],
+        [
+          32,
+          8,
+          -64
+        ],
+        [
+          -32,
+          8,
+          -64
+        ],
+        [
+          -32,
+          -8,
+          64
+        ],
+        [
+          32,
+          -8,
+          64
+        ],
+        [
+          32,
+          8,
+          64
+        ],
+        [
+          -32,
+          8,
+          64
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "SV_METAL01"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "SV_METAL01"
+        }
+      ],
+      "layer": "Gameplay",
+      "entityId": "cs16_bombsite_a"
+    },
+    {
+      "id": "cs16_bombsite_a",
+      "kind": "entity",
+      "name": "Bombsite A",
+      "classname": "func_bomb_target",
+      "position": [
+        130,
+        80,
+        64
+      ],
+      "props": {
+        "targetname": "bombsite_a"
+      },
+      "layer": "Gameplay"
+    }
+  ]
+}

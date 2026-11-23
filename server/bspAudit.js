@@ -3,6 +3,14 @@ import fs from 'node:fs/promises';
 // Read-only GoldSrc BSP30 audit. This does not claim to simulate renderer behavior.
 const LUMP_COUNT=15,SKY_CONTENTS=-6,TEX_SPECIAL=1;
 const names=['entities','planes','textures','vertices','visibility','nodes','texinfo','faces','lighting','clipnodes','leaves','marksurfaces','edges','surfedges','models'];
+// Classic GoldSrc compile limits (Half-Life SDK common/bspfile.h). Svengine raises several of these,
+// so they are only enforced as warnings for the Counter-Strike 1.6 profile.
+export const GOLDSRC_LIMITS={models:400,entities:1024,planes:32767,textures:512,vertices:65535,nodes:32767,texinfo:8192,faces:65535,clipnodes:32767,leaves:8192,marksurfaces:65535,edges:256000,surfedges:512000,lightingBytes:0x200000,visibilityBytes:0x200000,entdataBytes:0x20000};
+const RECORD={planes:20,vertices:12,nodes:24,texinfo:40,faces:20,clipnodes:8,leaves:28,marksurfaces:2,edges:4,surfedges:4,models:64};
+/** Percent-of-limit report, highest first. */
+export function bspLimitReport(counts,limits=GOLDSRC_LIMITS){
+  return Object.entries(limits).filter(([k])=>counts[k]!==undefined).map(([k,max])=>({name:k,count:counts[k],max,percent:Math.round(counts[k]/max*100)})).sort((a,b)=>b.percent-a.percent);
+}
 export function inspectBsp(buffer) {
   if(buffer.length<124||buffer.readInt32LE(0)!==30)throw new Error('Expected a valid GoldSrc BSP v30 file.');
   const lump=[];
@@ -46,6 +54,8 @@ export function inspectBsp(buffer) {
   if(skyFaces>0&&!skySpecialFaces)warnings.push('BSP SKY faces lack TEX_SPECIAL; inspect compile tools.');
   if(skyFaces>0&&lightmappedSkyFaces)warnings.push('BSP SKY faces have lightmap offsets; inspect compile tools.');
   const uniqueWads=[...new Set(worldWads.split(';').map(x=>x.trim()).filter(Boolean).map(x=>x.split(/[\\/]/).at(-1)?.toLowerCase()))];
-  return {version:30,skyname,worldWads:uniqueWads,skyFaces,skySpecialFaces,lightmappedSkyFaces,skyLeaves,textures:textures.filter(Boolean),warnings};
+  const counts={entities:(text.match(/\{/g)||[]).length,textures:n,lightingBytes:lump[8].length,visibilityBytes:lump[4].length,entdataBytes:lump[0].length};
+  for(const [name,size] of Object.entries(RECORD))counts[name]=Math.floor(lump[names.indexOf(name)].length/size);
+  return {version:30,skyname,worldWads:uniqueWads,skyFaces,skySpecialFaces,lightmappedSkyFaces,skyLeaves,textures:textures.filter(Boolean),warnings,counts};
 }
 export async function inspectBspFile(file){return inspectBsp(await fs.readFile(file))}

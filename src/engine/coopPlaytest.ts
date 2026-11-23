@@ -21,7 +21,7 @@ const cross=(a:Vec3,b:Vec3):Vec3=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*
 const unit=(p:Vec3):Vec3|null=>{const n=Math.hypot(...p);return n>EPS?[p[0]/n,p[1]/n,p[2]/n]:null};
 const X:Vec3=[1,0,0],Y:Vec3=[0,1,0],Z:Vec3=[0,0,1];
 const addAxis=(list:Vec3[],axis:Vec3)=>{const normalized=unit(axis);if(normalized&&!list.some(old=>Math.abs(dot(normalized,old))>.9999))list.push(normalized)};
-function solidBrush(brush:Brush,entities:Map<string,PointEntity>):boolean{
+export function solidBrush(brush:Brush,entities:Map<string,PointEntity>):boolean{
  // Hidden editor brushes still compile, so do not skip them.
  const cls=brush.entityId?entities.get(brush.entityId)?.classname.toLowerCase():'';
  // Non-solid, volumes, and origin helpers cannot be treated as closed walls.

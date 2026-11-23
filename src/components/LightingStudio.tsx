@@ -1,4 +1,5 @@
 import {useEffect,useMemo,useState} from 'react';
+import {KitGallery} from './KitGallery';
 import {CloudFog,CloudSun,Lightbulb,Sun,SunMoon,Flashlight,MapPin,Plus,CheckCircle2,AlertTriangle,Eye,EyeOff,SlidersHorizontal,X,Link2} from 'lucide-react';
 import {useEditor} from '../store';
 import type {PointEntity,Vec3} from '../engine/types';
@@ -16,7 +17,7 @@ export function LightingStudio({onClose,onPreview}:{onClose:()=>void;onPreview?:
  const preview=useEditor(s=>s.environmentPreview),setPreview=useEditor(s=>s.setEnvironmentPreview),fogPreview=useEditor(s=>s.fogPreview),setFogPreview=useEditor(s=>s.setFogPreview);
  const shadows=useEditor(s=>s.previewShadows),setShadows=useEditor(s=>s.setPreviewShadows),ranges=useEditor(s=>s.showLightRanges),setRanges=useEditor(s=>s.setShowLightRanges);
  const [skies,setSkies]=useState<{name:string;source:string;complete:boolean;faces:number;thumbnailSide:string}[]>([]),[skyQuery,setSkyQuery]=useState(''),[skyStatus,setSkyStatus]=useState('');
- const [activeTab,setActiveTab]=useState<'environment'|'texture'|'rad'|'styles'>('environment');
+ const [activeTab,setActiveTab]=useState<'environment'|'texture'|'rad'|'styles'|'effects'>('environment');
  const [ambient,setAmbient]=useState('170 200 255 80');
  const [kind,setKind]=useState<EnvironmentKind>('light'),[color,setColor]=useState('#ffe8c4'),[brightness,setBrightness]=useState(350),[cone,setCone]=useState(30),[outer,setOuter]=useState(55),[pitch,setPitch]=useState(-45),[yaw,setYaw]=useState(0),[fogStart,setFogStart]=useState(256),[fogEnd,setFogEnd]=useState(2048),[sky,setSky]=useState(world.skyname||'desert'),[notice,setNotice]=useState('');
  useEffect(()=>{
@@ -61,7 +62,7 @@ export function LightingStudio({onClose,onPreview}:{onClose:()=>void;onPreview?:
  };
  const saveSky=()=>{if(!/^[\w-]{1,64}$/.test(sky)){setNotice(t('Use a valid sky prefix (letters, numbers, dash, underscore).'));return;}changeWorld('skyname',sky);setNotice(t('Sky prefix saved. SKY-textured faces are required in the game.'))};
  return <div className="modal-backdrop lighting-backdrop" onMouseDown={onClose}><section className="lighting-studio" role="dialog" aria-modal="true" aria-label="Lighting & Environment Studio" onMouseDown={e=>e.stopPropagation()}>
- <header className="lighting-header"><span className="lighting-header-symbol"><SunMoon size={23}/></span><div><strong>{t('Advanced Lighting Studio')} · v1.5.5</strong><small>Svengine · environment · emissive textures · SC-RAD · lightstyles · shadows</small></div><span className="lighting-count">{entries.length+advancedCount} {t('entities')}</span><button onClick={onClose} title={t('Close')}><X size={20}/></button></header>
+ <header className="lighting-header"><span className="lighting-header-symbol"><SunMoon size={23}/></span><div><strong>{t('Advanced Lighting Studio')}</strong><small>Svengine · environment · emissive textures · SC-RAD · lightstyles · shadows</small></div><span className="lighting-count">{entries.length+advancedCount} {t('entities')}</span><button onClick={onClose} title={t('Close')}><X size={20}/></button></header>
  <div className="lighting-content">
  <aside className="lighting-side"><h3><SunMoon size={15}/>{t('Create environment entity')}</h3><div className="lighting-kind-list">{KINDS.map(k=>{const Icon=ICON[k];return <button key={k} className={kind===k?'active':''} onClick={()=>{setKind(k);setNotice('')}}><Icon size={17}/><span>{t(NAME[k])}</span><small>{k}</small></button>})}</div>
  <h3><CloudSun size={16}/>{t('Lighting presets')}</h3><div className="lighting-presets">{(Object.keys(LIGHT_PRESETS) as EnvironmentPreset[]).map(k=><button key={k} onClick={()=>applyPreset(k)}>{t(LIGHT_PRESETS[k].label)}<small>{LIGHT_PRESETS[k].light}</small></button>)}</div>
@@ -69,7 +70,7 @@ export function LightingStudio({onClose,onPreview}:{onClose:()=>void;onPreview?:
  <label className="lighting-check"><input type="checkbox" checked={shadows} onChange={e=>setShadows(e.target.checked)}/>{t('Preview shadows (selected light)')}</label>
  <label className="lighting-check"><input type="checkbox" checked={ranges} onChange={e=>setRanges(e.target.checked)}/>{t('Show point light radius')}</label>
  <p className="lighting-hint">{t('Viewport preview is not SC-RAD lightmaps; compile for final light and shadows.')}</p><button className="lighting-primary true-light-studio-button" onClick={()=>{onClose();onPreview?.()}}><Sun size={15}/> Bake True Lighting (SC-RAD)</button></aside>
- <section className="lighting-main"><nav className="al-tabs" aria-label="Advanced lighting tools">{([['environment','Environment'],['texture','Texture lights'],['rad','Advanced SC-RAD'],['styles','Styles & shadows']] as const).map(([id,label])=><button key={id} type="button" className={activeTab===id?'active':''} onClick={()=>setActiveTab(id)} aria-current={activeTab===id?'page':undefined}>{t(label)}</button>)}</nav>
+ <section className="lighting-main"><nav className="al-tabs" aria-label="Advanced lighting tools">{([['environment','Environment'],['texture','Texture lights'],['rad','Advanced SC-RAD'],['styles','Styles & shadows'],['effects','Effects']] as const).map(([id,label])=><button key={id} type="button" className={activeTab===id?'active':''} onClick={()=>setActiveTab(id)} aria-current={activeTab===id?'page':undefined}>{t(label)}</button>)}</nav>
  {activeTab==='environment'?<><h3><SlidersHorizontal size={17}/>{t('Environment properties')} — <code>{kind}</code></h3>
  {kind.startsWith('light')&&<><label className="lighting-field">{t('Light color')}<input type="color" value={color} onChange={e=>setColor(e.target.value)}/></label><label className="lighting-field">{t('Brightness')} ({brightness})<input type="range" min="1" max="1400" step="10" value={clamp(brightness,1,1400)} onChange={e=>setBrightness(+e.target.value)}/><input type="number" min="1" max="100000" value={brightness} onChange={e=>setBrightness(clamp(+e.target.value,1,100000))}/></label>
  {kind==='light_spot'&&<><label className="lighting-field">{t('Inner angle')} — _cone <input type="number" min="1" max="180" value={cone} onChange={e=>setCone(clamp(+e.target.value,1,180))}/></label><label className="lighting-field">{t('Outer angle')} — _cone2 <input type="number" min="1" max="180" value={outer} onChange={e=>setOuter(clamp(+e.target.value,1,180))}/></label></>}
@@ -87,7 +88,7 @@ export function LightingStudio({onClose,onPreview}:{onClose:()=>void;onPreview?:
  <div className="lighting-actions"><button className="lighting-primary" onClick={place}><MapPin size={16}/>{t('Place in 3D')}</button><button onClick={createNear}><Plus size={16}/>{t('Create near selection')}</button><button disabled={!active||active.classname!==kind} onClick={applyToSelected}><SlidersHorizontal size={15}/>{t('Apply to selected')}</button></div>
  <h3><CloudSun size={17}/>{t('World sky')}</h3><div className="lighting-sky"><input aria-label="world skyname" value={sky} onChange={e=>setSky(e.target.value)}/><button onClick={saveSky}><CheckCircle2 size={15}/>{t('Save skyname')}</button></div><p className="lighting-hint">worldspawn.skyname = <code>{world.skyname||'desert'}</code>. {t('Enter a sky prefix installed under gfx/env; six sky faces are required.')}</p>
  <SkyEnclosureBuilder/>
- {notice&&<p role="status" className="lighting-notice">{notice}</p>}</>:<AdvancedLightingPanel mode={activeTab}/>}
+ {notice&&<p role="status" className="lighting-notice">{notice}</p>}</>:activeTab==='effects'?<KitGallery studio="effects" title="Effects (sprites, sparks, explosions, lasers)" onStart={onClose}/>:<AdvancedLightingPanel mode={activeTab}/>}
  </section>
  <aside className="lighting-side lighting-inspector"><h3><Lightbulb size={16}/>{t('Scene environment')}</h3><div className="lighting-entities">{entries.map(entity=><button key={entity.id} className={entity.id===selected?'active':''} onClick={()=>setSelected(entity.id)}><span>{entity.classname}</span><small>{entity.props.targetname||entity.props._light||entity.props.skyname||entity.props.rendercolor}</small></button>)}{!entries.length&&<p className="lighting-hint">{t('No environment entities yet.')}</p>}</div>
  {active&&<p className="lighting-hint"><Link2 size={13}/> {t('Selected entity')}: {active.name} · {active.id.slice(0,8)}</p>}

@@ -50,7 +50,7 @@ describe('GoldSrc MAP format',()=>{
   it('can re-import the exported starter room',()=>{
     const source=demoProject();const loaded=importMap(exportMap(source),'roundtrip.map');
     expect(loaded.objects.filter(o=>o.kind==='brush')).toHaveLength(6);
-    expect(loaded.objects.filter(o=>o.kind==='entity')).toHaveLength(2);
+    expect(loaded.objects.filter(o=>o.kind==='entity')).toHaveLength(3);
     expect(loaded.world.classname).toBe('worldspawn');
   });
 });
@@ -99,7 +99,7 @@ describe('GoldSrc compiler plane winding regression (SC-CSG)',()=>{
     const map=exportMap(src);
     const back=importMap(map);
     expect(back.objects.filter(o=>o.kind==='brush')).toHaveLength(6);
-    expect(back.objects.filter(o=>o.kind==='entity')).toHaveLength(2);
+    expect(back.objects.filter(o=>o.kind==='entity')).toHaveLength(3);
     expect(validateProject(back)).toEqual([]);
   });
 });

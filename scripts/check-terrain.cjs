@@ -1,4 +1,4 @@
-const fs=require('node:fs'),Module=require('node:module'),ts=require('typescript'),assert=require('node:assert/strict');
+const fs=require('node:fs'),Module=require('node:module'),ts=require('../tests/support/typescript.cjs'),assert=require('node:assert/strict');
 require.extensions['.ts']=(mod,filename)=>{
  const source=fs.readFileSync(filename,'utf8');
  const compiled=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX},fileName:filename}).outputText;

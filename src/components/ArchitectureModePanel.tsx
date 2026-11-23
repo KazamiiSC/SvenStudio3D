@@ -5,6 +5,7 @@ import {useArchitectureMode} from '../architectureModeState';
 import {finishArchitectureMode,startArchitectureMode} from '../architectureModeController';
 import type {ArchitecturePoint,ArchitectureLayoutOptions,ArchitectureLayoutRecord} from '../engine/architectureMode';
 import {DEFAULT_LAYOUT_OPTIONS} from '../engine/architectureMode';
+import {KitSection} from './KitGallery';
 
 const EMPTY_LAYOUTS:ArchitectureLayoutRecord[]=[];
 const parameter=(name:string,value:number,onChange:(v:number)=>void,min:number,max:number)=>
@@ -32,7 +33,7 @@ export function ArchitectureModePanel({onStart}:{onStart:()=>void}){
     s.startArchitecturePlacement(kind);onStart();
   },'');
   return <div className="architecture-mode-panel" data-architecture-mode="v1.5.17">
-    <div className="arch-mode-title"><PenTool size={16}/> Architecture Mode <span>v1.5.17</span></div>
+    <div className="arch-mode-title"><PenTool size={16}/> Architecture Mode</div>
     <p>Construí directamente sobre la grilla. Clic para crear esquinas, Enter para terminar, Retroceso para deshacer un punto y Esc para cancelar.</p>
     <div className="arch-mode-actions">
       <button type="button" className={mode==='walls'?'active':''} onClick={()=>start('walls')}><PenTool size={15}/> Dibujar paredes</button>
@@ -51,6 +52,7 @@ export function ArchitectureModePanel({onStart}:{onStart:()=>void}){
       <div className="arch-mode-actions"><button onClick={()=>open('door')}><DoorOpen size={15}/> Puerta</button><button onClick={()=>open('window')}><AppWindow size={15}/> Ventana</button></div>
       <p>El modo de aberturas existente se conserva. En edificios paramétricos, primero convertí la estructura a brushes normales.</p>
     </details>
+    <KitSection className="arch-mode-section" studio="architecture" summary="Puertas avanzadas (kits listos para Svengine)" onStart={onStart}/>
     <details className="arch-mode-section" open={layouts.length>0?undefined:false}>
       <summary>Edificios y trazados editables ({layouts.length})</summary>
       {!layouts.length?<p>Aún no hay trazados. Dibujá una pared o una habitación en el visor.</p>:<>

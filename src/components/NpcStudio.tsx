@@ -1,4 +1,5 @@
 import {useEffect,useMemo,useState} from 'react';
+import {KitSection} from './KitGallery';
 import {Canvas,useThree} from '@react-three/fiber';
 import {OrbitControls} from '@react-three/drei';
 import * as THREE from 'three';
@@ -52,6 +53,7 @@ export function NPCStudio({onClose}:{onClose:()=>void}){
   const setProp=useEditor(s=>s.setObjectProp),addEntity=useEditor(s=>s.addEntity),place=useEditor(s=>s.startNpcPlacement);
   const spawn=useEditor(s=>s.spawnFromNpc),waypointMode=useEditor(s=>s.startWaypointPlacement),appendLogs=useEditor(s=>s.appendLogs);
   const gameDir=useEditor(s=>s.settings.gameDir),setFgd=useEditor(s=>s.setFgd);
+  const gameProfile=useEditor(s=>s.settings.gameProfile);
   const customNpcs=useEditor(s=>s.project.customNpcs??EMPTY_CUSTOM_NPCS);
   const allNpcs=useMemo(()=>[...npcClasses(classes).filter(c=>!customNpcs.some(n=>n.classname===c.name)),...customNpcs.map(customNpcToFgd)].sort((a,b)=>a.name.localeCompare(b.name)),[classes,customNpcs]);
   const customNames=useMemo(()=>new Set(customNpcs.map(c=>c.classname)),[customNpcs]);
@@ -76,7 +78,7 @@ export function NPCStudio({onClose}:{onClose:()=>void}){
     if(!gameDir){setNotice(t('Configure the game directory in Build Settings first.'));return;}
     setFgdBusy(true);
     try{
-      const response=await fetch('/api/svengine/fgd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gameDir})});
+      const response=await fetch(gameProfile==='cs16'?'/api/cs16/fgd':'/api/svengine/fgd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gameDir})});
       if(!response.ok){const data=await response.json().catch(()=>({}));throw Error(data.error||`HTTP ${response.status}`)}
       const parsed=parseFgd(await response.text());
       if(!parsed.length)throw Error('No FGD classes were found.');
@@ -153,6 +155,7 @@ export function NPCStudio({onClose}:{onClose:()=>void}){
               <p className="npc-hint">{t('Creates a real squadmaker near the NPC. You can move it using G. Auto Size BBox is enabled.')}</p>
             </>:<p className="npc-hint">{t('Select a monster_ entity to create a spawner.')}</p>}
           </>:<p className="npc-hint">{t('Select an existing NPC in Explorer or on the map to edit it here.')}</p>}
+          <KitSection studio="npc" summary={t('NPC kits: retina scanner, NPC-only door')} onStart={onClose}/>
           <h3><Activity size={15}/>{t('NPC Validation')}</h3>
           <div className="npc-issues">{npcIssues.length?npcIssues.slice(0,16).map((issue,i)=><button key={i} className={`npc-issue ${issue.severity}`} onClick={()=>issue.entityId&&setSelected(issue.entityId)}><AlertTriangle size={14}/>{issue.message}</button>):<p className="npc-ok"><CheckCircle2 size={16}/>{t('No NPC path or spawner errors detected.')}</p>}</div>
         </aside>

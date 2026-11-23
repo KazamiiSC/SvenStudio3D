@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 const read=async path=>readFile(new URL('../'+path,import.meta.url),'utf8');
 const source=await read('src/engine/mapEntityLabels.ts');
 const output=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022},reportDiagnostics:true});
@@ -27,10 +27,10 @@ test('Preview 5 caps moving label layouts at 18Hz for large maps',()=>{
 });
 test('Viewport FPS works with labels off and with Classic mode',async()=>{
  const viewport=await read('src/components/Viewport.tsx');
- const modal=await read('src/components/EntityAppearanceModal.tsx');
+ const modal=await read('src/components/EntityAppearanceModal.tsx');const prefs=await read('src/components/DockWorkspace.tsx');
  assert.match(viewport,/!walkMode&&fpsHudVisible&&<MapPerformanceMonitor\/>/);
  assert.doesNotMatch(viewport,/mapLabelSettings\.diagnostics&&<MapPerformanceMonitor/);
- assert.match(modal,/checked=\{fpsHudVisible\}/);
+ assert.match(prefs,/checked=\{fps\}/);
  assert.match(modal,/mapLabels\.lightweight/);
  const overlay=await read('src/components/MapEntityLabelOverlay.tsx');
  assert.match(overlay,/mapLabelRefreshDue\(/);

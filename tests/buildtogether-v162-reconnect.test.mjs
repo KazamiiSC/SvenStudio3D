@@ -8,7 +8,7 @@ import {tmpdir} from 'node:os';
 import {setTimeout as sleep} from 'node:timers/promises';
 import {attachBuildTogether} from '../server/buildTogether.js';
 const require=createRequire(import.meta.url);
-let ts;try{ts=require('typescript')}catch{ts=require(join(dirname(dirname(process.execPath)),'lib/node_modules/typescript/lib/typescript.js'))}
+let ts;try{ts=require('./support/typescript.cjs')}catch{ts=require(join(dirname(dirname(process.execPath)),'lib/node_modules/typescript/lib/typescript.js'))}
 const project={version:1,name:'resync',objects:[],world:{classname:'worldspawn'},wadNames:[]};
 const fakeZustand=`export function create(init){let state;const listeners=new Set;const hook=select=>select(state);hook.getState=()=>state;hook.setState=p=>{const old=state;state={...old,...(typeof p==='function'?p(state):p)};for(const cb of [...listeners])cb(state,old)};hook.subscribe=cb=>{listeners.add(cb);return ()=>listeners.delete(cb)};state=init(hook.setState,hook.getState,hook.subscribe);return hook}`;
 const fakeStore=`import {create} from './zustand.mjs';export const useEditor=create(()=>({project:${JSON.stringify(project)},selected:null,selectedIds:[],mode:'select',resourceView:'objects',history:[],future:[],appendLogs:()=>{}}))`;

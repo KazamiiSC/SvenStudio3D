@@ -1,7 +1,9 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
+import {KitSection} from './KitGallery';
 import {Activity,AlertTriangle,ArrowDown,ArrowUp,CheckCircle2,ChevronRight,Clock3,Copy,Film,Flag,MapPin,Plus,RotateCcw,Save,ShieldCheck,Trash2,Unlink,Workflow,X,MousePointerClick,GitBranch,Play,FastForward,RefreshCcw} from 'lucide-react';
 import {useEditor} from '../store';
 import type {Locale} from '../i18n';
+import {translate} from '../i18n';
 import {uid} from '../engine/types';
 import type {EventSequence,MissionPlan,MissionStage,EventCue,UseMode,MissionSimulation} from '../engine/missionEvents';
 import {createMissionPreset,createEventPreset,eventTargetName,stageCompleteName,stageFailureName,stageStartName,missionIssues,cueIssues,newMissionSimulation,stepMissionSimulation,inspectEventTimeline,duplicateMissionPlan,duplicateEventSequence} from '../engine/missionEvents';
@@ -127,7 +129,7 @@ export function MissionEventsStudio({onClose,onOpenPuzzle,initialMode='mission'}
  return <div className="modal-backdrop me-backdrop" role="presentation"><section className="me-studio" role="dialog" aria-modal="true" aria-label={w(mode)}>
   <header className="me-header"><div className="me-mark"><Workflow size={24}/></div><div className="me-heading"><strong>{w(mode)}</strong><small>{w(mode==='mission'?'overview':'timeline')}</small></div><div className="me-heading-actions"><button title={w('undo')} disabled={!history.length} onClick={undo}><RotateCcw size={17}/></button><button title={w('redo')} disabled={!future.length} onClick={redo}><RotateCcw size={17} style={{transform:'scaleX(-1)'}}/></button><button title={w('close')} onClick={close}><X size={19}/></button></div></header>
   <nav className="me-modes"><button className={mode==='mission'?'selected':''} onClick={()=>switchMode('mission')}><Flag size={16}/>{w('missionWorkflow')}</button><button className={mode==='events'?'selected':''} onClick={()=>switchMode('events')}><Film size={16}/>{w('eventWorkflow')}</button>{onOpenPuzzle&&<button type="button" onClick={()=>{if(allowDiscard())onOpenPuzzle()}}><Workflow size={16}/>Co-op Puzzle Builder</button>}<span><ShieldCheck size={15}/> Svengine · native I/O</span></nav>
-  <div className="me-body"><aside className="me-sidebar">
+  <div className="me-body"><aside className="me-sidebar"><KitSection studio="mission" summary={translate(locale,'Series maps: next map kit')} onStart={onClose}/>
     <div className="me-sidebar-title"><b>{w('saved')}</b><span>{list.length}</span></div>
     <div className="me-records">{list.map(item=><button key={item.id} className={item.id===draft.id?'active':''} onClick={()=>selectSaved(item.id)}><span>{mode==='mission'?<Flag size={15}/>:<Clock3 size={15}/>}</span><span className="me-record-name">{short(item.name)}<small>{mode==='mission'?`${(item as MissionPlan).stages.length} ${w('stage')}`:`${(item as EventSequence).cues.length} ${w('cues')}`}</small></span><ChevronRight size={14}/></button>)}{!list.length&&<p className="me-empty">{w('empty')}</p>}</div>
     <h4>{w(mode==='mission'?'missionPreset':'eventPreset')}</h4>

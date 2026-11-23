@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 const source=await fs.readFile(new URL('../src/engine/mapEntityLabels.ts',import.meta.url),'utf8');
 const js=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022},reportDiagnostics:true});
 assert.equal(js.diagnostics?.length,0);

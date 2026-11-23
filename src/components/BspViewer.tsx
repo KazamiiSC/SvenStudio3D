@@ -1,7 +1,7 @@
 import {saveStudioBlob} from '../engine/studioFiles';
 import {Canvas,useFrame,useThree,type ThreeEvent} from '@react-three/fiber';
 import {OrbitControls,TransformControls,Html} from '@react-three/drei';
-import {ArrowLeft,FileUp,Layers,Sun,Grid3x3,Move3D,RotateCcw,Info,Box,Tags,Focus,Settings2,Cloud,Package,ShieldCheck,PenTool,Save,Undo2,Redo2,Copy,Trash2,Plus,AlertTriangle,ChevronDown,MousePointer2,X,LibraryBig,PanelLeftClose,PanelLeftOpen,PanelRightClose,PanelRightOpen,Link2,Unlink2,Network,CheckSquare,GripVertical,Grip,Search,Users,SunMedium,Workflow,Boxes,MapPin,ChevronRight,Eye,EyeOff} from 'lucide-react';
+import {DoorOpen,ArrowLeft,FileUp,Layers,Sun,Grid3x3,Move3D,RotateCcw,Info,Box,Tags,Focus,Settings2,Cloud,Package,ShieldCheck,PenTool,Save,Undo2,Redo2,Copy,Trash2,Plus,AlertTriangle,ChevronDown,MousePointer2,X,LibraryBig,PanelLeftClose,PanelLeftOpen,PanelRightClose,PanelRightOpen,Link2,Unlink2,Network,CheckSquare,GripVertical,Grip,Search,Users,SunMedium,Workflow,Boxes,MapPin,ChevronRight,Eye,EyeOff} from 'lucide-react';
 import {useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react';
 import type {MutableRefObject,PointerEvent as ReactPointerEvent,KeyboardEvent as ReactKeyboardEvent} from 'react';
 import * as THREE from 'three';
@@ -17,7 +17,7 @@ import {useEditor} from '../store';
 import {bspEntityLabel,bspEntitySearchText,bspFlyAxes,bspFlyMultiplier,clampBspFlySpeed,clampBspFlySensitivity,bspCameraPose,bspFlyOrbitTarget,type BspCameraView} from '../engine/bspViewerTools';
 import {BspRecoveryStudio} from './BspRecoveryStudio';
 import {addNativeEntity,addNativeProperty,nativeClassname,nativeChanged,readNativeBsp,removeNativeProperty,writeNativeBsp,type NativeBsp} from '../engine/bspNativeEdit';
-import {bspPointEditable,bspPreviewMap,bspMovePoint,bspRotatePointYaw,bspPointYaw,bspDeletePoint,bspDuplicatePoint,bspSetPointField,bspFormatVector} from '../engine/bspVisualEntityEdit';
+import {bspEntityEditable,bspPointEditable,bspPreviewEntities,bspPreviewMap,bspMovePoint,bspRotatePointYaw,bspPointYaw,bspDeletePoint,bspDuplicatePoint,bspSetPointField,bspFormatVector} from '../engine/bspVisualEntityEdit';
 import {bspEntityConnections,bspConnectionPositions,bspConnectEntities,bspFlagValue,bspSetMultiplePointFields,bspTranslatePoints, type BspConnection} from '../engine/bspEntityWorkflow';
 import {parseBsp} from '../engine/bsp';
 import {BspSkyBackground,BspStaticModels,type BspAssetStatus} from './BspViewerAssets';
@@ -29,7 +29,7 @@ import {bspPaneWidth,readBspPaneWidth} from '../engine/bspPaneLayout';
 import {bspToggleSelection} from '../engine/bspSelection';
 import {bspFaceDiagnostic,bspOriginalFaceIndex,bspToggleFaceSelection,bspTriangleFacePick} from '../engine/bspFaceSelection';
 import {bspSelectSurfaceRegion,bspToggleRegionSelection,BSP_REGION_SELECTION_LIMIT,type BspRegionKind} from '../engine/bspRegionSelection';
-import {extractBspObjectPrefab} from '../engine/bspObjectExtractor';
+import {extractBspObjectPrefab,type BspObjectExtractionMode} from '../engine/bspObjectExtractor';
 import {bspHull0SelectionPlan} from '../engine/bspHull0Selection';
 import {readPrefabFolder,ensurePrefabFolderPermission,writePrefabToFolder} from '../engine/prefabStudioFolder';
 import {downloadText} from '../engine/paths';
@@ -37,6 +37,13 @@ import {bspAllowedFaceTextureIndices,bspCanEditSelectedFaces,bspApplySurfaceOper
 import {BspTextureStudio,BspTextureUVWidget} from './BspTextureStudio';
 import {BspLightmapStudio} from './BspLightmapStudio';
 import {bspPreviewFaceLightmaps,bspValidateLightmapAdjustment,writeBspFaceLightmaps,type BspLightmapAdjustment,type BspLightmapOverrides} from '../engine/bspFaceLightmapEdit';
+import {addBspBoxModels,pruneUnusedBspModels,type BspBoxModel} from '../engine/bspStructure';
+import {BspPrefabSaveDialog,type BspPrefabSaveSettings} from './BspPrefabSaveDialog';
+import {bspCaptureContext,bspGrowConnectedFaces,prefabThumbnail} from '../engine/bspPrefabCapture';
+import {bspDoorPlan,bspBatchCandidates,type BspBatchCandidate} from '../engine/bspDoorCapture';
+import {BspBatchExtract} from './BspBatchExtract';
+import {BspStructurePanel,BspBoxPreview,boxFromDraft,defaultBoxDraft,type BspBoxDraft} from './BspStructurePanel';
+import {bspBrushModelPlacements,bspApplyModelPlacements,bspIsBrushEntity,bspModelUsers} from '../engine/bspBrushEntityEdit';
 import {bspBrushCopyEligibility,bspBrushPasteDelta,bspPasteBrushModelInstances,type BspBrushAnchor,type BspVec3} from '../engine/bspBrushPaste';
 import {nativeProperty} from '../engine/bspNativeEdit';
 import {bspUvGestureOperation} from '../engine/bspUvWidget';
@@ -413,22 +420,8 @@ function BspBrushPastePreview({map,doc,indices,destination,anchor}:{map:BspMap;d
 /** Distinguish newly added bmodel instances from original entities using
  * model occurrence counts (no custom keys injected into the exported BSP). */
 function BspPastedBrushInstances({map,doc,assets}:{map:BspMap;doc:NativeBsp;assets:TextureAsset[]}){
-  const instances=useMemo(()=>{
-    const originalCounts=new Map<string,number>();
-    for(const ent of map.entities){const model=ent.properties.model||'';if(/^\*\d+$/.test(model))originalCounts.set(model,(originalCounts.get(model)||0)+1)}
-    const occurrences=new Map<string,number>();
-    const origins=new Map<string,BspVec3>();
-    for(const ent of map.entities){const model=ent.properties.model||'';
-      if(!origins.has(model)){const pos=(ent.properties.origin||'0 0 0').split(/\s+/).map(Number);origins.set(model,pos.length===3&&pos.every(Number.isFinite)?pos as BspVec3:[0,0,0]);}}
-    return doc.entities.flatMap(ent=>{
-      const model=nativeProperty(ent,'model');if(!/^\*[1-9]\d*$/.test(model))return [];
-      const count=(occurrences.get(model)||0)+1;occurrences.set(model,count);
-      if(count<=(originalCounts.get(model)||0)||!['func_wall','func_illusionary'].includes(nativeProperty(ent,'classname')))return [];
-      const origin=nativeProperty(ent,'origin').trim().split(/\s+/).map(Number),base=origins.get(model)||[0,0,0];
-      if(origin.length!==3||origin.some(x=>!Number.isFinite(x)))return [];
-      return [{model:Number(model.slice(1)),delta:origin.map((v,i)=>v-base[i]) as BspVec3}];
-    });
-  },[map,doc]);
+  // Extra entities sharing one *N are drawn as instances at their own origin (v2.6: any brush class).
+  const instances=useMemo(()=>bspBrushModelPlacements(map,bspPreviewEntities(doc)).instances,[map,doc]);
   // Batch faces of each independent model by texture. These are visual preview
   // instances, not additional worldspawn faces or editable collision meshes.
   const groups=useMemo(()=>{
@@ -847,6 +840,7 @@ export function BspNavigation({map,fly,reset,flyRef,speed,sensitivity,smooth,foc
 export function BspViewer({map,source,initialBaked=false,editingRequested=false,onEditingChange,onBack,onOpen,onCompiled,onOpenRecoveredMap}:{map:BspMap;source:ArrayBuffer|null;initialBaked?:boolean;editingRequested?:boolean;onEditingChange?:(editing:boolean)=>void;onBack:()=>void;onOpen:()=>void;onCompiled:()=>void;onOpenRecoveredMap:(source:string,name:string,textures?:TextureAsset[])=>Promise<boolean>}){
   const editorAssets=useEditor(s=>s.textureAssets);
   const gameDir=useEditor(s=>s.settings.gameDir);
+  const cs16=useEditor(s=>s.settings.gameProfile==='cs16');
   const fgdClasses=useEditor(s=>s.fgdClasses);
   // Extra FGD definitions apply to this BSP editor session only; they do not
   // mutate shared MAP editor definitions or execute #include directives.
@@ -938,6 +932,10 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
   const [placement,setPlacement]=useState<{classname:string;model?:string;spec?:BspModelEntitySpec}|null>(null);
   const [placementHover,setPlacementHover]=useState<[number,number,number]|null>(null);
   const [brushPaste,setBrushPaste]=useState<{indices:number[];anchor:BspBrushAnchor}|null>(null);
+  const [batchOpen,setBatchOpen]=useState(false),[batchProgress,setBatchProgress]=useState(''),[batchBusy,setBatchBusy]=useState(false);
+  const [extractDialog,setExtractDialog]=useState<{mode:BspObjectExtractionMode;faceIds:number[]}|null>(null),[boxMargin,setBoxMargin]=useState(256);
+  // v2.6 structure tools: new box bmodels, unused-model cleanup and limits.
+  const [structureOpen,setStructureOpen]=useState(false),[newBoxes,setNewBoxes]=useState<BspBoxModel[]>([]),[boxDraft,setBoxDraft]=useState<BspBoxDraft>(defaultBoxDraft),[boxPlacing,setBoxPlacing]=useState(false),[pruneModels,setPruneModels]=useState(false);
   const [brushPasteHover,setBrushPasteHover]=useState<BspVec3|null>(null);
   const [brushAnchor,setBrushAnchor]=useState<BspBrushAnchor>('bottom');
   const [entityHistory,setEntityHistory]=useState<{past:NativeBsp[];present:NativeBsp;future:NativeBsp[]}|null>(null);
@@ -1183,7 +1181,9 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
   const lightmapEdited=Object.keys(lightmapOverrides).length>0;
   // Only rebuild the lighting atlas when a lightmap edit is COMMITTED, not on
   // each slider movement. Stable texture/UV drags continue their fast path.
-  const renderSurfaceMap=useMemo(()=>bspPreviewFaceLightmaps(renderDiffuseMap,lightmapOverrides),[renderDiffuseMap,lightmapOverrides]);
+  // v2.6: bmodels are drawn at (vertices + entity origin); moved or deleted brush entities follow the edited lump.
+  const modelPlacements=useMemo(()=>bspBrushModelPlacements(map,(entityEdit&&doc?bspPreviewEntities(doc):map.entities)),[map,entityEdit,doc]);
+  const renderSurfaceMap=useMemo(()=>bspApplyModelPlacements(bspPreviewFaceLightmaps(renderDiffuseMap,lightmapOverrides),modelPlacements),[renderDiffuseMap,lightmapOverrides,modelPlacements]);
   const applyLightmapEdit=(op:BspLightmapAdjustment)=>{
     try{
       const next={...lightmapHistory.present};
@@ -1194,19 +1194,24 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
   };
   const undoLightmapEdit=()=>setLightmapHistory(old=>old.past.length?{past:old.past.slice(0,-1),present:old.past[old.past.length-1],future:[old.present,...old.future].slice(0,80)}:old);
   const redoLightmapEdit=()=>setLightmapHistory(old=>old.future.length?{past:[...old.past,old.present].slice(-80),present:old.future[0],future:old.future.slice(1)}:old);
-  const extractSelectedObject=async(mode:'exact'|'surface-shell'|'hull0-solid'|'auto'='auto',faceIds:readonly number[]=selectedFaces)=>{
+  const extractSelectedObject=async(mode:BspObjectExtractionMode='auto',faceIds:readonly number[]=selectedFaces,settings?:BspPrefabSaveSettings)=>{
     if(objectExtractBusy)return;
     setObjectExtractError('');setObjectExtractNotice('');
+    // v2.6: ask name, category, geometry and entities in a real dialog first.
+    if(!settings){setExtractDialog({mode,faceIds:[...faceIds]});return;}
+    mode=settings.mode;
+    const capture=bspCaptureContext(surfaceMap.faces,faceIds,viewMap.entities);
+    const doorPlan=mode==='door'?bspDoorPlan(surfaceMap.faces,faceIds,viewMap.entities,settings.frameMargin,settings.frame):null;
+    if(mode==='door'&&!doorPlan){setObjectExtractError(t('Click a door (func_door, func_door_rotating…) first.'));return;}
+    const extra={entity:mode==='door'?null:settings.includeEntity?capture.entity:null,points:mode==='door'?[]:settings.includePoints?capture.points:[],category:settings.category,worldMargin:settings.margin,door:doorPlan??undefined};
     try{
       if(!source)throw Error('No BSP source data is loaded.');
-      const title=window.prompt('BSP Object Extractor — nombre del objeto / Object name:',map.name.replace(/\.bsp$/i,'')+'_objeto');
-      if(title===null)return;
-      if(!title.trim())throw Error('Choose a non-empty object name.');
+      const title=settings.title;
       setObjectExtractBusy(true);
       let prefab;
       const userWads=importedWadData.map(w=>w.bytes);
       try{
-        prefab=extractBspObjectPrefab(surfaceMap,source,faceIds,title.trim(),userWads,{mode});
+        prefab=extractBspObjectPrefab(surfaceMap,source,faceIds,title.trim(),userWads,{mode,...extra});
       }catch(error){
         // The BSP viewer already locates installed WAD textures for preview.
         // On explicit prefab Save, look up the original binary MIPTEX pixels as
@@ -1225,7 +1230,7 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
         }
         if(names.size>64)throw Error('Prefab requires more than 64 WAD3 textures. Select a smaller object.');
         const recovered=await fetchBspPrefabMipTextures(gameDir,map.wadNames,[...names]);
-        prefab=extractBspObjectPrefab(surfaceMap,source,faceIds,title.trim(),userWads,{mode,resolvedMipTextures:recovered});
+        prefab=extractBspObjectPrefab(surfaceMap,source,faceIds,title.trim(),userWads,{mode,...extra,resolvedMipTextures:recovered});
       }
       const skipped=prefab.recovery?.skippedFaces??[];
       if(skipped.length){
@@ -1246,6 +1251,7 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
           return;
         }
       }
+      const thumb=prefabThumbnail(prefab.objects);if(thumb)prefab={...prefab,thumbnail:thumb};
       const fileName=(title.trim().replace(/[^a-z0-9_-]/gi,'_').slice(0,40)||'bsp_object')+(skipped.length?`_PARCIAL_${skipped.length}`:mode==='hull0-solid'?'_HULL0':'');
       // All extracted BSP prefabs have one predictable per-user destination.
       // Linked external folders in Prefab Studio remain read-only import sources.
@@ -1260,6 +1266,8 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
     }catch(error){setObjectExtractError(error instanceof Error?error.message:String(error))}
     finally{setObjectExtractBusy(false)}
   };
+  const extractCapture=useMemo(()=>{if(!extractDialog)return null;const ids=new Set(extractDialog.faceIds);const door=bspDoorPlan(surfaceMap.faces,extractDialog.faceIds,viewMap.entities);return {...bspCaptureContext(surfaceMap.faces,extractDialog.faceIds,viewMap.entities),world:surfaceMap.faces.some((f,i)=>f.model===0&&ids.has(bspOriginalFaceIndex(f,i))),door:door?{leaves:door.parts.filter(p=>p.role==='leaf').length,buttons:door.parts.filter(p=>p.role==='button').length}:null};},[extractDialog,surfaceMap,viewMap]);
+  const selectedDoor=useMemo(()=>surfaceMode==='faces'&&selectedFaces.length?bspDoorPlan(surfaceMap.faces,selectedFaces,viewMap.entities):null,[surfaceMode,selectedFaces,surfaceMap,viewMap]);
   const hull0Plan=useMemo(()=>bspHull0SelectionPlan(surfaceMap,selectedFaces),[surfaceMap,selectedFaces]);
   const hull0Enabled=hull0Plan.kind==='ready'||hull0Plan.kind==='expand';
   const hull0Labels=BSP_HULL0_FEEDBACK[useEditor.getState().locale]||BSP_HULL0_FEEDBACK.en;
@@ -1269,7 +1277,7 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
     void extractSelectedObject('hull0-solid',hull0Plan.faceIds);
   };
   const selectedFace=useMemo(()=>selectedFaces.length?bspFaceDiagnostic(surfaceMap,selectedFaces[selectedFaces.length-1]):null,[surfaceMap,selectedFaces]);
-  const faceById=useMemo(()=>surfaceMode==='faces'?new Map(map.faces.map((face,index)=>[bspOriginalFaceIndex(face,index),face])):new Map<number,BspFace>(),[map,surfaceMode]);
+  const faceById=useMemo(()=>surfaceMode==='faces'?new Map(map.faces.flatMap((face,index)=>{if(modelPlacements.hidden.has(face.model))return [];const o=modelPlacements.offsets.get(face.model);return [[bspOriginalFaceIndex(face,index),o?{...face,points:face.points.map(p=>[p[0]+o[0],p[1]+o[1],p[2]+o[2]] as typeof p)}:face] as const];})):new Map<number,BspFace>(),[map,surfaceMode,modelPlacements]);
   const canEditSelectedSurfaces=useMemo(()=>bspCanEditSelectedFaces(extendedMap,selectedFaces),[extendedMap,selectedFaces]);
   const availableSurfaceTextures=useMemo(()=>{
     try{return bspAllowedFaceTextureIndices(extendedMap,selectedFaces)}catch{return []}
@@ -1346,7 +1354,7 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
   useEffect(()=>{if(chosen!==null&&chosen>=viewMap.entities.length)setChosen(null)},[chosen,viewMap]);
   const chosenNative=doc&&chosen!==null?doc.entities[chosen]:null;
   const selectedIndices=useMemo(()=>chosen===null?[]:[chosen,...extraSelected.filter(index=>index!==chosen&&index>0&&index<viewMap.entities.length)],[chosen,extraSelected,viewMap]);
-  const editableIndices=useMemo(()=>selectedIndices.filter(i=>!!doc&&bspPointEditable(doc.entities[i],i)),[selectedIndices,doc]);
+  const editableIndices=useMemo(()=>selectedIndices.filter(i=>!!doc&&bspEntityEditable(doc.entities[i],i)),[selectedIndices,doc]);
   const brushEligibility=useMemo(()=>doc?bspBrushCopyEligibility(map,doc,selectedIndices):{ok:false,reason:'No BSP loaded.'},[map,doc,selectedIndices]);
   const allEditable=selectedIndices.length>0&&editableIndices.length===selectedIndices.length;
   const groupMoveAllowed=allEditable&&selectedIndices.every(i=>!!viewMap.entities[i]?.origin);
@@ -1386,18 +1394,18 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
   };
   const deleteEntitySelection=()=>{
     if(!doc||!selectedIndices.length)return;
-    if(selectedIndices.some(i=>!bspPointEditable(doc.entities[i],i))){setEntityError(t('Compiled brush entities cannot be deleted in visual mode.'));return}
+    if(selectedIndices.some(i=>!bspEntityEditable(doc.entities[i],i))){setEntityError(t('Compiled brush entities cannot be deleted in visual mode.'));return}
     if(selectedIndices.length>1&&!window.confirm(t('Delete the selected entities? This can be undone.')))return;
     const descending=[...selectedIndices].sort((a,b)=>b-a);
     if(editMutation(current=>descending.reduce((next,index)=>bspDeletePoint(next,index),current))){setChosen(null);setExtraSelected([]);setContextMenu(null)}
   };
   const duplicateContextEntity=()=>{
     const index=contextMenu?.index??chosen;
-    if(index===null||!doc||!bspPointEditable(doc.entities[index],index))return;
+    if(index===null||!doc||!bspEntityEditable(doc.entities[index],index))return;
     if(editMutation(current=>bspDuplicatePoint(current,index))){setChosen(doc.entities.length);setExtraSelected([])}setContextMenu(null);
   };
-  const pointEditable=!!entityEdit&&!!chosenNative&&chosen!==null&&bspPointEditable(chosenNative,chosen);
-  const edited=(!!doc&&nativeChanged(doc))||surfaceEdited||lightmapEdited;
+  const pointEditable=!!entityEdit&&!!chosenNative&&chosen!==null&&bspEntityEditable(chosenNative,chosen);
+  const edited=(!!doc&&nativeChanged(doc))||surfaceEdited||lightmapEdited||newBoxes.length>0||pruneModels;
   const browserTotals=useMemo(()=>{
     const totals:Record<BspEntityCategory,number>={all:0,npc:0,items:0,weapons:0,triggers:0,logic:0,environment:0,geometry:0,other:0};
     for(const item of viewMap.entities)if(item.classname!=='worldspawn'){
@@ -1460,19 +1468,22 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
     try{
       const entitiesBytes=writeNativeBsp(doc);
       const surfaceStaged=surfaceEdited?writeBspWadSurfaceCopy(entitiesBytes,surfaceOverrides,exportedChoices,importedWadData.map(item=>item.bytes),writeBspSurfaceEdits):entitiesBytes;
-      const staged=lightmapEdited?writeBspFaceLightmaps(surfaceStaged,lightmapOverrides):surfaceStaged;
+      const lit=lightmapEdited?writeBspFaceLightmaps(surfaceStaged,lightmapOverrides):surfaceStaged;
+      const boxed=newBoxes.length?addBspBoxModels(lit,newBoxes):lit;
+      const pruned=pruneModels?pruneUnusedBspModels(boxed):{bytes:boxed,removed:[] as number[]};
+      const staged=pruned.bytes;
       // Stage 6E: emit only current lump payloads, not superseded append-only lumps.
       const {bytes,report}=compactBspCopy(staged);
       const check=readNativeBsp(bytes);
       const rendered=parseBsp(bytes,map.name);
-      if(check.entities.length!==doc.entities.length||rendered.entities.length!==doc.entities.length)throw Error('Exported BSP entity count mismatch.');
+      if(check.entities.length!==doc.entities.length+newBoxes.length||rendered.entities.length!==doc.entities.length+newBoxes.length)throw Error('Exported BSP entity count mismatch.');
       const copyName=map.name.replace(/\.bsp$/i,'')+(lightmapEdited?'_lightmaps.bsp':surfaceEdited?'_visual_surfaces.bsp':'_visual_entities.bsp');
       await saveStudioBlob(new Blob([bytes],{type:'application/octet-stream'}),copyName,'exports');
       setEntityError('');setSurfaceError('');setLightmapEditError('');setEntityNotice(`${t('BSP copy exported. Open it again to inspect the result.')} · ${report.afterBytes.toLocaleString()} bytes (${report.recoveredBytes.toLocaleString()} bytes recovered)`);setSurfaceNotice(`${t('BSP copy exported. Open it again to inspect the result.')} · ${report.afterBytes.toLocaleString()} bytes (${report.recoveredBytes.toLocaleString()} bytes recovered)`);
     }catch(error){setEntityError(String(error instanceof Error?error.message:error));setSurfaceError(String(error instanceof Error?error.message:error));setLightmapEditError(String(error instanceof Error?error.message:error))}
   };
   const pointClass=(classname:string)=>effectiveFgdClasses.find(def=>def.type==='point'&&def.name===classname)
-    ||(['item_generic','monster_generic','cycler'].includes(classname)?{name:classname,type:'point' as const,description:'Sven Co-op MDL point entity',props:{}}:undefined);
+    ||(!cs16&&['item_generic','monster_generic','cycler'].includes(classname)?{name:classname,type:'point' as const,description:'Sven Co-op MDL point entity',props:{}}:undefined);
   const startPlacement=(classname:string,model?:string,spec?:BspModelEntitySpec)=>{
     if(!pointClass(classname)){setEntityError(t('Choose a valid point entity from the FGD catalog.'));return}
     if(!entityEdit){setEntityError(t('Open BSP Editor first.'));return}
@@ -1481,7 +1492,7 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
   };
   const startModelPlacement=(spec:BspModelEntitySpec):boolean=>{
     if(!pointClass(spec.classname)){
-      setEntityError(t('This monster class is not available in your loaded FGD. Import Sven Co-op FGD first.'));
+      setEntityError(cs16?'This entity is not in the Counter-Strike 1.6 FGD. Import the correct CS FGD first.':t('This monster class is not available in your loaded FGD. Import Sven Co-op FGD first.'));
       return false;
     }
     startPlacement(spec.classname,spec.modelPath,spec);
@@ -1611,10 +1622,11 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
   const entityPropertyPanel=<>
         {selection&&<div className="bsp-entity-properties"><h4>{selection.classname} <small>#{chosen}</small></h4>
           {entityEdit&&chosenNative?<>
-            {!pointEditable&&<p className="bsp-note"><AlertTriangle size={13}/>{t('Compiled brush entity: geometry and transforms are locked. Use native BSP Recovery for permitted keyvalues.')}</p>}
+            {!pointEditable&&<p className="bsp-note"><AlertTriangle size={13}/>{t('worldspawn cannot be moved, duplicated or deleted.')}</p>}
+            {pointEditable&&chosenNative&&bspIsBrushEntity(chosenNative)&&<p className="bsp-note"><AlertTriangle size={13}/>{t('Brush entity: moving changes its origin (geometry and collision follow). Baked lighting stays where it was compiled. Copies share the same model.')}{doc&&chosen!==null&&bspModelUsers(doc,chosen)>1?` ( )`:''}</p>}
             {pointEditable&&<div className="bsp-visual-edit-actions">
               <button onClick={()=>{if(chosen!==null&&editMutation(current=>bspDuplicatePoint(current,chosen)))setChosen(doc!.entities.length)}}><Copy size={13}/>{t('Duplicate')}</button>
-              <button className="danger" onClick={()=>{if(chosen===null||!confirm(t('Remove this point entity from the exported BSP?')))return;if(editMutation(current=>bspDeletePoint(current,chosen))){setChosen(null);setExtraSelected([])}}}><Trash2 size={13}/>{t('Delete')}</button>
+              <button className="danger" onClick={()=>{if(chosen===null||!confirm(t(chosenNative&&bspIsBrushEntity(chosenNative)?'Remove this brush entity? Its model stays unused (invisible) in the BSP.':'Remove this point entity from the exported BSP?')))return;if(editMutation(current=>bspDeletePoint(current,chosen))){setChosen(null);setExtraSelected([])}}}><Trash2 size={13}/>{t('Delete')}</button>
             </div>}
             {pointEditable&&<div className="bsp-workflow-card">
               <strong><Network size={14}/>{t('Entity connections')}</strong>
@@ -1677,7 +1689,17 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
   </>;
   return <div className="bsp-viewer">
     {recoveryOpen&&source&&<BspRecoveryStudio key={map.name} source={source} filename={map.name} map={map} knownTextures={allAssets} onClose={()=>setRecoveryOpen(false)} onOpenMap={onOpenRecoveredMap}/> }
-    {modelLibraryOpen&&<BspModelLibrary
+    {batchOpen&&<BspBatchExtract candidates={bspBatchCandidates(surfaceMap.faces,viewMap.entities)} busy={batchBusy} progress={batchProgress} onCancel={()=>setBatchOpen(false)} onRun={(list:BspBatchCandidate[],prefix:string)=>void (async()=>{
+  setBatchBusy(true);let done=0;
+  for(const c of list){setBatchProgress(`/ · …`);
+    await extractSelectedObject(c.kind==='door'?'door':'auto',c.faceIds,{title:``.slice(0,64),category:c.category,mode:c.kind==='door'?'door':'auto',includeEntity:true,includePoints:false,margin:8,frame:'cut',frameMargin:32});done++;}
+  setBatchProgress(`/ ✓`);setBatchBusy(false);})()}/>}
+{extractDialog&&<BspPrefabSaveDialog initialName={map.name.replace(/\.bsp$/i,'')+'_objeto'} mode={extractDialog.mode} faceCount={extractDialog.faceIds.length}
+  entityClass={extractCapture?.entity?.classname??null} pointCount={extractCapture?.points.length??0}
+  hull0Allowed={hull0Enabled} worldAllowed={!!extractCapture?.world} doorInfo={extractCapture?.door??null}
+  onCancel={()=>setExtractDialog(null)} onSave={settings=>{const d=extractDialog;setExtractDialog(null);void extractSelectedObject(settings.mode,d.faceIds,settings);}}/>}
+{structureOpen&&entityEdit&&source&&<BspStructurePanel source={source} boxes={newBoxes} setBoxes={setNewBoxes} draft={boxDraft} setDraft={setBoxDraft} placing={boxPlacing} setPlacing={setBoxPlacing} prune={pruneModels} setPrune={setPruneModels} onClose={()=>{setStructureOpen(false);setBoxPlacing(false);}}/>}
+{modelLibraryOpen&&<BspModelLibrary
       canAssign={pointEditable} canConvert={pointEditable&&extraSelected.length===0&&!!chosenNative&&bspCanConvertModelEntity(nativeClassname(chosenNative))}
       npcClasses={effectiveFgdClasses.filter(cls=>cls.type==='point'&&cls.name.startsWith('monster_')).map(cls=>({name:cls.name,description:cls.description}))}
       gameDir={gameDir} localModels={localModels} onImportLocal={next=>setLocalModels(prev=>new Map([...prev,...next]))}
@@ -1719,6 +1741,7 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
         }}><Move3D size={15}/>{fly?t('Exit fly'):t('Fly WASD')}</button>}
         <button type="button" className={visOpen?'bsp-on':''} aria-pressed={visOpen} title={visText.title} onClick={()=>{setVisOpen(v=>!v);setLeftPaneOpen(true)}}><Eye size={15}/><span className="bsp-vis-toolbar-label">VIS</span></button>
         <button type="button" title={t('Tools')} aria-label={t('Tools')} aria-expanded={leftPaneOpen} onClick={()=>setLeftPaneOpen(v=>!v)}>{leftPaneOpen?<PanelLeftClose size={16}/>:<PanelLeftOpen size={16}/>}</button>
+        {entityEdit&&source&&<button type="button" className={structureOpen?'bsp-on bsp-quick-access':'bsp-quick-access'} aria-pressed={structureOpen} onClick={()=>setStructureOpen(v=>!v)}><Boxes size={14}/>{t('Structure')}{newBoxes.length?` (+)`:''}</button>}
         {entityEdit&&<button className="bsp-export-button" disabled={!edited} onClick={exportEntityBsp}><Save size={15}/>{t('Export BSP copy')}</button>}
 
         {!entityEdit&&<button type="button" className="bsp-recovery-cta" title={t('Recover BSP to MAP')} aria-label={t('Recover BSP to MAP')} disabled={!source} onClick={()=>{if(!source)return;try{readNativeBsp(source);if(fly)documentGlobalExitFly();setRecoveryOpen(true)}catch(e){window.alert(`${t('BSP Recovery cannot edit this map safely')}: ${String(e)}`)}}}><ShieldCheck size={15}/><span>{t('Recover BSP to MAP')}</span></button>}
@@ -1802,7 +1825,7 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
         {showSky&&<BspSkyBackground map={map} gameDir={gameDir} onStatus={setSkyStatus}/>}
         {showModels&&surfaceMode==='entities'&&<BspStaticModels map={viewMap} gameDir={gameDir} onStatus={setModelStatus} onReport={setModelReport} studioByClass={studioByClass} selected={chosen} extraSelected={extraSelected} distance={entityDistance} groundModels={groundModelPreviews} extraModels={localModels} onSelect={entityEdit&&!placement?selectEntity:undefined} onContextEntity={entityEdit?openEntityContext:undefined}/>} 
         {!baked&&<><ambientLight intensity={lightmaps?ambientFill:1.7}/><hemisphereLight args={['#dae4ef','#737e93',lightmaps?.12:1.1]}/></>}
-        <BspSurface map={renderSurfaceMap} overrides={gesturePreview??surfaceOverrides} assets={allAssets} lightmaps={lightmaps} wireframe={wireframe} brightness={lightBrightness} preview={rendererPreview} baked={baked} styleFrame={styleFrame} fog={effectiveFog} displayGamma={displayGamma} lightFilter={lightFilter} onPlace={brushPaste&&!fly?pasteBrushAt:placement&&!fly?placePointAt:undefined} onHover={brushPaste&&!fly?setBrushPasteHover:placement&&!fly?setPlacementHover:undefined} onEmptyClick={entityEdit&&!fly?cancelToolOrSelection:undefined} onFaceClick={entityEdit&&!fly&&surfaceMode==='faces'?selectSurfaceFace:undefined} onAltUvStart={entityEdit&&!fly&&surfaceMode==='faces'&&facePickMode==='face'&&bspStudioOpen?(id)=>beginUvGesture(selectedFaces.includes(id)?undefined:[id]):undefined} onAltUvMove={(dx,dy)=>updateUvGesture('move',dx,dy,false)} onAltUvEnd={finishUvGesture}/>
+        <BspSurface map={renderSurfaceMap} overrides={gesturePreview??surfaceOverrides} assets={allAssets} lightmaps={lightmaps} wireframe={wireframe} brightness={lightBrightness} preview={rendererPreview} baked={baked} styleFrame={styleFrame} fog={effectiveFog} displayGamma={displayGamma} lightFilter={lightFilter} onPlace={boxPlacing&&!fly?((p:[number,number,number])=>{setNewBoxes(old=>[...old,boxFromDraft(boxDraft,p)]);setBoxPlacing(false);}):brushPaste&&!fly?pasteBrushAt:placement&&!fly?placePointAt:undefined} onHover={brushPaste&&!fly?setBrushPasteHover:placement&&!fly?setPlacementHover:undefined} onEmptyClick={entityEdit&&!fly?cancelToolOrSelection:undefined} onFaceClick={entityEdit&&!fly&&surfaceMode==='faces'?selectSurfaceFace:undefined} onAltUvStart={entityEdit&&!fly&&surfaceMode==='faces'&&facePickMode==='face'&&bspStudioOpen?(id)=>beginUvGesture(selectedFaces.includes(id)?undefined:[id]):undefined} onAltUvMove={(dx,dy)=>updateUvGesture('move',dx,dy,false)} onAltUvEnd={finishUvGesture}/>
         {surfaceMode==='faces'&&selectedFaces.map(id=>{const face=faceById.get(id);return face?<BspFaceHighlight key={id} face={face}/>:null})}
         {surfaceMode==='entities'&&showConnections&&entityEdit&&!placement&&<BspConnectionLines map={viewMap} edges={selectedConnections}/>}
         {surfaceMode==='entities'&&showEntities&&!placement&&<BspEntities map={viewMap} onSelect={selectEntity} onContextEntity={entityEdit?openEntityContext:undefined} selected={chosen} extraSelected={extraSelected} labels={showLabels} smartLabels={smartLabels} labelLimit={labelLimit} labelDistance={labelDistance} entityDistance={entityDistance}/>}
@@ -1812,10 +1835,12 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
               if(chosen===null)return;
               if(next.position){
                 if(selectedIndices.length>1)editMutation(current=>bspTranslatePoints(current,selectedIndices,[next.position![0]-selectedCentroid[0],next.position![1]-selectedCentroid[1],next.position![2]-selectedCentroid[2]]));
+                else if(bspIsBrushEntity(chosenNative)){const from=selection?.origin||selectedCentroid;editMutation(current=>bspTranslatePoints(current,[chosen],[next.position![0]-from[0],next.position![1]-from[1],next.position![2]-from[2]]));}
                 else editMutation(current=>bspMovePoint(current,chosen,next.position!));
               }else if(next.yaw!==undefined&&selectedIndices.length===1)editMutation(current=>bspRotatePointYaw(current,chosen,next.yaw!));
             }}/>}
         {entityEdit&&doc&&surfaceMode==='entities'&&<BspPastedBrushInstances map={surfaceMap} doc={doc} assets={allAssets}/>}
+        {entityEdit&&newBoxes.length>0&&<BspBoxPreview boxes={newBoxes}/>}
         {brushPaste&&brushPasteHover&&doc&&<BspBrushPastePreview map={map} doc={doc} indices={brushPaste.indices} destination={brushPasteHover} anchor={brushPaste.anchor}/>}
         {placement&&placementHover&&<mesh position={gameToThree(placementHover).toArray()} raycast={()=>null}><sphereGeometry args={[9,10,8]}/><meshBasicMaterial color="#51dcb8" transparent opacity={.75} depthTest={false}/></mesh>}
         {visOpen&&visData&&visPvs&&<>
@@ -1833,9 +1858,9 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
           <strong>{viewMap.entities[contextMenu.index]?.classname||t('Entity')} #{contextMenu.index}</strong>
           <button role="menuitem" onClick={()=>{setChosen(contextMenu.index);setExtraSelected([]);showBspProperties();setPropertiesTab('attributes');setContextMenu(null)}}>{t('Properties')}</button>
           <button role="menuitem" onClick={()=>{focusEntity(contextMenu.index);setContextMenu(null)}}>{t('Focus selected entity')}</button>
-          <button role="menuitem" disabled={!doc||!bspPointEditable(doc.entities[contextMenu.index],contextMenu.index)} onClick={duplicateContextEntity}>{t('Duplicate')}</button>
-          <button role="menuitem" disabled={!doc||!bspPointEditable(doc.entities[contextMenu.index],contextMenu.index)} onClick={()=>{setChosen(contextMenu.index);setConnectionArmed(true);setShowConnections(true);setContextMenu(null)}}>{t('Connect entities')}</button>
-          <button role="menuitem" className="danger" disabled={!doc||selectedIndices.some(i=>!bspPointEditable(doc.entities[i],i))} onClick={deleteEntitySelection}>{t('Delete')} · Supr</button>
+          <button role="menuitem" disabled={!doc||!bspEntityEditable(doc.entities[contextMenu.index],contextMenu.index)} onClick={duplicateContextEntity}>{t('Duplicate')}</button>
+          <button role="menuitem" disabled={!doc||!bspEntityEditable(doc.entities[contextMenu.index],contextMenu.index)} onClick={()=>{setChosen(contextMenu.index);setConnectionArmed(true);setShowConnections(true);setContextMenu(null)}}>{t('Connect entities')}</button>
+          <button role="menuitem" className="danger" disabled={!doc||selectedIndices.some(i=>!bspEntityEditable(doc.entities[i],i))} onClick={deleteEntitySelection}>{t('Delete')} · Supr</button>
         </div>}
         {navSettings&&<div className="bsp-fly-settings" onPointerDown={e=>e.stopPropagation()}>
           <strong>{t('Fly camera controls')}</strong>
@@ -1873,7 +1898,7 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
         <p className="bsp-note">{t(entityEdit?(surfaceMode==='faces'?(facePickMode==='region'?regionLabels.warning:'BSP surface edits are validated before export; unsupported operations are rejected.'):'Live entity preview. Only point-entity keyvalues are changed; original BSP and compiled geometry are preserved.'):'Read-only preview. Does not change the editable .MAP or .svenstudio.json project.')}</p>
         {entityEdit&&surfaceMode==='entities'&&<div className="bsp-visual-edit-head">
           <strong><PenTool size={14}/>{t('Point entities and NPCs')}</strong>
-          {!gameDir.trim()&&<div className="bsp-warning">{t('Set the Sven Co-op game folder in Build Configuration to preview MDL models.')}</div>}
+          {!gameDir.trim()&&<div className="bsp-warning">{cs16?'Configure the Counter-Strike 1.6 cstrike folder in Build Configuration to preview models.':t('Set the Sven Co-op game folder in Build Configuration to preview MDL models.')}</div>}
           <small>{t('G: move · R: yaw rotation · Ctrl+Z/Y: undo/redo. Export a new BSP copy to save.')}</small>
           <div className="bsp-visual-edit-actions">
             <button disabled={!edited} onClick={exportEntityBsp}><Save size={13}/>{t('Export BSP copy')}</button>
@@ -1901,14 +1926,21 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
           <div className="bsp-face-selection-count">{selectedFaces.length} {t('faces selected')} / {map.stats.faces}</div>
           <div className="bsp-object-extractor">
             <strong><Package size={15}/> BSP Object Extractor</strong>
+            <div className="bsp-object-grow"><button type="button" disabled={!selectedFaces.length} title={t('Adds the connected faces of the object (shared corners) up to the maximum size; floors and walls are left out.')} onClick={()=>{try{setSelectedFaces(bspGrowConnectedFaces(surfaceMap.faces,selectedFaces,boxMargin,viewMap.entities));setObjectExtractError('');}catch(e){setObjectExtractError(String(e instanceof Error?e.message:e))}}}><Boxes size={14}/>{t('Grow to the whole object')}</button><label title={t('Maximum object size')}>≤<input type="number" min={16} max={2048} step={16} value={boxMargin} onChange={e=>setBoxMargin(Math.max(16,Math.min(2048,e.target.valueAsNumber||256)))}/>u</label></div>
+            {selectedDoor&&<button type="button" className="bsp-prefab-save bsp-door-save" disabled={!source||objectExtractBusy} onClick={()=>void extractSelectedObject('door')}><DoorOpen size={14}/>{t('Save complete door')} ({selectedDoor.parts.filter(p=>p.role==='leaf').length})</button>}
             <button type="button" className="bsp-prefab-save" disabled={!source||!selectedFaces.length||objectExtractBusy} onClick={()=>void extractSelectedObject('auto')}><Save size={14}/>{({es:'Guardar selección como prefab',en:'Save selection as prefab',ru:'Сохранить выделение как префаб',ko:'선택 항목을 프리팹으로 저장',zh:'将选择保存为预制件',pt:'Salvar seleção como prefab'} as Record<string,string>)[useEditor.getState().locale]}{objectExtractBusy?'…':''}</button>
+            <button type="button" disabled={!source||objectExtractBusy} onClick={()=>{setBatchProgress('');setBatchOpen(true);}}><Boxes size={14}/>{t('Batch extraction')}</button>
+            <small className="bsp-extractor-tip">{t('Click the object, use Grow to the whole object if needed, then Save. The best method is chosen automatically.')}</small>
+            <details className="bsp-extractor-advanced"><summary>{t('Advanced options')}</summary>
             <small>{({es:'Para puertas de worldspawn (como esta selección): guarda las caras visibles como paneles editables con espesor, aunque no formen un sólido cerrado. Si la selección encierra un brush válido, conserva el sólido completo. No recupera automáticamente movimiento, sonidos ni eventos de la puerta.',en:'For worldspawn doors: saves visible faces as editable panels even when not a closed solid. Closed convex selections are saved as full brushes. Door movement, sounds and events cannot be recovered automatically.',ru:'Для дверей worldspawn сохраняет видимые поверхности как редактируемые панели. Замкнутые выпуклые объёмы сохраняются как полноценные браши. Поведение дверей не восстанавливается.',ko:'worldspawn 문은 보이는 면을 편집 가능한 패널로 저장합니다. 닫힌 볼록 볼륨은 브러시로 저장합니다. 문 동작은 자동 복구되지 않습니다.',zh:'worldspawn 门可将可见面保存为可编辑面板；封闭凸体保存为完整 Brush。不会自动恢复门的动作与事件。',pt:'Portas worldspawn: salva superfícies visíveis como painéis editáveis; sólidos convexos completos são preservados. Não recupera automaticamente o comportamento da porta.'} as Record<string,string>)[useEditor.getState().locale]}</small>
             <small>{({es:'Seleccioná todas las caras de uno o varios sólidos convexos cerrados (Ctrl/Mayús + clic). Conserva texturas WAD3 originales y UV; rechaza selecciones incompletas. Las regiones del BSP no son brushes originales.',en:'Select every side of one or more closed convex solids (Ctrl/Shift + click). Preserves original WAD3 textures and UV; rejects incomplete selections. BSP regions are not original brushes.',ru:'Выберите все стороны замкнутых выпуклых объектов. Сохраняет WAD3 и UV; неполные выборки отклоняются.',ko:'닫힌 볼록 오브젝트의 모든 면을 선택하세요. WAD3 및 UV 보존. 불완전한 선택은 거부합니다.',zh:'选择封闭凸体的所有面。保留 WAD3 和 UV，拒绝不完整的选择。',pt:'Selecione todas as faces de sólidos convexos fechados. Preserva WAD3 e UV; rejeita seleções incompletas.'} as Record<string,string>)[useEditor.getState().locale]||'Select all sides of closed convex solids.'}</small>
             <button type="button" disabled={!source||objectExtractBusy||selectedFaces.length<4} onClick={()=>void extractSelectedObject('exact')}><Package size={14}/>{({es:'Extraer sólidos completos a .svprefab',en:'Extract complete solids to .svprefab',ru:'Экспорт замкнутых объектов в .svprefab',ko:'완전한 솔리드 .svprefab 추출',zh:'导出完整实体 .svprefab',pt:'Extrair sólidos completos para .svprefab'} as Record<string,string>)[useEditor.getState().locale]}</button>
             <small>{({es:'¿Objeto complejo, como computadora o silla? Los paneles conservan superficies visibles y texturas WAD3 (incluyendo {, + y -). NO recuperan brushes originales, caras ocultas ni colisiones. Para recuperación de sólidos, usá Visor BSP → Recuperación BSP → BSP a MAP con SurfDecomp.',en:'Complex object, such as a computer or chair? Panels preserve visible surfaces and WAD3 textures (including {, + and -), NOT original brush volumes, hidden faces or collision hulls. For solid recovery, use BSP Viewer → BSP Recovery → BSP to MAP with SurfDecomp.',ru:'Сложный объект? Панели сохраняют видимые поверхности и текстуры WAD3 ({, +, -), но НЕ восстанавливают исходные объёмы и коллизии. Для восстановления используйте BSP Recovery с SurfDecomp.',ko:'복잡한 물체는 보이는 표면과 WAD3 텍스처({, +, -)만 패널로 보존합니다. 원본 브러시와 충돌은 복구하지 않습니다. 실제 브러시는 BSP Recovery / SurfDecomp를 사용하세요.',zh:'复杂物体的面板可保留可见面与 WAD3 纹理（{、+、-），但不能恢复原始笔刷、隐藏面或碰撞。真实实体请使用 BSP Recovery / SurfDecomp。',pt:'Objeto complexo? Os painéis preservam superfícies e texturas WAD3 ({, +, -), mas NÃO recuperam brushes, faces ocultas ou colisões. Para sólidos, utilize BSP Recovery com SurfDecomp.'} as Record<string,string>)[useEditor.getState().locale]}</small>
             <button type="button" disabled={!source||objectExtractBusy||!selectedFaces.length} onClick={()=>void extractSelectedObject('surface-shell')}><Package size={14}/>{({es:'Extraer paneles visibles (aproximado)',en:'Extract visible panels (approximate)',ru:'Извлечь видимые панели (приближённо)',ko:'보이는 패널 추출 (근사)',zh:'导出可见面板（近似）',pt:'Extrair painéis visíveis (aproximado)'} as Record<string,string>)[useEditor.getState().locale]}</button>
             <small>{({es:'Sólidos desde submodelo *N: recupera celdas convexas del árbol BSP (Hull 0), no los brushes originales. Podés importarlos como sólidos editables, pero las divisiones de textura, colisiones y luces pueden diferir.',en:'Solid *N model recovery: reconstructs convex BSP hull-0 cells, NOT original brushes. Editable geometry, but material boundaries, collision and lighting may differ.',ru:'Восстановление твёрдых моделей *N по BSP hull-0. Это не исходные кисти; текстуры, коллизии и свет могут отличаться.',ko:'*N 모델의 BSP hull-0 셀을 솔리드로 복구합니다. 원본 브러시가 아니며 텍스처/충돌/조명이 다를 수 있습니다.',zh:'从 *N 子模型的 BSP Hull 0 重建凸实体，非原始笔刷；纹理边界、碰撞与照明可能不同。',pt:'Recupera sólidos convexos do Hull 0 de submodelos *N, não brushes originais. Texturas, colisões e iluminação podem diferir.'} as Record<string,string>)[useEditor.getState().locale]}</small>
+            <button type="button" disabled={!source||objectExtractBusy||!selectedFaces.length} onClick={()=>void extractSelectedObject('world-solid')}><Boxes size={14}/>{t('World solids in the selection box')}</button>
             <button type="button" disabled={!source||objectExtractBusy||!hull0Enabled} onClick={recoverHull0}><Boxes size={14}/>{({es:'Recuperar sólidos del submodelo (Hull 0)',en:'Recover submodel solids (Hull 0)',ru:'Восстановить тела подмодели (Hull 0)',ko:'서브모델 솔리드 복구 (Hull 0)',zh:'恢复子模型实体（Hull 0）',pt:'Recuperar sólidos do submodelo (Hull 0)'} as Record<string,string>)[useEditor.getState().locale]}</button>
+            </details>
             {hull0Plan.kind!=='empty'&&<small className={hull0Enabled?'bsp-edit-notice':'bsp-warning'} role="status">{hull0Enabled?`*${hull0Plan.modelIndex}: ${hull0Plan.selectedCount}/${hull0Plan.totalFaces} ${hull0Plan.kind==='expand'?hull0Labels.expand:''}`:hull0Labels[hull0Plan.kind==='worldspawn'?'worldspawn':hull0Plan.kind==='mixed'?'mixed':hull0Plan.kind==='too-many'?'tooMany':hull0Plan.kind==='too-few'?'tooFew':'missing']}</small>}
             {objectExtractNotice&&<small className="bsp-edit-notice" role="status">{objectExtractNotice}</small>}
             {objectExtractError&&<small className="bsp-warning" role="alert">{objectExtractError}</small>}
@@ -1977,7 +2009,7 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
           <small>{t('GoldSrc preview is approximate; compiled BSP lightmaps remain the reference for baked lighting.')}</small>
         </div>
         <div className="bsp-light-settings">
-          <strong>Calibración de Svengine · vista previa</strong>
+          <strong>{cs16?'Calibración GoldSrc · vista previa':'Calibración de Svengine · vista previa'}</strong>
           {bspFog?<>
             <label className="bsp-fly-checkbox"><input type="checkbox" checked={fogEnabled} onChange={event=>setFogEnabled(event.target.checked)}/>Niebla BSP (env_fog)</label>
             <small>RGB {bspFog.color.join(' ')} · inicio {bspFog.start}u · fin {bspFog.end}u{!bspFog.initiallyEnabled?' · Start Off en el BSP':''}. Vista estática, sin simular triggers.</small>
@@ -2005,13 +2037,13 @@ export function BspViewer({map,source,initialBaked=false,editingRequested=false,
             <input type="range" min="0" max="1.2" step="0.04" value={ambientFill} onChange={e=>setAmbientFill(Number(e.target.value))}/>
           </label>}
           <button className="bsp-light-reset" onClick={()=>{setLightBrightness(BSP_LIGHTMAP_DEFAULT_INTENSITY);setAmbientFill(BSP_LIGHTMAP_DEFAULT_AMBIENT)}}>{t('Reset lighting')}</button>
-          <small>{baked?'Baked RGB uses the actual SC-RAD samples. Browser color output and lightstyle snapshots can still differ from Svengine.':t('BSP lighting preview is approximate; dynamic lightstyles are not simulated.')}</small>
+          <small>{baked?(cs16?'Baked RGB from BSP lightmaps. Display and lightstyle behavior may differ from Counter-Strike 1.6.':'Baked RGB uses the actual SC-RAD samples. Browser color output and lightstyle snapshots can still differ from Svengine.'):t('BSP lighting preview is approximate; dynamic lightstyles are not simulated.')}</small>
         </div>}
         <dl><dt>BSP</dt><dd>v{map.version}</dd><dt>{t('Faces')}</dt><dd>{map.stats.faces.toLocaleString()}</dd><dt>{t('Vertices')}</dt><dd>{map.stats.vertices.toLocaleString()}</dd><dt>{t('Entities')}</dt><dd>{viewMap.stats.entities.toLocaleString()}</dd><dt>{t('Models')}</dt><dd>{map.stats.models}</dd><dt>{t('Lightmapped faces')}</dt><dd>{map.stats.lightmappedFaces.toLocaleString()}</dd><dt>{t('Textures')}</dt><dd>{map.textures.length} ({map.stats.embeddedTextures} {t('embedded')})</dd><dt>skyname</dt><dd>{map.skyname||'—'}</dd><dt>{t('Real skybox')}</dt><dd>{t(showSky?skyStatus:'off')}</dd><dt>{t('MDL models')}</dt><dd>{modelCount} · {t(showModels?modelStatus:'off')}{modelReport&&showModels?` (${modelReport.loaded}/${modelReport.total})`:null}</dd></dl>
-        {showSky&&skyStatus==='no-game'&&<div className="bsp-warning">{t('Configure the Sven Co-op game directory to preview installed skyboxes.')}</div>}
+        {showSky&&skyStatus==='no-game'&&<div className="bsp-warning">{cs16?'Configure the Counter-Strike 1.6 cstrike folder to preview installed skyboxes.':t('Configure the Sven Co-op game directory to preview installed skyboxes.')}</div>}
         {showSky&&skyStatus==='missing'&&<div className="bsp-warning">{t('The six skybox textures were not found for this skyname.')}</div>}
         {showSky&&skyStatus==='error'&&<div className="bsp-warning">{t('Could not load the installed skybox textures.')}</div>}
-        {showModels&&modelStatus==='no-game'&&<div className="bsp-warning">{t('Configure the Sven Co-op game directory to load MDL models.')}</div>}
+        {showModels&&modelStatus==='no-game'&&<div className="bsp-warning">{cs16?'Configure the Counter-Strike 1.6 cstrike folder to load MDL models.':t('Configure the Sven Co-op game directory to load MDL models.')}</div>}
         {showModels&&['missing','error'].includes(modelStatus)&&<div className="bsp-warning">{t('Some MDL assets are unavailable or unsupported.')}
           {!!modelReport?.missing.length&&<details><summary>{t('Missing model paths')} ({modelReport.missing.length})</summary>{modelReport.missing.slice(0,12).map(path=><div key={path}><code>{path}</code></div>)}</details>}
         </div>}

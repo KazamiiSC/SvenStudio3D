@@ -65,12 +65,12 @@ test('transparent masked invisible and brush entities remain independent',()=>{
  assert.equal(isOpaqueBatchMaterial(water),false);assert.equal(isOpaqueBatchMaterial(masked),false);assert.equal(isOpaqueBatchMaterial(invisible),false);
  assert.equal(canBatchBrush(attached.brush,attached.materials),false);
  const batch=buildOpaqueBrushBatches([base,trans,mask,attached,hidden]);
- assert.deepEqual([...batch.batchedIds],['base','trans','mask']);
- assert.deepEqual([...batch.fullyBatchedIds],['base']);
+ // v2.4: brush-entity brushes are batched while editing (Gameplay Test turns batching off).
+ assert.deepEqual([...batch.batchedIds],['base','trans','mask','door']);
+ assert.deepEqual([...batch.fullyBatchedIds],['base','door']);
  for(const id of ['trans','mask']){
   assert.deepEqual([...batch.batchedFaceIndices.get(id)],[1,3,5],`${id} must keep special faces on its original mesh`);
  }
- assert.equal(batch.batchedFaceIndices.has('door'),false);
  assert.equal(batch.batchedFaceIndices.has('hidden'),false);
  disposeOpaqueBatches(batch);
 });

@@ -3,7 +3,7 @@ import {createBrush,createArch} from '../src/engine/geometry';
 import {editBrushVertices,splitBrush,hollowBox,pushPullFace,uniqueBrushEdges} from '../src/engine/modeling';
 import {validateBrush,exportMap,validateProject} from '../src/engine/exportMap';
 import {importMap} from '../src/engine/importMap';
-import {translate} from '../src/i18n';
+import {translate,loadLocale} from '../src/i18n';
 
 describe('Svengine v0.3 convex modeling',()=>{
   const valid=(b:ReturnType<typeof createBrush>)=>expect(validateBrush(b)).toEqual([]);
@@ -55,7 +55,8 @@ describe('Svengine v0.3 convex modeling',()=>{
 });
 
 describe('four UI translations',()=>{
-  it('selects Spanish, English, Russian and Korean labels',()=>{
+  it('selects Spanish, English, Russian and Korean labels',async()=>{
+  await Promise.all((['es','ru','ko'] as const).map(loadLocale)); // languages load on demand since v2.3 HF4
     expect(translate('en','Compile Map')).toBe('Compile Map');
     expect(translate('es','Compile Map')).toBe('Compilar mapa');
     expect(translate('ru','Compile Map')).toBe('Скомпилировать карту');

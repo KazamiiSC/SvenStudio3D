@@ -27,7 +27,9 @@ export function TrueLightingPreview({map,compilerLabel,working,stale,status,layo
   const gameDir=useEditor(s=>s.settings.gameDir);
   const settings=useEditor(s=>s.settings);
   const setSettings=useEditor(s=>s.setSettings);
-  const selectedLabel=lightingCompilerLabel(settings.compilerEngine);
+  // CS 1.6 always bakes with the user's ZHLT hlrad; the SC/SDHLT choice is Sven-only and must not be saved.
+  const cs16=settings.gameProfile==='cs16';
+  const selectedLabel=cs16?'ZHLT':lightingCompilerLabel(settings.compilerEngine);
   const [automated,setAutomated]=useState<TextureAsset[]>([]);
   const [skyStatus,setSkyStatus]=useState<BspAssetStatus>('off');
   const [texturesStatus,setTexturesStatus]=useState('');
@@ -62,7 +64,7 @@ export function TrueLightingPreview({map,compilerLabel,working,stale,status,layo
   const [confirmBuild,setConfirmBuild]=useState(false);
   const [pendingEngine,setPendingEngine]=useState<'sc'|'sdhlt'>(settings.compilerEngine==='sdhlt'?'sdhlt':'sc');
   const requestBuild=()=>{if(working)return;setPendingEngine(settings.compilerEngine==='sdhlt'?'sdhlt':'sc');setSettingsOpen(false);setConfirmBuild(true)};
-  const acceptBuild=()=>{if(working)return;setSettings({compilerEngine:pendingEngine});setConfirmBuild(false);onBuild(pendingEngine)};
+  const acceptBuild=()=>{if(working)return;if(!cs16)setSettings({compilerEngine:pendingEngine});setConfirmBuild(false);onBuild(pendingEngine)};
   // Expanding is a direct click: request pointer lock in that same gesture.
   // The MAP viewport is hidden in expanded layout and must not own WASD.
   const toggleExpanded=()=>{
@@ -168,10 +170,11 @@ export function TrueLightingPreview({map,compilerLabel,working,stale,status,layo
           <strong><AlertTriangle size={17}/> {t("Compile True Lighting?")}</strong>
           <p>{t("This will compile a temporary BSP and bake the lighting. It may take some time, and the editor or your computer may run more slowly until the process finishes.")}</p>
           <label>{t("Choose compiler before compiling")}
-            <select autoFocus value={pendingEngine} onChange={event=>setPendingEngine(event.target.value as 'sc'|'sdhlt')}>
+            {cs16?<select autoFocus value="zhlt" disabled><option value="zhlt">Counter-Strike 1.6 — ZHLT (hlrad)</option></select>
+            :<select autoFocus value={pendingEngine} onChange={event=>setPendingEngine(event.target.value as 'sc'|'sdhlt')}>
               <option value="sc">Sven Co-op SDK (SC-RAD)</option>
               <option value="sdhlt">SDHLT — {t("Experimental")}</option>
-            </select>
+            </select>}
           </label>
           <small>{t("The generated preview is read-only. It does not replace the BSP installed in Sven Co-op. SDHLT uses the configured AO and PCF settings.")}</small>
           <div className="true-light-build-buttons">
@@ -181,7 +184,7 @@ export function TrueLightingPreview({map,compilerLabel,working,stale,status,layo
         </div>
       </div>}
       {working&&<div className="true-light-progress" role="status"><span className="pulse-dot"/>{status||`${t('Running compilers…')} ${selectedLabel}`}</div>}
-      {!working&&/^(Build error:|(?:SC-RAD|SDHLT) preview failed)/.test(status)&&<div className="true-light-progress true-light-error" role="alert"><AlertTriangle size={14}/>{status}</div>}
+      {!working&&/^(Build error:|(?:SC-RAD|SDHLT|ZHLT) preview failed)/.test(status)&&<div className="true-light-progress true-light-error" role="alert"><AlertTriangle size={14}/>{status}</div>}
       {stale&&map&&<div className="true-light-stale" role="status"><AlertTriangle size={14}/> {t("MAP changed or compiler settings changed since this bake. Rebuild to update lighting.")}</div>}
       {map&&<span className="true-light-canvas-help">{cameraView==='interior'?t('Inside BSP / player spawn'):t('Outside BSP')} · {t(fly?'WASD move · Q/E vertical · Shift fast · Mouse look · Esc releases':'LMB orbit · RMB pan · Wheel zoom · Fly: WASD')}</span>}
     </div>
@@ -193,10 +196,11 @@ export function TrueLightingPreview({map,compilerLabel,working,stale,status,layo
       <div className="true-light-settings-heading"><strong>{t("Compiled lighting / calibration")}</strong><button type="button" aria-label={t("Close settings")} onClick={()=>setSettingsOpen(false)}><X size={14}/></button></div>
       <div className="true-light-compiler-options" role="group" aria-label={t("True Lighting compiler")}>
         <label>{t("Compiler profile")}
-          <select value={settings.compilerEngine||'sc'} disabled={working} onChange={event=>setSettings({compilerEngine:event.target.value as 'sc'|'sdhlt'})}>
+          {cs16?<select value="zhlt" disabled><option value="zhlt">Counter-Strike 1.6 — ZHLT (hlrad)</option></select>
+          :<select value={settings.compilerEngine||'sc'} disabled={working} onChange={event=>setSettings({compilerEngine:event.target.value as 'sc'|'sdhlt'})}>
             <option value="sc">Sven Co-op SDK — SC-RAD</option>
             <option value="sdhlt">SDHLT — {t("Experimental")}</option>
-          </select>
+          </select>}
         </label>
         {settings.compilerEngine==='sdhlt'&&<>
           <label className="true-light-compiler-check"><input type="checkbox" checked={!!settings.sdhltAO} disabled={working} onChange={event=>setSettings({sdhltAO:event.target.checked})}/> {t("Ambient Occlusion (-ao)")}</label>

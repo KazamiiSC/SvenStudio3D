@@ -116,7 +116,7 @@ export function ShapePalette(){
       {(category==='basic'||category==='structures')&&<div className="shape-palette-grid" role="group" aria-label={t(category==='basic'?'Basic shapes':'Architecture shapes')}>
         {(category==='basic'?BASIC:STRUCTURES).map(kind=><button type="button" key={kind} aria-pressed={selected===kind} className={selected===kind?'active':''} onClick={()=>placeShape(kind)}><span>{ICONS[kind]}</span>{t(kind[0].toUpperCase()+kind.slice(1))}</button>)}
       </div>}
-      {category==='smart'&&<><ArchitectureModePanel onStart={()=>setOpen(false)}/><details className="arch-mode-legacy"><summary>Smart Build 2.0 · generadores anteriores</summary><ArchitectureBuilder/></details></>}
+      {category==='smart'&&<><ArchitectureModePanel onStart={()=>setOpen(false)}/><details className="arch-mode-legacy"><summary>{t('Smart Build structures (rooms, stairs, arches, bridges…)')}</summary><ArchitectureBuilder onStart={()=>setOpen(false)}/></details></>}
       {category==='prefabs'&&<div className="shape-prefab-section" data-prefab-quick-library>
         <div className="shape-prefab-heading"><strong><Package size={15}/>{t('Reusable constructions')}</strong><span>{prefabs.length}/64</span></div>
         <p>{t('Select a brush group, save it and place copies with one click.')}</p>

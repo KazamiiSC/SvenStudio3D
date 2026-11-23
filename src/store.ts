@@ -14,7 +14,7 @@ import {constrainDecalToBrush} from './engine/decalSurface';
 import type {ShadingMode} from './engine/shadingPie';
 import { DEFAULT_CONTROLS,readControls,saveControls } from './engine/controls';
 import type { ControlSettings,ShortcutAction } from './engine/controls';
-import { createBrush, createPlaceableShape, createSizedPlaceableShape, defaultShapeSize, boxFromGroundDrag,boxFromPlaneDrag, resizeBrush,rotateBrushTextureLock } from './engine/geometry';
+import {transformedVertices, createBrush, createPlaceableShape, createSizedPlaceableShape, defaultShapeSize, boxFromGroundDrag,boxFromPlaneDrag, resizeBrush,rotateBrushTextureLock } from './engine/geometry';
 import { uid } from './engine/types';
 import {applySurfacePreset,addEmissiveSurface,setSurfaceSound,linkSurfaceMaterialFile,type SurfacePresetId,type SurfaceRenderOptions,type SurfaceSoundCode} from './engine/materialSurface';
 import {makeBrushEntity,makeRelay,connectGameplay,disconnectGameplay} from './engine/gameplay';
@@ -24,10 +24,17 @@ import {makeAudioEntity,type AudioEntityKind,type SoundOptions} from './engine/s
 import {makeEnvironment,type EnvironmentKind} from './engine/environment';
 import type { Brush,Face,FgdClass,MapObject,PointEntity,Project,TextureAsset,Vec3,PlaceableShape } from './engine/types';
 import { starterEntities } from './engine/fgd';
+import {cs16StarterEntities,type GameProfile} from './engine/gameProfiles';
 import {customNpcToFgd,validateCustomNpc,type CustomNpcDefinition} from './engine/customNpc';
 import {editBrushVertices,splitBrush,hollowBox,pushPullFace} from './engine/modeling';
+import {regionFromObjects,type CompileRegion} from './engine/compileRegion';
+import {fitBrushToBounds} from './engine/orthoProjection';
+import {planTargetnameRename,planBulkKeyvalue,type RenamePlan} from './engine/entityReport';
+import {planTextureReplace,brushesUsingTexture,type TextureReplaceOptions,type TextureReplacePlan} from './engine/textureReplace';
 import {selectedGeometryIndices,selectedGeometryEdges,edgeSelectionVertices} from './engine/geometryEditSelection';
 import {intersectConvex,subtractConvex,unionConvex,bevelEdge,taperInsetFace,extrudeFaceBrush} from './engine/advancedModeling';
+import {clipBrushesByPlane,planScatterAround,planScatterOnArea} from './engine/mapTools24';
+import {buildKit} from './engine/svenKits';
 import {createSkyEnclosure,type SkyEnclosureOptions} from './engine/skyEnclosure';
 import {createArchitecture,createMultipleWallOpenings,architecturePartSignature,architectureOpeningCenter,architectureOpeningMetrics,type ArchitectureKind,type ArchitectureOptions,type OpeningPlacement} from './engine/architecture';
 import {rebuildWallOpeningPlan,buildArchitectureAssembly,replaceArchitectureAssembly,removeArchitectureAssembly,detachArchitectureAssembly} from './engine/architecturePlans';
@@ -35,7 +42,7 @@ import {buildArchitectureLayout,replaceArchitectureLayout,removeArchitectureLayo
 import {mergeIntoConvexBrush} from './engine/smartMerge';
 import {previewFusion,type FusionMode} from './engine/brushFusion';
 import {planWorkshop,type WorkshopOperation,type WorkshopShape} from './engine/brushWorkshop';
-import {buildCurvedRamp,curvedBrushSignature,radialArrayBrushes,type CurveSettings,type RadialArrayOptions} from './engine/curvedGeometry';
+import {buildCurvedRamp,curvedBrushSignature,radialArrayBrushes,linearArrayBrushes,mirrorBrushes,pathArrayBrushes,type CurveSettings,type RadialArrayOptions,type LinearArrayOptions} from './engine/curvedGeometry';
 import {createPrefab,placePrefab,validatePrefab,readPrefabLibrary,writePrefabLibrary,type Prefab} from './engine/prefabs';
 import {createLinkedPrefab,addLinkedPrefabInstance,planLinkedPrefabSync,repositionLinkedPrefabInstance,detachLinkedPrefab} from './engine/linkedPrefabs';
 import {rotateObjectsForPlacement} from './engine/smartPlacement';
@@ -54,9 +61,17 @@ import {DEFAULT_MAP_LABEL_SETTINGS,loadMapLabelSettings,saveMapLabelSettings,nor
 export type ToolMode='select'|'translate'|'rotate'|'scale';
 export type ResourceView='objects'|'entities'|'textures'|'materials'|'decals'|'models'|'npcs'|'sounds'|'layers';
 export type RadAmbientTest='off'|'0.08'|'0.15'|'0.25';
-export type CompilerEngine='sc'|'sdhlt';
-export type Settings={compilerDir:string;gameDir:string;wadPaths:string;mapName:string;radAmbientTest:RadAmbientTest;compilerEngine?:CompilerEngine;sdhltDir?:string;sdhltAO?:boolean;sdhltPCF?:'off'|'1'|'2'|'4';smartWadMode?:'off'|'embed'|'external';smartWadName?:string;distributionDir?:string;distributionFormat?:'off'|'build'|'folder'|'folder_zip'|'install';resourceRoots?:string[]};
-export const DEFAULT_SETTINGS:Settings={compilerDir:'',gameDir:'',wadPaths:'',mapName:'svstudio_test',radAmbientTest:'off',compilerEngine:'sc',sdhltDir:'',sdhltAO:false,sdhltPCF:'off',smartWadMode:'off',smartWadName:'',distributionDir:'',distributionFormat:'build',resourceRoots:[]};
+export type CompilerEngine='sc'|'sdhlt'|'zhlt';
+export type Settings={gameProfile?:GameProfile;/** Show the installed skyname cube behind the editor 3D view. */editorSkybox?:boolean;/** 4-view layout: Top/Front/Side wireframe views next to the 3D view. */quadView?:boolean;compilerDir:string;gameDir:string;wadPaths:string;mapName:string;radAmbientTest:RadAmbientTest;compilerEngine?:CompilerEngine;sdhltDir?:string;sdhltAO?:boolean;sdhltPCF?:'off'|'1'|'2'|'4';smartWadMode?:'off'|'embed'|'external';smartWadName?:string;distributionDir?:string;distributionFormat?:'off'|'build'|'folder'|'folder_zip'|'install';resourceRoots?:string[];buildQuality?:'final'|'fast'|'geometry';csOverview?:boolean};
+export const DEFAULT_SETTINGS:Settings={gameProfile:'svengine',compilerDir:'',gameDir:'',wadPaths:'',mapName:'svstudio_test',radAmbientTest:'off',compilerEngine:'sc',sdhltDir:'',sdhltAO:false,sdhltPCF:'off',smartWadMode:'off',smartWadName:'',distributionDir:'',distributionFormat:'build',resourceRoots:[],buildQuality:'final',csOverview:true};
+/** Restore game choice before creating the opening scene and entity catalogue. */
+const initialSettings:Settings=(()=>{
+  try{
+    const stored=JSON.parse(localStorage.getItem('svenstudio-settings')||'{}');
+    const profile=stored.gameProfile==='cs16'?'cs16':'svengine';
+    return {...DEFAULT_SETTINGS,...stored,gameProfile:profile};
+  }catch{return {...DEFAULT_SETTINGS}}
+})();
 const BOX='SV_BRICK01';
 function texBrush(b:Brush,t=BOX){return {...b,faces:b.faces.map(f=>({...f,texture:t}))};}
 /** UV tools must use the identical texture dimensions and WAD priority as
@@ -70,17 +85,24 @@ function textureStudioAssetSizes(state:Pick<State,'settings'|'project'|'textureA
 export function emptyProject():Project{
  return {version:1,target:'svengine',name:'Untitled Map',world:{classname:'worldspawn',mapversion:'220',message:'',skyname:''},wadNames:[],objects:[]};
 }
+/** v2.6 starter room (welcome demo and File > New): a sealed 512 x 512 x 192 room with 16-unit
+ * walls that meet cleanly — the floor and ceiling cover the outer footprint, the east/west walls run
+ * the full depth and the north/south walls fit between them, all between floor and ceiling (no
+ * overlapping or floating brushes, grid-aligned, no leaks), plus a player start and two lights. */
+export const STARTER_ROOM={inner:512,height:192,wall:16} as const;
 export function demoProject():Project{
-  const floor=texBrush(createBrush('box',[0,0,-16],[544,544,32],'Floor'),'SV_TILE01');
-  const roof=texBrush(createBrush('box',[0,0,288],[544,544,32],'Ceiling'),'SV_CONCRET');
-  roof.hidden=true; // Hide only in editor so the room can be viewed from above; exported brush remains solid.
-  const left=texBrush(createBrush('box',[-272,0,136],[32,544,288],'West Wall'));
-  const right=texBrush(createBrush('box',[272,0,136],[32,544,288],'East Wall'));
-  const north=texBrush(createBrush('box',[0,272,136],[512,32,288],'North Wall'));
-  const south=texBrush(createBrush('box',[0,-272,136],[512,32,288],'South Wall'));
-  const spawn:PointEntity={id:uid(),kind:'entity',name:'info_player_start',classname:'info_player_start',position:[0,0,48],props:{angles:'0 0 0'},layer:'Gameplay'};
-  const light:PointEntity={id:uid(),kind:'entity',name:'light',classname:'light',position:[0,0,208],props:{_light:'255 240 210 350'},layer:'Lighting'};
-  return {version:1,target:'svengine',name:'Untitled Map',world:{classname:'worldspawn',mapversion:'220',message:'Created with SvenStudio 3D',skyname:'desert'},wadNames:['svstudio.wad'],objects:[floor,roof,left,right,north,south,spawn,light]};
+  const {inner,height,wall}=STARTER_ROOM,half=inner/2,outer=inner+2*wall;
+  const room=(b:Brush,t:string)=>({...texBrush(b,t),layer:'Room',group:'Starter room'});
+  const floor=room(createBrush('box',[0,0,-wall/2],[outer,outer,wall],'Floor'),'SV_TILE01');
+  const roof=room(createBrush('box',[0,0,height+wall/2],[outer,outer,wall],'Ceiling'),'SV_CONCRET');
+  roof.hidden=true; // Hidden only in the editor so the room can be seen from above; the exported brush stays solid.
+  const west=room(createBrush('box',[-half-wall/2,0,height/2],[wall,outer,height],'Wall West'),BOX);
+  const east=room(createBrush('box',[half+wall/2,0,height/2],[wall,outer,height],'Wall East'),BOX);
+  const north=room(createBrush('box',[0,half+wall/2,height/2],[inner,wall,height],'Wall North'),BOX);
+  const south=room(createBrush('box',[0,-half-wall/2,height/2],[inner,wall,height],'Wall South'),BOX);
+  const spawn:PointEntity={id:uid(),kind:'entity',name:'info_player_start',classname:'info_player_start',position:[0,-half+96,37],props:{angles:'0 90 0'},layer:'Gameplay'};
+  const light=(x:number):PointEntity=>({id:uid(),kind:'entity',name:'light',classname:'light',position:[x,0,height-32],props:{_light:'255 240 210 220'},layer:'Lighting'});
+  return {version:1,target:'svengine',name:'Untitled Map',world:{classname:'worldspawn',mapversion:'220',message:'Created with SvenStudio 3D',skyname:'desert'},wadNames:['svstudio.wad'],objects:[floor,roof,west,east,north,south,spawn,light(-128),light(128)]};
 }
 const clone=<T>(v:T):T=>structuredClone(v);
 /** Shared position update for keyboard, grid snap and other direct movements.
@@ -147,7 +169,13 @@ interface State{
   drawMode:boolean; drawHeight:number;drawPlane:DrawPlane;setDrawPlane:(plane:DrawPlane)=>void;drawSign:1|-1;setDrawSign:(sign:1|-1)=>void;
   measureMode:boolean;measurement:{a:Vec3|null;b:Vec3|null};toggleMeasure:()=>void;measurePoint:(at:Vec3)=>void;
   controls:ControlSettings; flyMode:boolean; walkMode:boolean; cameraCommand:{action:ShortcutAction;serial:number}|null; cameraLabel:string;
-  wireframe:boolean; solidShading:boolean; setShadingMode:(mode:ShadingMode)=>void; faceMode:boolean; showGrid:boolean; showLights:boolean; ghostHidden:boolean; toggleGhostHidden:()=>void;visibilityListIds:string[];focusHiddenId:string|null;focusHidden:(id:string)=>void; isolationSnapshot:Record<string,boolean>|null; toggleTemporaryIsolation:()=>void; hideSelection:()=>void;
+  wireframe:boolean; solidShading:boolean; setShadingMode:(mode:ShadingMode)=>void; faceMode:boolean; showGrid:boolean; showLights:boolean; ghostHidden:boolean; toggleGhostHidden:()=>void;visibilityListIds:string[];focusHiddenId:string|null;focusHidden:(id:string)=>void; isolationSnapshot:Record<string,boolean>|null; toggleTemporaryIsolation:()=>void;
+  /** Ids revealed by toggleRevealHidden, re-hidden on the next toggle (null = nothing revealed). */
+  revealedHiddenIds:string[]|null; toggleRevealHidden:()=>void;
+  /** Session-only compile region (cordon). Never saved into the MAP or project file. */
+  compileRegion:CompileRegion|null; setCompileRegionFromSelection:()=>boolean; clearCompileRegion:()=>void;
+  /** Load state of the editor skybox (off, loading, ready, missing, no-game, none, error). */
+  editorSkyStatus:string; hideSelection:()=>void;
   resourceView:ResourceView; textureAssets:TextureAsset[]; currentTexture:string;
   decalAssets:TextureAsset[]; activeDecal:string|null;
   setDecalAssets:(assets:TextureAsset[],wad:string)=>void;
@@ -156,7 +184,7 @@ interface State{
   moveDecalOnSurface:(id:string,position:Vec3)=>void;
   fgdClasses:FgdClass[]; fgdLoaded:boolean; history:Project[]; future:Project[];
   logs:string[]; compileBusy:boolean; settings:Settings;
-  setMode:(m:ToolMode)=>void;setControls:(update:Partial<ControlSettings>)=>void;setShortcut:(action:ShortcutAction,binding:string)=>void;resetControls:()=>void;toggleFly:()=>void;setFly:(enabled:boolean)=>void;toggleWalk:()=>void;setWalk:(enabled:boolean)=>void;issueCameraCommand:(action:ShortcutAction)=>void;setSelected:(id:string|null,face?:number|null)=>void;selectObject:(id:string,additive:boolean,face?:number|null)=>void;
+  setMode:(m:ToolMode)=>void;setControls:(update:Partial<ControlSettings>)=>void;setShortcut:(action:ShortcutAction,binding:string)=>void;resetControls:()=>void;toggleFly:()=>void;setFly:(enabled:boolean)=>void;toggleWalk:()=>void;setWalk:(enabled:boolean)=>void;issueCameraCommand:(action:ShortcutAction)=>void;setSelected:(id:string|null,face?:number|null)=>void;selectObject:(id:string,additive:boolean,face?:number|null)=>void;selectObjectIds:(ids:string[],focus?:boolean)=>void;
   setDrawMode:(enabled:boolean)=>void;setDrawHeight:(height:number)=>void;addDrawnBox:(from:Vec3,to:Vec3)=>void;
   moveSelection:(delta:Vec3)=>void;transformSelection:(updates:Record<string,{position:Vec3;rotation?:Vec3;scale?:Vec3}>)=>void;setCameraLabel:(label:string)=>void;changeDimensions:(id:string,size:Vec3)=>void;
   setSnap:(v:number)=>void;setGridDisplayStep:(v:number)=>void;toggleSnap:()=>void;setFlag:(k:'wireframe'|'faceMode'|'showGrid'|'showLights'|'showEntityNames',v:boolean)=>void;
@@ -166,7 +194,7 @@ interface State{
   assignSurfaceSound:(texture:string,code:SurfaceSoundCode|null)=>void;
   linkMaterialSounds:(mapName:string)=>void;
   addBrush:(type:PlaceableShape)=>void;addEntity:(cls:FgdClass,position?:Vec3)=>void;
-  buildArchitecture:(kind:ArchitectureKind,options:ArchitectureOptions)=>void;
+  buildArchitecture:(kind:ArchitectureKind,options:ArchitectureOptions,origin?:Vec3)=>void;
   addArchitectureLayout:(kind:'walls'|'room',points:ArchitecturePoint[],options:ArchitectureLayoutOptions)=>void;
   editArchitectureLayout:(id:string,points:ArchitecturePoint[],options:ArchitectureLayoutOptions)=>void;
   deleteArchitectureLayout:(id:string)=>void;detachArchitectureLayout:(id:string)=>void;
@@ -174,7 +202,9 @@ interface State{
   smartMergeSelected:()=>void;mergeIntoOneSelected:()=>void;unmergeSmartSelected:()=>void;
   fuseSelection:(mode:FusionMode)=>void;separateSelectedComposite:()=>void;
   createCurvedRamp:(options:CurveSettings)=>void;updateCurvedRamp:(id:string,options:CurveSettings)=>void;detachCurvedRamp:(id:string)=>void;
-  radialArraySelected:(options:RadialArrayOptions)=>void;
+  radialArraySelected:(options:RadialArrayOptions)=>void;linearArraySelected:(options:LinearArrayOptions)=>void;mirrorSelected:(axis:0|1|2,keepOriginal:boolean)=>number;pathArraySelected:(options:import('./engine/curvedGeometry').PathArrayOptions)=>number;
+  /** 2D views: resize an unrotated brush to exact world bounds (one undo step). */
+  resizeBrushToBounds:(id:string,min:Vec3,max:Vec3)=>void;
   applyBrushWorkshop:(brushId:string,face:number,operation:WorkshopOperation,settings:WorkshopShape)=>void;
   updateSelectedOpening:(options:ArchitectureOptions)=>void;
   editArchitectureOpening:(id:string,options:ArchitectureOptions,offset:number,sill:number)=>void;
@@ -188,7 +218,7 @@ interface State{
   pathEditingId:string|null;pathEditAxis:PathEditAxis;setPathEditing:(id:string|null)=>void;setPathEditAxis:(axis:PathEditAxis)=>void;
   addPathStructure:(options:PathStructureOptions,origin:Vec3)=>void;
   updatePathStructure:(id:string,options:PathStructureOptions)=>void;
-  terrainPlacement:{kind:'terrain'|'rocks'|'path';draft:TerrainDraft;rocks?:Omit<RockOptions,'origin'|'texture'>;path?:PathStructureOptions}|null;
+  terrainPlacement:{kind:'terrain'|'rocks'|'path'|'scatter'|'structure'|'radial'|'kit';kit?:{id:import('./engine/svenKits').KitId;options:import('./engine/svenKits').KitOptions};radial?:RadialArrayOptions;structure?:{kind:ArchitectureKind;options:ArchitectureOptions};draft:TerrainDraft;rocks?:Omit<RockOptions,'origin'|'texture'>;path?:PathStructureOptions;scatter?:{options:import('./engine/mapTools24').ScatterOptions;templateIds:string[]}}|null;
   startTerrainPlacement:(request:State['terrainPlacement'])=>void;placePendingTerrain:(origin:Vec3)=>void;
   saveEventSequence:(record:EventSequence)=>void;removeEventSequence:(id:string,detach?:boolean)=>void;
   saveMissionPlan:(record:MissionPlan)=>void;removeMissionPlan:(id:string,detach?:boolean)=>void;
@@ -198,7 +228,7 @@ interface State{
   blueprintPlacementId:string|null;setBlueprintPlacement:(id:string|null)=>void;placeBlueprintAt:(position:Vec3)=>void;
   saveSmartConnection:(record:SmartConnectionRecord,brushes:Brush[],cuts?:ConnectionCutDraft[])=>void;
   detachSmartConnection:(id:string)=>void;
-  addObjects:(o:MapObject[])=>void;updateObject:(id:string,changes:Partial<MapObject>)=>void;
+  addObjects:(o:MapObject[])=>void;addGeneratedObjects:(o:MapObject[])=>void;applyObjectList:(o:MapObject[],select?:string[])=>void;clipSelectedByPlane:(point:Vec3,normal:Vec3,side:'both'|'front'|'back')=>number;assignSelectionToLayer:(layer:string)=>number;toggleLayerLocked:(layer:string)=>void;renameLayer:(from:string,to:string)=>void;isolateLayer:(layer:string)=>void;frameTarget:{min:Vec3;max:Vec3}|null;frameBox:(min:Vec3,max:Vec3)=>void;freeClipMode:boolean;setFreeClipMode:(on:boolean)=>void;/** v2.5: a full-screen studio covers the 3D view, so it stops rendering. */viewportPaused:boolean;scatterOnArea:(templateIds:string[],areaIds:string[],options:import('./engine/mapTools24').ScatterOptions)=>number;updateObject:(id:string,changes:Partial<MapObject>)=>void;
   changeFace:(id:string,face:number,changes:Partial<Face>)=>void;paintSelected:(texture:string)=>void;
   removeSelected:()=>void;duplicateSelected:()=>void;brushClipboard:Brush[];brushPasteCount:number;copySelectedBrushes:()=>void;pasteCopiedBrushes:()=>void;setObjectProp:(id:string,key:string,value:string)=>void;
   detachBrushEntities:(ids:string[],wholeEntity?:boolean)=>void;
@@ -206,9 +236,13 @@ interface State{
   connectGameplay:(from:string,to:string,replace?:boolean)=>void;disconnectGameplay:(from:string)=>void;setGraphPosition:(id:string,position:[number,number])=>void;setGraphPositions:(positions:Record<string,[number,number]>)=>void;
   changeWorld:(key:string,value:string)=>void;newProject:()=>void;loadProject:(p:Project)=>void;setName:(name:string)=>void;
   toggleVisibility:(id:string)=>void;toggleLocked:(id:string)=>void;toggleLayerVisibility:(layer:string)=>void;  setLayer:(id:string,layer:string)=>void;
-  selectSameClass:(classname:string)=>void;selectSameLayer:(layer:string)=>void;isolateSelection:()=>void;revealAll:()=>void;unlockAll:()=>void;
-  undo:()=>void;redo:()=>void;setTextures:(textures:TextureAsset[],wad:string,options?:{trackProject?:boolean})=>void;removeTextureWad:(wad:string)=>void;setFgd:(classes:FgdClass[])=>void;
-  appendLogs:(lines:string[])=>void;clearLogs:()=>void;setCompileBusy:(b:boolean)=>void;setSettings:(s:Partial<Settings>)=>void;
+  selectSameClass:(classname:string)=>void;
+  /** Find & replace brush-face textures (one undo step). Returns how many faces changed. */
+  replaceTextures:(options:Omit<TextureReplaceOptions,'selectedIds'>)=>TextureReplacePlan;
+  /** Entity report: rename a targetname with all references / bulk keyvalue edit. One undo step each. */
+  renameTargetname:(from:string,to:string)=>RenamePlan;setEntityKeyvalues:(ids:string[],key:string,value:string)=>number;selectBrushesWithTexture:(texture:string)=>number;selectSameLayer:(layer:string)=>void;isolateSelection:()=>void;revealAll:()=>void;unlockAll:()=>void;
+  undo:()=>void;redo:()=>void;setTextures:(textures:TextureAsset[],wad:string,options?:{trackProject?:boolean})=>void;addTextureAssets:(textures:TextureAsset[])=>void;removeTextureWad:(wad:string)=>void;setFgd:(classes:FgdClass[])=>void;
+  appendLogs:(lines:string[])=>void;clearLogs:()=>void;setCompileBusy:(b:boolean)=>void;setSettings:(s:Partial<Settings>)=>void;setGameProfile:(profile:GameProfile)=>void;
 }
 /** No hidden/locked brush is ever edited. One batch is one undo step. */
 export function textureStudioTargets(s:Pick<State,'project'|'selected'|'selectedIds'|'selectedFace'|'faceMode'|'textureFaceSelection'>):TextureFaceRef[]{
@@ -584,7 +618,7 @@ export const useEditor=create<State>((set,get)=>({
     const point=at.map(n=>s.snapping?Math.round(n/s.snap)*s.snap:Math.round(n*100)/100) as Vec3;
     return {measurement:!s.measurement.a||s.measurement.b?{a:point,b:null}:{a:s.measurement.a,b:point}};
   }),
-  project:demoProject(),selected:null,selectedIds:[],selectedFace:null,navigatorFocusedId:null,brushClipboard:[],brushPasteCount:0,mode:'select',showTransformGizmo:(()=>{try{return localStorage.getItem('svenstudio:gizmo-visible')!=='false'}catch{return true}})(),setShowTransformGizmo:enabled=>set(()=>{try{localStorage.setItem('svenstudio:gizmo-visible',String(enabled))}catch{}return {showTransformGizmo:enabled}}),activateGizmoMode:mode=>set({mode,placementPrefabId:null,walkMode:false,measureMode:false,showTransformGizmo:true,geometryMode:'object',faceMode:false,editIndices:[],editEdgePairs:[],drawMode:false,placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,routePlacementFor:null,flyMode:false,modalTransform:null,modalFinish:null,architecturePlacement:null,architectureHoverTarget:null,architecturePreviousMode:null}),
+  project:initialSettings.gameProfile==='cs16'?{...emptyProject(),target:'cs16'}:demoProject(),selected:null,selectedIds:[],selectedFace:null,navigatorFocusedId:null,brushClipboard:[],brushPasteCount:0,mode:'select',showTransformGizmo:(()=>{try{return localStorage.getItem('svenstudio:gizmo-visible')!=='false'}catch{return true}})(),setShowTransformGizmo:enabled=>set(()=>{try{localStorage.setItem('svenstudio:gizmo-visible',String(enabled))}catch{}return {showTransformGizmo:enabled}}),activateGizmoMode:mode=>set({mode,placementPrefabId:null,walkMode:false,measureMode:false,showTransformGizmo:true,geometryMode:'object',faceMode:false,editIndices:[],editEdgePairs:[],drawMode:false,placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,routePlacementFor:null,flyMode:false,modalTransform:null,modalFinish:null,architecturePlacement:null,architectureHoverTarget:null,architecturePreviousMode:null}),
   // Keyboard R/C uses the *persistent* gizmo, not the mouse-follow modal tool.
   // Pressing the same shortcut again returns to normal selection and hides it.
   // No project/history mutation is performed until the user drags a gizmo handle.
@@ -602,9 +636,9 @@ export const useEditor=create<State>((set,get)=>({
   }),faceMode:false,showGrid:true,showLights:true,showEntityNames:true,entityAppearance:loadEntityAppearance(),mapLabelSettings:loadMapLabelSettings(),placementShape:null,shapeSize:[128,128,128],pendingNpcClass:null,routePlacementFor:null,routeSolo:null,audioPlacement:null,
   modalTransform:null,modalFinish:null,
   controls:readControls(),flyMode:false,walkMode:false,cameraCommand:null,cameraLabel:'Perspective',
-  resourceView:'entities',textureAssets:[],currentTexture:BOX,decalAssets:[],activeDecal:null,fgdClasses:starterEntities,fgdLoaded:false,
+  resourceView:'entities',textureAssets:[],currentTexture:BOX,decalAssets:[],activeDecal:null,fgdClasses:initialSettings.gameProfile==='cs16'?cs16StarterEntities:starterEntities,fgdLoaded:false,
   history:[],future:[],logs:['SvenStudio 3D initialized.','Import a real .WAD and .FGD for full texture/entity access.'],compileBusy:false,
-  settings:(()=>{try{return {...DEFAULT_SETTINGS,...JSON.parse(localStorage.getItem('svenstudio-settings')||'{}')}}catch{return DEFAULT_SETTINGS}})(),
+  settings:initialSettings,
   setEntityAppearance:changes=>set(s=>{const settings=normalizeEntityAppearance({...s.entityAppearance,...changes});saveEntityAppearance(settings);return {entityAppearance:settings}}),
   setEntityColor:(kind,color)=>set(s=>{const settings=normalizeEntityAppearance({...s.entityAppearance,colors:{...s.entityAppearance.colors,[kind]:color}});saveEntityAppearance(settings);return {entityAppearance:settings}}),
   resetEntityAppearance:()=>set(()=>{const entityAppearance=structuredClone(DEFAULT_ENTITY_APPEARANCE);saveEntityAppearance(entityAppearance);return {entityAppearance}}),
@@ -660,6 +694,17 @@ export const useEditor=create<State>((set,get)=>({
   },
   setCameraLabel:cameraLabel=>set({cameraLabel}),
   setSelected:(selected,selectedFace=null)=>set({selected,selectedIds:selected?[selected]:[],selectedFace,textureFaceSelection:[],editIndices:[],editEdgePairs:[],focusHiddenId:null,navigatorFocusedId:null}),
+  // Shared with studios: select existing MAP objects via the native transform gizmos.
+  // Do not create a project history entry for selection or camera framing.
+  selectObjectIds:(ids,focus=false)=>set(s=>{
+    const valid=new Set(s.project.objects.filter(o=>!o.hidden&&!o.locked).map(o=>o.id));
+    const selectedIds=[...new Set(ids)].filter(id=>valid.has(id));
+    return {selected:selectedIds.at(-1)??null,selectedIds,selectedFace:null,
+      textureFaceSelection:[],editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false,
+      mode:'select',navigatorFocusedId:null,focusHiddenId:null,
+      ...(focus&&selectedIds.length?{walkMode:false,flyMode:false,
+        cameraCommand:{action:'frame' as const,serial:(s.cameraCommand?.serial||0)+1}}:{})};
+  }),
   selectObject:(id,additive,selectedFace=null)=>set(s=>{
     // Preserve an existing multi-selection while grabbing a selected brush or
     // the group gizmo. Click an unselected object or empty space to reset it.
@@ -931,6 +976,35 @@ export const useEditor=create<State>((set,get)=>({
     const changed=mutate(s,s.project.objects);
     return {...changed,project:{...changed.project,curveAssemblies:s.project.curveAssemblies!.filter(r=>r.id!==id)}};
   }),
+  resizeBrushToBounds:(id,min,max)=>set(s=>{
+    const brush=s.project.objects.find(o=>o.id===id);
+    if(!brush||brush.kind!=='brush')return {};
+    const next=fitBrushToBounds(brush,min,max);
+    if(next.scale.every((v,i)=>v===brush.scale[i])&&next.position.every((v,i)=>v===brush.position[i]))return {};
+    return {...mutate(s,s.project.objects.map(o=>o.id===id?next:o))};
+  }),
+  linearArraySelected:options=>set(s=>{
+    const ids=new Set(s.selectedIds),members=s.project.objects.filter((o):o is Brush=>ids.has(o.id)&&o.kind==='brush');
+    if(!members.length||members.length!==ids.size)throw Error('Select brushes to repeat in a line.');
+    if(members.some(b=>(s.project.curveAssemblies??[]).some(r=>r.memberIds.includes(b.id)) || (s.project.brushComposites??[]).some(r=>r.memberIds.includes(b.id))))
+      throw Error('Detach a generated curve or composite before copying its members.');
+    const generated=linearArrayBrushes(members,options);
+    const changed=mutate(s,[...s.project.objects,...generated]);
+    return {...changed,selected:generated[0].id,selectedIds:generated.map(b=>b.id),selectedFace:null,geometryMode:'object',faceMode:false};
+  }),
+  mirrorSelected:(axis,keepOriginal)=>{let n=0;set(s=>{
+    const ids=new Set(s.selectedIds),members=s.project.objects.filter((o):o is Brush=>ids.has(o.id)&&o.kind==='brush');
+    if(!members.length)throw Error('Select brushes to mirror.');
+    let lo=Infinity,hi=-Infinity;for(const b of members)for(const v of transformedVertices(b)){lo=Math.min(lo,v[axis]);hi=Math.max(hi,v[axis]);}
+    // Keeping the original: mirror across the far side so the copy sits next to it (symmetric halves).
+    const mirrored=mirrorBrushes(members,axis,keepOriginal?hi:(lo+hi)/2);n=mirrored.length;
+    const objects=keepOriginal?[...s.project.objects,...mirrored]:[...s.project.objects.filter(o=>!ids.has(o.id)),...mirrored];
+    return {...mutate(s,objects),selected:mirrored[0].id,selectedIds:mirrored.map(b=>b.id),selectedFace:null};});return n;},
+  pathArraySelected:options=>{let n=0;set(s=>{
+    const ids=new Set(s.selectedIds),members=s.project.objects.filter((o):o is Brush=>ids.has(o.id)&&o.kind==='brush');
+    if(!members.length||members.length!==ids.size)throw Error('Select brushes to repeat along the path.');
+    const generated=pathArrayBrushes(members,options);n=generated.length;
+    return {...mutate(s,[...s.project.objects,...generated]),selected:generated[0].id,selectedIds:generated.map(b=>b.id),selectedFace:null,geometryMode:'object',faceMode:false};});return n;},
   radialArraySelected:options=>set(s=>{
     const ids=new Set(s.selectedIds),members=s.project.objects.filter((o):o is Brush=>ids.has(o.id)&&o.kind==='brush');
     if(!members.length||members.length!==ids.size)throw Error('Select brushes to repeat on a curve.');
@@ -1030,7 +1104,7 @@ export const useEditor=create<State>((set,get)=>({
     const next=detachArchitectureLayout(s.project,id);
     return {...mutate(s,next.objects),project:next};
   }),
-  buildArchitecture:(kind,options)=>set(s=>{
+  buildArchitecture:(kind,options,origin)=>set(s=>{
     const obj=s.project.objects.find(o=>o.id===s.selected);
     const wall=obj?.kind==='brush'?obj:null;
     if(kind==='door'||kind==='window'){
@@ -1040,7 +1114,7 @@ export const useEditor=create<State>((set,get)=>({
       return {...mutate(s,next),selected:ids.at(-1)||null,selectedIds:ids,
         selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false};
     }
-    const generated=buildArchitectureAssembly(kind,options,wall?[...wall.position]:[0,0,0],s.currentTexture||'SV_BRICK01');
+    const generated=buildArchitectureAssembly(kind,options,origin?[...origin]:wall?[...wall.position]:[0,0,0],s.currentTexture||'SV_BRICK01');
     const next=[...s.project.objects,...generated.objects];
     const base=mutate(s,next);
     const ids=generated.record.memberIds;
@@ -1068,6 +1142,19 @@ export const useEditor=create<State>((set,get)=>({
       const delta=origin.map((value,i)=>value-request.draft.origin[i]) as Vec3;
       const points=request.path.points.map(p=>p.map((v,i)=>v+delta[i]) as Vec3);
       s.addPathStructure({...request.path,points},origin);
+    }else if(request.kind==='radial'){
+      if(!request.radial)throw Error('Radial array configuration missing.');
+      s.radialArraySelected({...request.radial,origin});
+    }else if(request.kind==='structure'){
+      if(!request.structure)throw Error('Structure configuration missing.');
+      s.buildArchitecture(request.structure.kind,request.structure.options,origin);
+    }else if(request.kind==='kit'){
+      if(!request.kit)throw Error('Kit configuration missing.');
+      s.addGeneratedObjects(buildKit(request.kit.id,request.kit.options,origin,s.project.objects,draft.texture).objects);
+    }else if(request.kind==='scatter'){
+      if(!request.scatter)throw Error('Scatter configuration missing.');
+      const templates=request.scatter.templateIds.map(id=>s.project.objects.find(o=>o.id===id)).filter((o):o is MapObject=>!!o);
+      s.addGeneratedObjects(planScatterAround(s.project,templates,origin,request.scatter.options));
     }else{
       if(!request.rocks)throw Error('Rock placement configuration missing.');
       s.addObjects(createRockCluster({...request.rocks,origin,texture:draft.texture}));
@@ -1249,6 +1336,47 @@ export const useEditor=create<State>((set,get)=>({
     return {...base,project:{...base.project,smartConnections:s.project.smartConnections.filter(r=>r.id!==id)}};
   }),
   addObjects:objects=>set(s=>({...mutate(s,[...s.project.objects,...objects]),selected:objects[0]?.id||s.selected,selectedIds:objects.length?[objects[0].id]:s.selectedIds})),
+  // v2.4 map tools: add a generated set as ONE undo step and select all of it.
+  applyObjectList:(objects,select=[])=>set(s=>({...mutate(s,objects),selected:select[select.length-1]??null,selectedIds:select,selectedFace:null})),
+  addGeneratedObjects:objects=>{if(!objects.length)return;set(s=>({...mutate(s,[...s.project.objects,...objects]),selected:objects[objects.length-1].id,selectedIds:objects.map(o=>o.id),selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false}));},
+  clipSelectedByPlane:(point,normal,side)=>{
+    const s=get();
+    const brushes=s.project.objects.filter((o):o is Brush=>o.kind==='brush'&&s.selectedIds.includes(o.id)&&!o.locked);
+    if(!brushes.length)throw Error('Select one or more unlocked brushes to cut.');
+    const parts=clipBrushesByPlane(brushes,point,normal,side);
+    const ids=[...parts.values()].flat().map(b=>b.id);
+    set(state=>({...mutate(state,state.project.objects.flatMap(o=>parts.get(o.id)??[o])),selected:ids.at(-1)??null,selectedIds:ids,selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false}));
+    return [...parts.entries()].filter(([id,list])=>list.length!==1||list[0].id!==id).length;
+  },
+  assignSelectionToLayer:layer=>{
+    const name=layer.trim().slice(0,48);if(!name)throw Error('Enter a layer name.');
+    const ids=new Set(get().selectedIds);if(!ids.size)throw Error('Select objects first.');
+    set(s=>mutate(s,s.project.objects.map(o=>ids.has(o.id)?{...o,layer:name}:o)));
+    return ids.size;
+  },
+  toggleLayerLocked:layer=>set(s=>{
+    const inLayer=s.project.objects.filter(o=>(o.layer||'Geometry')===layer);
+    const lock=inLayer.some(o=>!o.locked);
+    return mutate(s,s.project.objects.map(o=>(o.layer||'Geometry')===layer?{...o,locked:lock}:o));
+  }),
+  renameLayer:(from,to)=>{
+    const name=to.trim().slice(0,48);if(!name||name===from)return;
+    set(s=>mutate(s,s.project.objects.map(o=>(o.layer||'Geometry')===from?{...o,layer:name}:o)));
+  },
+  isolateLayer:layer=>set(s=>{
+    const others=s.project.objects.filter(o=>(o.layer||'Geometry')!==layer);
+    // Second click shows everything again.
+    const isolated=others.length>0&&others.every(o=>o.hidden)&&s.project.objects.some(o=>(o.layer||'Geometry')===layer&&!o.hidden);
+    return mutate(s,s.project.objects.map(o=>isolated?{...o,hidden:false}:{...o,hidden:(o.layer||'Geometry')!==layer}));
+  }),
+  frameTarget:null,freeClipMode:false,viewportPaused:false,
+  scatterOnArea:(templateIds,areaIds,options)=>{
+    const s=get(),templates=templateIds.map(id=>s.project.objects.find(o=>o.id===id)).filter((o):o is MapObject=>!!o);
+    const copies=planScatterOnArea(s.project,templates,areaIds,options);
+    s.addGeneratedObjects(copies);return copies.length;
+  },
+  setFreeClipMode:on=>set(s=>on?{freeClipMode:true,settings:{...s.settings,quadView:true}}:{freeClipMode:false}),
+  frameBox:(min,max)=>set(s=>({frameTarget:{min,max},cameraCommand:{action:'frame' as const,serial:(s.cameraCommand?.serial||0)+1}})),
   updateObject:(id,changes)=>set(s=>({...mutate(s,s.project.objects.map(o=>{
     if(o.id!==id)return o;
     // Respect explicit face edits from Texture Studio. All position updates,
@@ -1357,7 +1485,7 @@ export const useEditor=create<State>((set,get)=>({
     const settings={...s.settings,mapName:'',wadPaths:'',radAmbientTest:'off' as const,smartWadName:'',resourceRoots:[],distributionDir:'',distributionFormat:'build' as const};
     try{localStorage.setItem('svenstudio-settings',JSON.stringify(settings))}catch{/* Private mode should not prevent New project. */}
     return {settings,pathEditingId:null,textureFaceSelection:[],textureStudioOpen:false,texturePickerActive:false,
-      terrainPlacement:null,cinematicPlacementFor:null,isolationSnapshot:null,project:emptyProject(),textureAssets:[],currentTexture:BOX,decalAssets:[],
+      terrainPlacement:null,cinematicPlacementFor:null,isolationSnapshot:null,revealedHiddenIds:null,compileRegion:null,project:s.settings.gameProfile==='cs16'?{...emptyProject(),target:'cs16'}:demoProject(),textureAssets:s.textureAssets.filter(t=>/svstudio\.wad$/i.test(t.wad)),currentTexture:BOX,decalAssets:[],
       placementPrefabId:null,placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,
       routePlacementFor:null,routeSolo:null,selected:null,selectedIds:[],selectedFace:null,editIndices:[],editEdgePairs:[],
       geometryMode:'object',faceMode:false,history:[],future:[],mode:'select',drawMode:false,
@@ -1365,7 +1493,20 @@ export const useEditor=create<State>((set,get)=>({
       architecturePreviousMode:null,modalTransform:null,modalFinish:null,measureMode:false,
       brushClipboard:[],brushPasteCount:0};
   }),
-  loadProject:project=>set({pathEditingId:null,textureFaceSelection:[],textureStudioOpen:false,texturePickerActive:false,terrainPlacement:null,cinematicPlacementFor:null,walkMode:false,flyMode:false,architecturePlacement:null,architectureHoverTarget:null,architecturePreviousMode:null,isolationSnapshot:null,project:clone(project),navigatorFocusedId:null,placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,routePlacementFor:null,routeSolo:null,selected:null,selectedIds:[],selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false,history:[],future:[]}),
+  loadProject:project=>{if(typeof document!=='undefined')queueMicrotask(()=>document.dispatchEvent(new CustomEvent('svenstudio:project-loaded')));set(s=>{
+    const profile:GameProfile=project.target==='cs16'?'cs16':'svengine';
+    const changed=s.settings.gameProfile!==profile;
+    const settings=changed?{...s.settings,gameProfile:profile,compilerEngine:profile==='cs16'?'zhlt' as const:'sc' as const,
+      compilerDir:'',sdhltDir:'',gameDir:'',wadPaths:'',resourceRoots:[],distributionFormat:'build' as const,smartWadMode:'off' as const}:s.settings;
+    if(changed){try{localStorage.setItem('svenstudio-settings',JSON.stringify(settings))}catch{}}
+    return {settings,...(changed?{fgdClasses:profile==='cs16'?cs16StarterEntities:starterEntities,fgdLoaded:false}:{}),
+      pathEditingId:null,textureFaceSelection:[],textureStudioOpen:false,texturePickerActive:false,terrainPlacement:null,
+      cinematicPlacementFor:null,walkMode:false,flyMode:false,architecturePlacement:null,architectureHoverTarget:null,
+      architecturePreviousMode:null,isolationSnapshot:null,revealedHiddenIds:null,compileRegion:null,project:clone(project),navigatorFocusedId:null,
+      placementShape:null,audioPlacement:null,environmentPlacement:null,pendingNpcClass:null,routePlacementFor:null,
+      routeSolo:null,selected:null,selectedIds:[],selectedFace:null,editIndices:[],editEdgePairs:[],
+      geometryMode:'object' as const,faceMode:false,history:[],future:[]};
+  });},
   setName:name=>set(s=>({project:{...s.project,name}})),
   toggleVisibility:id=>set(s=>({...mutate(s,s.project.objects.map(o=>o.id===id?{...o,hidden:!o.hidden}:o)),visibilityListIds:s.visibilityListIds.includes(id)?s.visibilityListIds:[...s.visibilityListIds,id]})),
   toggleLocked:id=>set(s=>({...mutate(s,s.project.objects.map(o=>o.id===id?{...o,locked:!o.locked}:o))})),
@@ -1375,6 +1516,27 @@ export const useEditor=create<State>((set,get)=>({
     return {...mutate(s,s.project.objects.map(o=>(o.layer||'Geometry')===layer?{...o,hidden:shouldHide}:o))};
   }),
   setLayer:(id,layer)=>set(s=>({...mutate(s,s.project.objects.map(o=>o.id===id?{...o,layer}:o))})),
+  replaceTextures:options=>{
+    const s=get();
+    const plan=planTextureReplace(s.project.objects,{...options,selectedIds:s.selectedIds});
+    if(plan.faces)set(state=>mutate(state,plan.objects));
+    return plan;
+  },
+  renameTargetname:(from,to)=>{
+    const plan=planTargetnameRename(get().project.objects,from,to);
+    if(plan.renamedEntities||plan.updatedReferences)set(state=>mutate(state,plan.objects));
+    return plan;
+  },
+  setEntityKeyvalues:(ids,key,value)=>{
+    const plan=planBulkKeyvalue(get().project.objects,ids,key,value);
+    if(plan.changed)set(state=>mutate(state,plan.objects));
+    return plan.changed;
+  },
+  selectBrushesWithTexture:texture=>{
+    const ids=brushesUsingTexture(get().project.objects,texture);
+    set({selected:ids.at(-1)??null,selectedIds:ids,selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false,textureFaceSelection:[]});
+    return ids.length;
+  },
   selectSameClass:classname=>set(s=>{
     const ids=s.project.objects.filter(o=>o.kind==='entity'&&o.classname===classname).map(o=>o.id);
     return {selected:ids.at(-1)??null,selectedIds:ids,selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false};
@@ -1383,8 +1545,10 @@ export const useEditor=create<State>((set,get)=>({
     const ids=s.project.objects.filter(o=>(o.layer||'Geometry')===layer).map(o=>o.id);
     return {selected:ids.at(-1)??null,selectedIds:ids,selectedFace:null,editIndices:[],editEdgePairs:[],geometryMode:'object',faceMode:false};
   }),
-  ghostHidden:false,visibilityListIds:[],focusHiddenId:null,focusHidden:id=>set({focusHiddenId:id,selected:id,selectedIds:[id],selectedFace:null,editIndices:[],editEdgePairs:[],cameraCommand:{action:'frame',serial:(get().cameraCommand?.serial||0)+1}}), isolationSnapshot:null,
+  ghostHidden:false,visibilityListIds:[],focusHiddenId:null,focusHidden:id=>set({focusHiddenId:id,selected:id,selectedIds:[id],selectedFace:null,editIndices:[],editEdgePairs:[],cameraCommand:{action:'frame',serial:(get().cameraCommand?.serial||0)+1}}), isolationSnapshot:null,revealedHiddenIds:null,compileRegion:null,
   toggleGhostHidden:()=>set(s=>({ghostHidden:!s.ghostHidden})),
+  setCompileRegionFromSelection:()=>{const s=get();const region=regionFromObjects(s.project.objects,s.selectedIds);if(!region)return false;set({compileRegion:region});return true;},
+  clearCompileRegion:()=>set({compileRegion:null}),editorSkyStatus:'off',
   hideSelection:()=>set(s=>s.selectedIds.length?{...mutate(s,s.project.objects.map(o=>s.selectedIds.includes(o.id)?{...o,hidden:true}:o)),visibilityListIds:[...new Set([...s.visibilityListIds,...s.selectedIds])],selected:null,selectedIds:[]}:{}),
   toggleTemporaryIsolation:()=>set(s=>{
     if(s.isolationSnapshot){const snapshot=s.isolationSnapshot;return {...mutate(s,s.project.objects.map(o=>({...o,hidden:snapshot[o.id]??!!o.hidden}))),isolationSnapshot:null};}
@@ -1397,6 +1561,20 @@ export const useEditor=create<State>((set,get)=>({
     const ids=new Set(s.selectedIds);
     if(s.project.objects.every(o=>!!o.hidden===!ids.has(o.id)))return {};
     return {...mutate(s,s.project.objects.map(o=>({...o,hidden:!ids.has(o.id)})))};
+  }),
+  // Viewport "show hidden" toggle: first press reveals every hidden object and remembers which;
+  // the next press hides exactly those again. Both steps are undoable.
+  toggleRevealHidden:()=>set(s=>{
+    const ids=new Set(s.revealedHiddenIds||[]);
+    // If an undo already re-hid them, this press reveals again instead of doing nothing.
+    if(s.revealedHiddenIds&&s.project.objects.some(o=>ids.has(o.id)&&!o.hidden)){
+      return {...mutate(s,s.project.objects.map(o=>ids.has(o.id)?{...o,hidden:true}:o)),revealedHiddenIds:null,
+        selectedIds:s.selectedIds.filter(id=>!ids.has(id)),selected:s.selected&&ids.has(s.selected)?null:s.selected};
+    }
+    const hidden=s.project.objects.filter(o=>o.hidden).map(o=>o.id);
+    if(!hidden.length)return {revealedHiddenIds:null};
+    return {...mutate(s,s.project.objects.map(o=>o.hidden?{...o,hidden:false}:o)),
+      visibilityListIds:[...new Set([...s.visibilityListIds,...hidden])],isolationSnapshot:null,revealedHiddenIds:hidden};
   }),
   revealAll:()=>set(s=>s.project.objects.some(o=>o.hidden)?{
     ...mutate(s,s.project.objects.map(o=>o.hidden?{...o,hidden:false}:o)),
@@ -1424,6 +1602,8 @@ export const useEditor=create<State>((set,get)=>({
     if(!valid||valid.every((v,i)=>Math.abs(v-obj.position[i])<.0001))return {};
     return {...mutate(s,s.project.objects.map(o=>o.id===id?{...obj,position:valid}:o)),selected:id,selectedIds:[id],selectedFace:null};
   }),
+  // v2.4: add textures found for an opened project without replacing anything already loaded.
+  addTextureAssets:assets=>set(s=>{const have=new Set(s.textureAssets.map(t=>t.name.toLowerCase()));const extra=assets.filter(a=>!have.has(a.name.toLowerCase()));return extra.length?{textureAssets:[...s.textureAssets,...extra]}:{};}),
   setTextures:(assets,wad,options)=>set(s=>({
     textureAssets:[...s.textureAssets.filter(t=>wadBasename(t.wad)!==wadBasename(wad)),...assets],
     // Restoring browser WADs must never add stale files to an unrelated MAP.
@@ -1451,6 +1631,14 @@ export const useEditor=create<State>((set,get)=>({
   setFgd:classes=>set({fgdClasses:classes,fgdLoaded:true}),
   appendLogs:lines=>set(s=>({logs:[...s.logs,...lines].slice(-1500)})),clearLogs:()=>set({logs:[]}),
   setCompileBusy:compileBusy=>set({compileBusy}),
-  setSettings:changes=>set(s=>{const settings={...s.settings,...changes};localStorage.setItem('svenstudio-settings',JSON.stringify(settings));return {settings}})
+  setGameProfile:profile=>set(s=>{
+    if(profile===s.settings.gameProfile)return {};
+    const settings={...s.settings,gameProfile:profile,compilerEngine:profile==='cs16'?'zhlt' as const:'sc' as const,
+      compilerDir:'',sdhltDir:'',gameDir:'',wadPaths:'',resourceRoots:[],smartWadMode:'off' as const,
+      distributionDir:'',distributionFormat:'build' as const,radAmbientTest:'off' as const};
+    try{localStorage.setItem('svenstudio-settings',JSON.stringify(settings))}catch{}
+    return {settings,project:{...s.project,target:profile},fgdClasses:profile==='cs16'?cs16StarterEntities:starterEntities,fgdLoaded:false};
+  }),
+  setSettings:changes=>set(s=>{const settings={...s.settings,...changes};try{localStorage.setItem('svenstudio-settings',JSON.stringify(settings))}catch{}return {...(changes.gameDir!==undefined&&changes.gameDir!==s.settings.gameDir?{fgdClasses:settings.gameProfile==='cs16'?cs16StarterEntities:starterEntities,fgdLoaded:false}:{}),settings}})
 }));
 

@@ -1,6 +1,7 @@
+const {legacyI18nSource}=require('./support/legacyI18n.cjs');
 /* World Builder Studio 1.9.2: regression + read/export geometry tests.
    Run: node --test tests/world-builder-studio-v192.test.cjs */
-const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),ts=require('typescript');
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),ts=require('./support/typescript.cjs');
 require.extensions['.ts']=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,file);
 const {createTerrainBrushes,createTerrainPreviewShell,terrainRecord,defaultTerrain,validateTerrainDraft}=require('../src/engine/terrain.ts');
 const {generateWorldHeights,applyWorldFeature}=require('../src/engine/worldBuilderTerrain.ts');
@@ -75,7 +76,7 @@ test('existing vent, pipe, road and rail modes remain available',()=>{
  for(const kind of ['road','walkway','vent','pipe','cable','rail','fence','bridge'])assert.ok(src.includes(`'${kind}'`));
 });
 test('studio has focus layout, camera presets, large controls and localized title',()=>{
- const src=read('src/components/TerrainShapeStudio.tsx'),css=read('src/style.css'),app=read('src/App.tsx'),i18n=read('src/i18n.ts');
+ const src=read('src/components/TerrainShapeStudio.tsx'),css=read('src/style.css'),app=read('src/App.tsx'),i18n=legacyI18nSource();
  for(const str of ['World Builder Studio','wb-terrain-focus','TerrainVertexHandles','toggleDiagonal','TerrainCameraRig','wb-floating-tools','Focus 3D workspace'])assert.ok(src.includes(str),str);
  for(const str of ['wb-viewport-overlay','wb-floating-tools','wb-terrain-focus','min-height:43px'])assert.ok(css.includes(str),str);
  assert.match(app,/t\('World Builder Studio'\)/);

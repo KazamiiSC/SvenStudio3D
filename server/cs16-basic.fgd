@@ -1,0 +1,59 @@
+// SvenStudio 3D: minimum CS 1.6 entity catalogue for offline editing.
+// Load a full CS 1.6 FGD for additional entities, choices and spawnflags.
+@BaseClass = Targetname [ targetname(string) : "Name" target(string) : "Target" ]
+@BaseClass = MoveBrush [ targetname(string) : "Name" speed(integer) : "Speed" : 100 lip(integer) : "Lip" : 0 ]
+@PointClass base(Targetname) size(-16 -16 -36,16 16 36) = info_player_start : "Counter-Terrorist spawn" [ angles(string) : "Angles" : "0 0 0" ]
+@PointClass base(Targetname) size(-16 -16 -36,16 16 36) = info_player_deathmatch : "Terrorist spawn" [ angles(string) : "Angles" : "0 0 0" ]
+@PointClass base(Targetname) = info_vip_start : "VIP spawn" []
+@PointClass base(Targetname) = hostage_entity : "Hostage NPC" []
+@PointClass base(Targetname) = info_hostage_rescue : "Hostage rescue point" []
+@PointClass base(Targetname) = info_bomb_target : "Bomb target marker" []
+@PointClass base(Targetname) = armoury_entity : "Weapon pickup" [
+ item(choices) : "Weapon" : 0 = [
+  0 : "MP5"
+  1 : "TMP"
+  2 : "P90"
+  3 : "MAC10"
+  4 : "AK47"
+  5 : "SG552"
+  6 : "M4A1"
+  7 : "AUG"
+  8 : "Scout"
+  9 : "AWP"
+ ]
+ count(integer) : "Count" : 1
+]
+@PointClass base(Targetname) = game_player_equip : "Equip player" []
+@PointClass base(Targetname) = light : "Point light" [ _light(string) : "Brightness" : "255 255 255 200" ]
+@PointClass = light_environment : "Sky light" [ _light(string) : "Brightness" : "255 255 255 200" pitch(integer) : "Pitch" : -45 ]
+@PointClass base(Targetname) = ambient_generic : "Ambient sound" [ message(sound) : "Sound file" health(integer) : "Volume" : 10 ]
+@PointClass base(Targetname) = env_sprite : "Sprite" [ model(sprite) : "Sprite filename" ]
+@PointClass base(Targetname) = env_beam : "Beam" []
+@PointClass base(Targetname) = info_target : "Target" []
+@PointClass base(Targetname) = info_teleport_destination : "Teleport target" []
+@PointClass base(Targetname) = path_corner : "Train path" []
+@SolidClass base(Targetname) = func_bomb_target : "Bomb planting zone" []
+@SolidClass base(Targetname) = func_hostage_rescue : "Hostage rescue zone" []
+@SolidClass base(Targetname) = func_vip_safetyzone : "VIP safety zone" []
+@SolidClass base(Targetname) = func_escapezone : "Escape zone" []
+@SolidClass base(Targetname) = func_buyzone : "Buy zone" [
+ team(choices) : "Team" : 0 = [
+  0 : "All"
+  1 : "Terrorists"
+  2 : "Counter-Terrorists"
+ ]
+]
+@SolidClass base(MoveBrush) = func_door : "Sliding door" [ wait(integer) : "Delay" : 4 ]
+@SolidClass base(MoveBrush) = func_door_rotating : "Rotating door" []
+@SolidClass base(MoveBrush) = func_button : "Button" []
+@SolidClass base(Targetname) = func_wall : "Solid wall" []
+@SolidClass base(Targetname) = func_breakable : "Breakable" [ health(integer) : "Health" : 100 ]
+@SolidClass base(Targetname) = func_ladder : "Ladder" []
+@SolidClass base(Targetname) = func_train : "Train" []
+@SolidClass base(Targetname) = func_tracktrain : "Track train" []
+@SolidClass base(Targetname) = func_water : "Water" []
+@SolidClass base(Targetname) = func_illusionary : "Non-solid wall" []
+@SolidClass base(Targetname) = trigger_once : "Trigger once" []
+@SolidClass base(Targetname) = trigger_multiple : "Trigger multiple" []
+@SolidClass base(Targetname) = trigger_hurt : "Damage trigger" [ dmg(integer) : "Damage" : 10 ]
+@SolidClass base(Targetname) = trigger_teleport : "Teleport trigger" []

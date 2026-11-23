@@ -126,3 +126,39 @@ export function validateShadowTarget(objects:readonly {kind:string;classname?:st
  if(!matches.some(o=>(Number(o.props?.zhlt_lightflags||'0')&2)!==0))return [`${target}: set ZHLT Lightflags to Opaque (bit 2) on the target brush entity.`];
  return [];
 }
+
+/* v2.6 lights.rad bridge: info_texlights is the in-map equivalent of lights.rad. */
+export type RadEntry={texture:string;rgb:[number,number,number];brightness:number};
+/** Parses lights.rad text ("TEXNAME R G B BRIGHTNESS", // comments). Invalid lines are reported, not guessed. */
+export function parseLightsRad(text:string):{entries:RadEntry[];errors:string[]}{
+  const entries:RadEntry[]=[],errors:string[]=[];
+  text.split(/\r?\n/).forEach((raw,i)=>{
+    const line=raw.replace(/\/\/.*$/,'').trim();if(!line)return;
+    const parts=line.split(/\s+/);const nums=parts.slice(1).map(Number);
+    if(parts.length<5||nums.slice(0,4).some(n=>!Number.isFinite(n))){errors.push(`Line ${i+1}: expected TEXTURE R G B BRIGHTNESS.`);return;}
+    const bad=validateTextureName(parts[0]);if(bad){errors.push(`Line ${i+1}: ${bad}`);return;}
+    const c=(n:number)=>Math.max(0,Math.min(255,Math.round(n)));
+    entries.push({texture:parts[0],rgb:[c(nums[0]),c(nums[1]),c(nums[2])],brightness:Math.max(1,Math.round(nums[3]))});
+  });
+  return {entries,errors};
+}
+const TEXLIGHT_SKIP=new Set(['origin','classname','targetname','spawnflags','angles']);
+/** info_texlights keyvalues → lights.rad text. */
+export function formatLightsRad(props:Record<string,string>):string{
+  return Object.entries(props).filter(([k,v])=>!TEXLIGHT_SKIP.has(k)&&/^\s*\d+\s+\d+\s+\d+\s+\d+\s*$/.test(v)).map(([k,v])=>`${k} ${v.trim().split(/\s+/).join(' ')}`).sort().join('\n')+'\n';
+}
+/** Adds RAD entries to info_texlights props; existing texture keys are replaced. */
+export function mergeRadEntries(existing:Record<string,string>,entries:readonly RadEntry[]):Record<string,string>{
+  const next={...existing};for(const e of entries)next[e.texture]=`${e.rgb.join(' ')} ${e.brightness}`;return next;
+}
+/** Texture names that look emissive (light panels, lamps, screens, neon) and are not defined yet. */
+export function emissiveCandidates(textures:readonly string[],defined:readonly string[]):string[]{
+  const known=new Set(defined.map(d=>d.toLowerCase()));
+  return [...new Set(textures)].filter(t=>/light|lite|lamp|glow|neon|fluor|screen|monitor|lit\d|^~/i.test(t)&&!/^(sky|aaatrigger|origin|clip|null|hint|skip)$/i.test(t)&&!known.has(t.toLowerCase())).sort();
+}
+/** Suggested brightness from the name: small bulbs dim, big panels / fluorescent bright. */
+export function suggestedBrightness(texture:string):number{
+  if(/fluor|panel|big|lrg|large/i.test(texture))return 1500;
+  if(/screen|monitor|comp|glow|neon/i.test(texture))return 250;
+  return 800;
+}

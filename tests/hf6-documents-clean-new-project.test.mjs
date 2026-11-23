@@ -8,8 +8,8 @@ import {documentsRoot,studioDirectory,studioFolders,validStudioFilename,saveStud
 const src=async file=>readFile(new URL('../'+file,import.meta.url),'utf8');
 
 test('Documents root is per-user and accepts redirected Documents',()=>{
- assert.equal(documentsRoot({home:'/users/demo'}),'/users/demo/Documents/SvenStudio3D');
- assert.equal(documentsRoot({documents:'/OneDrive/Documentos'}),'/OneDrive/Documentos/SvenStudio3D');
+ assert.equal(documentsRoot({home:'/users/demo'}),path.join('/users/demo','Documents','SvenStudio3D')); // platform separator
+ assert.equal(documentsRoot({documents:'/OneDrive/Documentos'}),path.join('/OneDrive/Documentos','SvenStudio3D'));
 });
 test('Organized directories and safe versioned document saves',async()=>{
  const root=await mkdtemp(path.join(os.tmpdir(),'sven-hf6-docs-'));
@@ -39,7 +39,7 @@ test('Reject traversal, invalid extensions, excessive data and symlink redirecti
   }
   await assert.rejects(saveStudioFile({category:'unknown',filename:'a.map',bytes:Buffer.from('hello')},{root}));
   await assert.rejects(saveStudioFile({category:'maps',filename:'a.map',bytes:Buffer.alloc(0)},{root}));
-  await symlink(external,path.join(root,'Maps'),'dir');
+  await symlink(external,path.join(root,'Maps'),'junction'); // junctions are reparse points too and need no admin rights
   await assert.rejects(saveStudioFile({category:'maps',filename:'a.map',bytes:Buffer.from('hello')},{root}),/Unsafe/);
   await assert.rejects(readStudioFile('maps','a.map',{root}),/Unsafe/);
  }finally{await Promise.all([rm(root,{recursive:true,force:true}),rm(external,{recursive:true,force:true})])}
@@ -54,7 +54,7 @@ test('CLEAN is one literal label in all six languages',async()=>{
 test('New project resets project-specific settings but keeps installed SDK directories',async()=>{
  const store=await src('src/store.ts');
  assert.match(store,/newProject:\(\)=>set\(s=>\{/);
- for(const marker of ["mapName:''","wadPaths:''","smartWadName:''","resourceRoots:[]","distributionDir:''","project:emptyProject()","textureAssets:[]"]){assert.ok(store.includes(marker),marker)}
+ for(const marker of ["mapName:''","wadPaths:''","smartWadName:''","resourceRoots:[]","distributionDir:''","project:s.settings.gameProfile==='cs16'?{...emptyProject(),target:'cs16'}:demoProject()","textureAssets:s.textureAssets.filter(t=>/svstudio\\.wad$/i.test(t.wad))"]){assert.ok(store.includes(marker),marker)}
  assert.match(store,/const settings=\{\.\.\.s.settings/);
  const app=await src('src/App.tsx');
  assert.match(app,/newProject\(\);setLastCompiled\(null\)/);

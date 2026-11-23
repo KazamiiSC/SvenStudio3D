@@ -35,12 +35,17 @@ function notify(status:'saved'|'error',time?:number){
 export function startRecoveryAutosave():()=>void{
   let timer:ReturnType<typeof setTimeout>|undefined;
   let isDisposed=false;
+  // v2.4: only write when something changed since the last write. Big maps are 20+ MB: copying them
+  // into IndexedDB every 30 s while idle cost CPU spikes and memory for nothing.
+  let dirty=true;
   const write=()=>{
-    if(isDisposed)return;
+    if(isDisposed||!dirty)return;
+    dirty=false;
     if(timer!==undefined){clearTimeout(timer);timer=undefined;}
     queueRecoveryWrite(capture()).then(()=>{
       lastSaveError=false;notify('saved',Date.now());
     }).catch(error=>{
+      dirty=true;
       if(!lastSaveError)useEditor.getState().appendLogs([`Autosave warning: ${String(error)}. Export your .svenstudio.json manually.`]);
       lastSaveError=true;notify('error');
     });
@@ -50,7 +55,7 @@ export function startRecoveryAutosave():()=>void{
     timer=setTimeout(write,1200);
   };
   const unsubscribe=useEditor.subscribe((s,previous)=>{
-    if(s.project!==previous.project||s.selectedIds!==previous.selectedIds||s.selectedFace!==previous.selectedFace||s.geometryMode!==previous.geometryMode||s.resourceView!==previous.resourceView||s.snap!==previous.snap||s.snapping!==previous.snapping)schedule();
+    if(s.project!==previous.project||s.selectedIds!==previous.selectedIds||s.selectedFace!==previous.selectedFace||s.geometryMode!==previous.geometryMode||s.resourceView!==previous.resourceView||s.snap!==previous.snap||s.snapping!==previous.snapping){dirty=true;schedule();}
   });
   const periodic=window.setInterval(write,30000);
   const flush=()=>write();

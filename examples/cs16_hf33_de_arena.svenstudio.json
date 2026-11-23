@@ -1,0 +1,2319 @@
+{
+  "version": 1,
+  "target": "cs16",
+  "name": "de_hf33_arena",
+  "world": {
+    "classname": "worldspawn",
+    "mapversion": "220",
+    "message": "HF33 CS 1.6 arena"
+  },
+  "wadNames": [
+    "halflife.wad"
+  ],
+  "objects": [
+    {
+      "id": "8bafb14f-8fb3-441b-8d4d-318f62be651a",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Arena floor",
+      "position": [
+        0,
+        0,
+        -32
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -1088,
+          -704,
+          -32
+        ],
+        [
+          1088,
+          -704,
+          -32
+        ],
+        [
+          1088,
+          704,
+          -32
+        ],
+        [
+          -1088,
+          704,
+          -32
+        ],
+        [
+          -1088,
+          -704,
+          32
+        ],
+        [
+          1088,
+          -704,
+          32
+        ],
+        [
+          1088,
+          704,
+          32
+        ],
+        [
+          -1088,
+          704,
+          32
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        }
+      ],
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "628e998c-e95e-4dfd-9f07-62e1cce6e27d",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Arena ceiling",
+      "position": [
+        0,
+        0,
+        384
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -1088,
+          -704,
+          -32
+        ],
+        [
+          1088,
+          -704,
+          -32
+        ],
+        [
+          1088,
+          704,
+          -32
+        ],
+        [
+          -1088,
+          704,
+          -32
+        ],
+        [
+          -1088,
+          -704,
+          32
+        ],
+        [
+          1088,
+          -704,
+          32
+        ],
+        [
+          1088,
+          704,
+          32
+        ],
+        [
+          -1088,
+          704,
+          32
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        }
+      ],
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "590aa573-3c02-4d92-a22f-dc678110a2db",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "West wall",
+      "position": [
+        -1056,
+        0,
+        176
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -32,
+          -704,
+          -176
+        ],
+        [
+          32,
+          -704,
+          -176
+        ],
+        [
+          32,
+          704,
+          -176
+        ],
+        [
+          -32,
+          704,
+          -176
+        ],
+        [
+          -32,
+          -704,
+          176
+        ],
+        [
+          32,
+          -704,
+          176
+        ],
+        [
+          32,
+          704,
+          176
+        ],
+        [
+          -32,
+          704,
+          176
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        }
+      ],
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "44b35497-f782-460b-8fe8-eb8c080f7e7e",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "East wall",
+      "position": [
+        1056,
+        0,
+        176
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -32,
+          -704,
+          -176
+        ],
+        [
+          32,
+          -704,
+          -176
+        ],
+        [
+          32,
+          704,
+          -176
+        ],
+        [
+          -32,
+          704,
+          -176
+        ],
+        [
+          -32,
+          -704,
+          176
+        ],
+        [
+          32,
+          -704,
+          176
+        ],
+        [
+          32,
+          704,
+          176
+        ],
+        [
+          -32,
+          704,
+          176
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        }
+      ],
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "d6a91a40-df01-4442-9f56-8158f764aea9",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "North wall",
+      "position": [
+        0,
+        672,
+        176
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -1024,
+          -32,
+          -176
+        ],
+        [
+          1024,
+          -32,
+          -176
+        ],
+        [
+          1024,
+          32,
+          -176
+        ],
+        [
+          -1024,
+          32,
+          -176
+        ],
+        [
+          -1024,
+          -32,
+          176
+        ],
+        [
+          1024,
+          -32,
+          176
+        ],
+        [
+          1024,
+          32,
+          176
+        ],
+        [
+          -1024,
+          32,
+          176
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        }
+      ],
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "390483fe-13eb-421c-8480-b2d54524aa48",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "South wall",
+      "position": [
+        0,
+        -672,
+        176
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -1024,
+          -32,
+          -176
+        ],
+        [
+          1024,
+          -32,
+          -176
+        ],
+        [
+          1024,
+          32,
+          -176
+        ],
+        [
+          -1024,
+          32,
+          -176
+        ],
+        [
+          -1024,
+          -32,
+          176
+        ],
+        [
+          1024,
+          -32,
+          176
+        ],
+        [
+          1024,
+          32,
+          176
+        ],
+        [
+          -1024,
+          32,
+          176
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        }
+      ],
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "58ede96d-d92c-4d41-861c-7e113f766280",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Cover -340/-1",
+      "position": [
+        -340,
+        -185,
+        48
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -48,
+          -48,
+          -48
+        ],
+        [
+          48,
+          -48,
+          -48
+        ],
+        [
+          48,
+          48,
+          -48
+        ],
+        [
+          -48,
+          48,
+          -48
+        ],
+        [
+          -48,
+          -48,
+          48
+        ],
+        [
+          48,
+          -48,
+          48
+        ],
+        [
+          48,
+          48,
+          48
+        ],
+        [
+          -48,
+          48,
+          48
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        }
+      ],
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "df5da5c0-a4ce-45de-a796-c6cc09b1c757",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Cover 0/-1",
+      "position": [
+        0,
+        -185,
+        48
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -48,
+          -48,
+          -48
+        ],
+        [
+          48,
+          -48,
+          -48
+        ],
+        [
+          48,
+          48,
+          -48
+        ],
+        [
+          -48,
+          48,
+          -48
+        ],
+        [
+          -48,
+          -48,
+          48
+        ],
+        [
+          48,
+          -48,
+          48
+        ],
+        [
+          48,
+          48,
+          48
+        ],
+        [
+          -48,
+          48,
+          48
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        }
+      ],
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "2872dd06-9bd3-4353-bcf2-1455869a3651",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Cover 340/-1",
+      "position": [
+        340,
+        -185,
+        48
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -48,
+          -48,
+          -48
+        ],
+        [
+          48,
+          -48,
+          -48
+        ],
+        [
+          48,
+          48,
+          -48
+        ],
+        [
+          -48,
+          48,
+          -48
+        ],
+        [
+          -48,
+          -48,
+          48
+        ],
+        [
+          48,
+          -48,
+          48
+        ],
+        [
+          48,
+          48,
+          48
+        ],
+        [
+          -48,
+          48,
+          48
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        }
+      ],
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "c1a50b60-2f4e-478f-b838-6b9e8b269bf5",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Cover -340/1",
+      "position": [
+        -340,
+        185,
+        48
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -48,
+          -48,
+          -48
+        ],
+        [
+          48,
+          -48,
+          -48
+        ],
+        [
+          48,
+          48,
+          -48
+        ],
+        [
+          -48,
+          48,
+          -48
+        ],
+        [
+          -48,
+          -48,
+          48
+        ],
+        [
+          48,
+          -48,
+          48
+        ],
+        [
+          48,
+          48,
+          48
+        ],
+        [
+          -48,
+          48,
+          48
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        }
+      ],
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "8083b074-5827-4fcb-be0f-d9c897eeaf08",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Cover 0/1",
+      "position": [
+        0,
+        185,
+        48
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -48,
+          -48,
+          -48
+        ],
+        [
+          48,
+          -48,
+          -48
+        ],
+        [
+          48,
+          48,
+          -48
+        ],
+        [
+          -48,
+          48,
+          -48
+        ],
+        [
+          -48,
+          -48,
+          48
+        ],
+        [
+          48,
+          -48,
+          48
+        ],
+        [
+          48,
+          48,
+          48
+        ],
+        [
+          -48,
+          48,
+          48
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        }
+      ],
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "27d61fdc-9038-4590-a12c-7c0d43a5e968",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Cover 340/1",
+      "position": [
+        340,
+        185,
+        48
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -48,
+          -48,
+          -48
+        ],
+        [
+          48,
+          -48,
+          -48
+        ],
+        [
+          48,
+          48,
+          -48
+        ],
+        [
+          -48,
+          48,
+          -48
+        ],
+        [
+          -48,
+          -48,
+          48
+        ],
+        [
+          48,
+          -48,
+          48
+        ],
+        [
+          48,
+          48,
+          48
+        ],
+        [
+          -48,
+          48,
+          48
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "C1A0_LABFLR"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "C1A0_LABFLR"
+        }
+      ],
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "503bc7a9-b45f-4447-8b6a-8e1ed82291f4",
+      "kind": "entity",
+      "classname": "info_player_start",
+      "name": "info_player_start",
+      "position": [
+        624,
+        -48,
+        36
+      ],
+      "props": {
+        "angles": "0 180 0"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "3c5298cf-6842-40c5-be69-1e2ecd226a7b",
+      "kind": "entity",
+      "classname": "info_player_start",
+      "name": "info_player_start",
+      "position": [
+        720,
+        -48,
+        36
+      ],
+      "props": {
+        "angles": "0 180 0"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "b9ea8e0f-24ce-4edf-888a-3c4c72f9af88",
+      "kind": "entity",
+      "classname": "info_player_start",
+      "name": "info_player_start",
+      "position": [
+        816,
+        -48,
+        36
+      ],
+      "props": {
+        "angles": "0 180 0"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "b7a6d3c4-7e76-433e-9e3a-e299088b82a1",
+      "kind": "entity",
+      "classname": "info_player_start",
+      "name": "info_player_start",
+      "position": [
+        912,
+        -48,
+        36
+      ],
+      "props": {
+        "angles": "0 180 0"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "fdc71087-04ea-444b-b5bf-8988d9494b16",
+      "kind": "entity",
+      "classname": "info_player_start",
+      "name": "info_player_start",
+      "position": [
+        624,
+        48,
+        36
+      ],
+      "props": {
+        "angles": "0 180 0"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "34c42a3e-40d1-473e-ba56-aff3e3682dad",
+      "kind": "entity",
+      "classname": "info_player_start",
+      "name": "info_player_start",
+      "position": [
+        720,
+        48,
+        36
+      ],
+      "props": {
+        "angles": "0 180 0"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "7e044dc5-83b3-48b7-b909-a626f69d14f3",
+      "kind": "entity",
+      "classname": "info_player_start",
+      "name": "info_player_start",
+      "position": [
+        816,
+        48,
+        36
+      ],
+      "props": {
+        "angles": "0 180 0"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "4088590d-cc14-468a-b384-5e5e921f9e0a",
+      "kind": "entity",
+      "classname": "info_player_start",
+      "name": "info_player_start",
+      "position": [
+        912,
+        48,
+        36
+      ],
+      "props": {
+        "angles": "0 180 0"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "54d49c0a-845f-4989-bce0-70fe759157f0",
+      "kind": "entity",
+      "classname": "info_player_deathmatch",
+      "name": "info_player_deathmatch",
+      "position": [
+        -912,
+        -48,
+        36
+      ],
+      "props": {
+        "angles": "0 0 0"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "e39f357b-f9c3-48f5-9c3d-607b282c6761",
+      "kind": "entity",
+      "classname": "info_player_deathmatch",
+      "name": "info_player_deathmatch",
+      "position": [
+        -816,
+        -48,
+        36
+      ],
+      "props": {
+        "angles": "0 0 0"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "9914f33a-6866-4041-aec2-511815033dd0",
+      "kind": "entity",
+      "classname": "info_player_deathmatch",
+      "name": "info_player_deathmatch",
+      "position": [
+        -720,
+        -48,
+        36
+      ],
+      "props": {
+        "angles": "0 0 0"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "100afc86-bb81-43ca-8642-3774ebdb1ccb",
+      "kind": "entity",
+      "classname": "info_player_deathmatch",
+      "name": "info_player_deathmatch",
+      "position": [
+        -624,
+        -48,
+        36
+      ],
+      "props": {
+        "angles": "0 0 0"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "046c1e86-85dc-4c36-8ea3-be392cb074b8",
+      "kind": "entity",
+      "classname": "info_player_deathmatch",
+      "name": "info_player_deathmatch",
+      "position": [
+        -912,
+        48,
+        36
+      ],
+      "props": {
+        "angles": "0 0 0"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "6bd5618b-3d36-493a-81af-a941015777cf",
+      "kind": "entity",
+      "classname": "info_player_deathmatch",
+      "name": "info_player_deathmatch",
+      "position": [
+        -816,
+        48,
+        36
+      ],
+      "props": {
+        "angles": "0 0 0"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "69fce972-e70b-4d61-bbb1-3bd4ba76ad95",
+      "kind": "entity",
+      "classname": "info_player_deathmatch",
+      "name": "info_player_deathmatch",
+      "position": [
+        -720,
+        48,
+        36
+      ],
+      "props": {
+        "angles": "0 0 0"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "ae2c3b52-dc0c-49b5-94ab-f0188579d121",
+      "kind": "entity",
+      "classname": "info_player_deathmatch",
+      "name": "info_player_deathmatch",
+      "position": [
+        -624,
+        48,
+        36
+      ],
+      "props": {
+        "angles": "0 0 0"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "305d0111-ff40-4ac2-9718-731daa2608e2",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "CT Buyzone",
+      "position": [
+        768,
+        0,
+        48
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -208,
+          -210,
+          -48
+        ],
+        [
+          208,
+          -210,
+          -48
+        ],
+        [
+          208,
+          210,
+          -48
+        ],
+        [
+          -208,
+          210,
+          -48
+        ],
+        [
+          -208,
+          -210,
+          48
+        ],
+        [
+          208,
+          -210,
+          48
+        ],
+        [
+          208,
+          210,
+          48
+        ],
+        [
+          -208,
+          210,
+          48
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "AAATRIGGER"
+        }
+      ],
+      "layer": "CS 1.6 · DE · HF33",
+      "entityId": "8a429314-dae3-4e6f-b8ff-269f2e9785d0",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "8a429314-dae3-4e6f-b8ff-269f2e9785d0",
+      "kind": "entity",
+      "classname": "func_buyzone",
+      "name": "CT Buyzone",
+      "position": [
+        768,
+        0,
+        48
+      ],
+      "props": {
+        "team": "2"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "3f8967bc-3937-4832-bacf-0db6484b1b1a",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "T Buyzone",
+      "position": [
+        -768,
+        0,
+        48
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -208,
+          -210,
+          -48
+        ],
+        [
+          208,
+          -210,
+          -48
+        ],
+        [
+          208,
+          210,
+          -48
+        ],
+        [
+          -208,
+          210,
+          -48
+        ],
+        [
+          -208,
+          -210,
+          48
+        ],
+        [
+          208,
+          -210,
+          48
+        ],
+        [
+          208,
+          210,
+          48
+        ],
+        [
+          -208,
+          210,
+          48
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "AAATRIGGER"
+        }
+      ],
+      "layer": "CS 1.6 · DE · HF33",
+      "entityId": "75771284-9a82-46fd-a64a-4c62226bfba4",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "75771284-9a82-46fd-a64a-4c62226bfba4",
+      "kind": "entity",
+      "classname": "func_buyzone",
+      "name": "T Buyzone",
+      "position": [
+        -768,
+        0,
+        48
+      ],
+      "props": {
+        "team": "1"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "40d08d7b-ee89-4280-b9b1-54c09ed0ec17",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Bombsite A",
+      "position": [
+        320,
+        385,
+        60
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -120,
+          -120,
+          -60
+        ],
+        [
+          120,
+          -120,
+          -60
+        ],
+        [
+          120,
+          120,
+          -60
+        ],
+        [
+          -120,
+          120,
+          -60
+        ],
+        [
+          -120,
+          -120,
+          60
+        ],
+        [
+          120,
+          -120,
+          60
+        ],
+        [
+          120,
+          120,
+          60
+        ],
+        [
+          -120,
+          120,
+          60
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "AAATRIGGER"
+        }
+      ],
+      "layer": "CS 1.6 · DE · HF33",
+      "entityId": "ca5c9a64-24d2-4d84-817a-2ce9895026b2",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "ca5c9a64-24d2-4d84-817a-2ce9895026b2",
+      "kind": "entity",
+      "classname": "func_bomb_target",
+      "name": "Bombsite A",
+      "position": [
+        320,
+        385,
+        60
+      ],
+      "props": {},
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "d31cd7aa-eb9d-4bfb-8efe-1d6f9c8468fd",
+      "kind": "brush",
+      "primitive": "box",
+      "name": "Bombsite B",
+      "position": [
+        320,
+        -385,
+        60
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "vertices": [
+        [
+          -120,
+          -120,
+          -60
+        ],
+        [
+          120,
+          -120,
+          -60
+        ],
+        [
+          120,
+          120,
+          -60
+        ],
+        [
+          -120,
+          120,
+          -60
+        ],
+        [
+          -120,
+          -120,
+          60
+        ],
+        [
+          120,
+          -120,
+          60
+        ],
+        [
+          120,
+          120,
+          60
+        ],
+        [
+          -120,
+          120,
+          60
+        ]
+      ],
+      "faces": [
+        {
+          "indices": [
+            0,
+            3,
+            2,
+            1
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            0,
+            1,
+            5,
+            4
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            1,
+            2,
+            6,
+            5
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            2,
+            3,
+            7,
+            6
+          ],
+          "texture": "AAATRIGGER"
+        },
+        {
+          "indices": [
+            3,
+            0,
+            4,
+            7
+          ],
+          "texture": "AAATRIGGER"
+        }
+      ],
+      "layer": "CS 1.6 · DE · HF33",
+      "entityId": "49fc179c-1b87-4fc7-a008-f37a3c2011a6",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "49fc179c-1b87-4fc7-a008-f37a3c2011a6",
+      "kind": "entity",
+      "classname": "func_bomb_target",
+      "name": "Bombsite B",
+      "position": [
+        320,
+        -385,
+        60
+      ],
+      "props": {},
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "5ab4bfd8-36fd-4df4-9e5a-1cbf41f08472",
+      "kind": "entity",
+      "name": "Arena light",
+      "classname": "light",
+      "position": [
+        -540,
+        0,
+        250
+      ],
+      "props": {
+        "_light": "255 245 220 255"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "8ffc845f-abdf-4ecd-b246-a83aa44ef4cb",
+      "kind": "entity",
+      "name": "Arena light",
+      "classname": "light",
+      "position": [
+        0,
+        0,
+        250
+      ],
+      "props": {
+        "_light": "255 245 220 255"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    },
+    {
+      "id": "af678234-dc38-4a75-aa40-16dc9883b977",
+      "kind": "entity",
+      "name": "Arena light",
+      "classname": "light",
+      "position": [
+        540,
+        0,
+        250
+      ],
+      "props": {
+        "_light": "255 245 220 255"
+      },
+      "layer": "CS 1.6 · DE · HF33",
+      "group": "CS 1.6 · DE · HF33"
+    }
+  ]
+}

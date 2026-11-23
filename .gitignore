@@ -38,9 +38,11 @@ Desktop.ini
 /runtime/unpack-tmp/
 /SvenStudio3D.lnk
 
-# Portable first-run runtime and local shortcut (generated on each PC)
-/runtime/node.exe
-/runtime/node-v*-win-x64.zip
-/runtime/SHASUMS256.txt.download
-/runtime/unpack-tmp/
-/SvenStudio3D.lnk
+# Test and tooling scratch folders
+/.tmp-*/
+/.smoke-*/
+/.claude/
+
+# Desktop app: local download caches and packaged output
+/.cache/
+/release/

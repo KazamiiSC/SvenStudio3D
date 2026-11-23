@@ -1,14 +1,22 @@
 /** Browser-only workspace arrangement. No map data or compiler settings are modified. */
+import {isViewportThemeId} from './engine/viewportThemes';
 import {create} from 'zustand';
 import {persist} from 'zustand/middleware';
 import {DEFAULT_INTERFACE_THEME,normalizeInterfaceTheme,type InterfaceTheme} from './engine/interfaceThemes.ts';
 export type DockSide = 'left'|'right'|'top'|'bottom';
 export type DockPanelId = 'assets'|'explorer'|'properties'|'console';
-export const TOOLBAR_GROUPS = ['transform','view','geometry','tools','grid','edit','studios'] as const;
+export const TOOLBAR_GROUPS = ['transform','view','geometry','tools','grid','edit','studios','modeling','textures'] as const;
 export type ToolbarGroup = typeof TOOLBAR_GROUPS[number];
+/** English UI keys (translated with t()) for the Workspace → Toolbar groups menu. */
+export const TOOLBAR_GROUP_LABELS:Record<ToolbarGroup,string>={transform:'Transform · Selection',edit:'Edit',view:'View',geometry:'Geometry editing',modeling:'Modeling',textures:'Textures',tools:'Tools',grid:'Grid',studios:'Studios'};
 export function normalizeToolbarGroups(value:unknown):ToolbarGroup[]{
-  const existing=Array.isArray(value)?value.filter((id):id is ToolbarGroup=>typeof id==='string'&&TOOLBAR_GROUPS.includes(id as ToolbarGroup)):[];
-  return [...new Set([...existing,...TOOLBAR_GROUPS])];
+ const existing=[...new Set(Array.isArray(value)?value.filter((id):id is ToolbarGroup=>typeof id==='string'&&TOOLBAR_GROUPS.includes(id as ToolbarGroup)):[])];
+ // Groups added in later versions go next to their neighbour in the default order, not at the end.
+ // v2.4: Modeling goes right after Geometry and Textures after Modeling, when those are present.
+ for(const [id,after] of [['modeling','geometry'],['textures','modeling']] as const){
+   if(existing.length&&!existing.includes(id)&&existing.includes(after))existing.splice(existing.indexOf(after)+1,0,id);
+ }
+ return [...new Set([...existing,...TOOLBAR_GROUPS])];
 }
 export function moveToolbarGroup(groups:readonly ToolbarGroup[],from:ToolbarGroup,to:ToolbarGroup):ToolbarGroup[]{
   const normalized=normalizeToolbarGroups(groups);
@@ -19,7 +27,10 @@ export function moveToolbarGroup(groups:readonly ToolbarGroup[],from:ToolbarGrou
 export type Accent = 'nebula'|'ice'|'ember'|'mint'|'orchid'|'gold';
 export type AppearanceMode = 'dark';
 /** New visual order, while the canonical group IDs remain backward compatible. */
-export const REDESIGNED_TOOLBAR_ORDER: ToolbarGroup[] = ['transform','edit','view','geometry','tools','grid','studios'];
+/** v2.3 HF8: one home per action. Grid/snap live in the viewport bar and studios in the Studios
+ * menu, so these ribbon groups start hidden (Workspace menu → Toolbar groups shows them again). */
+export const DEFAULT_HIDDEN_TOOLBAR_GROUPS:ToolbarGroup[]=['grid','studios'];
+export const REDESIGNED_TOOLBAR_ORDER: ToolbarGroup[] = ['transform','edit','view','geometry','modeling','textures','tools','grid','studios'];
 export type PerformancePreset = 'quality'|'balanced'|'large';
 export type WorkspaceSnapshot = {
   sides:Record<DockPanelId,DockSide>;order:DockPanelId[];visible:Record<DockPanelId,boolean>;
@@ -46,6 +57,8 @@ type LayoutState = {
   setEntityStampMode:(value:boolean)=>void;
   pinnedToolbarGroups:ToolbarGroup[];
   togglePinnedToolbarGroup:(id:ToolbarGroup)=>void;
+  hiddenToolbarGroups:ToolbarGroup[];
+  toggleToolbarGroupHidden:(id:ToolbarGroup)=>void;
   savedWorkspaces:Record<string,WorkspaceSnapshot>;
   saveCurrentWorkspace:(name:string)=>void;
   restoreSavedWorkspace:(name:string)=>void;
@@ -65,6 +78,12 @@ type LayoutState = {
   fontScale:number;
   performancePreset:PerformancePreset;
   opaqueBrushBatching:boolean;
+  /** v2.4: maximum 3D viewport pixel ratio; 0 = automatic from the performance preset. */
+  viewportPixelRatio:number;
+  /** v2.4: 3D entity models. 'all' shows every model; 'near' only within modelDistance. */
+  modelDisplay:'all'|'near';modelDistance:number;
+  /** v2.6: 3D viewport display style (background + grid colours). */
+  viewportTheme:import('./engine/viewportThemes').ViewportThemeId;
   movePanel:(id:DockPanelId,side:DockSide,before?:DockPanelId)=>void;
   setToolbarDock:(side:DockSide)=>void;
   setCompactTools:(value:boolean)=>void;setFloatRailSide:(side:'left'|'right')=>void;
@@ -77,7 +96,7 @@ type LayoutState = {
   setAppearance:(mode:AppearanceMode)=>void;
   setFontScale:(value:number)=>void;
   setPerformancePreset:(value:PerformancePreset)=>void;
-  setOpaqueBrushBatching:(value:boolean)=>void;
+  setOpaqueBrushBatching:(value:boolean)=>void;setViewportPixelRatio:(value:number)=>void;setModelDisplay:(value:'all'|'near')=>void;setModelDistance:(value:number)=>void;setViewportTheme:(value:import('./engine/viewportThemes').ViewportThemeId)=>void;
   resetLayout:()=>void;
   usePreset:(preset:'organized'|'classic'|'focus'|'creative'|'wide'|'minimal'|'construction'|'entities'|'bsp')=>void;
 };
@@ -86,11 +105,11 @@ const defaults = () => ({
   order:['assets','properties','explorer','console'] as DockPanelId[],
   visible:{assets:true,explorer:true,properties:true,console:false} as Record<DockPanelId,boolean>,
   toolbarDock:'top' as DockSide,
-  toolbarGroups:[...REDESIGNED_TOOLBAR_ORDER],pinnedToolbarGroups:[] as ToolbarGroup[],entityStampMode:false,savedWorkspaces:{} as Record<string,WorkspaceSnapshot>,
+  toolbarGroups:[...REDESIGNED_TOOLBAR_ORDER],pinnedToolbarGroups:[] as ToolbarGroup[],hiddenToolbarGroups:[...DEFAULT_HIDDEN_TOOLBAR_GROUPS],entityStampMode:false,savedWorkspaces:{} as Record<string,WorkspaceSnapshot>,
   compactTools:false,floatRailSide:'left' as 'left'|'right',
   widths:{left:254,right:302},heights:{top:192,bottom:168},
   weights:{assets:1,explorer:1,properties:1,console:1},
-  uiScale:1,autoLayout:true,accent:'nebula' as Accent,interfaceTheme:DEFAULT_INTERFACE_THEME,appearance:'dark' as AppearanceMode,fontScale:1,performancePreset:'balanced' as PerformancePreset,opaqueBrushBatching:true
+  uiScale:1,autoLayout:true,accent:'nebula' as Accent,interfaceTheme:DEFAULT_INTERFACE_THEME,appearance:'dark' as AppearanceMode,fontScale:1,performancePreset:'balanced' as PerformancePreset,opaqueBrushBatching:true,viewportPixelRatio:0,modelDisplay:'all' as 'all'|'near',modelDistance:4000,viewportTheme:'classic' as import('./engine/viewportThemes').ViewportThemeId
 });
 const clamp=(n:number,min:number,max:number)=>Math.min(max,Math.max(min,n));
 const panelIds:DockPanelId[]=['assets','explorer','properties','console'];
@@ -131,6 +150,8 @@ export function mergeSavedLayout(saved:unknown,current:LayoutState):LayoutState{
     compactTools:typeof data.compactTools==='boolean'?data.compactTools:base.compactTools,
     floatRailSide,
     entityStampMode:data.entityStampMode===true,
+    // Layouts saved before HF8 have no list: they get the new tidy default.
+    hiddenToolbarGroups:Array.isArray(data.hiddenToolbarGroups)?normalizeToolbarGroups(data.hiddenToolbarGroups).filter(id=>(data.hiddenToolbarGroups as unknown[]).includes(id)):[...DEFAULT_HIDDEN_TOOLBAR_GROUPS],
     pinnedToolbarGroups:Array.isArray(data.pinnedToolbarGroups)?normalizeToolbarGroups(data.pinnedToolbarGroups).filter(id=>(data.pinnedToolbarGroups as unknown[]).includes(id)):[],
     savedWorkspaces:Object.fromEntries(Object.entries(recordOrEmpty(data.savedWorkspaces)).filter(([name,item])=>name.length<=48&&item&&typeof item==='object').slice(0,12).map(([name,item])=>{
       const source=recordOrEmpty(item);
@@ -145,7 +166,11 @@ export function mergeSavedLayout(saved:unknown,current:LayoutState):LayoutState{
     interfaceTheme:normalizeInterfaceTheme(data.interfaceTheme),
     appearance:'dark',
     performancePreset:performancePresets.includes(data.performancePreset as PerformancePreset)?data.performancePreset as PerformancePreset:base.performancePreset,
-    opaqueBrushBatching:typeof data.opaqueBrushBatching==='boolean'?data.opaqueBrushBatching:true
+    opaqueBrushBatching:typeof data.opaqueBrushBatching==='boolean'?data.opaqueBrushBatching:true,
+    viewportPixelRatio:[0,.75,1,1.25,1.5,2].includes(Number(data.viewportPixelRatio))?Number(data.viewportPixelRatio):0,
+    modelDisplay:data.modelDisplay==='near'?'near':'all',
+    modelDistance:typeof data.modelDistance==='number'&&Number.isFinite(data.modelDistance)?Math.max(500,Math.min(32000,Math.round(data.modelDistance))):4000,
+    viewportTheme:isViewportThemeId(data.viewportTheme)?data.viewportTheme:'classic'
   };
 }
 /** Sanitize a saved profile before it can change a live workspace. */
@@ -175,6 +200,7 @@ export const useStudioLayout=create<LayoutState>()(persist((set)=>({
   }),
   setToolbarDock:side=>set({toolbarDock:side}),
   setEntityStampMode:entityStampMode=>set({entityStampMode}),
+  toggleToolbarGroupHidden:id=>set(s=>({hiddenToolbarGroups:s.hiddenToolbarGroups.includes(id)?s.hiddenToolbarGroups.filter(g=>g!==id):[...s.hiddenToolbarGroups,id]})),
   togglePinnedToolbarGroup:id=>set(s=>({pinnedToolbarGroups:s.pinnedToolbarGroups.includes(id)?s.pinnedToolbarGroups.filter(g=>g!==id):[...s.pinnedToolbarGroups,id]})),
   saveCurrentWorkspace:name=>set(s=>{
     const clean=validateWorkspaceName(name);if(!clean)return {};
@@ -223,10 +249,10 @@ export const useStudioLayout=create<LayoutState>()(persist((set)=>({
   setAppearance:()=>set({appearance:'dark'}),
   setFontScale:fontScale=>set({fontScale:clamp(fontScale,.9,1.2)}),
   setPerformancePreset:performancePreset=>set({performancePreset}),
-  setOpaqueBrushBatching:opaqueBrushBatching=>set({opaqueBrushBatching}),
-  resetLayout:()=>set(s=>({...defaults(),accent:s.accent,interfaceTheme:s.interfaceTheme,appearance:s.appearance,savedWorkspaces:s.savedWorkspaces,pinnedToolbarGroups:s.pinnedToolbarGroups,entityStampMode:s.entityStampMode})),
+  setOpaqueBrushBatching:opaqueBrushBatching=>set({opaqueBrushBatching}),setViewportPixelRatio:viewportPixelRatio=>set({viewportPixelRatio}),setModelDisplay:modelDisplay=>set({modelDisplay}),setModelDistance:modelDistance=>set({modelDistance:Math.max(500,Math.min(32000,modelDistance))}),setViewportTheme:viewportTheme=>set({viewportTheme}),
+  resetLayout:()=>set(s=>({...defaults(),accent:s.accent,interfaceTheme:s.interfaceTheme,appearance:s.appearance,savedWorkspaces:s.savedWorkspaces,pinnedToolbarGroups:s.pinnedToolbarGroups,hiddenToolbarGroups:s.hiddenToolbarGroups,entityStampMode:s.entityStampMode})),
   usePreset:preset=>set(s=>{
-    const base={...defaults(),accent:s.accent,interfaceTheme:s.interfaceTheme,appearance:s.appearance,uiScale:s.uiScale,autoLayout:s.autoLayout,fontScale:s.fontScale,performancePreset:s.performancePreset,opaqueBrushBatching:s.opaqueBrushBatching,savedWorkspaces:s.savedWorkspaces,pinnedToolbarGroups:s.pinnedToolbarGroups,entityStampMode:s.entityStampMode};
+    const base={...defaults(),accent:s.accent,interfaceTheme:s.interfaceTheme,appearance:s.appearance,uiScale:s.uiScale,autoLayout:s.autoLayout,fontScale:s.fontScale,performancePreset:s.performancePreset,opaqueBrushBatching:s.opaqueBrushBatching,viewportPixelRatio:s.viewportPixelRatio,viewportTheme:s.viewportTheme,modelDisplay:s.modelDisplay,modelDistance:s.modelDistance,savedWorkspaces:s.savedWorkspaces,pinnedToolbarGroups:s.pinnedToolbarGroups,hiddenToolbarGroups:s.hiddenToolbarGroups,entityStampMode:s.entityStampMode};
     if(preset==='construction')return {...base,compactTools:false,toolbarDock:'top',visible:{assets:true,explorer:false,properties:true,console:false},widths:{left:292,right:310}};
     if(preset==='entities')return {...base,compactTools:true,toolbarDock:'top',visible:{assets:true,explorer:true,properties:true,console:false},widths:{left:316,right:294}};
     if(preset==='bsp')return {...base,compactTools:true,toolbarDock:'top',visible:{assets:false,explorer:false,properties:true,console:false},widths:{left:254,right:364}};
@@ -244,4 +270,4 @@ export const useStudioLayout=create<LayoutState>()(persist((set)=>({
   if(version<2&&saved&&typeof saved==='object'){
     const old=saved as Record<string,unknown>;return {...old,visible:{...recordOrEmpty(old.visible),assets:true,explorer:true,properties:true}};
   }return saved;
-},merge:mergeSavedLayout,partialize:s=>({sides:s.sides,order:s.order,visible:s.visible,toolbarDock:s.toolbarDock,toolbarGroups:s.toolbarGroups,pinnedToolbarGroups:s.pinnedToolbarGroups,savedWorkspaces:s.savedWorkspaces,entityStampMode:s.entityStampMode,compactTools:s.compactTools,floatRailSide:s.floatRailSide,widths:s.widths,heights:s.heights,weights:s.weights,uiScale:s.uiScale,autoLayout:s.autoLayout,accent:s.accent,interfaceTheme:s.interfaceTheme,fontScale:s.fontScale,performancePreset:s.performancePreset,opaqueBrushBatching:s.opaqueBrushBatching})}));
+},merge:mergeSavedLayout,partialize:s=>({sides:s.sides,order:s.order,visible:s.visible,toolbarDock:s.toolbarDock,toolbarGroups:s.toolbarGroups,pinnedToolbarGroups:s.pinnedToolbarGroups,hiddenToolbarGroups:s.hiddenToolbarGroups,savedWorkspaces:s.savedWorkspaces,entityStampMode:s.entityStampMode,compactTools:s.compactTools,floatRailSide:s.floatRailSide,widths:s.widths,heights:s.heights,weights:s.weights,uiScale:s.uiScale,autoLayout:s.autoLayout,accent:s.accent,interfaceTheme:s.interfaceTheme,fontScale:s.fontScale,performancePreset:s.performancePreset,opaqueBrushBatching:s.opaqueBrushBatching,viewportPixelRatio:s.viewportPixelRatio,viewportTheme:s.viewportTheme,modelDisplay:s.modelDisplay,modelDistance:s.modelDistance})}));

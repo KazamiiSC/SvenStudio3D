@@ -65,7 +65,7 @@ test('only one theme selector, accessible choices, no separate light-mode switch
  assert.match(dock,/aria-pressed=\{layout\.interfaceTheme===id\}/);
  assert.match(dock,/layout\.setInterfaceTheme\(id\)/);
  assert.doesNotMatch(dock,/setAppearance\('light'\)/);
- assert.match(app,/dialog==='layout'&&<LayoutModal/);
+ assert.match(app,/<PreferencesStudio initial=/);
  assert.match(app,/onClick=\{\(\)=>setDialog\('layout'\)\}/);
 });
 

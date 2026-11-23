@@ -34,3 +34,12 @@
 /* HF10 — visually distinguish read-only output from explicit game installation. */
 .sb-safety{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:var(--skin-radius,9px);border:1px solid var(--theme-line);background:var(--theme-panel);color:var(--ui-ink);font-size:12px;line-height:1.55;--ui-ink:var(--theme-text);--ui-muted:var(--theme-muted)}
 .sb-safety svg{flex:none;margin-top:1px;color:var(--ui-ink)}.sb-safety.installs{border-color:var(--theme-line);background:var(--theme-panel);color:var(--ui-ink);--ui-ink:var(--theme-text);--ui-muted:var(--theme-muted)}.sb-safety.installs svg{color:var(--ui-ink)}
+
+/* v2.6 build configuration: readiness checks and quality cards */
+.sb-checks{display:grid;gap:5px;margin:4px 0 8px}
+.sb-checks>div{display:flex;gap:7px;align-items:flex-start;font-size:11.5px;line-height:1.35;padding:6px 8px;border-radius:8px;border:1px solid var(--theme-line)}
+.sb-checks>div.ok{color:#7be0b0;background:rgba(80,200,140,.07)}
+.sb-checks>div.bad{color:#f5c76a;background:rgba(240,190,90,.08)}
+.sb-checks svg{flex:none;margin-top:1px}
+.sb-mode small{display:block;margin-top:4px;font-size:11px;line-height:1.35;color:var(--theme-muted);font-weight:400}
+.sb-experimental{display:grid;gap:8px;padding:10px;border:1px dashed var(--theme-line);border-radius:10px}

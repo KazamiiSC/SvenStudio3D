@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {createRequire} from 'node:module';
-const require=createRequire(import.meta.url),ts=require('typescript');
+const require=createRequire(import.meta.url),ts=require('./support/typescript.cjs');
 require.extensions['.ts']=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{fileName:file,compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true,jsx:ts.JsxEmit.ReactJSX}}).outputText,file);
 const z=require('../src/engine/coopPuzzles.ts'),m=require('../src/engine/missionEvents.ts'),n=require('../src/engine/npcEncounters.ts'),d=require('../src/engine/advancedGameplayDiagnostics.ts');
 const {validateProjectFile}=require('../src/engine/projectValidation.ts'),{exportMap,validateBrush}=require('../src/engine/exportMap.ts'),{inspectMapImport}=require('../src/engine/importMap.ts');

@@ -9,7 +9,7 @@ import {pathToFileURL} from 'node:url';
 import {setTimeout as sleep} from 'node:timers/promises';
 import {attachBuildTogether} from '../server/buildTogether.js';
 const require=createRequire(import.meta.url);
-function loadTs(){try{return require('typescript')}catch{return require(join(execFileSync('npm',['root','-g'],{encoding:'utf8'}).trim(),'typescript'))}}
+function loadTs(){try{return require('./support/typescript.cjs')}catch{return require(join(execFileSync('npm',['root','-g'],{encoding:'utf8'}).trim(),'typescript'))}}
 const ts=loadTs();
 async function terrainModule(){
  const dir=await mkdtemp(join(tmpdir(),'svenstudio-terrain-wire-'));

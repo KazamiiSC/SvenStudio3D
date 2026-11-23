@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
-const ts=require('typescript');
+const ts=require('../tests/support/typescript.cjs');
 const root=path.resolve(__dirname,'..');
 require.extensions['.ts']=function(mod,file){
   const source=fs.readFileSync(file,'utf8');

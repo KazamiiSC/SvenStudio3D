@@ -7,6 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
+import {PROJECT_ROOT} from './paths.js';
 const execFileAsync=promisify(execFile);
 const MAX_BSP=256*1024*1024, MAX_MAP=20_000_000;
 export const SURFDECOMP_MAP_LIMIT=MAX_MAP;
@@ -32,7 +33,7 @@ function normalizedToolPath(candidate,root){
   if(!path.isAbsolute(selected))throw Error('Provide the absolute path to surfdecomp.exe on the local PC.');
   return selected;
 }
-export async function decompileBspToMap({bsp,toolPath='',root=process.cwd(),signal}){
+export async function decompileBspToMap({bsp,toolPath='',root=PROJECT_ROOT,signal}){
   validateBsp(bsp);
   const executable=normalizedToolPath(toolPath,root);
   let stat;

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {buildNavigatorIndex,findNavigatorEntries,MAX_NAVIGATOR_RESULTS} from '../src/engine/mapNavigator.ts';
 import {useEditor} from '../src/store.ts';
-import {translate} from '../src/i18n.ts';
+import {translate,loadLocale} from '../src/i18n.ts';
 const file=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const entities=[
  {id:'door01',kind:'entity',name:'Door',classname:'func_door',props:{targetname:'lab_door',target:'switch_a'},position:[80,0,0],layer:'Lab'},
@@ -71,7 +71,8 @@ test('HF19 navigator panel integrates with Explorer and the focus outline cannot
  assert.match(viewport,/raycast=\{\(\)=>null\}/);
  assert.doesNotMatch(component,/(updateObject|mutate\(|exportMap\(|compileMap\()/);
 });
-test('HF19 labels translated in six languages',()=>{
+test('HF19 labels translated in six languages',async()=>{
+ await Promise.all(['es','ru','ko','zh','pt'].map(loadLocale));
  for(const lang of ['es','en','ru','ko','zh','pt']){
   for(const key of ['Smart Map Navigator','Focus selection in 3D','Center camera and highlight selected object','Search map objects']){
    const result=translate(lang,key);

@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
-const ts=require('/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript/lib/typescript.js');
+const ts=require('./support/typescript.cjs');
 const root=process.cwd();
 const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'gameplay170-'));
 for(const file of ['types','gameplay','gameplayGraph','gameplayWorkspace']){

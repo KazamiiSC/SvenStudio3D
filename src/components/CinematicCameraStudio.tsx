@@ -1,4 +1,5 @@
 import {Canvas,useFrame,useThree} from '@react-three/fiber';
+import {KitSection} from './KitGallery';
 import {Line,OrbitControls} from '@react-three/drei';
 import {Camera,Clapperboard,MapPin,Plus,Play,Pause,Save,ShieldCheck,AlertTriangle,CheckCircle2,MousePointer2,X,Route,Eye,Maximize2,Minimize2,SlidersHorizontal,RotateCcw} from 'lucide-react';
 import {useEffect,useMemo,useRef,useState} from 'react';
@@ -286,6 +287,7 @@ export function CinematicCameraStudio({onClose}:{onClose:()=>void}){
           </>}
         </main>
         <aside className="cine-inspector">
+          <KitSection studio="cinematic" summary={t('Security cameras kit')} onStart={onClose}/>
           <h3><ShieldCheck size={16}/>{t('Camera properties')}</h3>
           {!scene?<label className="cine-field"><span>{t('Scene name')}</span><input value={draft.name} maxLength={64} onChange={e=>setDraft(s=>({...s,name:e.target.value}))}/></label>:<div className="cine-meta">{scene.camera.props.targetname}<small>{scene.generated?t('Created by Cinematic Camera Studio'):t('Existing camera — inspect only')}</small></div>}
           <NumInput label={t('Hold time (seconds)')} min={1} max={120} value={scene?edit.duration:draft.duration} onChange={n=>scene?setEdit(s=>({...s,duration:n})):setDraft(s=>({...s,duration:n}))}/>
@@ -305,7 +307,7 @@ export function CinematicCameraStudio({onClose}:{onClose:()=>void}){
             <p className="cine-muted">{t('Svengine note: deceleration and rotation speed may not behave as expected. Start at Player and Follow Player cannot be reproduced accurately in the offline preview.')}</p>
           </details><button className="cine-primary" disabled={!scene.generated} onClick={()=>guarded(()=>{update(scene.camera.id,edit);addLog([`Cinematic Camera Studio: updated ${scene.camera.props.targetname}.`]);})}><Save size={16}/>{t('Save camera properties')}</button>
             <button className="cine-secondary" onClick={()=>focus(scene.camera.id)}><MousePointer2 size={15}/>{t('Select camera in 3D')}</button>
-            <h3><AlertTriangle size={16}/>{t('Scene validation')}</h3>
+<h3><AlertTriangle size={16}/>{t('Scene validation')}</h3>
             {[...scene.warnings,...pathWarnings].length?[...scene.warnings,...pathWarnings].map((w,i)=><p className="cine-warning" key={i}><AlertTriangle size={14}/>{w}</p>):<p className="cine-ok"><CheckCircle2 size={15}/>{t('No scene reference errors found.')}</p>}
           </>}
           <div className="cine-separator"/>

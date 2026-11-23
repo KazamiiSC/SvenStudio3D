@@ -40,7 +40,7 @@ export type MapRenderSample={
 export function formatMapRenderReport(s:MapRenderSample):string{
   const b=s.batchReturn;
   return [
-    'SVENSTUDIO 3D v2.1 · HF17 HF5 · MAP RENDER DIAGNOSTIC',
+    'SVENSTUDIO 3D v2.3 · MAP RENDER DIAGNOSTIC (HF17 HF5)',
     `Capture: ${s.timestamp}`,
     `Mode: ${s.mode}`,
     `FPS (wall clock): ${s.fps}`,

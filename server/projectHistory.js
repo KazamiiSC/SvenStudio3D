@@ -26,7 +26,7 @@ export async function historyDirectory({root=null,create=false}={}){
 }
 function validProject(project){
  return project&&typeof project==='object'&&project.version===1&&
- (project.target===undefined||project.target==='svengine')&&
+ (project.target===undefined||project.target==='svengine'||project.target==='cs16')&&
  typeof project.name==='string'&&project.name.length>0&&project.name.length<=512&&
  Array.isArray(project.objects)&&project.objects.length<=100000&&
  project.world&&typeof project.world==='object'&&!Array.isArray(project.world)&&

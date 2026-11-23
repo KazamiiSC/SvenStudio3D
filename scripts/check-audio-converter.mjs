@@ -1,4 +1,4 @@
-import ts from 'typescript';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import {createRequire} from 'node:module';import {strict as assert} from 'node:assert';
+import ts from '../tests/support/typescript.cjs';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import {createRequire} from 'node:module';import {strict as assert} from 'node:assert';
 import {installConvertedSound} from '../server/audioConvertInstall.js';
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),'sven-audio-convert-'));
 const out=path.join(temp,'engine');fs.mkdirSync(out,{recursive:true});fs.writeFileSync(path.join(temp,'package.json'),'{"type":"commonjs"}');

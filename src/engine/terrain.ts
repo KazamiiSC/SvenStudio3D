@@ -23,7 +23,7 @@ export type TerrainDefinition={
   brushIds:string[];brushSignatures:string[];
 };
 export type TerrainDraft=Pick<TerrainDefinition,'id'|'name'|'origin'|'width'|'depth'|'resolution'|'heights'|'texture'|'baseDepth'|'optimized'|'baseMode'|'surfaceThickness'|'customBaseOffset'|'hideUnderside'|'diagonalFlips'|'excludedCells'>;
-export type RockOptions={origin:Vec3;count:number;radius:number;height:number;seed:number;texture:string};
+export type RockOptions={origin:Vec3;count:number;radius:number;height:number;seed:number;texture:string;/** v2.4: 'ring' walls in a cave/crater. */layout?:'cluster'|'ring';/** v2.4: 0 = classic smooth rocks, up to 1 = jagged. */roughness?:number};
 const finite=(n:number)=>Number.isFinite(n);
 const round=(n:number)=>Math.round(n*100)/100;
 export function defaultTerrain(origin:Vec3=[0,0,0]):TerrainDraft{
@@ -261,15 +261,39 @@ export function terrainRecord(d:TerrainDraft,brushes:Brush[]):TerrainDefinition{
   return {...d,origin:[...d.origin],heights:[...d.heights],excludedCells:d.excludedCells?[...d.excludedCells]:undefined,brushIds:brushes.map(b=>b.id),brushSignatures:brushes.map(terrainBrushSignature)};
 }
 function random(seed:number){let x=Math.floor(seed)||1;return ()=>{x=(Math.imul(1664525,x)+1013904223)|0;return (x>>>0)/4294967296}}
+/* v2.4 jagged rocks (moved here from the map tools) */
+const ICO=(()=>{const t=(1+Math.sqrt(5))/2;const raw:Vec3[]=[[-1,t,0],[1,t,0],[-1,-t,0],[1,-t,0],[0,-1,t],[0,1,t],[0,-1,-t],[0,1,-t],[t,0,-1],[t,0,1],[-t,0,-1],[-t,0,1]];
+  return raw.map(p=>{const n=Math.hypot(...p);return p.map(c=>c/n) as Vec3;});})();
+/** One irregular convex rock: a randomly squashed icosahedron, rounded to whole units. */
+export function buildRock(center:Vec3,size:Vec3,roughness:number,random:()=>number,texture:string,name='Rock'):Brush{
+  const template=createBrush('box',[0,0,0],[16,16,16]);template.faces=template.faces.map(f=>({...f,texture}));
+  for(let attempt=0;attempt<8;attempt++){
+    const points:Vec3[]=ICO.map(p=>{const k=1-roughness*.55*random();return [Math.round(center[0]+p[0]*size[0]/2*k),Math.round(center[1]+p[1]*size[1]/2*k),Math.round(center[2]+p[2]*size[2]/2*k)] as Vec3;});
+    try{
+      let rock=rebuildConvexBrush(template,points,{requireAllVertices:false});
+      const used=[...new Set(rock.faces.flatMap(f=>f.indices))].sort((a,b)=>a-b),index=new Map(used.map((old,i)=>[old,i]));
+      rock={...rock,id:uid(),name,primitive:'poly',position:[0,0,0],rotation:[0,0,0],scale:[1,1,1],vertices:used.map(i=>rock.vertices[i]),faces:rock.faces.map(f=>({indices:f.indices.map(i=>index.get(i)!),texture})),layer:'Geometry'};
+      if(!validateBrush(rock).length)return rock;
+    }catch{/* try another shape */}
+  }
+  throw Error('Could not build a valid rock with these settings; try another seed or a lower roughness.');
+}
 /** Individual convex rock fragments; this is not a Source mesh/displacement. */
 export function createRockCluster(options:RockOptions):Brush[]{
   const {origin,count,radius,height,seed,texture}=options;
   if(origin.length!==3||origin.some(n=>!finite(n)||Math.abs(n)>125000)||![count,radius,height,seed].every(finite)||count<1||count>24||!Number.isInteger(count)||radius<16||radius>512||height<16||height>512)throw Error('Invalid rock cluster settings.');
   if(!/^[^\s"()[\]]{1,32}$/.test(texture))throw Error('Invalid rock texture.');
   const rnd=random(seed),group=`Rocks ${uid().slice(-6)}`;
+  const ring=options.layout==='ring',rough=Math.max(0,Math.min(1,options.roughness??0));
   return Array.from({length:count},(_,i)=>{
-    const angle=rnd()*Math.PI*2,dist=Math.sqrt(rnd())*radius*.7;
-    const width=(.48+rnd()*.48)*radius,depth=(.48+rnd()*.48)*radius,tall=(.55+rnd()*.65)*height;
+    const angle=ring?i/count*Math.PI*2+rnd()*.25:rnd()*Math.PI*2,dist=ring?radius*(.92+rnd()*.16):Math.sqrt(rnd())*radius*.7;
+    // In a ring the rocks are sized to touch their neighbours so the wall has no big gaps.
+    const span=ring?Math.max(32,2*Math.PI*radius/count*1.15):radius;
+    const width=(.48+rnd()*.48)*span,depth=(.48+rnd()*.48)*(ring?Math.min(span,radius*.6):span),tall=(.55+rnd()*.65)*height;
+    if(rough>0){
+      const rock=buildRock([round(origin[0]+Math.cos(angle)*dist),round(origin[1]+Math.sin(angle)*dist),round(origin[2]+tall*.38)],[width,depth,tall],rough,rnd,texture,`Rock ${i+1}`);
+      rock.layer='Terrain';rock.group=group;return rock;
+    }
     const brush=createBrush('icosphere',[round(origin[0]+Math.cos(angle)*dist),round(origin[1]+Math.sin(angle)*dist),round(origin[2]+tall*.38)],[width,depth,tall],`Rock ${i+1}`);
     const points=brush.vertices.map((v,j)=>{
       const irregularity=.86+rnd()*.22;

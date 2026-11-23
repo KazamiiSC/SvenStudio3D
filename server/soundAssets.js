@@ -16,13 +16,14 @@ export async function soundRoots(gameDir){
   if(typeof gameDir!=='string'||!gameDir||gameDir.length>1024)throw Error('Configure Sven Co-op game directory first.');
   const resolved=path.resolve(gameDir);
   const name=path.basename(resolved).toLowerCase();
-  const parent=SEARCH_FOLDERS.includes(name)?path.dirname(resolved):resolved;
+  const parent=[...SEARCH_FOLDERS,'cstrike'].includes(name)?path.dirname(resolved):resolved;
+  const layers=name==='cstrike'?['cstrike','valve']:SEARCH_FOLDERS;
   const roots=[];
-  for(const source of SEARCH_FOLDERS){
+  for(const source of layers){
     const folder=path.join(parent,source,'sound');
     try{const real=await fs.realpath(folder);if((await fs.stat(real)).isDirectory())roots.push({source,root:real});}catch{}
   }
-  if(!roots.length)throw Error('No Sven Co-op sound directory found. Check Build Settings.');
+  if(!roots.length)throw Error('No sound folder found in the configured game. Check Build Settings.');
   return roots;
 }
 async function scan(roots){

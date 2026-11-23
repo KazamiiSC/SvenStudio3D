@@ -1,3 +1,4 @@
+import {withSplitParts} from './support/splitParts.cjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -46,14 +47,14 @@ test('pinned toolbar groups do not alter canonical actions and restore old setti
  assert.ok(useStudioLayout.getState().pinnedToolbarGroups.includes('studios'));
  layout.togglePinnedToolbarGroup('studios');
  assert.ok(!useStudioLayout.getState().pinnedToolbarGroups.includes('studios'));
- const app=read('App.tsx'),dock=read('components/DockWorkspace.tsx');
+ const app=withSplitParts(read('App.tsx'),'App'),dock=read('components/DockWorkspace.tsx');
  assert.match(app,/toolbarPin\('transform'\)/);
  assert.match(app,/style:\{order:toolbarPinned\.includes\(id\)/);
  assert.match(dock,/ui3-ribbon-navigation/);
 });
 
 test('entity placement ghost, repeat and existing cancel behavior are retained',()=>{
- const store=read('store.ts'),view=read('components/Viewport.tsx'),panel=read('components/Panels.tsx');
+ const store=read('store.ts'),view=withSplitParts(read('components/Viewport.tsx'),'Viewport'),panel=read('components/Panels.tsx');
  assert.match(store,/set\(\{pendingNpcClass:repeat\?classname:null\}\)/);
  assert.match(view,/entityGhost&&<group/);
  assert.match(view,/state\.startNpcPlacement\(null\)/);

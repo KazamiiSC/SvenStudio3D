@@ -1,4 +1,4 @@
-const assert=require('node:assert/strict'),fs=require('node:fs'),ts=require('typescript');
+const assert=require('node:assert/strict'),fs=require('node:fs'),ts=require('./support/typescript.cjs');
 require.extensions['.ts']=(module,file)=>module._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,file);
 const {pathPointToPreview,movePathPointOnAxis}=require('../src/engine/path3DMath.ts');
 assert.deepEqual(pathPointToPreview([32,64,96]),[32,96,-64]);

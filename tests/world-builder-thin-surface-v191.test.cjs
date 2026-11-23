@@ -1,6 +1,6 @@
 /* Regression: thin convex terrain, old solid groups, custom base and Valve 220 round-trip. */
 const test=require('node:test'),assert=require('node:assert/strict');
-const fs=require('node:fs'),path=require('node:path'),ts=require('typescript');
+const fs=require('node:fs'),path=require('node:path'),ts=require('./support/typescript.cjs');
 require.extensions['.ts']=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,file);
 const {defaultTerrain,createTerrainBrushes,createTerrainPreviewShell,terrainBaseZ,terrainBrushCount,terrainRecord,terrainLowerVertex,validateTerrainDraft}=require('../src/engine/terrain.ts');
 const {generateWorldHeights}=require('../src/engine/worldBuilderTerrain.ts');

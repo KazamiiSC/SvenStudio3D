@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {decompileBspToMap} from '../server/surfDecompile.js';
 import {createRequire} from 'node:module';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 const require=createRequire(import.meta.url);
 require.extensions['.ts']=(mod,filename)=>mod._compile(ts.transpileModule(require('node:fs').readFileSync(filename,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText,filename);
 const {inspectMapImport}=require('../src/engine/importMap.ts');
@@ -32,7 +32,7 @@ test('requires explicit SurfDecomp.exe program name and absolute path',async()=>
  await assert.rejects(decompileBspToMap({bsp,toolPath:'/usr/bin/unknown.exe'}),/surfdecomp.exe/);
  await assert.rejects(decompileBspToMap({bsp,toolPath:'surfdecomp.exe'}),/absolute path/);
 });
-test('BSP to MAP conversion creates valid text and never mutates input BSP',async()=>{
+test('BSP to MAP conversion creates valid text and never mutates input BSP',{skip:process.platform==='win32'&&'the fake SurfDecomp is a POSIX shell script'},async()=>{
  const {root,tool}=await tempTool();try{
   const result=await decompileBspToMap({bsp,toolPath:tool});
   assert.equal(result.mapText,fixture);
@@ -45,7 +45,7 @@ test('BSP to MAP conversion creates valid text and never mutates input BSP',asyn
   assert.deepEqual(bsp,original);
  }finally{await fs.rm(root,{recursive:true,force:true})}
 });
-test('reject decompiler failures and bogus MAP output',async()=>{
+test('reject decompiler failures and bogus MAP output',{skip:process.platform==='win32'&&'the fake SurfDecomp is a POSIX shell script'},async()=>{
  const {root,tool}=await tempTool();try{
   await fs.writeFile(tool,'#!/bin/sh\nexit 5\n');
   await assert.rejects(decompileBspToMap({bsp,toolPath:tool}),/SurfDecomp failed/);

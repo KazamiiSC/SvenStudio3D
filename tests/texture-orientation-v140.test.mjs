@@ -1,9 +1,11 @@
+import {extractFunction} from './support/extractFunction.cjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 import {normalizedUvAt} from '../src/engine/valve220UV.ts';
+import {isBspSyntheticClosure} from '../src/engine/bspPrefabSurfaceFlags.ts';
 
 const source=file=>readFileSync(new URL(`../${file}`,import.meta.url),'utf8');
 const geometry=source('src/engine/geometry.ts');
@@ -11,10 +13,9 @@ const geometry=source('src/engine/geometry.ts');
 // Evaluate the real builder without a WebGL context, preserving GoldSrc's
 // world points and per-face UV values. No simulated projection implementation.
 function createBuilder(){
-  const ast=ts.createSourceFile('geometry.ts',geometry,ts.ScriptTarget.ES2022,true,ts.ScriptKind.TS);
-  const fn=ast.statements.find(n=>ts.isFunctionDeclaration(n)&&n.name?.text==='buildMeshGeometry');
-  assert.ok(fn);
-  const js=ts.transpileModule(fn.getText(ast).replace(/^export /,''),{
+  const fnText=extractFunction(geometry,'buildMeshGeometry');
+  assert.ok(fnText);
+  const js=ts.transpileModule(fnText.replace(/^export /,''),{
     compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None}
   }).outputText;
   class BufferGeometry {
@@ -30,7 +31,7 @@ function createBuilder(){
     transformedVertices:brush=>brush.vertices,
     gameToThree:v=>({x:v[0],y:v[2],z:-v[1]}),
     safeFaceTextureAxes:(_vertices,face)=>({u:face.uAxis,v:face.vAxis,uShift:face.uShift??0,vShift:face.vShift??0}),
-    normalizedUvAt
+    normalizedUvAt,isBspSyntheticClosure
   });
 }
 const build=createBuilder();

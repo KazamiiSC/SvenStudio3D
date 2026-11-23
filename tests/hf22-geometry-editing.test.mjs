@@ -115,7 +115,7 @@ test('HF22 retains Workshop/CSG and Texture Studio while integrating UI into exi
  const view=source('components/Viewport.tsx');const inspector=source('components/Panels.tsx');const rail=source('components/QuickToolRail.tsx');
  assert.match(view,/function GeometryEditHandles/);assert.match(view,/geometrySelectionCentroid/);
  assert.match(view,/kind==='face'&&origin/);assert.match(view,/selectedGizmoPointerHit=hit/);assert.match(view,/selectIndices\(h\.indices,e\.shiftKey\|\|e\.ctrlKey\|\|e\.metaKey\)/);
- assert.match(view,/if\(!alreadyEditingFace\)setTextureStudioOpen\(true\)/);
+ assert.match(view,/if\(!alreadyEditingFace\)ed\(\)\.setTextureStudioOpen\(true\)/);
  assert.match(inspector,/hf22-geometry-workspace/);assert.match(inspector,/Apply movement/);
  assert.match(rail,/Brush Workshop/);assert.match(rail,/World Builder · Curves/);
  assert.match(rail,/booleanSelected/);assert.match(rail,/Open Properties panel/);

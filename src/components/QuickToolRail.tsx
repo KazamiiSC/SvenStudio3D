@@ -17,7 +17,7 @@ export function QuickToolRail(){
   const hudEditing=useHudLayout(s=>s.editing);
   const railPositionX=useHudLayout(s=>s.items.tools.x);
   useEffect(()=>{if(hudEditing)setMenu(null)},[hudEditing]);
-  const [distance,setDistance]=useState(16),[width,setWidth]=useState(8),[operationMessage,setOperationMessage]=useState('');
+  const [distance,setDistance]=useState(16);const [mirrorKeep,setMirrorKeep]=useState(true),[pathShape,setPathShape]=useState('arc'),[pathLength,setPathLength]=useState(256),[pathCopies,setPathCopies]=useState(8),[pathScale,setPathScale]=useState(1),[pathAlign,setPathAlign]=useState(true),[width,setWidth]=useState(8),[operationMessage,setOperationMessage]=useState('');
   const selectedBrush=editor.project.objects.find(o=>o.id===editor.selected&&o.kind==='brush');
   const twoBrushes=editor.selectedIds.length===2&&editor.selectedIds.every(id=>{
     const obj=editor.project.objects.find(o=>o.id===id);
@@ -83,6 +83,19 @@ export function QuickToolRail(){
         <button type="button" disabled={!faceReady||!(distance>0)} title={t('Face mode: select a face first')} onClick={()=>apply('Extrude',()=>editor.extrudeSelected(distance))}>{t('Extrude face')}</button>
         <label className="quick-modeling-input">{t('Bevel / Inset width')} <input aria-label={t('Bevel width')} type="number" min="0.01" value={width} onChange={e=>setWidth(Number(e.target.value))}/></label>
         <div className="quick-flyout-grid"><button type="button" disabled={!edgeReady||!(width>0)} title={t('Edge mode: select an edge first')} onClick={()=>apply('Bevel',()=>editor.bevelSelected(width))}>{t('Bevel edge')}</button><button type="button" disabled={!faceReady||!(width>0)} title={t('Face mode: select a face first')} onClick={()=>apply('Inset',()=>editor.insetSelected(width))}>{t('Inset (taper)')}</button></div>
+        <div className="quick-modeling-caption">{t('Mirror and repeat · selected brushes')}</div>
+        <label className="quick-modeling-check"><input type="checkbox" checked={mirrorKeep} onChange={e=>setMirrorKeep(e.target.checked)}/>{t('Keep the original (symmetric copy)')}</label>
+        <div className="quick-flyout-grid">{(['X','Y','Z'] as const).map((axis,i)=><button type="button" key={axis} disabled={!editor.selectedIds.length} onClick={()=>apply('Mirror '+axis,()=>{editor.mirrorSelected(i as 0|1|2,mirrorKeep);})}>{t('Mirror')} {axis}</button>)}</div>
+        <div className="quick-flyout-grid quick-path-array">
+          <label className="quick-modeling-input">{t('Path')}<select value={pathShape} onChange={e=>setPathShape(e.target.value)}><option value="line">{t('Line')}</option><option value="arc">{t('Arc')}</option><option value="circle">{t('Circle')}</option><option value="S">S</option></select></label>
+          <label className="quick-modeling-input">{t('Length / radius')}<input type="number" min={16} max={8192} value={pathLength} onChange={e=>setPathLength(Number(e.target.value))}/></label>
+          <label className="quick-modeling-input">{t('Copies')}<input type="number" min={1} max={128} value={pathCopies} onChange={e=>setPathCopies(Math.round(Number(e.target.value)))}/></label>
+          <label className="quick-modeling-input">{t('End scale')}<input type="number" min={0.1} max={10} step={0.1} value={pathScale} onChange={e=>setPathScale(Number(e.target.value))}/></label>
+        </div>
+        <label className="quick-modeling-check"><input type="checkbox" checked={pathAlign} onChange={e=>setPathAlign(e.target.checked)}/>{t('Turn copies to follow the path')}</label>
+        <button type="button" disabled={!editor.selectedIds.length} onClick={()=>apply('Repeat along path',()=>{const sel=editor.project.objects.filter(o=>editor.selectedIds.includes(o.id));const c=[0,1,2].map(i=>sel.reduce((s,o)=>s+o.position[i],0)/Math.max(1,sel.length));const L=Math.max(16,pathLength);
+          const pts=pathShape==='line'?[[c[0],c[1],c[2]],[c[0]+L,c[1],c[2]]]:pathShape==='S'?[[c[0],c[1],c[2]],[c[0]+L/3,c[1],c[2]],[c[0]+L/3,c[1]+L/3,c[2]],[c[0]+2*L/3,c[1]+L/3,c[2]]]:Array.from({length:25},(_,k)=>{const a=(pathShape==='arc'?Math.PI:2*Math.PI)*k/24;return [c[0]+L*Math.sin(a),c[1]+L-L*Math.cos(a),c[2]];});
+          editor.pathArraySelected({points:pts as [number,number,number][],copies:pathCopies,align:pathAlign,scaleEnd:pathScale});})}>{t('Repeat along path')}</button>
         <div className="quick-modeling-caption">{t('UV mouse: Alt+drag moves · Alt+Shift rotates · Alt+Ctrl scales. Undo is supported.')}</div>
         <button type="button" disabled={!editor.selectedIds.length} onClick={()=>apply('Snap selection to grid',editor.snapSelectionToGrid)}>{t('Snap selection to grid')}</button>
         {operationMessage&&<div role="status" className="quick-modeling-status">{operationMessage}</div>}

@@ -59,13 +59,14 @@ const statSafe=async p=>{try{const s=await fs.stat(p);return s.isFile()}catch{re
 // Resolve bare WAD names under BOTH Sven Co-op layouts: a selected svencoop
 // overlay or the game installation root. Only use a full path in the temporary
 // compiler MAP; never overwrite the path stored in the editable project.
-const lookupWad=async(name,gameDir,compilerDir,configuredPaths=[])=>{
+const lookupWad=async(name,gameDir,compilerDir,configuredPaths=[],gameProfile='svengine')=>{
   const clean=normalizePath(name);
   const file=path.win32.basename(clean);
   const directory=path.resolve(gameDir);
   const overlays=new Set(['svencoop','svencoop_addon','svencoop_downloads']);
-  const root=overlays.has(path.basename(directory).toLowerCase())?path.dirname(directory):directory;
-  const locations=[directory,root,...['svencoop_addon','svencoop_downloads','svencoop','valve'].map(layer=>path.join(root,layer)),compilerDir];
+  const cs16=gameProfile==='cs16';
+  const root=cs16?path.dirname(directory):overlays.has(path.basename(directory).toLowerCase())?path.dirname(directory):directory;
+  const locations=cs16?[directory,path.join(root,'valve'),compilerDir]:[directory,root,...['svencoop_addon','svencoop_downloads','svencoop','valve'].map(layer=>path.join(root,layer)),compilerDir];
   const candidates=[clean,...locations.map(folder=>path.join(folder,file))];
   for(const entry of configuredPaths){
     if(typeof entry!=='string'||!entry.trim())continue;
@@ -77,7 +78,7 @@ const lookupWad=async(name,gameDir,compilerDir,configuredPaths=[])=>{
   return null;
 };
 
-export async function prepareCompileWads(source,{gameDir,compilerDir,builtInWad,configuredWadPaths=[]}) {
+export async function prepareCompileWads(source,{gameDir,compilerDir,builtInWad,configuredWadPaths=[],gameProfile='svengine'}) {
   const textures=referencedTextures(source),warnings=[];
   const old=readWorldWadList(source);
   let list=uniqueWads(old);
@@ -85,7 +86,7 @@ export async function prepareCompileWads(source,{gameDir,compilerDir,builtInWad,
   // Bundled editor WAD is a compiler-only source when a MAP already names
   // svstudio.wad but it is not installed in the user's Sven Co-op folder.
   // Installed/user WADs always retain priority over this fallback.
-  const resolveWad=async(entry)=>await lookupWad(entry,gameDir,compilerDir,configuredWadPaths)
+  const resolveWad=async(entry)=>await lookupWad(entry,gameDir,compilerDir,configuredWadPaths,gameProfile)
     ||(wadBase(entry)==='svstudio.wad'&&await statSafe(builtInWad)?path.resolve(builtInWad):null);
   const available=[];
   for(const entry of list){

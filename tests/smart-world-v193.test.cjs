@@ -1,5 +1,5 @@
 /* v1.9.3 Smart World Builder regression and Valve 220 geometry validation. */
-const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),ts=require('typescript');
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),ts=require('./support/typescript.cjs');
 require.extensions['.ts']=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,file);
 const {defaultTerrain,createTerrainBrushes,terrainRecord,createTerrainPreviewShell,terrainBrushCount,validateTerrainDraft}=require('../src/engine/terrain.ts');
 const {planSmartWorld,smartTerrainHeightAt}=require('../src/engine/smartWorld.ts');

@@ -66,7 +66,8 @@ test('BSP30 decoder preserves both SC-RAD lightstyle layers without writing MAP'
 test('preview uses the existing compilers but never copies its BSP into svencoop/maps',()=>{
   const server=read('server/index.js');
   assert.match(server,/if\(previewOnly\)\{[\s\S]*?createLightingPreviewRecord/);
-  assert.match(server,/if\(previewOnly\)\{[\s\S]*?return;[\s\S]*?const mapsDir=path\.join\(gameDir,'maps'\)/);
+  // Preview returns before any output/installation step (isolated build or explicit install).
+  assert.match(server,/if\(previewOnly\)\{[\s\S]*?return;[\s\S]*?outputMode==='install'/);
   assert.match(server,/lightingPreviewAvailable\(lastLightingPreview,id\)/);
   const app=read('src/App.tsx');
   assert.match(app,/previewOnly:mode==='preview'/);

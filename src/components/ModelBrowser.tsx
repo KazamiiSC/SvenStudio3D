@@ -12,8 +12,9 @@ export async function postModelJson(url:string,payload:object,signal?:AbortSigna
   if(!response.ok){const body=await response.json().catch(()=>({}));throw Error(body.error||`HTTP ${response.status}`)}
   return response.json();
 }
-const fetchBinary=async(gameDir:string,source:string,path:string)=>{
-  const response=await fetch('/api/assets/model',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gameDir,source,path})});
+const fetchBinary=async(gameDir:string,source:string,path:string,optional=false)=>{
+  const response=await fetch('/api/assets/model',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gameDir,source,path,optional})});
+  if(response.status===204)throw Error('Not in this folder.');
   if(!response.ok){const error=await response.json().catch(()=>({}));throw Error(error.error||`HTTP ${response.status}`)}
   return response.arrayBuffer();
 };
@@ -27,8 +28,8 @@ export function loadModelPreview(gameDir:string,model:ModelFile):Promise<StudioP
       const companionPath=model.path.replace(/\.mdl$/i,'T.mdl');
       // Svengine searches virtual game folders by precedence. A model may
       // override a base model while reusing the base texture companion.
-      for(const source of [model.source,'svencoop_addon','svencoop_downloads','svencoop','svencoop_hd','valve']){
-        try{companion=await fetchBinary(gameDir,source,companionPath);break}catch{/*Try the next game resource folder.*/}
+      for(const source of [model.source,...( /[\\/]cstrike[\\/]?$/i.test(gameDir)?['cstrike','valve']:['svencoop_addon','svencoop_downloads','svencoop','svencoop_hd','valve'])]){
+        try{companion=await fetchBinary(gameDir,source,companionPath,true);break}catch{/*Try the next game resource folder.*/}
       }
     }
     // Demand-loaded GoldSrc animation groups are separate 01.mdl, 02.mdl…
@@ -39,8 +40,8 @@ export function loadModelPreview(gameDir:string,model:ModelFile):Promise<StudioP
     if(count>1&&count<=32){
       for(let group=1;group<Math.min(count,16);group++){
         const groupPath=model.path.replace(/\.mdl$/i,`${String(group).padStart(2,'0')}.mdl`);
-        for(const source of [model.source,'svencoop_addon','svencoop_downloads','svencoop','svencoop_hd','valve']){
-          try{groups[group]=await fetchBinary(gameDir,source,groupPath);break}catch{/* Optional demand-loaded animation group. */}
+        for(const source of [model.source,...( /[\\/]cstrike[\\/]?$/i.test(gameDir)?['cstrike','valve']:['svencoop_addon','svencoop_downloads','svencoop','svencoop_hd','valve'])]){
+          try{groups[group]=await fetchBinary(gameDir,source,groupPath,true);break}catch{/* Optional demand-loaded animation group. */}
         }
       }
     }
@@ -52,7 +53,7 @@ export function loadModelPreview(gameDir:string,model:ModelFile):Promise<StudioP
 export async function loadModelByPath(gameDir:string,modelPath:string):Promise<StudioPreview>{
   if(!/^models\/[\w\-./ ]+\.mdl$/i.test(modelPath)||modelPath.includes('..'))throw Error('Unsupported model path.');
   let last:unknown;
-  for(const source of ['svencoop_addon','svencoop_downloads','svencoop','svencoop_hd','valve']){
+  for(const source of (/[\\/]cstrike[\\/]?$/i.test(gameDir)?['cstrike','valve']:['svencoop_addon','svencoop_downloads','svencoop','svencoop_hd','valve'])){
     try{return await loadModelPreview(gameDir,{source,path:modelPath,name:modelPath.split('/').at(-1)!})}catch(error){last=error}
   }
   throw last||Error('Model not found in Sven Co-op folders.');
@@ -79,15 +80,48 @@ function activeMeshes(data:StudioPreview,bodySelection:number[]){
 /** Read-only renderer, used both in the 3D editor and the model inspector.
  * Animation updates are CPU-side and limited to the active inspector. */
 const DEFAULT_BODIES:number[]=[];
-function ModelGeometry({data,skin=0,bodySelection=DEFAULT_BODIES,sequence=-1,frame=0}:{data:StudioPreview;skin?:number;bodySelection?:number[];sequence?:number;frame?:number}){
-  const meshes=useMemo(()=>activeMeshes(data,bodySelection),[data,bodySelection]);
-  const materials=useMemo(()=>studioMaterials(data),[data]);
-  const geometries=useMemo(()=>meshes.map(part=>{
+/** v2.4: static (non-animated) copies of the same model share GPU geometry, materials and textures.
+ * A map can place hundreds of identical props; each copy used to upload its own buffers and textures. */
+type SharedModel={meshes:ReturnType<typeof activeMeshes>;geometries:THREE.BufferGeometry[];materials:ReturnType<typeof studioMaterials>;refs:number};
+const sharedModels=new WeakMap<StudioPreview,Map<string,SharedModel>>();
+function buildGeometries(meshes:ReturnType<typeof activeMeshes>){
+  return meshes.map(part=>{
     const geometry=new THREE.BufferGeometry();
     geometry.setAttribute('position',new THREE.BufferAttribute(part.positions.slice(),3));
     geometry.setAttribute('uv',new THREE.BufferAttribute(part.uvs,2));geometry.computeVertexNormals();
     return geometry;
-  }),[meshes]);
+  });
+}
+function acquireShared(data:StudioPreview,bodySelection:number[]):SharedModel{
+  let byKey=sharedModels.get(data);if(!byKey){byKey=new Map();sharedModels.set(data,byKey);}
+  const key=bodySelection.join(',');
+  let entry=byKey.get(key);
+  if(!entry){const meshes=activeMeshes(data,bodySelection);entry={meshes,geometries:buildGeometries(meshes),materials:studioMaterials(data),refs:0};byKey.set(key,entry);}
+  entry.refs++;return entry;
+}
+function releaseShared(data:StudioPreview,bodySelection:number[],entry:SharedModel){
+  entry.refs--;if(entry.refs>0)return;
+  sharedModels.get(data)?.delete(bodySelection.join(','));
+  entry.geometries.forEach(g=>g.dispose());disposeMaterials(entry.materials);
+}
+function ModelGeometry({data,skin=0,bodySelection=DEFAULT_BODIES,sequence=-1,frame=0}:{data:StudioPreview;skin?:number;bodySelection?:number[];sequence?:number;frame?:number}){
+  return sequence<0?<SharedModelGeometry data={data} skin={skin} bodySelection={bodySelection}/>:<AnimatedModelGeometry data={data} skin={skin} bodySelection={bodySelection} sequence={sequence} frame={frame}/>;
+}
+function SharedModelGeometry({data,skin,bodySelection}:{data:StudioPreview;skin:number;bodySelection:number[]}){
+  const bodyKey=bodySelection.join(',');
+  const shared=useMemo(()=>acquireShared(data,bodySelection),[data,bodyKey]);// eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(()=>()=>releaseShared(data,bodySelection,shared),[shared]);// eslint-disable-line react-hooks/exhaustive-deps
+  return <group>{shared.geometries.map((geometry,i)=>{
+    const mesh=shared.meshes[i];const textureIndex=data.skins[skin]?.[mesh.skinref]??mesh.texture;
+    const material=shared.materials[textureIndex];
+    return <mesh key={i} geometry={geometry} material={material||undefined}>
+      {!material&&<meshStandardMaterial color="#b2c8e1" roughness={.95} side={THREE.DoubleSide}/>}</mesh>;
+  })}</group>;
+}
+function AnimatedModelGeometry({data,skin=0,bodySelection=DEFAULT_BODIES,sequence=-1,frame=0}:{data:StudioPreview;skin?:number;bodySelection?:number[];sequence?:number;frame?:number}){
+  const meshes=useMemo(()=>activeMeshes(data,bodySelection),[data,bodySelection]);
+  const materials=useMemo(()=>studioMaterials(data),[data]);
+  const geometries=useMemo(()=>buildGeometries(meshes),[meshes]);
   useEffect(()=>()=>{geometries.forEach(g=>g.dispose())},[geometries]);
   useEffect(()=>()=>disposeMaterials(materials),[materials]);
   useEffect(()=>{
@@ -309,6 +343,7 @@ function readFavorites(){
 }
 export function ModelBrowser(){
   const t=useT();const gameDir=useEditor(s=>s.settings.gameDir);
+  const gameProfile=useEditor(s=>s.settings.gameProfile);
   const selected=useEditor(s=>s.project.objects.find(o=>o.id===s.selected));
   const setProp=useEditor(s=>s.setObjectProp),appendLogs=useEditor(s=>s.appendLogs);
   const [query,setQuery]=useState(''),[files,setFiles]=useState<ModelFile[]>([]),[total,setTotal]=useState(0),[loading,setLoading]=useState(false),[error,setError]=useState('');
@@ -351,10 +386,11 @@ export function ModelBrowser(){
   useEffect(()=>setVisibleLimit(48),[query,gameDir,onlyFavorites]);
   const apply=(file:ModelFile)=>{
     if(!selected||selected.kind!=='entity'){setError(t('Select a point entity first to apply its model.'));return}
-    setProp(selected.id,'model',file.path);appendLogs([`Assigned model ${file.path} to ${selected.classname}. Ensure the entity supports the model key in Sven Co-op.`]);setFocused(null);
+    if(gameProfile==='cs16'&&!useEditor.getState().fgdClasses.some(def=>def.name===selected.classname&&Object.hasOwn(def.props,'model'))){setError('CS 1.6: this entity has no model key in the loaded FGD. Assignment cancelled.');return}
+    setProp(selected.id,'model',file.path);appendLogs([`Assigned ${file.path} to ${selected.classname} (${gameProfile==='cs16'?'Counter-Strike 1.6':'Sven Co-op'}).`]);setFocused(null);
   };
   return <div className="model-browser">
-    <div className="model-head"><strong><Package size={15}/> Svengine Models</strong>
+    <div className="model-head"><strong><Package size={15}/> {gameProfile==='cs16'?'GoldSrc · CS 1.6 Models':'Svengine Models'}</strong>
       <div className="model-view-switch">
         <button title={t('List view')} className={!grid?'active':''} onClick={()=>{setGrid(false);localStorage.setItem('svstudio-model-grid','false')}}><List size={15}/></button>
         <button title={t('Grid thumbnails')} className={grid?'active':''} onClick={()=>{setGrid(true);localStorage.setItem('svstudio-model-grid','true')}}><Grid2X2 size={15}/></button>
@@ -362,18 +398,18 @@ export function ModelBrowser(){
         <button title={t('Rescan models')} onClick={()=>{forceRef.current=true;setManualRefresh(n=>n+1)}}><RefreshCw size={15}/></button>
       </div></div>
     <label className="model-search"><Search size={15}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search models/*.mdl"/></label>
-    <p className="model-caption">{loading?'Scanning Sven Co-op…':`${filtered.length} / ${total} models · Scan complete`} · Addon / Downloads / Base</p>
-    <p className="model-caption">{t('Drag a model onto the viewport to place an item_generic entity. Thumbnails load on demand.')}</p>
+    <p className="model-caption">{loading?(gameProfile==='cs16'?'Scanning CS 1.6…':'Scanning Sven Co-op…'):`${filtered.length} / ${total} models · Scan complete`} · {gameProfile==='cs16'?'cstrike / valve':'Addon / Downloads / Base'}</p>
+    <p className="model-caption">{gameProfile==='cs16'?'Model preview: drag-to-create item_generic is not supported by CS 1.6. Apply a model only to an entity with a model key in the FGD.':t('Drag a model onto the viewport to place an item_generic entity. Thumbnails load on demand.')}</p>
     {error&&<div className="model-error"><AlertTriangle size={15}/> {error}</div>}
     <div className={grid?'model-results model-grid':'model-results'}>{displayed.map(file=><div className="model-result" key={file.source+'/'+file.path}>
-      <button className="model-open" title="Open preview (drag to viewport to place an item_generic)" draggable
+      <button className="model-open" title={gameProfile==='cs16'?'Open model preview':'Open preview (drag to viewport to place an item_generic)'} draggable={gameProfile!=='cs16'}
         onDragStart={e=>{e.dataTransfer.setData('application/x-svenstudio-model',file.path);e.dataTransfer.effectAllowed='copy'}}
         onClick={()=>setFocused(file)}>
         {grid?<ModelThumb file={file} gameDir={gameDir}/>:<Box size={15}/>}
         <span><strong>{file.name}</strong><small title={file.source+'/'+file.path}>{file.source} / {file.path}</small></span>{!grid&&<Eye size={13}/>}</button>
       <div className="model-item-actions">
         <button title={t('Favorite')} className={favorites.has(favoriteKey(file))?'favorite-active':''} onClick={()=>toggleFavorite(file)}><Star size={13} fill={favorites.has(favoriteKey(file))?'currentColor':'none'}/></button>
-        <button title={t('Apply to selected entity')} disabled={selected?.kind!=='entity'} onClick={()=>apply(file)}><Layers size={14}/></button>
+        <button title={t('Apply to selected entity')} disabled={selected?.kind!=='entity'||gameProfile==='cs16'&&!useEditor.getState().fgdClasses.some(def=>def.name===selected?.classname&&Object.hasOwn(def.props,'model'))} onClick={()=>apply(file)}><Layers size={14}/></button>
       </div>
     </div>)}</div>
     {filtered.length>visibleLimit&&<button className="model-load-more" onClick={()=>setVisibleLimit(n=>n+48)}>{t('Show more models')} ({Math.min(visibleLimit,filtered.length)} / {filtered.length})</button>}

@@ -1,3 +1,5 @@
+import {withSplitParts} from './support/splitParts.cjs';
+import {legacyI18nSource} from './support/legacyI18n.cjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -7,7 +9,7 @@ import {mergeSavedLayout,useStudioLayout} from '../src/layout.ts';
 const source=path=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 
 test('HF3: top build configuration replaces duplicate save; File save stays',()=>{
-  const app=source('src/App.tsx');
+  const app=withSplitParts(source('src/App.tsx'),'App');
   assert.match(app,/className="top-build-settings"[^>]*onClick=\{\(\)=>setDialog\('settings'\)\}/);
   assert.doesNotMatch(app,/className="top-save"/);
   assert.match(app,/t\('Save project'\)/);
@@ -18,10 +20,10 @@ test('HF3: top build configuration replaces duplicate save; File save stays',()=
   assert.match(source('server/index.js'),/\/api\/compile\/install-last/);
 });
 test('HF3: first-run guide is shown once and dismissal is persisted',()=>{
-  const app=source('src/App.tsx');
+  const app=withSplitParts(source('src/App.tsx'),'App');
   assert.match(app,/localStorage\.getItem\('svenstudio:welcome-guide-v1'\)/);
   assert.match(app,/localStorage\.setItem\('svenstudio:welcome-guide-v1','seen'\)/);
-  assert.match(app,/dialog==='about'&&<AboutModal onClose=\{closeHelp\}/);
+  assert.match(app,/dialog==='about'&&<AboutModal key=\{[^}]+\} onClose=\{closeHelp\}/);
   assert.doesNotMatch(app,/guide\.groups\.map\(/);
 });
 test('HF3: default Workspace matches screenshot but saved workspace is respected',()=>{
@@ -54,15 +56,15 @@ test('HF3: manual has studios, resource flow, report links and all configurable 
   assert.equal(new Set(groups).size,CONTROL_ACTIONS.length);
   assert.deepEqual(new Set(groups),new Set(CONTROL_ACTIONS.map(a=>a.id)));
   assert.ok(groups.every(id=>typeof DEFAULT_CONTROLS.shortcuts[id]==='string'));
-  assert.match(source('src/App.tsx'),/controls\.shortcuts\[id\]/);
-  assert.match(source('src/App.tsx'),/steamcommunity\.com\/id\/KazamiiSC/);
+  assert.match(withSplitParts(source('src/App.tsx'),'App'),/controls\.shortcuts\[id\]/);
+  assert.match(withSplitParts(source('src/App.tsx'),'App'),/steamcommunity\.com\/id\/KazamiiSC/);
 });
 test('HF3: spawn animation uses 30fps update tick and hides during Gameplay Test',()=>{
   assert.match(source('src/components/ModelBrowser.tsx'),/elapsed\.current<1\/30/);
-  assert.match(source('src/components/Viewport.tsx'),/!\(walking&&isSpawn\)/);
-  assert.match(source('src/components/Viewport.tsx'),/animationSpeed=\{isSpawn\?1\.4:1\}/);
+  assert.match(withSplitParts(source('src/components/Viewport.tsx'),'Viewport'),/!\(walking&&isSpawn\)/);
+  assert.match(withSplitParts(source('src/components/Viewport.tsx'),'Viewport'),/animationSpeed=\{isSpawn\?1\.4:1\}/);
 });
 test('HF22: Spanish Wireframe label remains localized',()=>{
-  const i18n=source('src/i18n.ts');
+  const i18n=legacyI18nSource();
   assert.match(i18n,/Alámbrico/i);
 });

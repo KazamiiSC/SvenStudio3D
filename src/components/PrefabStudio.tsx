@@ -1,11 +1,13 @@
 import {saveStudioText,studioFiles,readStudioText} from '../engine/studioFiles';
 /** Dedicated prefab catalog; never changes the BSP or MAP until explicitly imported. */
-import {useEffect,useMemo,useRef,useState} from 'react';
+import {KitGallery} from './KitGallery';
+import {translate} from '../i18n';
+import {Fragment,useEffect,useMemo,useRef,useState} from 'react';
 import {Canvas,useThree} from '@react-three/fiber';
 import {OrbitControls} from '@react-three/drei';
 import {createPortal} from 'react-dom';
 import * as THREE from 'three';
-import {Boxes,FolderOpen,FolderPlus,RefreshCw,Save,Search,Upload,Plus,MousePointer2,X,ShieldAlert,FileDown,HardDrive,CheckCircle2,AlertTriangle,Download,Trash2,Layers3} from 'lucide-react';
+import {Boxes,FolderOpen,FolderPlus,RefreshCw,Save,Search,Upload,Plus,MousePointer2,X,ShieldAlert,FileDown,HardDrive,CheckCircle2,AlertTriangle,Download,Trash2,Layers3,Puzzle,Link2,Wrench} from 'lucide-react';
 import {useEditor} from '../store';
 import {createPrefab,type Prefab} from '../engine/prefabs';
 import {LinkedPrefabsPanel} from './LinkedPrefabsPanel';
@@ -89,7 +91,8 @@ export function PrefabStudio({onClose,onImportPrefab,onStartPlacement}:{onClose:
  const settings=useEditor(s=>s.settings);
  const items=useEditor(s=>s.prefabs),selectedIds=useEditor(s=>s.selectedIds),objects=useEditor(s=>s.project.objects),assetTextures=useEditor(s=>s.textureAssets);
  const [folder,setFolder]=useState<FolderHandle|null>(null),[permission,setPermission]=useState(false),[folderEntries,setFolderEntries]=useState<PrefabFolderEntry[]>([]),[diskItems,setDiskItems]=useState<CatalogItem[]>([]),[manual,setManual]=useState<CatalogItem[]>([]);
- const [errors,setErrors]=useState<string[]>([]),[message,setMessage]=useState(''),[query,setQuery]=useState(''),[chosen,setChosen]=useState(''),[busy,setBusy]=useState(false),[previewTextures,setPreviewTextures]=useState<TextureAsset[]>([]);
+ const [errors,setErrors]=useState<string[]>([]),[message,setMessage]=useState(''),[query,setQuery]=useState(''),[categoryFilter,setCategoryFilter]=useState(''),[chosen,setChosen]=useState(''),[busy,setBusy]=useState(false),[previewTextures,setPreviewTextures]=useState<TextureAsset[]>([]);
+ const [tab,setTab]=useState<'library'|'kits'|'linked'>('library');
  const fallbackRef=useRef<HTMLInputElement>(null),inputRef=useRef<HTMLInputElement>(null);
  const setError=(error:unknown)=>setMessage(error instanceof Error?error.message:String(error));
  const refreshDocuments=async()=>{
@@ -129,7 +132,10 @@ export function PrefabStudio({onClose,onImportPrefab,onStartPlacement}:{onClose:
   ...diskItems,
   ...items.map(p=>({key:`library:${p.id}`,name:p.name,source:'library' as const,prefab:p as StudioPrefab})),...manual
  ],[folderEntries,diskItems,items,manual]);
- const filtered=catalog.filter(x=>`${x.name} ${x.fileName??''}`.toLowerCase().includes(query.toLowerCase()));
+ // v2.6: BSP-extracted prefabs carry a category and a thumbnail.
+ const meta=(p:unknown)=>p as {category?:string;thumbnail?:string};
+ const categories=[...new Set(catalog.map(x=>meta(x.prefab).category).filter((c):c is string=>!!c))].sort();
+ const filtered=catalog.filter(x=>`${x.name} ${x.fileName??''}`.toLowerCase().includes(query.toLowerCase())&&(!categoryFilter||meta(x.prefab).category===categoryFilter));
  const selected=filtered.find(x=>x.key===chosen)??filtered[0]??null;
  useEffect(()=>{let active=true;setPreviewTextures([]);
    if(!selected)return;
@@ -245,53 +251,106 @@ export function PrefabStudio({onClose,onImportPrefab,onStartPlacement}:{onClose:
    await onImportPrefab(new File([text],selected.fileName??`${selected.name}.svprefab`,{type:'application/json'}));
  }catch(err){setError(err)}finally{setBusy(false)}};
  useEffect(()=>{const onKey=(event:KeyboardEvent)=>{if(event.key==='Escape'){event.stopImmediatePropagation();event.preventDefault();onClose()}};window.addEventListener('keydown',onKey,true);return()=>window.removeEventListener('keydown',onKey,true)},[onClose]);
+ const tr=(key:string)=>translate(currentLocale,key);
+ const L=(m:Record<string,string>)=>m[currentLocale]??m.en;
+ const sourceLabel=(s:CatalogItem['source'])=>s==='folder'||s==='disk'?w.files:s==='library'?w.library:w.pick;
+ const catLabel=(c:string)=>tr(({doors:'Doors',furniture:'Furniture',computers:'Computers & screens',lighting:'Lighting',decoration:'Decoration',industrial:'Industrial',vehicles:'Vehicles',nature:'Nature',other:'Other'} as Record<string,string>)[c]??c);
+ const counts={files:catalog.filter(x=>x.source==='folder'||x.source==='disk').length,library:catalog.filter(x=>x.source==='library').length,manual:manual.length};
+ const brushCount=selected?selected.prefab.objects.filter(o=>o.kind==='brush').length:0;
+ const entityCount=selected?selected.prefab.objects.filter(o=>o.kind==='entity').length:0;
+ const recovery=selected?.prefab.format==='svenstudio-bsp-object'?selected.prefab.recovery:undefined;
  return createPortal(<div className="pfstudio-backdrop" onPointerDown={e=>{if(e.target===e.currentTarget)onClose();e.stopPropagation()}}>
-  <section className="pfstudio-dialog" role="dialog" aria-modal="true" aria-label={w.title} onPointerDown={e=>e.stopPropagation()}>
-    <header className="pfstudio-head"><Boxes size={24}/><div><strong>{w.title}</strong><small>{w.subtitle}</small></div><button onClick={onClose} title={w.close}><X size={21}/></button></header>
-    <div className="pfstudio-content"><aside className="pfstudio-sidebar"><div className="pfstudio-folder"><h3>{w.folder}</h3><div className="pfstudio-folder-name"><FolderOpen size={17}/>{folder?.name??'Documents / SvenStudio3D / Prefabs'}</div><div className="pfstudio-row">
-      <button onClick={()=>void chooseFolder()}><FolderPlus size={15}/>{w.choose}</button>
-      <button disabled={!folder||busy} title={permission?w.rescan:w.authorize} onClick={()=>{if(folder)void rescan(folder,true).catch(setError)}}><RefreshCw size={15}/></button>
-      <button disabled={!folder} title={w.disconnect} onClick={()=>void forgetPrefabFolder().then(()=>{setFolder(null);setFolderEntries([]);setPermission(false);setChosen('')}).catch(setError)}><X size={15}/></button>
-    </div><div className="pfstudio-row"><button onClick={()=>inputRef.current?.click()}><Upload size={15}/>{w.pick}</button></div>
-      <input type="file" hidden ref={inputRef} accept=".svprefab,.json" multiple onChange={e=>void handleInput(e)}/>
-      <input type="file" hidden ref={fallbackRef} multiple onChange={e=>void handleInput(e,true)} {...{'webkitdirectory':''} as React.InputHTMLAttributes<HTMLInputElement>}/>
-    </div><label className="pfstudio-search"><Search size={15}/><input placeholder={w.search} value={query} onChange={e=>setQuery(e.target.value)}/></label>
-    <div className="pfstudio-list">{filtered.length===0&&<p>{w.empty}</p>}{filtered.map((item,i)=><div key={`${item.key}:${i}`} className="pfstudio-item-wrap">{(i===0||filtered[i-1].source!==item.source)&&<h4>{item.source==='folder'||item.source==='disk'?w.files:item.source==='library'?w.library:w.pick}</h4>}
-      <button className={`pfstudio-item ${selected?.key===item.key?'selected':''}`} onClick={()=>setChosen(item.key)}><Boxes size={16}/><span>{item.name}<small>{item.prefab.objects.length} {w.count} · {item.fileName??'Local'}</small></span></button>
-    </div>)}</div></aside>
-    <div className="pfstudio-main hf15-prefab-main">{selected?<><div className="pfstudio-title"><strong>{selected.name}</strong><span>{selected.prefab.objects.filter(o=>o.kind==='brush').length} brushes · {selected.prefab.objects.filter(o=>o.kind==='entity').length} entities</span></div>
-      {selected.prefab.format==='svenstudio-bsp-object'&&selected.prefab.recovery?.mode==='surface-shell'&&<div className="pfstudio-status" role="status"><ShieldAlert size={15}/>{({es:`Aproximación visual: ${selected.prefab.recovery.panels} paneles delgados; ${selected.prefab.recovery.skippedFaces?.length??0} caras BSP omitidas. No recupera los volúmenes originales, caras ocultas ni colisiones. Revisá antes de compilar.`,en:`Visual approximation: ${selected.prefab.recovery.panels} thin panels; ${selected.prefab.recovery.skippedFaces?.length??0} BSP faces omitted. Original volumes, hidden faces and collision hulls are NOT recovered. Inspect before compiling.`,ru:`Приближённая модель: ${selected.prefab.recovery.panels} тонких панелей. Исходные объёмы, скрытые грани и коллизии не восстановлены.`,ko:`근사 모델: 얇은 패널 ${selected.prefab.recovery.panels}개. 원래 체적, 숨겨진 면, 충돌 복구 안 됨.`,zh:`近似模型：${selected.prefab.recovery.panels} 个薄面板。未恢复原始体积、隐藏面和碰撞。`,pt:`Aproximação visual: ${selected.prefab.recovery.panels} painéis finos. Volumes originais, faces ocultas e colisões NÃO foram recuperados.`} as Record<string,string>)[currentLocale]}</div>}
-      {selected.prefab.format==='svenstudio-bsp-object'&&selected.prefab.recovery?.mode==='hull0-solid'&&<div className="pfstudio-status" role="status"><ShieldAlert size={15}/>{({es:`Sólidos Hull 0: ${selected.prefab.recovery.solids} celdas convexas reconstruidas del submodelo *${selected.prefab.recovery.modelIndex}. NO son los brushes originales. Texturas, colisiones y luz pueden diferir; verificá antes de compilar.`,en:`Hull 0 solids: ${selected.prefab.recovery.solids} convex cells recovered from submodel *${selected.prefab.recovery.modelIndex}. NOT the original brushes. Textures, collisions and lighting may differ.`,ru:`Hull 0: ${selected.prefab.recovery.solids} выпуклых фрагментов. Исходные кисти, коллизии и освещение не сохранены.`,ko:`Hull 0: 볼록 솔리드 ${selected.prefab.recovery.solids}개. 원본 브러시, 충돌 및 조명이 다를 수 있습니다.`,zh:`Hull 0：恢复 ${selected.prefab.recovery.solids} 个凸实体。并非原始笔刷，碰撞与光照可能不同。`,pt:`Hull 0: ${selected.prefab.recovery.solids} células convexas reconstruídas. Não são brushes originais; texturas, colisões e luz podem diferir.`} as Record<string,string>)[currentLocale]}</div>}
-      <PrefabView3D key={selected.key} prefab={selected.prefab} textureAssets={previewTextures}/><div className="pfstudio-help">{w.preview}</div>
-      {dependencies&&<section className="pfstudio-dependencies" aria-label="Prefab WAD dependencies">
-        <div className="pfstudio-dep-head"><HardDrive size={16}/><strong>{({es:'Recursos y WAD para compilación',en:'Resources and compilation WAD',ru:'Ресурсы и WAD для компиляции',ko:'리소스 및 컴파일 WAD',zh:'资源和编译用 WAD',pt:'Recursos e WAD de compilação'} as Record<string,string>)[currentLocale]}</strong></div>
-        <div className="pfstudio-dep-details">
-          <span>{dependencies.filename??({es:'Prefab MAP: WAD externos',en:'MAP prefab: external WADs',ru:'Внешние WAD',ko:'외부 WAD',zh:'外部 WAD',pt:'WAD externos'} as Record<string,string>)[currentLocale]}</span>
-          <small>{dependencies.embedded?({es:'WAD3 incluido en .svprefab',en:'WAD3 embedded in .svprefab',ru:'WAD3 включён в prefab',ko:'WAD3 포함됨',zh:'包含 WAD3',pt:'WAD3 incluído no prefab'} as Record<string,string>)[currentLocale]:({es:'Este prefab no incluye WAD3; comprobá los recursos externos.',en:'This prefab has no WAD3; check external textures.',ru:'WAD3 не включён.',ko:'WAD3가 포함되지 않았습니다.',zh:'未包含 WAD3',pt:'WAD3 não incluído.'} as Record<string,string>)[currentLocale]}</small>
+  <section className="pfstudio-dialog pfx" role="dialog" aria-modal="true" aria-label={w.title} onPointerDown={e=>e.stopPropagation()}>
+    <header className="pfstudio-head"><Boxes size={24}/><div><strong>{w.title}</strong><small>{w.subtitle}</small></div>
+      <nav className="pfx-tabs" role="tablist" aria-label={w.title}>
+        {([['library',Boxes,tr('Prefab library'),catalog.length],['kits',Puzzle,tr('Creation kits'),null],['linked',Link2,tr('Linked instances'),null]] as const).map(([id,Icon,label,n])=>
+          <button key={id} type="button" role="tab" aria-selected={tab===id} className={tab===id?'active':''} onClick={()=>setTab(id)}><Icon size={15}/>{label}{n!==null&&<span>{n}</span>}</button>)}
+      </nav>
+      <button onClick={onClose} title={w.close}><X size={21}/></button></header>
+    {tab==='library'&&<div className="pfx-body">
+      <aside className="pfx-side">
+        <section className="pfx-card">
+          <h3><FolderOpen size={15}/>{w.folder}</h3>
+          <div className="pfstudio-folder-name" title={folder?.name}>{folder?.name??'Documents / SvenStudio3D / Prefabs'}</div>
+          <div className="pfx-row">
+            <button className="pfx-btn" onClick={()=>void chooseFolder()}><FolderPlus size={15}/>{w.choose}</button>
+            <button className="pfx-icon" disabled={!folder||busy} title={permission?w.rescan:w.authorize} aria-label={permission?w.rescan:w.authorize} onClick={()=>{if(folder)void rescan(folder,true).catch(setError)}}><RefreshCw size={15}/></button>
+            <button className="pfx-icon" disabled={!folder} title={w.disconnect} aria-label={w.disconnect} onClick={()=>void forgetPrefabFolder().then(()=>{setFolder(null);setFolderEntries([]);setPermission(false);setChosen('')}).catch(setError)}><X size={15}/></button>
+          </div>
+          <button className="pfx-btn" onClick={()=>inputRef.current?.click()}><Upload size={15}/>{w.pick}</button>
+          <input type="file" hidden ref={inputRef} accept=".svprefab,.json" multiple onChange={e=>void handleInput(e)}/>
+          <input type="file" hidden ref={fallbackRef} multiple onChange={e=>void handleInput(e,true)} {...{'webkitdirectory':''} as React.InputHTMLAttributes<HTMLInputElement>}/>
+        </section>
+        <section className="pfx-card">
+          <h3><FileDown size={15}/>{w.selected}</h3>
+          <p className="pfx-hint">{tr('Save the selected MAP objects as a new prefab.')}</p>
+          <button className="pfx-btn pfx-accent" disabled={!selectedIds.length||busy} onClick={saveSelection}><Save size={15}/>{w.saveSelection}{selectedIds.length>0&&<span className="pfx-pill">{selectedIds.length}</span>}</button>
+        </section>
+        <div className="pfx-stats">
+          <div><strong>{counts.files}</strong><small>{w.files}</small></div>
+          <div><strong>{counts.library}</strong><small>{w.library}</small></div>
+          <div><strong>{counts.manual}</strong><small>{w.pick}</small></div>
         </div>
-        <div className="pfstudio-dep-stats"><span><CheckCircle2 size={13}/>{dependencies.loaded.length}/{dependencies.materials.length} {({es:'texturas cargadas',en:'textures loaded',ru:'текстур загружено',ko:'텍스처 로드됨',zh:'已加载纹理',pt:'texturas carregadas'} as Record<string,string>)[currentLocale]}</span>
-          {dependencies.collisions.length>0&&<span className="warning"><AlertTriangle size={13}/>{dependencies.collisions.length} {({es:'nombres compartidos con otros WAD',en:'names shared with other WADs',ru:'конфликтующих имён',ko:'중복 이름',zh:'重复名称',pt:'nomes duplicados'} as Record<string,string>)[currentLocale]}</span>}</div>
-        <details className="pfstudio-dep-list"><summary>{dependencies.materials.length} {({es:'materiales utilizados',en:'materials used',ru:'используемые материалы',ko:'사용된 재질',zh:'使用的材质',pt:'materiais utilizados'} as Record<string,string>)[currentLocale]}</summary>
-          <div>{dependencies.materials.map(name=><span key={name} className="pfstudio-dep-material">{name} {dependencies.loaded.includes(name)?'✓':''}</span>)}</div>
+        <details className="pfx-card pfx-tools"><summary><Wrench size={15}/>{tr('Maintenance')}</summary>
+          <button className="pfx-btn" disabled={busy} onClick={()=>void unloadUnused()}><Layers3 size={14}/>{extra.clean}</button>
+          <button className="pfx-btn" disabled={busy} onClick={cleanDuplicates}><Trash2 size={14}/>{extra.duplicates}</button>
+          <p className="pfx-hint">{extra.smart}</p><p className="pfx-hint">{w.tooLarge}</p>
         </details>
-        <div className="pfstudio-dep-build"><span>{dependencies.configuredPath?({es:'Ruta en configuración (existencia sin verificar):',en:'Configured path (file existence not checked):',ru:'Путь настроен (не проверен):',ko:'설정된 경로 (확인 안 됨):',zh:'已配置路径（未验证文件）:',pt:'Caminho configurado (não verificado):'} as Record<string,string>)[currentLocale]:({es:'WAD todavía no configurado para compilación. La vista previa no instala archivos.',en:'WAD not configured for compilation. Preview does not install files.',ru:'WAD не настроен для компиляции.',ko:'컴파일 WAD 경로가 설정되지 않았습니다.',zh:'编译 WAD 尚未配置',pt:'WAD ainda não configurado para compilar.'} as Record<string,string>)[currentLocale]}</span>
-          {dependencies.configuredPath&&<code>{dependencies.configuredPath}</code>}</div>
-        {dependencies.embedded&&<div className="pfstudio-dep-buttons">
-          <button disabled={busy} onClick={()=>{setBusy(true);void prepareTextures(selected.prefab).then(()=>setMessage(`${dependencies.filename}: ${dependencies.materials.length} texture(s) loaded into MAP browser.`)).catch(setError).finally(()=>setBusy(false))}}><CheckCircle2 size={14}/>{({es:'Cargar texturas en MAP',en:'Load textures into MAP',ru:'Загрузить текстуры в MAP',ko:'MAP 텍스처 불러오기',zh:'加载纹理到 MAP',pt:'Carregar texturas no MAP'} as Record<string,string>)[currentLocale]}</button>
-          <button disabled={busy} onClick={()=>void downloadPrefabWad(selected.prefab).then(path=>setMessage(path)).catch(setError)}><Download size={14}/>{({es:'Descargar WAD3',en:'Download WAD3',ru:'Скачать WAD3',ko:'WAD3 다운로드',zh:'下载 WAD3',pt:'Baixar WAD3'} as Record<string,string>)[currentLocale]}</button>
-          <button disabled={busy||!settings.gameDir} onClick={()=>void installToGame()}><HardDrive size={14}/>{({es:'Instalar para compilar',en:'Install for compilation',ru:'Установить для сборки',ko:'컴파일용 설치',zh:'安装用于编译',pt:'Instalar para compilar'} as Record<string,string>)[currentLocale]}</button>
-        </div>}
-        {dependencies.embedded&&!settings.gameDir&&<small>{({es:'Configurá primero la carpeta del juego en Configuración de compilación.',en:'Set the game data folder in Build Configuration first.',ru:'Сначала настройте папку игры.',ko:'먼저 게임 폴더를 설정하세요.',zh:'先配置游戏目录',pt:'Configure a pasta do jogo primeiro.'} as Record<string,string>)[currentLocale]}</small>}
-      </section>}
-      <div className="pfstudio-actions"><button disabled={busy} onClick={()=>void importIntoMap()}><Plus size={15}/>{w.import}</button><button disabled={busy} onClick={()=>void startPlacement()}><MousePointer2 size={15}/>{w.place}</button><button disabled={busy} onClick={addLibrary}><Boxes size={15}/>{w.add}</button><button disabled={busy} onClick={()=>void saveToFolder(selected.prefab)}><Save size={15}/>{w.save}</button>
-      {selected.source==='library'&&<button disabled={busy} className="pfstudio-remove" onClick={removeLibrary}><Trash2 size={15}/>{extra.remove}</button>}
+      </aside>
+      <div className="pfx-browser">
+        <div className="pfx-toolbar"><label className="pfstudio-search"><Search size={15}/><input placeholder={w.search} value={query} onChange={e=>setQuery(e.target.value)}/>{query&&<button type="button" className="pfx-clear" aria-label={w.close} onClick={()=>setQuery('')}><X size={13}/></button>}</label><span className="pfx-count">{filtered.length}</span></div>
+        {categories.length>0&&<div className="pfstudio-cats"><button className={!categoryFilter?'active':''} onClick={()=>setCategoryFilter('')}>{tr('All')}</button>{categories.map(c=><button key={c} className={categoryFilter===c?'active':''} onClick={()=>setCategoryFilter(c)}>{catLabel(c)}</button>)}</div>}
+        <div className="pfx-grid">{filtered.length===0&&<div className="pfx-none"><Boxes size={34}/><p>{w.empty}</p></div>}
+          {filtered.map((item,i)=><Fragment key={`${item.key}:${i}`}>{(i===0||filtered[i-1].source!==item.source)&&<h4 className="pfx-group">{sourceLabel(item.source)}</h4>}
+            <button className={`pfx-tile${selected?.key===item.key?' selected':''}`} onClick={()=>setChosen(item.key)} onDoubleClick={()=>{setChosen(item.key);void startPlacement()}} title={item.fileName??item.name}>
+              <span className="pfx-thumb" data-cat={meta(item.prefab).category??'none'}>{meta(item.prefab).thumbnail?<img src={meta(item.prefab).thumbnail} alt=""/>:<Boxes size={26}/>}</span>
+              <span className="pfx-tile-name">{item.name}</span>
+              <small>{item.prefab.objects.length} {w.count}{meta(item.prefab).category?` · ${catLabel(meta(item.prefab).category!)}`:''}</small>
+            </button></Fragment>)}
+        </div>
       </div>
-    </>:<div className="pfstudio-empty">{w.chooseItem}</div>}
-    <LinkedPrefabsPanel/>
-    <div className="pfstudio-footer"><button disabled={!selectedIds.length||busy} onClick={saveSelection}><FileDown size={15}/>{w.saveSelection}</button><small>{w.tooLarge}</small></div>
-    <div className="pfstudio-actions pfstudio-maintenance"><button disabled={busy} onClick={()=>void unloadUnused()}><Layers3 size={14}/>{extra.clean}</button><button disabled={busy} onClick={cleanDuplicates}><Trash2 size={14}/>{extra.duplicates}</button><small>{extra.smart}</small></div>
-    {(message||errors.length>0)&&<div className="pfstudio-status" role="status"><span>{message}</span>{errors.length>0&&<details><summary><ShieldAlert size={14}/>{w.error} ({errors.length})</summary>{errors.slice(0,30).map((s,i)=><p key={i}>{s}</p>)}</details>}</div>}
-    </div></div>
+      <div className="pfx-detail">{selected?<>
+        <div className="pfx-detail-head"><div><strong>{selected.name}</strong><small>{selected.fileName??sourceLabel(selected.source)}</small></div>
+          <div className="pfx-chips"><span>{brushCount} {tr('brushes')}</span><span>{entityCount} {tr('entities')}</span><span>{sourceLabel(selected.source)}</span></div></div>
+        <div className="pfx-stage-wrap"><PrefabView3D key={selected.key} prefab={selected.prefab} textureAssets={previewTextures}/><small className="pfx-stage-help">{w.preview}</small></div>
+        {recovery?.mode==='surface-shell'&&<div className="pfstudio-status pfx-warn" role="status"><ShieldAlert size={15}/>{L({es:`Aproximación visual: ${recovery.panels} paneles delgados; ${recovery.skippedFaces?.length??0} caras BSP omitidas. No recupera los volúmenes originales, caras ocultas ni colisiones. Revisá antes de compilar.`,en:`Visual approximation: ${recovery.panels} thin panels; ${recovery.skippedFaces?.length??0} BSP faces omitted. Original volumes, hidden faces and collision hulls are NOT recovered. Inspect before compiling.`,ru:`Приближённая модель: ${recovery.panels} тонких панелей. Исходные объёмы, скрытые грани и коллизии не восстановлены.`,ko:`근사 모델: 얇은 패널 ${recovery.panels}개. 원래 체적, 숨겨진 면, 충돌 복구 안 됨.`,zh:`近似模型：${recovery.panels} 个薄面板。未恢复原始体积、隐藏面和碰撞。`,pt:`Aproximação visual: ${recovery.panels} painéis finos. Volumes originais, faces ocultas e colisões NÃO foram recuperados.`})}</div>}
+        {recovery?.mode==='hull0-solid'&&<div className="pfstudio-status pfx-warn" role="status"><ShieldAlert size={15}/>{L({es:`Sólidos Hull 0: ${recovery.solids} celdas convexas reconstruidas del submodelo *${recovery.modelIndex}. NO son los brushes originales. Texturas, colisiones y luz pueden diferir; verificá antes de compilar.`,en:`Hull 0 solids: ${recovery.solids} convex cells recovered from submodel *${recovery.modelIndex}. NOT the original brushes. Textures, collisions and lighting may differ.`,ru:`Hull 0: ${recovery.solids} выпуклых фрагментов. Исходные кисти, коллизии и освещение не сохранены.`,ko:`Hull 0: 볼록 솔리드 ${recovery.solids}개. 원본 브러시, 충돌 및 조명이 다를 수 있습니다.`,zh:`Hull 0：恢复 ${recovery.solids} 个凸实体。并非原始笔刷，碰撞与光照可能不同。`,pt:`Hull 0: ${recovery.solids} células convexas reconstruídas. Não são brushes originais; texturas, colisões e luz podem diferir.`})}</div>}
+        <div className="pfx-primary">
+          <button className="pfx-btn pfx-accent pfx-big" disabled={busy} onClick={()=>void startPlacement()}><MousePointer2 size={16}/>{w.place}</button>
+          <button className="pfx-btn pfx-big" disabled={busy} onClick={()=>void importIntoMap()}><Plus size={16}/>{w.import}</button>
+        </div>
+        <div className="pfx-secondary">
+          <button className="pfx-btn" disabled={busy} onClick={addLibrary}><Boxes size={14}/>{w.add}</button>
+          <button className="pfx-btn" disabled={busy} onClick={()=>void saveToFolder(selected.prefab)}><Save size={14}/>{w.save}</button>
+          {selected.source==='library'&&<button className="pfx-btn pfx-danger" disabled={busy} onClick={removeLibrary}><Trash2 size={14}/>{extra.remove}</button>}
+        </div>
+        {dependencies&&<details className="pfstudio-dependencies pfx-deps" aria-label="Prefab WAD dependencies">
+          <summary className="pfstudio-dep-head"><HardDrive size={16}/><strong>{L({es:'Recursos y WAD para compilación',en:'Resources and compilation WAD',ru:'Ресурсы и WAD для компиляции',ko:'리소스 및 컴파일 WAD',zh:'资源和编译用 WAD',pt:'Recursos e WAD de compilação'})}</strong>
+            <span className="pfx-dep-badge"><CheckCircle2 size={13}/>{dependencies.loaded.length}/{dependencies.materials.length}</span>
+            {dependencies.collisions.length>0&&<span className="pfx-dep-badge warning"><AlertTriangle size={13}/>{dependencies.collisions.length}</span>}</summary>
+          <div className="pfstudio-dep-details">
+            <span>{dependencies.filename??L({es:'Prefab MAP: WAD externos',en:'MAP prefab: external WADs',ru:'Внешние WAD',ko:'외부 WAD',zh:'外部 WAD',pt:'WAD externos'})}</span>
+            <small>{dependencies.embedded?L({es:'WAD3 incluido en .svprefab',en:'WAD3 embedded in .svprefab',ru:'WAD3 включён в prefab',ko:'WAD3 포함됨',zh:'包含 WAD3',pt:'WAD3 incluído no prefab'}):L({es:'Este prefab no incluye WAD3; comprobá los recursos externos.',en:'This prefab has no WAD3; check external textures.',ru:'WAD3 не включён.',ko:'WAD3가 포함되지 않았습니다.',zh:'未包含 WAD3',pt:'WAD3 não incluído.'})}</small>
+          </div>
+          <div className="pfstudio-dep-stats"><span><CheckCircle2 size={13}/>{dependencies.loaded.length}/{dependencies.materials.length} {L({es:'texturas cargadas',en:'textures loaded',ru:'текстур загружено',ko:'텍스처 로드됨',zh:'已加载纹理',pt:'texturas carregadas'})}</span>
+            {dependencies.collisions.length>0&&<span className="warning"><AlertTriangle size={13}/>{dependencies.collisions.length} {L({es:'nombres compartidos con otros WAD',en:'names shared with other WADs',ru:'конфликтующих имён',ko:'중복 이름',zh:'重复名称',pt:'nomes duplicados'})}</span>}</div>
+          <details className="pfstudio-dep-list"><summary>{dependencies.materials.length} {L({es:'materiales utilizados',en:'materials used',ru:'используемые материалы',ko:'사용된 재질',zh:'使用的材质',pt:'materiais utilizados'})}</summary>
+            <div>{dependencies.materials.map(name=><span key={name} className="pfstudio-dep-material">{name} {dependencies.loaded.includes(name)?'✓':''}</span>)}</div>
+          </details>
+          <div className="pfstudio-dep-build"><span>{dependencies.configuredPath?L({es:'Ruta en configuración (existencia sin verificar):',en:'Configured path (file existence not checked):',ru:'Путь настроен (не проверен):',ko:'설정된 경로 (확인 안 됨):',zh:'已配置路径（未验证文件）:',pt:'Caminho configurado (não verificado):'}):L({es:'WAD todavía no configurado para compilación. La vista previa no instala archivos.',en:'WAD not configured for compilation. Preview does not install files.',ru:'WAD не настроен для компиляции.',ko:'컴파일 WAD 경로가 설정되지 않았습니다.',zh:'编译 WAD 尚未配置',pt:'WAD ainda não configurado para compilar.'})}</span>
+            {dependencies.configuredPath&&<code>{dependencies.configuredPath}</code>}</div>
+          {dependencies.embedded&&<div className="pfstudio-dep-buttons">
+            <button className="pfx-btn" disabled={busy} onClick={()=>{setBusy(true);void prepareTextures(selected.prefab).then(()=>setMessage(`${dependencies.filename}: ${dependencies.materials.length} texture(s) loaded into MAP browser.`)).catch(setError).finally(()=>setBusy(false))}}><CheckCircle2 size={14}/>{L({es:'Cargar texturas en MAP',en:'Load textures into MAP',ru:'Загрузить текстуры в MAP',ko:'MAP 텍스처 불러오기',zh:'加载纹理到 MAP',pt:'Carregar texturas no MAP'})}</button>
+            <button className="pfx-btn" disabled={busy} onClick={()=>void downloadPrefabWad(selected.prefab).then(path=>setMessage(path)).catch(setError)}><Download size={14}/>{L({es:'Descargar WAD3',en:'Download WAD3',ru:'Скачать WAD3',ko:'WAD3 다운로드',zh:'下载 WAD3',pt:'Baixar WAD3'})}</button>
+            <button className="pfx-btn" disabled={busy||!settings.gameDir} onClick={()=>void installToGame()}><HardDrive size={14}/>{L({es:'Instalar para compilar',en:'Install for compilation',ru:'Установить для сборки',ko:'컴파일용 설치',zh:'安装用于编译',pt:'Instalar para compilar'})}</button>
+          </div>}
+          {dependencies.embedded&&!settings.gameDir&&<small>{L({es:'Configurá primero la carpeta del juego en Configuración de compilación.',en:'Set the game data folder in Build Configuration first.',ru:'Сначала настройте папку игры.',ko:'먼저 게임 폴더를 설정하세요.',zh:'先配置游戏目录',pt:'Configure a pasta do jogo primeiro.'})}</small>}
+        </details>}
+      </>:<div className="pfx-none"><Boxes size={40}/><p>{w.chooseItem}</p></div>}</div>
+    </div>}
+    {tab==='kits'&&<div className="pfx-kits"><KitGallery wide studio="prefab" onStart={onClose}/></div>}
+    {tab==='linked'&&<div className="pfx-linked"><LinkedPrefabsPanel open/></div>}
+    {(message||errors.length>0)&&<div className="pfstudio-status pfx-statusbar" role="status"><span>{message}</span>{errors.length>0&&<details><summary><ShieldAlert size={14}/>{w.error} ({errors.length})</summary>{errors.slice(0,30).map((s,i)=><p key={i}>{s}</p>)}</details>}</div>}
   </section>
  </div>,document.body);
 }

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
-const ts=require('/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript/lib/typescript.js');
+const ts=require('./support/typescript.cjs');
 const source=filename=>readFileSync(new URL('../'+filename,import.meta.url),'utf8');
 test('modified TSX files parse without syntax errors',()=>{
  for(const file of ['src/components/Viewport.tsx','src/components/Panels.tsx','src/App.tsx']){

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 import {create} from 'zustand';
 import express from 'express';
 import {attachBuildTogether} from '../server/buildTogether.js';
@@ -17,7 +17,7 @@ test('generated 16-resolution terrain remains on server and all peers; metadata 
  const temp=await mkdtemp(resolve('.tmp-terrain-v1522-'));
  const oldLocation=globalThis.location;globalThis.location={protocol:'http:'};
  const code=await import('node:fs/promises').then(fs=>fs.readFile(new URL('../src/engine/buildTogetherClient.ts',import.meta.url),'utf8'));
- const output=ts.transpileModule(code,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText.replace("from '../store'","from './fakeStore.mjs'");
+ const output=ts.transpileModule(code.replace("from './studioFiles'","from '"+new URL('../src/engine/studioFiles.ts',import.meta.url).href+"'"),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}}).outputText.replace("from '../store'","from './fakeStore.mjs'");
  await writeFile(join(temp,'client.mjs'),output);
  await writeFile(join(temp,'fakeStore.mjs'),`import {create} from 'zustand';\nexport const useEditor=create(()=>({project:${JSON.stringify(base)},selected:null,selectedIds:[],history:[],future:[],appendLogs:()=>{}}));`);
  const client=await import(pathToFileURL(join(temp,'client.mjs')).href);

@@ -16,12 +16,13 @@ test('MAP FPS stays visible on default HUD independently of entity labels and pr
 });
 
 test('Appearance checkbox and Edit HUD control the same persisted FPS visibility',async()=>{
-  const modal=await source('src/components/EntityAppearanceModal.tsx');
+  // v2.4: the FPS switch lives in Preferences > 3D viewport & performance.
+  const modal=await source('src/components/DockWorkspace.tsx');
   const hud=await source('src/hudLayout.ts');
-  assert.match(modal,/const fpsHudVisible=useHudLayout\(s=>s\.items\.fps\.visible\)/);
-  assert.match(modal,/checked=\{fpsHudVisible\} onChange=\{e=>updateHud\('fps',\{visible:e\.target\.checked\}\)\}/);
+  assert.match(modal,/const fps=useHudLayout\(s=>s\.items\.fps\.visible\)/);
+  assert.match(modal,/checked=\{fps\} onChange=\{e=>updateHud\('fps',\{visible:e\.target\.checked\}\)\}/);
   assert.doesNotMatch(modal,/checked=\{mapLabels\.diagnostics\}/);
-  assert.match(hud,/partialize:s=>\(\{items:s\.items,globalOpacity:s\.globalOpacity,preset:s\.preset\}\)/);
+  assert.match(hud,/partialize:s=>\(\{items:s\.items,globalOpacity:s\.globalOpacity,preset:s\.preset,layoutVersion:s\.layoutVersion\}\)/);
   assert.match(hud,/resetItem:id=>set/);
 });
 

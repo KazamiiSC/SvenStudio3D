@@ -1,3 +1,4 @@
+import {translate} from '../i18n';
 import {saveStudioText} from '../engine/studioFiles';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import type {PointerEvent as ReactPointerEvent,WheelEvent as ReactWheelEvent} from 'react';
@@ -266,7 +267,7 @@ export function BlueprintToMapStudio({onClose}:{onClose:()=>void}){
   const resetView=(p=draft)=>setView({x:0,y:0,w:p.imageWidth,h:p.imageHeight});
   const persistDraft=()=>{
     try{
-      saveBlueprintDraft(draft);setDirty(false);setNotice(locale==='es'?'Plano guardado. Podés reabrirlo y seguir editándolo.':'Blueprint saved. You can reopen it to continue editing.');
+      saveBlueprintDraft(draft);setDirty(false);setNotice(translate(locale,'Blueprint saved. You can reopen it to continue editing.'));
       return true;
     }catch(error){setNotice(String(error));return false;}
   };
@@ -308,7 +309,7 @@ export function BlueprintToMapStudio({onClose}:{onClose:()=>void}){
       if(calibrationPoints.length===0){setCalibrationPoints([raw]);return}
       try{const next=calibrateBlueprint(draft,calibrationPoints[0],raw,calibrationUnits);
         validateBlueprintPlan(next);update(()=>next);setCalibrationPoints([]);setTool('select');
-      }catch(error){setCalibrationPoints([]);setNotice((locale==='es'?'Calibración no aplicada: ':'Calibration not applied: ')+String(error instanceof Error?error.message:error));}
+      }catch(error){setCalibrationPoints([]);setNotice((translate(locale,'Calibration not applied: '))+String(error instanceof Error?error.message:error));}
       return;
     }
     if(tool==='wall'||tool==='room'){
@@ -409,7 +410,7 @@ export function BlueprintToMapStudio({onClose}:{onClose:()=>void}){
     try{
       const next=repairBlueprintOpenings(draft);
       histories.current.push(clone(draft));futures.current=[];update(()=>next);
-      setNotice(locale==='es'?'Aberturas ajustadas sin eliminar ninguna.':'Openings adjusted without deleting any.');
+      setNotice(translate(locale,'Openings adjusted without deleting any.'));
     }catch(error){setNotice(String(error instanceof Error?error.message:error));}
   };
   const previewWallRepair=()=>{
@@ -435,14 +436,14 @@ export function BlueprintToMapStudio({onClose}:{onClose:()=>void}){
       if(dirty&&!persistDraft())return;
       const next=importBlueprintAsset(exportBlueprintAsset(draft));next.name=draft.name+' copy';
       saveBlueprintDraft(next);switchPlan(next);
-      setNotice(locale==='es'?'Copia independiente creada; sus brushes todavía no se generaron.':'Independent copy created; its brushes have not been generated.');
+      setNotice(translate(locale,'Independent copy created; its brushes have not been generated.'));
     }catch(error){setNotice(String(error instanceof Error?error.message:error))}
   };
   const exportPlan=async()=>{
     try{
       const asset=exportBlueprintAsset(draft);
       const saved=await saveStudioText(JSON.stringify(asset,null,2),(draft.name.trim().replace(/[^a-z0-9_-]+/gi,'_').slice(0,55)||'blueprint')+'.svenblueprint.json','exports');
-      setNotice((locale==='es'?'Copia editable exportada: ':'Editable blueprint exported: ')+saved.path);
+      setNotice((translate(locale,'Editable blueprint exported: '))+saved.path);
     }catch(error){setNotice(String(error instanceof Error?error.message:error))}
   };
   const importPlan=async(file?:File)=>{
@@ -452,7 +453,7 @@ export function BlueprintToMapStudio({onClose}:{onClose:()=>void}){
       if(dirty&&!persistDraft())return;
       const plan=importBlueprintAsset(JSON.parse(await file.text()));
       saveBlueprintDraft(plan);switchPlan(plan);
-      setNotice(locale==='es'?'Plano editable importado.':'Editable blueprint imported.');
+      setNotice(translate(locale,'Editable blueprint imported.'));
     }catch(error){setNotice(String(error instanceof Error?error.message:error))}
   };
   const remove=(detach=false)=>{
@@ -465,7 +466,7 @@ export function BlueprintToMapStudio({onClose}:{onClose:()=>void}){
   const updateSelected=(fn:(stroke:BlueprintStroke)=>void)=>updateStrokes(strokes=>{const stroke=strokes.find(s=>s.id===selected);if(stroke)fn(stroke);return strokes});
   const addFloor=()=>{
     const existingRoofs=draft.strokes.some(st=>st.roof&&blueprintStrokeLevel(st)===levels.at(-1)?.id);
-    if(existingRoofs&&!window.confirm(locale==='es'?'La planta superior tiene un techo inclinado. ¿Quitar ese techo para construir otra planta?':'The top floor has a pitched roof. Remove it before adding another floor?'))return;
+    if(existingRoofs&&!window.confirm(translate(locale,'The top floor has a pitched roof. Remove it before adding another floor?')))return;
     if(levels.length>=6){setNotice('Maximum 6 floors per blueprint.');return;}
     const last=levels.at(-1)!,next:BlueprintLevel={id:uid(),name:`${F.floor} ${levels.length+1}`,offsetZ:last.offsetZ+draft.wallHeight+draft.slabThickness};
     histories.current.push(clone(draft));futures.current=[];
@@ -473,7 +474,7 @@ export function BlueprintToMapStudio({onClose}:{onClose:()=>void}){
   };
   const removeFloor=()=>{
     if(activeLevel.id===BLUEPRINT_GROUND_ID)return;
-    if(!window.confirm(locale==='es'?'¿Eliminar esta planta, sus habitaciones y las escaleras conectadas?':'Delete this floor, its rooms and connected stairs?'))return;
+    if(!window.confirm(translate(locale,'Delete this floor, its rooms and connected stairs?')))return;
     histories.current.push(clone(draft));futures.current=[];
     update(p=>({...p,levels:blueprintLevels(p).filter(l=>l.id!==activeLevel.id),strokes:p.strokes.filter(s=>blueprintStrokeLevel(s)!==activeLevel.id),stairs:(p.stairs||[]).filter(s=>s.fromLevelId!==activeLevel.id&&s.toLevelId!==activeLevel.id)}));
     setActiveLevelId(BLUEPRINT_GROUND_ID);setSelected(null);setSelectedStair(null);setInspectorTab('rooms');
@@ -495,7 +496,7 @@ export function BlueprintToMapStudio({onClose}:{onClose:()=>void}){
     };
     window.addEventListener('keydown',keyboard,true);return()=>window.removeEventListener('keydown',keyboard,true);
   });
-  const close=()=>{if(dirty&&!persistDraft()&&!window.confirm(locale==='es'?'No se pudo guardar este borrador. ¿Cerrar igualmente?':'Could not save this draft. Close anyway?'))return;onClose()};
+  const close=()=>{if(dirty&&!persistDraft()&&!window.confirm(translate(locale,'Could not save this draft. Close anyway?')))return;onClose()};
   const placeInMap=()=>{
     try{
       if(!draft.strokes.length)throw Error('Draw at least one room or wall first.');
@@ -511,7 +512,7 @@ export function BlueprintToMapStudio({onClose}:{onClose:()=>void}){
     {key:'room',label:L[7],icon:PanelsTopLeft},{key:'rectangle',label:L[8],icon:Square},{key:'door',label:L[9],icon:DoorOpen},{key:'window',label:L[10],icon:ScanEye},{key:'stair',label:F.stairs,icon:Footprints}
   ];
   return <div className="bp-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)close()}}><section role="dialog" aria-modal="true" aria-label="Blueprint to Map" className="bp-shell" onMouseDown={e=>e.stopPropagation()}>
-    <header className="bp-head"><div className="bp-brand"><FileImage size={24}/><div><strong>{L[0]}</strong><small>{L[1]} · v1.8.14 Preview</small></div></div><button onClick={close} title={T.close}><X size={20}/></button></header>
+    <header className="bp-head"><div className="bp-brand"><FileImage size={24}/><div><strong>{L[0]}</strong><small>{L[1]} Preview</small></div></div><button onClick={close} title={T.close}><X size={20}/></button></header>
     <div className="bp-body"><aside className="bp-sidebar">
       <div className="bp-label">{L[2]} ({savedPlans?.length||0})</div>
       <div className="bp-docs">{(savedPlans||[]).map(plan=><button key={plan.id} className={plan.id===draft.id?'active':''} onClick={()=>switchPlan(plan)}><FileImage size={15}/><span>{plan.name}<small>{plan.strokes.length} outlines · {plan.memberIds.length?T.saved:T.draft}</small></span></button>)}</div>
@@ -526,7 +527,7 @@ export function BlueprintToMapStudio({onClose}:{onClose:()=>void}){
       <div className="bp-label">Calibration / Grid</div>
       <label>{L[19]}<input type="number" min="8" max="32768" value={calibrationUnits} onChange={e=>setCalibrationUnits(Number(e.target.value))}/></label>
       <div className="bp-micro">{draft.unitsPerPixel.toFixed(4)} u/px · {Math.round(draft.imageWidth*draft.unitsPerPixel)} × {Math.round(draft.imageHeight*draft.unitsPerPixel)} units</div>
-      <p className="bp-micro">{locale==='es'?'Posición manual: también podés usar «Colocar en mapa» para elegir con un clic.':'Manual coordinates: or use Place in map to choose a point.'}</p><div className="bp-coordinate"><label>World origin X<input type="number" min="-32768" max="32768" value={draft.origin[0]} onChange={e=>update(p=>({...p,origin:[safeNumber(Number(e.target.value)),p.origin[1]]}))}/></label><label>World origin Y<input type="number" min="-32768" max="32768" value={draft.origin[1]} onChange={e=>update(p=>({...p,origin:[p.origin[0],safeNumber(Number(e.target.value))]}))}/></label></div>
+      <p className="bp-micro">{translate(locale,'Manual coordinates: or use Place in map to choose a point.')}</p><div className="bp-coordinate"><label>World origin X<input type="number" min="-32768" max="32768" value={draft.origin[0]} onChange={e=>update(p=>({...p,origin:[safeNumber(Number(e.target.value)),p.origin[1]]}))}/></label><label>World origin Y<input type="number" min="-32768" max="32768" value={draft.origin[1]} onChange={e=>update(p=>({...p,origin:[p.origin[0],safeNumber(Number(e.target.value))]}))}/></label></div>
       <label>{L[21]}<select value={snap} onChange={e=>setSnap(Number(e.target.value))}>{[1,2,4,8,16,32,64].map(n=><option value={n} key={n}>{n}</option>)}</select></label>
       <div className="bp-label">Geometry</div>
       {numeric('wallHeight',L[22],64,2048)}{numeric('wallThickness',L[23],4,128)}{numeric('slabThickness',L[24],4,64)}{numeric('baseZ',L[25],-16384,16384)}
@@ -569,7 +570,7 @@ export function BlueprintToMapStudio({onClose}:{onClose:()=>void}){
           onSelectStair={id=>{setActiveLevelId((draft.stairs||[]).find(st=>st.id===id)?.fromLevelId||BLUEPRINT_GROUND_ID);setSelectedStair(id);setSelected(null);setSelectedOpening(null);setInspectorTab('properties')}} onChangeStair={(id,patch,first)=>editStair(id,patch,first)}/>}
         <div className="bp-canvas-buttons"><button title={L[33]} onClick={()=>resetView()}><Maximize2 size={16}/></button><button title="Zoom in" onClick={()=>setView(v=>({...v,x:v.x+v.w*.08,y:v.y+v.h*.08,w:v.w*.84,h:v.h*.84}))}><ZoomIn size={16}/></button><button title="Zoom out" onClick={()=>setView(v=>({...v,x:v.x-v.w*.1,y:v.y-v.h*.1,w:v.w*1.2,h:v.h*1.2}))}><ZoomOut size={16}/></button><button onClick={()=>setViewMode('2d')} title="2D" className={viewMode==='2d'?'active':''}>2D</button><button onClick={()=>setViewMode('3d')} title={L[15]} className={viewMode==='3d'?'active':''}><Box size={15}/>3D</button><button onClick={()=>setViewMode('split')} title={T.split} className={viewMode==='split'?'active':''}><Columns2 size={15}/></button></div>
       </div>
-      <div className="bp-hint">{viewMode==='3d'?T.edit3d:tool==='calibrate'?(calibrationPoints.length===1?(locale==='es'?'Ahora hacé clic en el segundo punto, lejos del primero.':'Now click a second point away from the first.'):L[36]):tool==='wall'||tool==='room'||tool==='rectangle'?L[37]:tool==='door'||tool==='window'?L[38]:L[39]}
+      <div className="bp-hint">{viewMode==='3d'?T.edit3d:tool==='calibrate'?(calibrationPoints.length===1?(translate(locale,'Now click a second point away from the first.')):L[36]):tool==='wall'||tool==='room'||tool==='rectangle'?L[37]:tool==='door'||tool==='window'?L[38]:L[39]}
         {cursorPoints.length>0&&<><button onClick={finishOutline} disabled={cursorPoints.length<(tool==='room'?3:2)}>{L[17]}</button><button onClick={()=>setCursorPoints([])}>{L[18]}</button></>}
       </div>
     </main><aside className="bp-inspector" aria-label={L[27]}>
@@ -581,7 +582,7 @@ export function BlueprintToMapStudio({onClose}:{onClose:()=>void}){
           <label>{H.rename}<input value={draft.name} maxLength={100} onChange={e=>update(p=>({...p,name:e.target.value}))}/></label>
           <div className="bp-floor-settings"><strong><Layers3 size={15}/>{F.selected}</strong><label>{F.name}<input value={activeLevel.name} maxLength={80} onChange={e=>{const name=e.target.value;histories.current.push(clone(draft));futures.current=[];update(p=>({...p,levels:blueprintLevels(p).map(l=>l.id===activeLevel.id?{...l,name}:l)}))}}/></label>
             <label>{F.floor} Z <input type="number" step="8" min={activeLevel.id===BLUEPRINT_GROUND_ID?0:(levels[levels.findIndex(l=>l.id===activeLevel.id)-1].offsetZ+draft.wallHeight+draft.slabThickness)} max={levels.findIndex(l=>l.id===activeLevel.id)<levels.length-1?levels[levels.findIndex(l=>l.id===activeLevel.id)+1].offsetZ-draft.wallHeight-draft.slabThickness:8192} disabled={activeLevel.id===BLUEPRINT_GROUND_ID} value={activeLevel.offsetZ} onChange={e=>{const n=Number(e.target.value),index=levels.findIndex(l=>l.id===activeLevel.id);if(index<1)return;const low=levels[index-1].offsetZ+draft.wallHeight+draft.slabThickness,high=index<levels.length-1?levels[index+1].offsetZ-draft.wallHeight-draft.slabThickness:8192;histories.current.push(clone(draft));futures.current=[];update(p=>({...p,levels:blueprintLevels(p).map(l=>l.id===activeLevel.id?{...l,offsetZ:Math.max(low,Math.min(high,n))}:l)}))}}/></label>
-            <p className="bp-micro">{locale==='es'?'La altura Z es relativa a la planta baja; el generador recalcula las escaleras al modificarla.':'Z is relative to the ground floor. Stairs are recalculated when it changes.'}</p>
+            <p className="bp-micro">{translate(locale,'Z is relative to the ground floor. Stairs are recalculated when it changes.')}</p>
           </div>
           <label className="bp-check"><input type="checkbox" checked={hideCeilings} onChange={e=>setHideCeilings(e.target.checked)}/>{T.ceilings}</label>
           <div className="bp-section-heading">{L[27]} ({visibleStrokes.length})</div>
@@ -607,9 +608,9 @@ export function BlueprintToMapStudio({onClose}:{onClose:()=>void}){
           {!selectedStairActive&&(!selectedStroke?<p className="bp-muted">{H.empty}</p>:<div className="bp-properties-body">
             <label>{H.rename}<input value={selectedStroke.name} maxLength={100} onChange={e=>updateSelected(stroke=>{stroke.name=e.target.value})}/></label>
             {selectedStroke.kind==='room'&&<div className="bp-quick-toggles"><label className="bp-check"><input type="checkbox" checked={selectedStroke.floor} onChange={e=>updateSelected(stroke=>{stroke.floor=e.target.checked})}/>{H.floor}</label><label className="bp-check"><input type="checkbox" checked={selectedStroke.ceiling} onChange={e=>updateSelected(stroke=>{stroke.ceiling=e.target.checked})}/>{H.ceiling}</label></div>}
-            {selectedStroke.kind==='room'&&blueprintStrokeLevel(selectedStroke)===levels.at(-1)?.id&&<div className="bp-roof-settings"><label>{locale==='es'?'Cubierta de la habitación':'Room roof'}<select value={selectedStroke.roof?.kind||(selectedStroke.ceiling?'flat':'none')} onChange={e=>updateSelected(stroke=>{const kind=e.target.value;stroke.roof=kind==='gable'||kind==='shed'?{kind:kind as 'gable'|'shed',rise:80}:undefined;stroke.ceiling=kind!=='none'})}><option value="none">{locale==='es'?'Sin techo':'No roof'}</option><option value="flat">{locale==='es'?'Techo plano':'Flat roof'}</option><option value="shed">{locale==='es'?'Un agua':'Single slope'}</option><option value="gable">{locale==='es'?'Dos aguas':'Gable roof'}</option></select></label>
-              {selectedStroke.roof&&<label>{locale==='es'?'Elevación de la cubierta (u)':'Roof rise (u)'}<input type="number" min="16" max="512" step="8" value={selectedStroke.roof.rise} onChange={e=>updateSelected(stroke=>{if(stroke.roof)stroke.roof.rise=Number(e.target.value)})}/></label>}
-              <p className="bp-micro">{locale==='es'?'Las cubiertas inclinadas requieren una habitación rectangular; su geometría se valida antes de generar el MAP.':'Pitched roofs require rectangular rooms and are validated before MAP export.'}</p>
+            {selectedStroke.kind==='room'&&blueprintStrokeLevel(selectedStroke)===levels.at(-1)?.id&&<div className="bp-roof-settings"><label>{translate(locale,'Room roof')}<select value={selectedStroke.roof?.kind||(selectedStroke.ceiling?'flat':'none')} onChange={e=>updateSelected(stroke=>{const kind=e.target.value;stroke.roof=kind==='gable'||kind==='shed'?{kind:kind as 'gable'|'shed',rise:80}:undefined;stroke.ceiling=kind!=='none'})}><option value="none">{translate(locale,'No roof')}</option><option value="flat">{translate(locale,'Flat roof')}</option><option value="shed">{translate(locale,'Single slope')}</option><option value="gable">{translate(locale,'Gable roof')}</option></select></label>
+              {selectedStroke.roof&&<label>{translate(locale,'Roof rise (u)')}<input type="number" min="16" max="512" step="8" value={selectedStroke.roof.rise} onChange={e=>updateSelected(stroke=>{if(stroke.roof)stroke.roof.rise=Number(e.target.value)})}/></label>}
+              <p className="bp-micro">{translate(locale,'Pitched roofs require rectangular rooms and are validated before MAP export.')}</p>
             </div>}
             <details className="bp-collapse"><summary>{H.vertices} ({selectedStroke.points.length})</summary>
               <div className="bp-vertices">{selectedStroke.points.map((p,i)=>{const w=pointWorld(p);return <div key={i}><b>{i+1}</b>{[0,1].map(axis=><label key={axis}>{axis===0?'X':'Y'}<input type="number" value={Math.round(w[axis]*100)/100} onChange={e=>updateSelected(stroke=>{const old=blueprintPixelToWorld(draft,stroke.points[i]);old[axis]=Number(e.target.value);stroke.points[i]=blueprintWorldToPixel(draft,old)})}/></label>)}</div>})}</div>
@@ -649,6 +650,6 @@ export function BlueprintToMapStudio({onClose}:{onClose:()=>void}){
       </div>
       <div className="bp-info" aria-label={H.status}><strong>{previewData.brushes.length} / {BLUEPRINT_MAX_BRUSHES} brushes</strong><span>{draft.strokes.length} outlines · {draft.strokes.reduce((total,stroke)=>total+stroke.openings.length,0)} openings · {saved?.memberIds.length?T.saved:T.draft}</span>{previewData.error?<><p className="bp-error"><AlertTriangle size={15}/>{previewData.error}</p><button className="bp-secondary" onClick={fixOpenings}>{T.fit}</button></>:draft.strokes.length>0?<p className="bp-valid"><CheckCircle2 size={15}/>Convex Valve 220 geometry validated</p>:null}</div>
     </aside></div>
-    <footer className="bp-foot"><span role="status">{notice||L[40]}</span><div><button disabled={!histories.current.length} onClick={goBack} title={L[31]}><Undo2 size={16}/></button><button disabled={!futures.current.length} onClick={goForward} title={L[32]}><Redo2 size={16}/></button>{saved&&<><button onClick={()=>remove(true)} title={L[13]}><Unlink2 size={15}/></button><button className="bp-danger" onClick={()=>remove(false)} title={L[14]}><Trash2 size={15}/></button></>}<button onClick={persistDraft} title={locale==='es'?'Guardar trazados e imagen sin generar brushes':'Save outlines and image without generating brushes'}><Save size={15}/>{locale==='es'?'Guardar plano':'Save blueprint'}</button><button onClick={placeInMap} disabled={!!previewData.error||previewData.brushes.length===0} title={locale==='es'?'Cerrar y elegir ubicación con clic en el visor 3D':'Close and click a position in the 3D viewport'}><MousePointer2 size={15}/>{locale==='es'?'Colocar en mapa':'Place in map'}</button><button className="bp-primary" onClick={save} disabled={!!previewData.error||previewData.brushes.length===0}><Save size={16}/>{L[12]}</button></div></footer>
+    <footer className="bp-foot"><span role="status">{notice||L[40]}</span><div><button disabled={!histories.current.length} onClick={goBack} title={L[31]}><Undo2 size={16}/></button><button disabled={!futures.current.length} onClick={goForward} title={L[32]}><Redo2 size={16}/></button>{saved&&<><button onClick={()=>remove(true)} title={L[13]}><Unlink2 size={15}/></button><button className="bp-danger" onClick={()=>remove(false)} title={L[14]}><Trash2 size={15}/></button></>}<button onClick={persistDraft} title={translate(locale,'Save outlines and image without generating brushes')}><Save size={15}/>{translate(locale,'Save blueprint')}</button><button onClick={placeInMap} disabled={!!previewData.error||previewData.brushes.length===0} title={translate(locale,'Close and click a position in the 3D viewport')}><MousePointer2 size={15}/>{translate(locale,'Place in map')}</button><button className="bp-primary" onClick={save} disabled={!!previewData.error||previewData.brushes.length===0}><Save size={16}/>{L[12]}</button></div></footer>
   </section></div>;
 }

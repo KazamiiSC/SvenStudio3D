@@ -69,7 +69,7 @@ export function validateProjectFile(input:unknown):Project{
      !Array.isArray(input.objects)||input.objects.length>100000||
      !Array.isArray(input.wadNames)||input.wadNames.length>4096||!input.wadNames.every(v=>str(v,1024)))
     bad('unsupported version or missing project fields.');
-  if(input.target!==undefined&&input.target!=='svengine')bad('only Sven Co-op / Svengine projects are supported.');
+  if(input.target!==undefined&&input.target!=='svengine'&&input.target!=='cs16')bad('unsupported GoldSrc game profile.');
   if(!optionalBoolean(input.recoveredFromBsp))bad('invalid BSP recovery preview flag.');
   const ids=new Set<string>();
   for(const [i,obj] of input.objects.entries()){
@@ -276,5 +276,5 @@ export function validateProjectFile(input:unknown):Project{
       all.add(rec.id);
     }
   }
-  return {...input,target:'svengine'} as Project;
+  return {...input,target:input.target==='cs16'?'cs16':'svengine'} as Project;
 }

@@ -134,7 +134,8 @@ export async function assertNoInstalledWadCollision(plan,gameDir){
  if(plan?.mode!=='external')return;
  const chosen=path.resolve(gameDir);const layer=path.basename(chosen).toLowerCase();
  const root=['svencoop','svencoop_addon','svencoop_downloads'].includes(layer)?path.dirname(chosen):chosen;
- const locations=new Set([chosen,root,...['svencoop','svencoop_addon','svencoop_downloads','valve'].map(name=>path.join(root,name))]);
+ const folders=layer==='cstrike'?['cstrike','valve']:['svencoop','svencoop_addon','svencoop_downloads','valve'];
+ const locations=new Set([chosen,root,...folders.map(name=>path.join(root,name))]);
  for(const dir of locations){
   const candidate=path.join(dir,plan.basename);
   try{if(!(await fs.readFile(candidate)).equals(plan.buffer))

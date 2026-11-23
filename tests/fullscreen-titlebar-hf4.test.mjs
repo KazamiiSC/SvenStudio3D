@@ -1,11 +1,13 @@
+import {withSplitParts} from './support/splitParts.cjs';
+import {legacyI18nSource} from './support/legacyI18n.cjs';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-const app=readFileSync(new URL('../src/App.tsx',import.meta.url),'utf8');
-const viewport=readFileSync(new URL('../src/components/Viewport.tsx',import.meta.url),'utf8');
-const locales=readFileSync(new URL('../src/i18n.ts',import.meta.url),'utf8');
+const app=withSplitParts(readFileSync(new URL('../src/App.tsx',import.meta.url),'utf8'),'App');
+const viewport=withSplitParts(readFileSync(new URL('../src/components/Viewport.tsx',import.meta.url),'utf8'),'Viewport');
+const locales=legacyI18nSource();
 test('Fullscreen with visible label sits directly beside Help in title bar',()=>{
-  assert.match(app,/<button className="top-nav" onClick=\{\(\)=>setDialog\('about'\)\}>\{t\('Help'\)\}<\/button>\s*<FullscreenMenuButton\/>/);
+  assert.match(app,/<button className="top-nav" onClick=\{\(\)=>\{setHelpStart\(\{tab:'manual'\}\);setDialog\('about'\)\}\}>\{t\('Help'\)\}<\/button>\s*<FullscreenMenuButton\/>/);
   assert.match(app,/fullscreen\?'Exit fullscreen':'Fullscreen'/);
   assert.match(app,/fullscreen\?<Minimize2 size=\{15\}\/>:<Maximize2 size=\{15\}\/>/);
 });

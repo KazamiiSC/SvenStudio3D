@@ -13,10 +13,14 @@ import type {InstalledBspSky,BspModelPlacement} from '../engine/bspViewerAssets'
 
 export type BspAssetStatus='off'|'no-game'|'none'|'loading'|'ready'|'missing'|'error';
 export function BspSkyBackground({map,gameDir,onStatus}:{map:BspMap;gameDir:string;onStatus:(status:BspAssetStatus)=>void}){
+  return <SkyboxBackground skyname={map.skyname} gameDir={gameDir} onStatus={onStatus} restore={()=>new THREE.Color('#57748f')}/>;
+}
+/** Installed six-face GoldSrc skybox (gfx/env) as the scene background. Shared by the BSP Viewer and the MAP editor. */
+export function SkyboxBackground({skyname,gameDir,onStatus,restore=()=>null}:{skyname?:string;gameDir:string;onStatus:(status:BspAssetStatus)=>void;restore?:()=>THREE.Color|null}){
   const {scene}=useThree();
   useEffect(()=>{
     if(!gameDir){onStatus('no-game');return;}
-    if(!map.skyname){onStatus('none');return;}
+    if(!skyname){onStatus('none');return;}
     let active=true,loaded:THREE.CubeTexture|null=null;
     onStatus('loading');
     void (async()=>{
@@ -25,7 +29,7 @@ export function BspSkyBackground({map,gameDir,onStatus}:{map:BspMap;gameDir:stri
         if(!response.ok)throw Error(`Sky list HTTP ${response.status}`);
         const data=await response.json() as {items:InstalledBspSky[]};
         if(!active)return;
-        const sky=findInstalledBspSky(data.items,map.skyname);
+        const sky=findInstalledBspSky(data.items,skyname);
         if(!sky){onStatus('missing');return;}
         // Three.js cube order: +X,-X,+Y,-Y,+Z,-Z. Names are GoldSrc's six gfx/env suffixes.
         const urls=BSP_SKY_CUBE_SIDES.map(side=>bspSkyFaceUrl(gameDir,sky,side));
@@ -35,8 +39,10 @@ export function BspSkyBackground({map,gameDir,onStatus}:{map:BspMap;gameDir:stri
         loaded=texture;scene.background=texture;onStatus('ready');
       }catch{if(active)onStatus('error');}
     })();
-    return()=>{active=false;if(loaded){if(scene.background===loaded)scene.background=new THREE.Color('#57748f');loaded.dispose();}};
-  },[map,gameDir,onStatus,scene]);
+    return()=>{active=false;if(loaded){if(scene.background===loaded)scene.background=restore();loaded.dispose();}};
+    // restore is a stable factory for each caller; it must not restart loading.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[skyname,gameDir,onStatus,scene]);
   return null;
 }
 

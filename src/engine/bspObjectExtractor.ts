@@ -5,25 +5,35 @@
  * No geometry, PVS, hulls or lightmaps of the source BSP are changed.
  */
 import type {BspMap,BspFace} from './bsp.ts';
-import type {Brush,Vec3} from './types';
+import type {Brush,MapObject,PointEntity,Vec3} from './types';
+import {createBrush} from './geometry';
 import {uid} from './types';
 import {validateBrush} from './exportMap';
 import {createPrefab,validatePrefab,type Prefab} from './prefabs';
 import {findMipTextureInWads,type WAD3MipTexture} from './bspWadMipTexture';
 import {bspOriginalFaceIndex} from './bspFaceSelection';
-import {recoverSolidSubmodelHull0} from './bspHull0Recovery';
+import {recoverSolidSubmodelHull0,recoverSolidWorldHull0InBox} from './bspHull0Recovery';
+import {bspBuildDoor} from './bspDoorCapture';
 import {deduplicateBspSurfacePanels,repairBspSurfacePanels} from './bspPrefabPanelRepair';
 
-export type BspObjectExtractionMode='exact'|'surface-shell'|'hull0-solid'|'auto';
-export type BspObjectExtractionOptions={mode?:BspObjectExtractionMode;thickness?:number;resolvedMipTextures?:readonly WAD3MipTexture[]};
+export type BspObjectExtractionMode='exact'|'surface-shell'|'hull0-solid'|'world-solid'|'door'|'auto';
+/** v2.6: the brush entity that owns the selection (func_door, func_button…) and point entities inside it. */
+export type BspExtractEntity={classname:string;props:Record<string,string>};
+export type BspExtractPoint={classname:string;origin:Vec3;props:Record<string,string>};
+export type BspObjectExtractionOptions={mode?:BspObjectExtractionMode;thickness?:number;resolvedMipTextures?:readonly WAD3MipTexture[];entity?:BspExtractEntity|null;points?:readonly BspExtractPoint[];worldMargin?:number;category?:string;thumbnail?:string;door?:import('./bspDoorCapture').BspDoorPlan};
 export type BspObjectPrefab=Prefab&{
   format:'svenstudio-bsp-object';sourceBsp:string;wad:{filename:string;base64:string};faceIds:number[];
   /** Surface shells are explicitly approximate: they do NOT recover the original
    * solid, collision geometry, hidden surfaces, or entity behavior. */
   recovery?:{mode:'surface-shell';thickness:number;panels:number;warning:string;skippedFaces?:{faceId:number;reason:string}[]}
-    |{mode:'hull0-solid';modelIndex:number;solids:number;warning:string;skippedFaces?:{faceId:number;reason:string}[]};
+    |{mode:'hull0-solid';modelIndex:number;solids:number;warning:string;skippedFaces?:{faceId:number;reason:string}[]}
+    |{mode:'world-solid';solids:number;dropped:number;warning:string;skippedFaces?:{faceId:number;reason:string}[]}
+    |{mode:'door';leaves:number;buttons:number;frameSolids:number;warning:string;skippedFaces?:{faceId:number;reason:string}[]};
+  /** v2.6 library metadata. */category?:string;thumbnail?:string;
 };
-const MAX_SELECTED=256,MAX_TEXTURES=64,MAX_BYTES=24*1024*1024;
+const MAX_SELECTED=1024,MAX_TEXTURES=64,MAX_BYTES=24*1024*1024;
+export const BSP_PREFAB_CATEGORIES=['doors','furniture','computers','lighting','decoration','industrial','vehicles','nature','other'] as const;
+const TOOL_TEXTURE=/^(origin|aaatrigger|null|clip|skip|hint)$/i;
 const dot=(a:readonly number[],b:readonly number[])=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
 const cross=(a:readonly number[],b:readonly number[]):Vec3=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
 const subtract=(a:readonly number[],b:readonly number[]):Vec3=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
@@ -288,9 +298,9 @@ export const decodePrefabWad=(base64:string):Uint8Array=>{
 };
 export function extractBspObjectPrefab(map:BspMap,source:ArrayBuffer,faceIds:readonly number[],label:string,externalWads:readonly Uint8Array[]=[],options:BspObjectExtractionOptions={}):BspObjectPrefab{
   const mode=options.mode??'exact',thickness=options.thickness??2;
-  if(mode!=='exact'&&mode!=='surface-shell'&&mode!=='hull0-solid'&&mode!=='auto')throw Error('Unknown BSP prefab extraction mode.');
+  if(mode!=='exact'&&mode!=='surface-shell'&&mode!=='hull0-solid'&&mode!=='world-solid'&&mode!=='door'&&mode!=='auto')throw Error('Unknown BSP prefab extraction mode.');
   if((mode==='surface-shell'||mode==='auto')&&(!Number.isFinite(thickness)||thickness<1||thickness>16))throw Error('Panel thickness must be between 1 and 16 units.');
-  if(faceIds.length<((mode==='surface-shell'||mode==='auto')?1:4)||faceIds.length>MAX_SELECTED||new Set(faceIds).size!==faceIds.length)throw Error(mode==='exact'?'Select 4–256 distinct BSP faces belonging to complete solids.':'Select 1–256 distinct visible BSP faces.');
+  if(faceIds.length<((mode==='surface-shell'||mode==='auto'||mode==='door'||mode==='world-solid')?1:4)||faceIds.length>MAX_SELECTED||new Set(faceIds).size!==faceIds.length)throw Error(mode==='exact'?'Select 4–1024 distinct BSP faces belonging to complete solids.':'Select 1–1024 distinct visible BSP faces.');
   const byId=new Map(map.faces.map((f,i)=>[bspOriginalFaceIndex(f,i),f]));
   const faces=faceIds.map(id=>byId.get(id));if(faces.some(f=>!f))throw Error('One or more selected BSP faces are missing.');
   // Smart save uses the exact brush path when the selected polygons genuinely
@@ -305,18 +315,30 @@ export function extractBspObjectPrefab(map:BspMap,source:ArrayBuffer,faceIds:rea
   }
   const skippedFaces:{faceId:number;reason:string}[]=[];
   let brushes:Brush[]=[];
-  if(mode==='hull0-solid'){
-    // Hull 0 is a deliberately separate operation: it is never silently used
-    // for a worldspawn texture island or incomplete submodel selection.
-    brushes=[];
+  let worldDropped=0;
+  let hull:{modelIndex:number;brushes:Brush[]}|null=null;
+  const models=new Set((faces as BspFace[]).map(f=>f.model));
+  let door:ReturnType<typeof bspBuildDoor>|null=null;
+  if(mode==='door'){
+    if(!options.door)throw Error('Select a door entity (func_door…) to save the complete door.');
+    door=bspBuildDoor(map,source,options.door,label);brushes=door.brushes;
+  }else if(mode==='world-solid'){
+    const world=recoverSolidWorldHull0InBox(map,source,faceIds,label,options.worldMargin??8);brushes=world.brushes;worldDropped=world.dropped;
+  }else if(mode==='hull0-solid'){
+    hull=recoverSolidSubmodelHull0(map,source,faceIds,label);brushes=hull.brushes;
   }else if(mode==='exact'){
     brushes=groups.map((g,i)=>reconstructConvex(g,map,`${label} ${i+1}`));
-  }else if(mode==='auto'&&faceIds.length>=4&&groups.length<=64){
-    try{brushes=groups.map((g,i)=>reconstructConvex(g,map,`${label} ${i+1}`))}
-    catch{resolvedMode='surface-shell';brushes=[]}
-  }else resolvedMode='surface-shell';
-  const hull=mode==='hull0-solid'?recoverSolidSubmodelHull0(map,source,faceIds,label):null;
-  if(hull)brushes=hull.brushes;
+  }else if(mode==='surface-shell'){
+    resolvedMode='surface-shell';
+  }else{
+    // v2.6 smart save: exact solids → whole brush model (Hull 0) → world solids → visible panels.
+    // Each step is only used when the previous one cannot rebuild the object faithfully.
+    let done=false;
+    if(faceIds.length>=4&&groups.length<=64){try{brushes=groups.map((g,i)=>reconstructConvex(g,map,`${label} ${i+1}`));resolvedMode='exact';done=true;}catch{brushes=[];}}
+    if(!done&&models.size===1&&!models.has(0)){try{hull=recoverSolidSubmodelHull0(map,source,faceIds,label);brushes=hull.brushes;resolvedMode='hull0-solid';done=true;}catch{hull=null;brushes=[];}}
+    if(!done&&models.size===1&&models.has(0)){try{const world=recoverSolidWorldHull0InBox(map,source,faceIds,label,options.worldMargin??8);brushes=world.brushes;worldDropped=world.dropped;resolvedMode='world-solid';done=true;}catch{brushes=[];}}
+    if(!done)resolvedMode='surface-shell';
+  }
   if(resolvedMode==='surface-shell'){
     brushes=(faces as BspFace[]).flatMap((face,i)=>{
       try{return surfaceShellPanels(face,map,label,thickness)}
@@ -328,8 +350,8 @@ export function extractBspObjectPrefab(map:BspMap,source:ArrayBuffer,faceIds:rea
     if(!brushes.length)throw Error(`No exportable panels remain (${skippedFaces.length} selected BSP faces rejected). First: ${skippedFaces[0]?.reason||'invalid selection'}`);
   }
   if(resolvedMode==='surface-shell')brushes=repairBspSurfacePanels(deduplicateBspSurfacePanels(brushes));
-  if(brushes.length>256)throw Error('Surface shell requires more than 256 editable panels. Select fewer faces.');
-  const textureNames=[...new Set(brushes.flatMap(b=>b.faces.map(f=>f.texture.toLowerCase())))];
+  if(brushes.length>512)throw Error('The object needs more than 512 editable brushes. Select fewer faces.');
+  const textureNames=[...new Set(brushes.flatMap(b=>b.faces.map(f=>f.texture.toLowerCase())))].filter(n=>!TOOL_TEXTURE.test(n));
   if(textureNames.length>MAX_TEXTURES)throw Error('Too many textures in selected object.');
   // Preserve animation/random-tiling variants referenced by the compiled
   // BSP, not just the first visible +0 / -0 frame. All pixels remain original.
@@ -355,19 +377,39 @@ export function extractBspObjectPrefab(map:BspMap,source:ArrayBuffer,faceIds:rea
   const wad=makeWad3(textures),safeLabel=label.trim().replace(/[^A-Za-z0-9_-]+/g,'_').slice(0,42)||'extracted';
   let fingerprint=2166136261;for(const byte of wad){fingerprint=Math.imul(fingerprint^byte,16777619)>>>0}
   const wadName=`${safeLabel}_${fingerprint.toString(16).padStart(8,'0')}.wad`;
-  const base=createPrefab(brushes,label);
-  return {...base,format:'svenstudio-bsp-object',sourceBsp:map.name,wad:{filename:wadName,base64:toBase64(wad)},faceIds:[...faceIds],...(resolvedMode==='surface-shell'?{recovery:{mode:'surface-shell' as const,thickness,panels:brushes.length,skippedFaces,warning:'Approximate visible surface panels only. Original brush volumes, collision hulls, hidden faces, scripts and lighting are not recovered. Any skipped BSP faces are recorded.'}}:mode==='hull0-solid'?{recovery:{mode:'hull0-solid' as const,modelIndex:hull!.modelIndex,solids:brushes.length,warning:'Convex solid BSP hull-0 leaf cells; NOT original brushes. Face texture assignment can be approximate. Original collision hulls, scripts and baked lighting are not recovered.'}}:{})};
+  // v2.6: keep the owning brush entity (doors keep opening) and the point entities inside the object.
+  const objects:MapObject[]=door?[...door.objects]:[...brushes];
+  if(!door&&options.entity&&options.entity.classname&&options.entity.classname!=='worldspawn'){
+    const id=uid();const props=Object.fromEntries(Object.entries(options.entity.props).filter(([k])=>!['classname','model','origin'].includes(k)));
+    for(const b of brushes)b.entityId=id;
+    const o=(options.entity.props.origin||'').trim().split(/\s+/).map(Number);
+    // Faces of a model compiled with an origin brush are relative to that origin: put an ORIGIN brush at 0 0 0.
+    if(o.length===3&&o.every(Number.isFinite)&&o.some(v=>Math.abs(v)>1e-6)){const ob=createBrush('box',[0,0,0],[8,8,8],`${label} origin`);ob.faces.forEach(f=>f.texture='ORIGIN');ob.entityId=id;ob.group=brushes[0]?.group;objects.push(ob);}
+    const c=[0,1,2].map(i=>{const v=brushes.flatMap(b=>b.vertices.map(p=>p[i]+b.position[i]));return v.length?(Math.min(...v)+Math.max(...v))/2:0;}) as Vec3;
+    objects.push({id,kind:'entity',name:options.entity.classname,classname:options.entity.classname,position:c,props,layer:'Recovered BSP'} as PointEntity);
+  }
+  for(const p of (options.points??[]).slice(0,64)){
+    if(!/^[a-z_][a-z0-9_]{0,63}$/i.test(p.classname)||p.classname==='worldspawn')continue;
+    const props=Object.fromEntries(Object.entries(p.props).filter(([k,v])=>!['classname','origin','model'].includes(k)||(k==='model'&&!v.startsWith('*'))).filter(([,v])=>!/["\r\n]/.test(v)));
+    objects.push({id:uid(),kind:'entity',name:p.classname,classname:p.classname,position:[...p.origin] as Vec3,props,layer:'Recovered BSP'} as PointEntity);
+  }
+  const base=createPrefab(objects,label);
+  const meta={...(options.category&&(BSP_PREFAB_CATEGORIES as readonly string[]).includes(options.category)?{category:options.category}:{}),...(options.thumbnail&&/^data:image\/(png|jpeg);base64,/.test(options.thumbnail)&&options.thumbnail.length<300000?{thumbnail:options.thumbnail}:{})};
+  return {...base,...meta,format:'svenstudio-bsp-object',sourceBsp:map.name,wad:{filename:wadName,base64:toBase64(wad)},faceIds:[...faceIds],...(resolvedMode==='surface-shell'?{recovery:{mode:'surface-shell' as const,thickness,panels:brushes.length,skippedFaces,warning:'Approximate visible surface panels only. Original brush volumes, collision hulls, hidden faces, scripts and lighting are not recovered. Any skipped BSP faces are recorded.'}}:resolvedMode==='door'&&door?{recovery:{mode:'door' as const,leaves:door.leaves,buttons:door.buttons,frameSolids:door.frameSolids,warning:['Door leaves and buttons are Hull 0 solids that keep their entity; the frame is rebuilt from world solids around the door. NOT original brushes.',...door.warnings].join(' ').slice(0,1000)}}:resolvedMode==='world-solid'?{recovery:{mode:'world-solid' as const,solids:brushes.length,dropped:worldDropped,warning:'Convex solid cells of the compiled world inside the selection box; NOT original brushes. Parts touching the box edge (floor, walls) were left out. Texture assignment can be approximate.'}}:resolvedMode==='hull0-solid'?{recovery:{mode:'hull0-solid' as const,modelIndex:hull!.modelIndex,solids:brushes.length,warning:'Convex solid BSP hull-0 leaf cells; NOT original brushes. Face texture assignment can be approximate. Original collision hulls, scripts and baked lighting are not recovered.'}}:{})};
 }
 export function validateBspObjectPrefab(value:unknown):BspObjectPrefab{
   if(!value||typeof value!=='object')throw Error('Invalid BSP object prefab.');
   const obj=value as Partial<BspObjectPrefab>;
   if(obj.format!=='svenstudio-bsp-object'||typeof obj.sourceBsp!=='string'||!obj.wad||typeof obj.wad.filename!=='string'||!/^[a-zA-Z0-9_-]+\.wad$/.test(obj.wad.filename))throw Error('Unsupported BSP object prefab format.');
   const validated=validatePrefab(obj);
-  if(obj.recovery&&(obj.recovery.mode==='surface-shell' ? (!Number.isFinite(obj.recovery.thickness)||obj.recovery.thickness<1||obj.recovery.thickness>16||obj.recovery.panels!==validated.objects.length) : obj.recovery.mode==='hull0-solid' ? (!Number.isInteger(obj.recovery.modelIndex)||obj.recovery.modelIndex<1||!Number.isInteger(obj.recovery.solids)||obj.recovery.solids!==validated.objects.length) : true))throw Error('Invalid approximate BSP prefab recovery metadata.');
+  if(obj.recovery&&(obj.recovery.mode==='surface-shell' ? (!Number.isFinite(obj.recovery.thickness)||obj.recovery.thickness<1||obj.recovery.thickness>16||obj.recovery.panels>validated.objects.filter(o=>o.kind==='brush').length) : obj.recovery.mode==='door' ? (!Number.isInteger(obj.recovery.leaves)||obj.recovery.leaves<1||!Number.isInteger(obj.recovery.buttons)||!Number.isInteger(obj.recovery.frameSolids)) : obj.recovery.mode==='world-solid' ? (!Number.isInteger(obj.recovery.solids)||obj.recovery.solids<1||obj.recovery.solids>validated.objects.filter(o=>o.kind==='brush').length) : obj.recovery.mode==='hull0-solid' ? (!Number.isInteger(obj.recovery.modelIndex)||obj.recovery.modelIndex<1||!Number.isInteger(obj.recovery.solids)||obj.recovery.solids>validated.objects.filter(o=>o.kind==='brush').length) : true))throw Error('Invalid approximate BSP prefab recovery metadata.');
   if(obj.recovery?.skippedFaces&&( !Array.isArray(obj.recovery.skippedFaces)||obj.recovery.skippedFaces.length>MAX_SELECTED||obj.recovery.skippedFaces.some(f=>!Number.isSafeInteger(f.faceId)||f.faceId<0||typeof f.reason!=='string'||f.reason.length>220||!obj.faceIds?.includes(f.faceId))))throw Error('Invalid skipped BSP faces in prefab recovery metadata.');
-  if(validated.objects.some(o=>o.kind!=='brush')||!Array.isArray(obj.faceIds)||obj.faceIds.length>MAX_SELECTED)throw Error('BSP object prefab contains invalid geometry metadata.');
+  if(validated.objects.some(o=>o.kind!=='brush'&&!(o.kind==='entity'&&/^[a-z_][a-z0-9_]{0,63}$/i.test(o.classname)&&o.classname!=='worldspawn'))||!Array.isArray(obj.faceIds)||obj.faceIds.length>MAX_SELECTED)throw Error('BSP object prefab contains invalid geometry metadata.');
+  if(obj.category!==undefined&&!(BSP_PREFAB_CATEGORIES as readonly string[]).includes(obj.category))throw Error('Invalid prefab category.');
+  if(obj.thumbnail!==undefined&&(typeof obj.thumbnail!=='string'||!/^data:image\/(png|jpeg);base64,/.test(obj.thumbnail)||obj.thumbnail.length>=300000))throw Error('Invalid prefab thumbnail.');
   const archive=decodePrefabWad(obj.wad.base64);
   for(const brush of validated.objects){if(brush.kind!=='brush')continue;for(const face of brush.faces){
+    if(TOOL_TEXTURE.test(face.texture))continue;
     const w=new DataView(archive.buffer),count=w.getInt32(4,true),dir=w.getInt32(8,true);
     let present=false;
     if(count>MAX_TEXTURES||dir<12||dir+32*count>archive.length)throw Error('Malformed texture archive.');

@@ -28,6 +28,8 @@ export function documentsRoot({home=os.homedir(),documents}={}){
  return path.join(documents||path.join(home,'Documents'),'SvenStudio3D');
 }
 export async function studioRoot(){
+ // Isolated test/support runs: SVEN_STUDIO_ROOT points at another SvenStudio3D folder.
+ if(process.env.SVEN_STUDIO_ROOT&&path.isAbsolute(process.env.SVEN_STUDIO_ROOT))return process.env.SVEN_STUDIO_ROOT;
  if(!knownDocumentsPromise)knownDocumentsPromise=windowsDocuments();
  return documentsRoot({documents:await knownDocumentsPromise});
 }

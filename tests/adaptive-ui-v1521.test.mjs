@@ -1,10 +1,11 @@
+import {withSplitParts} from './support/splitParts.cjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {headerDensity,clampHudPosition} from '../src/engine/adaptiveUiGeometry.ts';
 import {measureAdaptiveDocks} from '../src/engine/adaptiveWorkspace.ts';
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
-const app=read('src/App.tsx'),hud=read('src/components/HudWidget.tsx'),css=read('src/style.css'),custom=read('src/components/HudCustomizer.tsx');
+const app=withSplitParts(read('src/App.tsx'),'App'),hud=read('src/components/HudWidget.tsx'),css=read('src/style.css'),custom=read('src/components/HudCustomizer.tsx');
 
 test('layout density based on effective CSS width, not display DPI',()=>{
   for(const [physical,scale,expected] of [[1920,1,'wide'],[1920,1.25,'compact'],[1920,1.5,'tight'],[2560,1.25,'wide'],[1366,1,'tight'],[1920,2,'minimal']]){
@@ -45,7 +46,7 @@ test('toolbar scrollbar has separate bottom gutter, compact tools preserve toolt
   assert.match(app,/<button title=\{title\} className=/);
 });
 test('HUD selection and transient guides clear on close or outside click',()=>{
-  const layout=read('src/hudLayout.ts'),vp=read('src/components/Viewport.tsx');
+  const layout=read('src/hudLayout.ts'),vp=withSplitParts(read('src/components/Viewport.tsx'),'Viewport');
   assert.match(layout,/setEditing:editing=>set\(\{editing,selected:null\}\)/);
   assert.match(layout,/select:\(id:HudId\|null\)=>void/);
   assert.match(vp,/onPointerDown=\{e=>\{e.stopPropagation\(\);useHudLayout\.getState\(\)\.select\(null\)\}\}/);

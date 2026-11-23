@@ -1,3 +1,4 @@
+import {translate} from '../i18n';
 import {useMemo,useState} from 'react';
 import {Activity,AlertTriangle,CheckCircle2,Copy,Flag,MapPin,Plus,Save,Shield,Skull,Trash2,Unlink,Users,X} from 'lucide-react';
 import {useEditor} from '../store';
@@ -35,7 +36,7 @@ export function EncounterDesigner({onClose}:{onClose:()=>void}){
  const director=useMemo(()=>analyzeEncounterDirector(draft,project),[draft,project]);
  const errors=issues.filter(i=>i.level==='error'),warnings=issues.filter(i=>i.level==='warning');
  const selectedObject=project.objects.find(o=>o.id===selected);
- const onSave=()=>{try{useEditor.getState().saveNpcEncounter(draft);const stored=useEditor.getState().project.encounterPlans?.find(p=>p.id===draft.id);if(stored)setDraft(copy(stored));setNotice(locale==='es'?'Encuentro guardado. Es una sola acción en Undo.':'Encounter saved as one Undo action.')}catch(e){setNotice(e instanceof Error?e.message:String(e))}};
+ const onSave=()=>{try{useEditor.getState().saveNpcEncounter(draft);const stored=useEditor.getState().project.encounterPlans?.find(p=>p.id===draft.id);if(stored)setDraft(copy(stored));setNotice(translate(locale,'Encounter saved as one Undo action.'))}catch(e){setNotice(e instanceof Error?e.message:String(e))}};
  const onRemove=(detach:boolean)=>{if(!existing)return;if(!window.confirm(detach?tr.detach+'?':tr.delete+'?'))return;
   try{useEditor.getState().removeNpcEncounter(existing.id,detach);setDraft(createEncounterPreset('defense'));setActiveWave(0);setNotice(detach?'Native entities preserved.':'Encounter deleted.')}catch(e){setNotice(e instanceof Error?e.message:String(e))}};
  const nextPlan=(kind:'defense'|'ambush'|'mixed')=>{if(!safeChange())return;setDraft(createEncounterPreset(kind,selectedObject?.position||defaultOrigin));setActiveWave(0);setNotice('')};

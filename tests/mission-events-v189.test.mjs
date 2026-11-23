@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'sv-mission-v189-'));
 for(const name of ['types','missionEvents']){
  let source=fs.readFileSync(new URL(`../src/engine/${name}.ts`,import.meta.url),'utf8');

@@ -10,7 +10,7 @@ import {attachBuildTogether} from '../server/buildTogether.js';
 const require=createRequire(import.meta.url);
 // Prefer the project's TypeScript after npm install; allow a global toolchain
 // in restricted offline verification environments.
-let ts;try{ts=require('typescript')}catch{ts=require(join(dirname(dirname(process.execPath)),'lib/node_modules/typescript/lib/typescript.js'))}
+let ts;try{ts=require('./support/typescript.cjs')}catch{ts=require(join(dirname(dirname(process.execPath)),'lib/node_modules/typescript/lib/typescript.js'))}
 const original={version:1,name:'v160_shared',objects:[{kind:'entity',id:'spawn1',name:'Start',classname:'info_player_start',position:[0,0,32],props:{}}],world:{classname:'worldspawn'},wadNames:[]};
 const fakeZustand=`export function create(init){let state;const listeners=new Set;const hook=sel=>sel(state);hook.getState=()=>state;hook.setState=updater=>{const old=state;const patch=typeof updater==='function'?updater(old):updater;state={...old,...patch};for(const fn of [...listeners])fn(state,old);};hook.subscribe=fn=>{listeners.add(fn);return ()=>listeners.delete(fn)};state=init(hook.setState,hook.getState,hook.subscribe);return hook;}`;
 const fakeStore=`import {create} from './zustand.mjs';export const useEditor=create(()=>({project:${JSON.stringify(original)},selected:null,selectedIds:[],history:[],future:[],appendLogs:()=>{}}));`;

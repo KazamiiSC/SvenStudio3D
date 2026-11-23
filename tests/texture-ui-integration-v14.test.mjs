@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 const src=file=>fs.readFileSync(new URL(`../${file}`,import.meta.url),'utf8');
 const store=src('src/store.ts'),ui=src('src/components/TextureStudio.tsx'),viewport=src('src/components/Viewport.tsx'),geo=src('src/engine/geometry.ts'),exporter=src('src/engine/exportMap.ts'),styles=src('src/style.css');
 test('TypeScript/TSX parser accepts every new or edited TypeScript module',()=>{
@@ -39,7 +39,7 @@ test('fit align presets copy-paste and flips are connected',()=>{
  for(const label of ['fitTextureStudio','alignTextureStudio','centerTextureStudio','flipTextureStudio','saveTexturePreset','applyTexturePreset','copyFaceSettings','sampleTextureStudioFace'])assert.match(store,new RegExp(label));
  for(const label of ['fit(tilesU,tilesV)','align','applyPreset(chosen)','copy(first.id,first.face)','flip(\'u\')'])assert.ok(ui.includes(label));
 });
-test('eyedropper samples a face without changing destination selection',()=>{assert.match(store,/texturePickerActive/);assert.match(store,/sampleTextureStudioFace:\(id,face\)=>set\(s=>/);assert.match(viewport,/if\(texturePickerActive&&faceIndex!==null\)/);assert.match(ui,/Pipette/)});
+test('eyedropper samples a face without changing destination selection',()=>{assert.match(store,/texturePickerActive/);assert.match(store,/sampleTextureStudioFace:\(id,face\)=>set\(s=>/);assert.match(viewport,/if\(ed\(\)\.texturePickerActive&&faceIndex!==null\)/);assert.match(ui,/Pipette/)});
 test('6 languages are present and in-game keys remain untranslated',()=>{
  for(const locale of ['es','en','ru','ko','zh','pt'])assert.ok(ui.includes(`  ${locale}:{`));
  assert.match(ui,/face\?\.texture/);

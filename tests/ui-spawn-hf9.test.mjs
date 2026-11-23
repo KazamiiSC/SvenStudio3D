@@ -1,3 +1,4 @@
+import {legacyI18nSource} from './support/legacyI18n.cjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -5,7 +6,7 @@ import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 const require=createRequire(import.meta.url);
-const ts=require('/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript');
+const ts=require('./support/typescript.cjs');
 const base=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const source=(file)=>readFileSync(path.join(base,file),'utf8');
 const transpiled=ts.transpileModule(source('src/engine/spawnPresentation.ts'),{
@@ -61,7 +62,7 @@ test('HF9: spawn UI uses animation-aware foot alignment only for preview',()=>{
  assert.match(view,/animate=\{isSpawn\|\|walking/);
 });
 test('HF9: Spanish studies menu uses correct, latest translation',()=>{
- const i18n=source('src/i18n.ts');
+ const i18n=legacyI18nSource();
  assert.doesNotMatch(i18n,/'Studios':'Herramientas'/);
  assert.match(i18n,/'Studios':'Estudios'/);
 });
@@ -69,7 +70,7 @@ test('HF9: buttons in Map Doctor and entity association have dark styles',()=>{
  const css=source('src/style.css');
  assert.match(css,/\.map-doctor header button\s*\{/);
  assert.match(css,/\.modeling-properties>button:disabled/);
- assert.match(css,/button\{cursor:pointer;background:#24374c/);
+ assert.match(css,/button\{cursor:pointer;background:var\(--theme-control\)/); // themes replaced the fixed #24374c
 });
 test('HF9: source exports unaffected and still use Valve 220',()=>{
  const file=source('src/engine/exportMap.ts');

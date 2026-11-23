@@ -1,6 +1,7 @@
 import {parseFgd} from './fgd';
 import type {FgdClass} from './types';
 import {useEditor} from '../store';
+import {cs16StarterEntities} from './gameProfiles';
 
 /** Single read-only FGD loading path, shared by initial startup and the two inspectors.
  * Loading FGD definitions never alters map entities or their native keyvalues.
@@ -20,28 +21,30 @@ async function discoverSingleGameDirectory():Promise<string|null>{
   return discovery;
 }
 
-export async function loadSvenCoopFgd(gameDir:string):Promise<FgdClass[]>{
+export async function loadSvenCoopFgd(gameDir:string,gameProfile:'svengine'|'cs16'='svengine'):Promise<FgdClass[]>{
   const location=gameDir.trim();
+  const key=`${gameProfile}:${location}`;
   if(!location)throw Error('Configurá la carpeta de Sven Co-op en Configuración de compilación.');
-  if(!inflight.has(location)){
+  if(!inflight.has(key)){
     const job=(async()=>{
-      const response=await fetch('/api/svengine/fgd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gameDir:location})});
+      const response=await fetch(gameProfile==='cs16'?'/api/cs16/fgd':'/api/svengine/fgd',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gameDir:location})});
       if(!response.ok){const message=await response.json().catch(()=>({error:`HTTP ${response.status}`}));throw Error(message.error||`HTTP ${response.status}`);}
       const classes=parseFgd(await response.text());
       if(!classes.length)throw Error('El archivo FGD no contiene clases reconocibles.');
       return classes;
     })();
-    inflight.set(location,job);
-    void job.finally(()=>inflight.delete(location)).catch(()=>{});
+    inflight.set(key,job);
+    void job.finally(()=>inflight.delete(key)).catch(()=>{});
   }
-  return inflight.get(location)!;
+  return inflight.get(key)!;
 }
 
 export async function ensureSvenCoopFgd({discover=false,force=false}:{discover?:boolean;force?:boolean}={}):Promise<number>{
   const original=useEditor.getState();
   if(original.fgdLoaded&&!force)return original.fgdClasses.length;
+  const gameProfile=original.settings.gameProfile==='cs16'?'cs16':'svengine';
   let gameDir=original.settings.gameDir;
-  if(!gameDir&&discover){
+  if(!gameDir&&discover&&gameProfile==='svengine'){
     const detected=await discoverSingleGameDirectory();
     // Never select an arbitrary installation if multiple Sven Co-op folders exist.
     if(detected){
@@ -50,12 +53,15 @@ export async function ensureSvenCoopFgd({discover=false,force=false}:{discover?:
       gameDir=useEditor.getState().settings.gameDir;
     }
   }
+  if(!gameDir&&gameProfile==='cs16'){useEditor.getState().setFgd(cs16StarterEntities);return cs16StarterEntities.length;}
   if(!gameDir)throw Error('No se encontró una instalación única. Configurá la carpeta del juego o importá un .FGD.');
-  const classes=await loadSvenCoopFgd(gameDir);
+  const classes=await loadSvenCoopFgd(gameDir,gameProfile);
   // Respect a manual FGD imported while an automatic request was in flight.
-  if(useEditor.getState().settings.gameDir===gameDir&&(!useEditor.getState().fgdLoaded||force)){
+  // Normalize like above: settings saved before the CS 1.6 profile have no gameProfile (= Sven Co-op).
+  const currentProfile=useEditor.getState().settings.gameProfile==='cs16'?'cs16':'svengine';
+  if(useEditor.getState().settings.gameDir===gameDir&&currentProfile===gameProfile&&(!useEditor.getState().fgdLoaded||force)){
     useEditor.getState().setFgd(classes);
-    useEditor.getState().appendLogs([`FGD: ${classes.length} clases cargadas desde Sven Co-op.`]);
+    useEditor.getState().appendLogs([`FGD: ${classes.length} clases cargadas desde ${gameProfile==='cs16'?'Counter-Strike 1.6':'Sven Co-op'}.`]);
   }
   return useEditor.getState().fgdClasses.length;
 }

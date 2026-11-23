@@ -11,7 +11,6 @@ function quoted(raw:string,pos:number):{value:string;start:number;end:number;nex
   const start=pos+1;let val='';pos++;
   for(;pos<raw.length;pos++){
     const c=raw[pos];if(c==='"')return {value:val,start,end:pos,next:pos+1};
-    if(c==='\\'&&(raw[pos+1]==='"'||raw[pos+1]==='\\')){val+=raw[++pos];continue}
     if(c==='\0'||c==='\n'||c==='\r')throw Error('Invalid newline / NUL inside BSP keyvalue.');
     val+=c;
   }
@@ -39,10 +38,11 @@ function parseText(text:string):{entities:NativeEntity[];trailing:string}{
   while(true){
     const start=whitespace(text,pos);if(start===text.length)return {entities,trailing:text.slice(pos)};
     if(text[start]!=='{')throw Error('BSP entity lump contains unexpected text.');
-    let i=start+1,inQuote=false,escaped=false;
+    let i=start+1,inQuote=false;
     for(;i<text.length;i++){
       const c=text[i];
-      if(inQuote){if(escaped){escaped=false;continue}if(c==='\\'&&(text[i+1]==='"'||text[i+1]==='\\')){escaped=true;continue}if(c==='"')inQuote=false;continue}
+      // GoldSrc (COM_Parse) has no escape sequences: a backslash is a normal character.
+      if(inQuote){if(c==='"')inQuote=false;continue}
       if(c==='"'){inQuote=true;continue}if(c==='}')break;
       if(c==='{')throw Error('Nested BSP entity block.');
     }
@@ -67,7 +67,8 @@ function checkUserField(text:string,isKey:boolean){
 function checkEditAllowed(entity:NativeEntity,key:string){
   const cls=entity.pairs.find(p=>p.key==='classname')?.value;
   const compiledBrush=entity.pairs.some(p=>p.key==='model'&&/^\*\d+$/.test(p.value));
-  if(compiledBrush&&['model','classname','origin','angles','angle','mins','maxs'].includes(key))throw Error('Compiled brush geometry references and transforms cannot be changed safely.');
+  // v2.6: origin is allowed (the engine places every bmodel at vertices + origin, like bspguy's move).
+  if(compiledBrush&&['model','angles','angle','mins','maxs'].includes(key))throw Error('Compiled brush geometry references and rotations cannot be changed safely.');
   if(key==='classname'&&cls==='worldspawn')throw Error('Cannot change worldspawn classname.');
 }
 export function readNativeBsp(source:ArrayBuffer):NativeBsp{
@@ -103,7 +104,7 @@ export function setNativeValue(doc:NativeBsp,index:number,pairIndex:number,value
   const ent=doc.entities[index],pair=ent?.pairs[pairIndex];if(!pair)throw Error('Property not found.');
   checkEditAllowed(ent,pair.key);
   if(value===pair.value)return doc;
-  const raw=ent.raw.slice(0,pair.valueStart)+value.replaceAll('\\','\\\\')+ent.raw.slice(pair.valueEnd);
+  const raw=ent.raw.slice(0,pair.valueStart)+value+ent.raw.slice(pair.valueEnd);
   return setEntity(doc,index,{...ent,raw,pairs:parseEntity(raw)});
 }
 export function addNativeProperty(doc:NativeBsp,index:number,key:string,value:string):NativeBsp{
@@ -112,7 +113,7 @@ export function addNativeProperty(doc:NativeBsp,index:number,key:string,value:st
   if(key==='classname'&&ent.pairs.some(p=>p.key==='classname'))throw Error('Entity already has a classname.');
   if(key==='model'&&value.startsWith('*'))throw Error('Adding compiled brush-model references is unsafe.');
   checkEditAllowed(ent,key);
-  const raw=ent.raw.slice(0,-1)+`\n"${key}" "${value.replaceAll('\\','\\\\')}"\n}`;
+  const raw=ent.raw.slice(0,-1)+`\n"${key}" "${value}"\n}`;
   return setEntity(doc,index,{...ent,raw,pairs:parseEntity(raw)});
 }
 export function removeNativeProperty(doc:NativeBsp,index:number,pairIndex:number):NativeBsp{
@@ -126,13 +127,13 @@ export function addNativeEntity(doc:NativeBsp,classname:string,origin:string='0 
   if(classname==='worldspawn')throw Error('A BSP can contain only one worldspawn.');
   if(doc.entities.length>=MAX_ENTITIES)throw Error('Entity limit reached.');
   if(origin.trim().split(/\s+/).length!==3||!origin.trim().split(/\s+/).every(v=>Number.isFinite(Number(v))))throw Error('Origin must have 3 numeric coordinates.');
-  const raw=`{\n"classname" "${classname}"\n"origin" "${origin.replaceAll('\\','\\\\')}"\n}`;
+  const raw=`{\n"classname" "${classname}"\n"origin" "${origin}"\n}`;
   return {...doc,entities:[...doc.entities,{leading:'\n',raw,pairs:parseEntity(raw)}]};
 }
 export function removeNativeEntity(doc:NativeBsp,index:number):NativeBsp{
   if(index<1||index>=doc.entities.length)throw Error('Cannot remove worldspawn.');
   const entity=doc.entities[index];
-  if(entity.pairs.some(p=>p.key==='model'&&/^\*\d+$/.test(p.value)))throw Error('Cannot remove a compiled brush entity without reconstructing the model.');
+  // v2.6: removing a brush entity is safe; its *N model simply stays unused (and invisible) in the BSP.
   return {...doc,entities:doc.entities.filter((_,i)=>i!==index)};
 }
 export function nativeClassname(entity:NativeEntity){return entity.pairs.find(p=>p.key==='classname')?.value||'unknown'}
@@ -170,7 +171,7 @@ export function appendNativeBrushInstance(doc:NativeBsp,index:number,origin:stri
   if(!src||index<1)throw Error('Cannot copy worldspawn as a brush instance.');
   if(doc.entities.length>=MAX_ENTITIES)throw Error('Maximum BSP entity count reached.');
   const classname=nativeClassname(src);
-  if(!['func_wall','func_illusionary'].includes(classname))throw Error('Only static func_wall / func_illusionary models can be instanced safely.');
+  if(classname==='worldspawn')throw Error('Cannot instance worldspawn.');
   const model=nativeProperty(src,'model');
   if(!/^\*[1-9]\d*$/.test(model))throw Error('Source must reference a compiled BSP submodel, not worldspawn.');
   const numbers=origin.trim().split(/\s+/).map(Number);
@@ -179,6 +180,6 @@ export function appendNativeBrushInstance(doc:NativeBsp,index:number,origin:stri
     pair.key==='targetname'?`${pair.value.slice(0,56)}_copy${doc.entities.length}`:pair.value}));
   if(!nextPairs.some(pair=>pair.key==='origin'))nextPairs.push({key:'origin',value:origin});
   for(const pair of nextPairs){checkUserField(pair.key,true);checkUserField(pair.value,false)}
-  const raw=`{\n${nextPairs.map(pair=>`"${pair.key}" "${pair.value.replaceAll('\\','\\\\')}"`).join('\n')}\n}`;
+  const raw=`{\n${nextPairs.map(pair=>`"${pair.key}" "${pair.value}"`).join('\n')}\n}`;
   return {...doc,entities:[...doc.entities,{leading:'\n',raw,pairs:parseEntity(raw)}]};
 }

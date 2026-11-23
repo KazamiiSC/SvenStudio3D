@@ -1,3 +1,4 @@
+import {withSplitParts} from './support/splitParts.cjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -5,7 +6,7 @@ import path from 'node:path';
 import os from 'node:os';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
-const ts=require('/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript/lib/typescript.js');
+const ts=require('./support/typescript.cjs');
 const root=process.cwd();
 const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 const parsed=file=>{
@@ -14,7 +15,7 @@ const parsed=file=>{
  assert.equal(source.parseDiagnostics.length,0,source.parseDiagnostics.map(d=>ts.flattenDiagnosticMessageText(d.messageText,'\n')).join('\n'));
 };
 test('fullscreen requests Escape Keyboard Lock but retains the browser emergency exit',()=>{
- parsed('src/App.tsx');const src=read('src/App.tsx');
+ withSplitParts(parsed('src/App.tsx'),'App');const src=withSplitParts(read('src/App.tsx'),'App');
  assert.match(src,/requestFullscreen\(\{keyboardLock:'browser'\}/);
  assert.match(src,/keyboard\.lock\(\['Escape'/);
  assert.match(src,/document\.exitFullscreen\(\)/);
@@ -50,6 +51,7 @@ test('FGD auto loading coalesces concurrent requests and respects user supplied 
  assert.equal(out.diagnostics?.filter(x=>x.category===ts.DiagnosticCategory.Error).length||0,0);
  fs.writeFileSync(path.join(dir,'engine','svenFgdLoader.js'),out.outputText);
  fs.writeFileSync(path.join(dir,'engine','fgd.js'),"exports.parseFgd=(text)=>[{name:text,type:'point',props:{}}];");
+ fs.writeFileSync(path.join(dir,'engine','gameProfiles.js'),'exports.cs16StarterEntities=[];'); // CS 1.6 profile (HF28)
  fs.writeFileSync(path.join(dir,'store.js'),"const state={fgdLoaded:false,fgdClasses:[],settings:{gameDir:'C:/test/svencoop'},setFgd(c){this.fgdClasses=c;this.fgdLoaded=true},setSettings(c){Object.assign(this.settings,c)},appendLogs(){}};exports.useEditor={getState:()=>state};exports.state=state;");
  const {ensureSvenCoopFgd,loadSvenCoopFgd}=require(path.join(dir,'engine','svenFgdLoader.js'));
  const {state}=require(path.join(dir,'store.js'));

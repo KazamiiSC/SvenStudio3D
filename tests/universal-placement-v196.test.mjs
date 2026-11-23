@@ -1,3 +1,5 @@
+import {withSplitParts} from './support/splitParts.cjs';
+import {legacyI18nSource} from './support/legacyI18n.cjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -41,7 +43,7 @@ test('stage is transient and does not reopen a frozen placement in a fresh brows
   }finally{if(original===undefined)delete globalThis.localStorage;else globalThis.localStorage=original;}
 });
 test('main viewport passes the same free 3D ray position to click and preview',()=>{
-  const source=read('components/Viewport.tsx');
+  const source=withSplitParts(read('components/Viewport.tsx'),'Viewport');
   assert.match(source,/freeRayPoint\(threeToGame\(ray\.ray\.origin\),threeToGame\(ray\.ray\.direction\),settings\.freeDepth\)/);
   assert.match(source,/computeUniversalPlacement\(settings,worldPoint,threeToGame\(groundPoint\),objectPoint,step,elevation,freePoint\)/);
   assert.match(source,/function surfaceHit[\s\S]*function placementAt/);
@@ -49,7 +51,7 @@ test('main viewport passes the same free 3D ray position to click and preview',(
 });
 test('single UI with 3 modes; WASD input focus is restored after using controls',()=>{
   const panel=read('components/UniversalPlacementPanel.tsx');
-  const viewport=read('components/Viewport.tsx');
+  const viewport=withSplitParts(read('components/Viewport.tsx'),'Viewport');
   assert.match(panel,/universal-placement-three-modes/);
   assert.match(panel,/\['surface','grid','free'\]/);
   assert.doesNotMatch(panel,/<select\b/);
@@ -60,7 +62,7 @@ test('single UI with 3 modes; WASD input focus is restored after using controls'
   assert.match(viewport,/event\.altKey[\s\S]*prefs\.mode==='free'/);
 });
 test('two-step placement is cancellable and does not write geometry until confirmation',()=>{
-  const viewport=read('components/Viewport.tsx');
+  const viewport=withSplitParts(read('components/Viewport.tsx'),'Viewport');
   const store=read('store.ts');
   assert.match(viewport,/if\(!settings\.twoStep\|\|state\.drawMode\|\|state\.placementShape\|\|state\.placementPrefabId\)return/);
   assert.match(viewport,/state\.setUniversalPlacement\(\{position:\[\.\.\.hover\],lockPosition:true,staged:true\}\)/);
@@ -71,7 +73,7 @@ test('two-step placement is cancellable and does not write geometry until confir
   assert.match(viewport,/onPointerMoveCapture=\{e=>/);
 });
 test('all six locales have instructions for depth and confirmation',()=>{
-  const source=read('i18n.ts');
+  const source=legacyI18nSource();
   for(const locale of ['es','ru','ko','zh','pt'])assert.match(source,new RegExp(`Object\\.assign\\(${locale},\\{[^\\n]*"Distance from camera"`));
   assert.match(source,/First click: position · Second click: create/);
 });

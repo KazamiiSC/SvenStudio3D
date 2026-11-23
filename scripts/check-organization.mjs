@@ -1,4 +1,4 @@
-import ts from 'typescript';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import {createRequire} from 'node:module';import {strict as assert} from 'node:assert';
+import ts from '../tests/support/typescript.cjs';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';import {createRequire} from 'node:module';import {strict as assert} from 'node:assert';
 const root=process.cwd(),dir=fs.mkdtempSync(path.join(os.tmpdir(),'sven-route-tree-'));
 for(const file of ['types','gameplay','npc','sceneOrganization']){
  const src=path.join(root,'src/engine',file+'.ts'),dst=path.join(dir,'engine',file+'.js');fs.mkdirSync(path.dirname(dst),{recursive:true});

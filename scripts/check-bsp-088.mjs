@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import ts from 'typescript';
+import ts from '../tests/support/typescript.cjs';
 const input=fs.readFileSync(new URL('../src/engine/bsp.ts',import.meta.url),'utf8');
 const transformed=ts.transpileModule(input,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
 const {parseBsp,parseBspEntities}=await import(`data:text/javascript;base64,${Buffer.from(transformed).toString('base64')}`);

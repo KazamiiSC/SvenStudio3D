@@ -1,4 +1,5 @@
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
+import {KitSection} from './KitGallery';
 import {AudioLines,CheckCircle2,Headphones,MapPin,Music2,Plus,RefreshCcw,Search,SlidersHorizontal,Volume2,Star,Activity,X,AlertTriangle,Radio,Link2} from 'lucide-react';
 import {useEditor} from '../store';
 import {useT} from '../i18n';
@@ -164,6 +165,7 @@ export function SoundStudio({onClose}:{onClose:()=>void}){
         </div>:<p className="sound-hint">{t('Select an audio entity in the scene to edit its keyvalues.')}</p>}
         <button className="sound-verify-button" onClick={verifyPath} disabled={!(selectedEntity?.props.message||asset?.path)}><CheckCircle2 size={14}/>{t('Check audio file path in Sven Co-op')}</button>
         {diagnostic&&<p className="sound-path-report" role="status">{diagnostic}</p>}
+        <KitSection studio="sound" summary={t('Soundscape kit')} onStart={onClose}/>
         <h3><AlertTriangle size={16}/>{t('Audio Validation')}</h3>
         <div className="sound-issues">{issues.length?issues.slice(0,24).map((issue,i)=><button key={i} onClick={()=>setSelected(issue.entityId)} className={issue.severity}><AlertTriangle size={13}/>{issue.message}</button>):<p className="sound-ok"><CheckCircle2 size={16}/>{t('No audio entity errors found.')}</p>}</div>
       </aside>

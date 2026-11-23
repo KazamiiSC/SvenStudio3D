@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
-const ts=require('typescript');
+const ts=require('./support/typescript.cjs');
 require.extensions['.ts']=(mod,filename)=>mod._compile(ts.transpileModule(readFileSync(filename,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText,filename);
 const {safeTextureAlignment,textureBasisQuality}=require('../src/engine/textureAxisSafety.ts');
 const {texelAt}=require('../src/engine/valve220UV.ts');

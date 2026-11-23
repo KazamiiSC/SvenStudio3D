@@ -1,3 +1,4 @@
+import {withSplitParts} from './support/splitParts.cjs';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -35,19 +36,19 @@ test('drawing supports all three orthogonal planes',()=>{
   }
 });
 test('shape ghost and commit share orientation and coordinates',()=>{
-  const viewport=source('src/components/Viewport.tsx'),store=source('src/store.ts');
+  const viewport=withSplitParts(source('src/components/Viewport.tsx'),'Viewport'),store=source('src/store.ts');
   assert.match(viewport,/rotateObjectsForPlacement\(initial,\[0,0,0\],axis,angle,hoverYaw\)/);
   assert.match(store,/rotateObjectsForPlacement\(shape,position,s\.placementAxis,s\.placementAngle,autoYaw\)/);
   assert.match(viewport,/placeShapeAt\(result\.anchor,result\.autoYaw\)/);
 });
 test('prefabs rotate around their own pivot and preserve entity links',()=>{
   const prefab=source('src/engine/prefabs.ts');
-  assert.match(prefab,/const placed=rotateObjectsForPlacement\(objects,at,axis,angle,autoYaw\)/);
+  assert.match(prefab,/const placed=rotateObjectsForPlacement\((?:objects|normalized),at,axis,angle,autoYaw\)/);
   assert.match(prefab,/clone\.entityId=ids\.get\(clone\.entityId\)/);
   assert.match(prefab,/lockTranslatedBrushTextures/);
 });
 test('contextual placement keyboard handlers do not capture Ctrl shortcuts',()=>{
-  const viewport=source('src/components/Viewport.tsx');
+  const viewport=withSplitParts(source('src/components/Viewport.tsx'),'Viewport');
   assert.match(viewport,/event\.altKey\|\|event\.ctrlKey\|\|event\.metaKey/);
   assert.match(viewport,/event\.code==='KeyR'/);
   assert.match(viewport,/event\.code==='KeyF'/);
@@ -58,12 +59,12 @@ test('contextual placement keyboard handlers do not capture Ctrl shortcuts',()=>
   assert.match(viewport,/\['KeyX','KeyY','KeyZ'\]/);
 });
 test('fullscreen keyboard lock is opt-in and provides explicit exit',()=>{
-  const app=source('src/App.tsx');
-  const viewport=source('src/components/Viewport.tsx');
+  const app=withSplitParts(source('src/App.tsx'),'App');
+  const viewport=withSplitParts(source('src/components/Viewport.tsx'),'Viewport');
   assert.match(app,/requestFullscreen/);
   assert.match(app,/document\.exitFullscreen\(\)/);
   assert.match(app,/keyboard\?\.unlock\?\.\(\)/);
-  assert.match(app,/document\.fullscreenElement&&event\.ctrlKey&&event\.code==='KeyD'/);
+  assert.match(app,/event\.ctrlKey&&event\.code==='KeyD'\)\)event\.preventDefault\(\)/);
   assert.match(app,/<FullscreenMenuButton\/>/);
   assert.doesNotMatch(viewport,/onClick=\{toggleImmersive\}/);
 });

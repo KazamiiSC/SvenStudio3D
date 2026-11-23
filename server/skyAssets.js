@@ -8,9 +8,10 @@ const acceptable=(s)=>typeof s==='string'&&/^[a-zA-Z0-9_-]{1,64}$/.test(s);
 export async function skyRoots(gameDir){
  if(typeof gameDir!=='string'||!gameDir||gameDir.length>1024)throw Error('Configure Sven Co-op game directory first.');
  const resolved=path.resolve(gameDir),base=path.basename(resolved).toLowerCase();
- const parent=['svencoop','svencoop_addon','svencoop_downloads'].includes(base)?path.dirname(resolved):resolved;
+ const parent=['svencoop','svencoop_addon','svencoop_downloads','cstrike'].includes(base)?path.dirname(resolved):resolved;
+ const layers=base==='cstrike'?['cstrike','valve']:['svencoop_addon','svencoop_downloads','svencoop'];
  const roots=[];
- for(const source of ['svencoop_addon','svencoop_downloads','svencoop']){
+ for(const source of layers){
   const dir=path.join(parent,source,'gfx','env');
   try{const stat=await fs.stat(dir);if(stat.isDirectory())roots.push({source,root:await fs.realpath(dir)})}catch{}
  }
@@ -51,7 +52,7 @@ export function decodeTga(buffer){
  return rgbaToPng(rgba,w,h);
 }
 export async function skyFace(gameDir,source,sky,side){
- if(!acceptable(sky)||!SIDES.includes(side)||!['svencoop','svencoop_addon','svencoop_downloads'].includes(source))throw Error('Invalid sky request.');
+ if(!acceptable(sky)||!SIDES.includes(side)||!['svencoop','svencoop_addon','svencoop_downloads','cstrike','valve'].includes(source))throw Error('Invalid sky request.');
  const roots=await skyRoots(gameDir),root=roots.find(r=>r.source===source)?.root;if(!root)throw Error('Sky folder not installed.');
  for(const ext of EXTENSIONS){
   const file=path.join(root,sky+side+ext);let real;

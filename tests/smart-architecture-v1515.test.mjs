@@ -4,18 +4,13 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {createRequire} from 'node:module';
-import ts from 'typescript';
+import {compileEngine} from './support/engineClosure.cjs';
 
 const root=process.cwd();
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),'sven-smart-architecture-'));
-const modules=['types','geometry','exportMap','advancedModeling','modeling','architecture','architecturePlans','textureAxisSafety','valve220UV','customNpc','projectValidation','textureStudio'];
-for(const name of modules){
- const source=fs.readFileSync(path.join(root,'src','engine',name+'.ts'),'utf8');
- const output=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText.replace(/require\((['"])(\.\/[^'"]+)\.ts\1\)/g,'require($1$2.js$1)');
- const file=path.join(temp,'src','engine',name+'.js');fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,output);
-}
+compileEngine(root,temp,['geometry','exportMap','advancedModeling','modeling','architecture','architecturePlans','customNpc','projectValidation','textureStudio']);
 fs.writeFileSync(path.join(temp,'package.json'),' {"type":"commonjs"}');
-fs.symlinkSync(path.join(root,'node_modules'),path.join(temp,'node_modules'),'dir');
+fs.symlinkSync(path.join(root,'node_modules'),path.join(temp,'node_modules'),'junction'); // junction: no admin rights needed on Windows
 const require=createRequire(path.join(temp,'runner.cjs'));
 const {createBrush,transformedVertices}=require('./src/engine/geometry.js');
 const {createMultipleWallOpenings,architectureOpeningCenter,architectureOpeningMetrics,architecturePartSignature}=require('./src/engine/architecture.js');
@@ -149,7 +144,7 @@ try {
    const shape=fs.readFileSync(path.join(root,'src','components','ShapePalette.tsx'),'utf8');
    const panel=fs.readFileSync(path.join(root,'src','components','ArchitectureBuilder.tsx'),'utf8');
    const store=fs.readFileSync(path.join(root,'src','store.ts'),'utf8');
-   assert.match(shape,/<ArchitectureBuilder\/>/);assert.match(shape,/Architecture Mode<\/button>/);
+   assert.match(shape,/<ArchitectureBuilder( onStart=\{[^}]+\})?\/>/);assert.match(shape,/Architecture Mode<\/button>/);
    for(const action of ['editArchitectureOpening','removeArchitectureOpening','repeatArchitectureOpening','detachArchitectureWall','editArchitectureAssembly','deleteArchitectureAssembly','detachArchitectureAssembly']){
      assert.ok(panel.includes(action));assert.ok(store.includes(action));
    }

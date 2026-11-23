@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createRequire} from 'node:module';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 const require=createRequire(import.meta.url);
 require.extensions['.ts']=(mod,filename)=>mod._compile(ts.transpileModule(fs.readFileSync(filename,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText,filename);
 const {readNativeBsp,writeNativeBsp,nativeProperty,nativeChanged,addNativeProperty}=require('../src/engine/bspNativeEdit.ts');
@@ -73,9 +73,10 @@ test('delete point entity does not touch compiled world entity or model referenc
  const changed=read(bspDeletePoint(make(),3));
  assert.equal(changed.entities.length,3);
  assert.equal(nativeProperty(changed.entities[1],'model'),'*1');
- assert.throws(()=>bspDeletePoint(make(),1),/Only point entities/);
- assert.throws(()=>bspDuplicatePoint(make(),1),/Only point entities/);
- assert.throws(()=>bspMovePoint(make(),1,[0,0,0]),/cannot be transformed/);
+ // v2.6: brush entities can be deleted, duplicated (shared *N) and moved through their origin.
+ assert.equal(read(bspDeletePoint(make(),1)).entities.length,3);
+ const dup=read(bspDuplicatePoint(make(),1));assert.equal(nativeProperty(dup.entities[dup.entities.length-1],'model'),'*1');
+ assert.throws(()=>bspDeletePoint(make(),0),/worldspawn/);
 });
 test('validate numeric position and reject nonfinite values or forged brush model references',()=>{
  assert.deepEqual(bspEditVector('1.5 0 -9'),[1.5,0,-9]);
@@ -115,7 +116,7 @@ test('viewport mode controls and original recovery remain separate',()=>{
  assert.match(viewer,/bspRotatePointYaw/);
  assert.match(viewer,/writeNativeBsp\(doc\)/);
  assert.match(viewer,/entityEdit&&doc\?bspPreviewMap\(map,doc\):map/);
- assert.match(viewer,/disabled=\{!source\|\|entityEdit\}/);
+ assert.match(viewer,/disabled=\{!source\}/); // recovery button stays available while entity edits are previewed separately
 });
 
 test('editing duplicate keyvalues targets the intended occurrence; viewport uses the last rendered origin',()=>{

@@ -1,8 +1,9 @@
+import {legacyI18nSource} from './support/legacyI18n.cjs';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 const require=createRequire(import.meta.url);
 require.extensions['.ts']=(mod,path)=>mod._compile(ts.transpileModule(readFileSync(path,'utf8'),{
   compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}
@@ -148,7 +149,7 @@ test('UI uses configured entity presets, conversion, six languages and responsiv
  const viewer=readFileSync(new URL('../src/components/BspViewer.tsx',import.meta.url),'utf8');
  const library=readFileSync(new URL('../src/components/BspModelLibrary.tsx',import.meta.url),'utf8');
  const css=readFileSync(new URL('../src/style.css',import.meta.url),'utf8');
- const i18n=readFileSync(new URL('../src/i18n.ts',import.meta.url),'utf8');
+ const i18n=legacyI18nSource();
  assert.match(viewer,/placement\.spec\.properties/);
  assert.match(viewer,/onConvert=\{spec=>/);
  assert.match(library,/bspModelEntitySpec/);assert.match(library,/Place configured model in 3D/);

@@ -7,7 +7,8 @@ import {MaterialSurfaceStudio} from './MaterialSurfaceStudio';
 import { useEffect,useMemo,useRef,useState,type ChangeEvent } from 'react';
 import {createPortal} from 'react-dom';
 import type React from 'react';
-import { Play,Box,Layers,Image,Search,Plus,Star,Eye,EyeOff,Lock,Unlock,ChevronRight,ChevronDown,FileCode2,FolderOpen,Upload,Trash2,Copy,Unlink,Paintbrush,Sun,UserRound,Info,Settings2,Grid3x3,Brush,Check,DoorOpen,CornerDownRight,Globe2, Skull, Route, Headphones, Layers3 } from 'lucide-react';
+import { Play,Box,Layers,Image,Search,Plus,Star,Eye,EyeOff,Lock,Unlock,ChevronRight,ChevronDown,FileCode2,FolderOpen,Upload,Trash2,Copy,Unlink,Paintbrush,Sun,UserRound,Info,Settings2,Grid3x3,Brush,Check,DoorOpen,CornerDownRight,Globe2, Skull, Route, Headphones, Layers3, Replace, MousePointerClick } from 'lucide-react';
+import {ScanEye} from 'lucide-react';
 import { useEditor } from '../store';
 import {sanitizeGeometryDelta} from '../engine/geometryEditSelection';
 import {useMotionPreview} from '../entityMotionPreviewState';
@@ -48,9 +49,19 @@ const mapWadLabels={
   pt:{manage:'Gerenciar WADs',remove:'Remover',builtIn:'Integrado',protected:'Protegido (Decals)',used:'Em uso',unused:'Não usado',removing:'Removendo...',help:'Remove WAD antigos da biblioteca e do armazenamento do navegador, sem apagar arquivos do jogo.',confirm:'Remover este WAD da biblioteca salva? O arquivo no disco será mantido.',failure:'Não foi possível remover o WAD:',usedInfo:'O mapa ou histórico usa estas texturas:',paths:'Os caminhos de compilação são preservados.',noWads:'Não há WAD importados para remover.'},
 } as const;
 
+const csFgdHints:Record<Locale,string>={
+  es:'Catálogo básico de Counter-Strike 1.6. Importá su .FGD para ver más entidades.',
+  en:'Basic Counter-Strike 1.6 catalogue. Import its .FGD for more entities.',
+  ru:'Базовый каталог Counter-Strike 1.6. Импортируйте .FGD для остальных сущностей.',
+  ko:'Counter-Strike 1.6 기본 목록입니다. 더 많은 엔티티를 보려면 .FGD를 가져오세요.',
+  zh:'Counter-Strike 1.6 基础实体列表。导入游戏的 .FGD 查看更多实体。',
+  pt:'Catálogo básico do Counter-Strike 1.6. Importe o .FGD para mais entidades.'
+};
+
 function stopProp(e:React.MouseEvent){e.stopPropagation()}
 export function AssetPanel(){
   const tr=useT();
+  const csGameProfile=useEditor(s=>s.settings.gameProfile==='cs16');
   const savedResource=useEditor(s=>s.resourceView),resource=savedResource==='objects'||savedResource==='layers'?'entities':savedResource,setResource=useEditor(s=>s.setResourceView);
   const [query,setQuery]=useState('');
   const [entityInfo,setEntityInfo]=useState<FgdClass|null>(null);
@@ -84,6 +95,7 @@ export function AssetPanel(){
   // Texture order stays stable while painting; selecting never re-sorts the library.
   // A lightweight right-click menu for WAD tiles and FGD classes. Keeps
   // common actions discoverable without adding hundreds of extra buttons.
+  const openTextureReplace=(detail:{find?:string;replace?:string})=>document.dispatchEvent(new CustomEvent('svenstudio:open-texture-replace',{detail}));
   const [assetMenu,setAssetMenu]=useState<{x:number;y:number;kind:'texture';value:TextureAsset}|{x:number;y:number;kind:'entity';value:FgdClass}|null>(null);
   useEffect(()=>{
     if(!entityInfo)return;
@@ -185,18 +197,19 @@ export function AssetPanel(){
       <button className={resource==='decals'?'active':''} onClick={()=>{setResource('decals');setQuery('')}} title="Decal Studio" aria-label="Decal Studio"><Paintbrush size={16}/></button>
       <button className={resource==='models'?'active':''} onClick={()=>{setResource('models');setQuery('')}} title="Model Browser (.mdl)"><Boxes size={16}/></button>
       <button className={resource==='sounds'?'active':''} onClick={()=>{setResource('sounds');setQuery('')}} title={tr('Sound Browser')}><Headphones size={16}/></button>
-      <button className={resource==='npcs'?'active':''} onClick={()=>{setResource('npcs');setQuery('')}} title={tr('NPC Browser')}><Skull size={16}/></button>
+      {!csGameProfile&&<button className={resource==='npcs'?'active':''} onClick={()=>{setResource('npcs');setQuery('')}} title={tr('NPC Browser')}><Skull size={16}/></button>}
     </div>
     <div className="panel-header"><span>{tr(resource==='entities'?'Entity Browser':resource==='textures'?'Texture Browser':resource==='materials'?'Material & Surface Studio':resource==='decals'?'Decal Studio':resource==='models'?'Model Browser':resource==='npcs'?'NPC Browser':resource==='sounds'?'Sound Browser':'Layers')}</span><span className="subtle">{resource==='entities'?classes.length:resource==='textures'?textures.length:resource==='decals'?decals.length:''}</span></div>
     {(resource==='entities'||resource==='textures'||resource==='npcs')&&<div className="search-field"><Search size={15}/><input value={query} onChange={e=>{setQuery(e.target.value)}} placeholder={tr(resource==='textures'?'Search textures...':resource==='npcs'?'Search NPCs…':'Search classname...')} /></div>}
     {resource==='materials'&&<MaterialSurfaceStudio/>}
     {resource==='decals'&&<DecalStudio/>}
+    {resource==='npcs'&&csGameProfile?<p className="empty-message">CS 1.6: NPC Browser is unavailable in this profile. Use the CS FGD entities.</p>:null}
     {resource==='models'&&<ModelBrowser/>}
     {resource==='sounds'&&<SoundBrowser compact/>}
-    {resource==='npcs'&&<div className="assets-scroll npc-asset-list">
+    {resource==='npcs'&&!csGameProfile&&<div className="assets-scroll npc-asset-list">
       <div className="ui3-entity-tools"><label><input type="checkbox" checked={entityStampMode} onChange={e=>setEntityStampMode(e.target.checked)}/>{tr('Place multiple')}</label></div>
       <p className="npc-hint">{tr('Choose an NPC and click on a map surface to place it. Drag and drop also works.')}</p>
-      {!fgdLoaded&&<p className="npc-hint">{tr('Starter list. Import sven-coop.fgd for full list.')}</p>}
+      {!fgdLoaded&&<p className="npc-hint">{csGameProfile?csFgdHints[locale]:tr('Starter list. Import sven-coop.fgd for full list.')}</p>}
       {npcList.map(cls=><button className={`entity-entry ${npcPending===cls.name?'active':''}`} key={cls.name} draggable
         onDragStart={e=>{e.dataTransfer.setData('application/x-svenstudio-entity',cls.name);e.dataTransfer.effectAllowed='copy'}}
         onClick={()=>startNpc(npcPending===cls.name?null:cls.name)} title={`${cls.description} · ${cls.studio||'No FGD model'}`}>
@@ -204,7 +217,7 @@ export function AssetPanel(){
       <div className="npc-asset-footer"><Route size={15}/>{tr('Use NPC & AI Studio for routes, spawners and validation.')}</div>
     </div>}
     {resource==='entities'&&<>
-      <div className="import-area"><button className="soft-button" onClick={loadGameFgd}><FolderOpen size={14}/> {tr('Load Sven Co-op FGD')}</button><button className="soft-button" onClick={()=>fgdRef.current?.click()}><Upload size={14}/> {tr('Import .FGD')}</button><input ref={fgdRef} type="file" hidden accept=".fgd" onChange={importFgd}/><p>{tr(fgdLoaded?'Imported FGD definitions active':'Starter list. Import sven-coop.fgd for full list.')}</p></div>
+      <div className="import-area"><button className="soft-button" onClick={loadGameFgd}><FolderOpen size={14}/> {csGameProfile?'Counter-Strike 1.6 FGD':tr('Load Sven Co-op FGD')}</button><button className="soft-button" onClick={()=>fgdRef.current?.click()}><Upload size={14}/> {tr('Import .FGD')}</button><input ref={fgdRef} type="file" hidden accept=".fgd" onChange={importFgd}/><p>{fgdLoaded?tr('Imported FGD definitions active'):csGameProfile?csFgdHints[locale]:tr('Starter list. Import sven-coop.fgd for full list.')}</p></div>
       <div className="entity-category-row"><select value={entityCategory} onChange={e=>setEntityCategory(e.target.value)} title={tr('Entity category')}>
         {['all','NPCs','Triggers','Weapons','Items','Lighting','Brush entities','Logic & effects','Other'].map(v=><option value={v} key={v}>{tr(v==='all'?'All categories':v)}</option>)}
       </select><span>{filteredClasses.length}</span></div>
@@ -219,6 +232,7 @@ export function AssetPanel(){
     </>}
     {resource==='textures'&&<>
       <div className="import-area"><button className="soft-button" onClick={()=>wadsRef.current?.click()}><Upload size={14}/> {tr('Import WAD3')}</button><input ref={wadsRef} multiple type="file" hidden accept=".wad" onChange={importWads}/><p>{tr('Choose textures, then paint selected faces or brushes.')}</p>
+        <button type="button" className="map-wad-manager-toggle texture-replace-open" onClick={()=>openTextureReplace({})}><Replace size={13}/>{tr('Find and replace texture')}</button>
         <button type="button" className="map-wad-manager-toggle" aria-expanded={wadManagerOpen} onClick={()=>{setWadManagerOpen(open=>!open);setWadRemoveError('')}}><Trash2 size={13}/>{mapWadText.manage}{wadManagerOpen?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
       </div>
       {wadManagerOpen&&<div className="map-wad-manager" aria-label={mapWadText.manage}>
@@ -233,7 +247,7 @@ export function AssetPanel(){
       </div>}
       {textures.length>0&&<div className="filter-wrap"><button className={`favorite-filter ${onlyFavorites?'active':''}`} title={tr('Show favorites only')} aria-pressed={onlyFavorites} onClick={()=>setOnlyFavorites(v=>!v)}><Star size={13} fill={onlyFavorites?'currentColor':'none'}/></button>
       <button className={`recent-filter ${onlyRecent?'active':''}`} title={tr('Recent textures')} aria-pressed={onlyRecent} onClick={()=>setOnlyRecent(v=>!v)}><span>◷</span></button><select value={filter} onChange={e=>{setFilter(e.target.value)}}><option value="all">{tr('All WAD files')}</option>{Array.from(new Set(textures.map(t=>t.wad))).map(n=><option key={n} value={n}>{n}</option>)}</select></div>}
-      {textures.length===0?<div className="empty-message"><Image size={30}/><strong>{tr('No WAD textures loaded')}</strong><span>{tr('Import halflife.wad or another WAD3 file from Sven Co-op.')}</span></div>:
+      {textures.length===0?<div className="empty-message"><Image size={30}/><strong>{tr('No WAD textures loaded')}</strong><span>{csGameProfile?'Import a WAD3 file from Counter-Strike 1.6 or Half-Life (valve).':tr('Import halflife.wad or another WAD3 file from Sven Co-op.')}</span></div>:
         <VirtualTextureGallery textures={filteredTextures} resetKey={`${filter}|${query}|${onlyFavorites}|${onlyRecent}`} selected={currentTexture} onPick={applyTexture}
           isFavorite={texture=>favorites.includes(favoriteKey(texture))} onFavorite={toggleFavorite}
           onContextMenu={(event,texture)=>{event.preventDefault();setAssetMenu({x:event.clientX,y:event.clientY,kind:'texture',value:texture})}}/>}
@@ -242,6 +256,8 @@ export function AssetPanel(){
       <div className="context-head"><span>{assetMenu.value.name}</span><small>{assetMenu.kind==='texture'?`${assetMenu.value.wad} · ${assetMenu.value.width}×${assetMenu.value.height}`:assetMenu.value.type}</small></div>
       {assetMenu.kind==='texture'?<>
         <button type="button" onClick={()=>{applyTexture(assetMenu.value);setAssetMenu(null)}}><Paintbrush size={15}/><span>{tr('Apply texture')}</span></button>
+        <button type="button" onClick={()=>{openTextureReplace({find:'',replace:assetMenu.value.name});setAssetMenu(null)}}><Replace size={15}/><span>{tr('Replace another texture with this one…')}</span></button>
+        <button type="button" onClick={()=>{useEditor.getState().selectBrushesWithTexture(assetMenu.value.name);setAssetMenu(null)}}><MousePointerClick size={15}/><span>{tr('Select brushes with this texture')}</span></button>
         <button type="button" onClick={()=>{toggleFavorite(assetMenu.value);setAssetMenu(null)}}><Star size={15}/><span>{tr(favorites.includes(favoriteKey(assetMenu.value))?'Remove from favorites':'Add to favorites')}</span></button>
         <button type="button" onClick={()=>{void navigator.clipboard?.writeText(assetMenu.value.name);setAssetMenu(null)}}><Copy size={15}/><span>{tr('Copy texture name')}</span></button>
         <button type="button" onClick={()=>{void navigator.clipboard?.writeText(assetMenu.value.wad);setAssetMenu(null)}}><Copy size={15}/><span>{tr('Copy WAD name')}</span></button>
@@ -262,14 +278,26 @@ function LayerPanel(){
   const selected=useEditor(s=>s.selectedIds),groupSelected=useEditor(s=>s.groupSelected),ungroup=useEditor(s=>s.ungroupSelected);
   const selectGroup=useEditor(s=>s.selectGroup),toggleGroupVisibility=useEditor(s=>s.toggleGroupVisibility),toggleGroupLocked=useEditor(s=>s.toggleGroupLocked);
   const [groupName,setGroupName]=useState('New Group'),[error,setError]=useState('');
+  const [layerName,setLayerName]=useState(''),[renaming,setRenaming]=useState<{from:string;to:string}|null>(null);
+  const assignLayer=useEditor(s=>s.assignSelectionToLayer),toggleLayerLocked=useEditor(s=>s.toggleLayerLocked),renameLayer=useEditor(s=>s.renameLayer),isolateLayer=useEditor(s=>s.isolateLayer),selectSameLayer=useEditor(s=>s.selectSameLayer);
   const run=(fn:()=>void)=>{try{fn();setError('')}catch(err){setError(String(err))}};
   const layers=Array.from(new Set(['Geometry','Gameplay','Lighting',...objects.map(o=>o.layer||'Geometry')]));
   const groups=Array.from(new Set(objects.map(o=>o.group).filter((g):g is string=>!!g)));
-  return <div className="assets-scroll"><div className="hint-block">{t('Assign an object to a layer from its Properties panel.')}</div>{layers.map(layer=>{
+  return <div className="assets-scroll"><div className="hint-block">{t('Layers (visgroups): put the selection in a layer, then show, hide, lock or isolate the whole layer. Editor-only; the compiled map is not affected.')}</div>
+    <div className="operation-line"><input className="asset-small-input" list="sven-layer-names" value={layerName} maxLength={48} placeholder={t('Layer name')} onChange={e=>setLayerName(e.target.value)} aria-label={t('Layer name')}/><datalist id="sven-layer-names">{layers.map(l=><option key={l} value={l}/>)}</datalist><button disabled={!selected.length||!layerName.trim()} onClick={()=>run(()=>{assignLayer(layerName);})}>{t('Move selection to layer')}</button></div>
+    {layers.map(layer=>{
     const inLayer=objects.filter(o=>(o.layer||'Geometry')===layer);
-    return <div className="layer-line" key={layer}><Layers size={15}/><span>{layer}</span><span>{inLayer.length}</span><button className="tree-action" onClick={()=>toggleLayerVisibility(layer)} title={t('Show/hide layer')} style={{opacity:1}}>{inLayer.length&&inLayer.every(o=>o.hidden)?<EyeOff size={14}/>:<Eye size={14}/>}</button></div>;
+    const hidden=inLayer.length>0&&inLayer.every(o=>o.hidden),locked=inLayer.length>0&&inLayer.every(o=>o.locked);
+    return <div className="layer-line" key={layer}><Layers size={15}/>
+      {renaming?.from===layer?<input className="asset-small-input" autoFocus value={renaming.to} maxLength={48} aria-label={t('Rename layer')} onChange={e=>setRenaming({from:layer,to:e.target.value})} onBlur={()=>{renameLayer(layer,renaming.to);setRenaming(null);}} onKeyDown={e=>{if(e.key==='Enter'){renameLayer(layer,renaming.to);setRenaming(null);}if(e.key==='Escape')setRenaming(null);}}/>
+        :<button className="asset-text-button" title={t('Select the whole layer · double-click to rename')} onClick={()=>selectSameLayer(layer)} onDoubleClick={()=>setRenaming({from:layer,to:layer})}>{layer}</button>}
+      <span>{inLayer.length}</span>
+      <button className="tree-action" onClick={()=>toggleLayerVisibility(layer)} title={t('Show/hide layer')} style={{opacity:1}}>{hidden?<EyeOff size={14}/>:<Eye size={14}/>}</button>
+      <button className="tree-action" onClick={()=>toggleLayerLocked(layer)} title={t('Lock/unlock layer')} style={{opacity:1}}>{locked?<Lock size={14}/>:<Unlock size={14}/>}</button>
+      <button className="tree-action" disabled={!inLayer.length} onClick={()=>isolateLayer(layer)} title={t('Show only this layer (click again to show all)')} style={{opacity:1}}><ScanEye size={14}/></button>
+    </div>;
   })}
-    <div className="category-label">{t('Groups')} · v0.7</div>
+    <div className="category-label">{t('Groups')}</div>
     <div className="operation-line"><input className="asset-small-input" value={groupName} maxLength={64} onChange={e=>setGroupName(e.target.value)} aria-label={t('Group name')}/><button disabled={!selected.length} onClick={()=>run(()=>groupSelected(groupName))}>{t('Group')}</button><button disabled={!selected.length} onClick={()=>run(ungroup)}>{t('Ungroup')}</button></div>
     {groups.map(group=>{const members=objects.filter(o=>o.group===group);return <div className="layer-line" key={group}><Layers size={14}/><button className="asset-text-button" onClick={()=>selectGroup(group)} title={t('Select entire group')}>{group}</button><span>{members.length}</span><button className="tree-action" title={t('Show/hide group')} onClick={()=>toggleGroupVisibility(group)}>{members.every(o=>o.hidden)?<EyeOff size={14}/>:<Eye size={14}/>}</button><button className="tree-action" title={t('Lock/unlock group')} onClick={()=>toggleGroupLocked(group)}>{members.every(o=>o.locked)?<Lock size={14}/>:<Unlock size={14}/>}</button></div>})}
     {error&&<p className="modeling-error" role="alert">{error}</p>}
@@ -293,7 +321,7 @@ function PrefabLibrary(){
   };
   const current=objects.find(o=>o.id===selected);
   return <div className="prefab-library">
-    <div className="category-label">{t('Prefabs')} · v0.7</div>
+    <div className="category-label">{t('Prefabs')}</div>
     <div className="modeling-note">{t('Save a selection from Properties, then reuse it in any project. Library is stored in this browser; Export for backup.')}</div>
     <div className="operation-line"><button onClick={()=>importRef.current?.click()}><Upload size={13}/> {t('Import prefab')}</button><input ref={importRef} type="file" accept=".json,.svprefab.json" hidden onChange={onFile}/></div>
     <div className="operation-grid">{offset.map((n,i)=><label key={i}>{['X','Y','Z'][i]}<input type="number" step="16" value={n} onChange={e=>{const next=[...offset] as [number,number,number];next[i]=Number(e.target.value);setOffset(next)}}/></label>)}</div>
@@ -518,7 +546,7 @@ function AdvancedSelectionPanel(){
   const run=(fn:()=>void)=>{try{fn();setMessage('');appendLogs(['Advanced Studio: operation completed.'])}catch(error){const msg=String(error);setMessage(msg);appendLogs([msg])}};
   const twoBrushes=selected.length===2&&selected.every(id=>objects.find(o=>o.id===id)?.kind==='brush');
   return <section className="modeling-properties advanced-studio">
-    <div className="property-group-title">{t('Advanced Building Studio')} · v0.7</div>
+    <div className="property-group-title">{t('Advanced Building Studio')}</div>
     <div className="modeling-note">{t('CSG requires two brushes selected in order: target first, cutter second. GoldSrc uses separate convex solids.')}</div>
     <div className="operation-buttons advanced-buttons"><button disabled={!twoBrushes} onClick={()=>run(()=>runBoolean('union'))}>{t('Union')}</button><button disabled={!twoBrushes} onClick={()=>run(()=>runBoolean('subtract'))}>{t('Subtract')}</button><button disabled={!twoBrushes} onClick={()=>run(()=>runBoolean('intersect'))}>{t('Intersect')}</button></div>
     <div className="operation-line"><label>{t('Group name')}<input value={name} maxLength={64} onChange={e=>setName(e.target.value)}/></label><button onClick={()=>run(()=>group(name))}>{t('Group')}</button><button onClick={()=>run(ungroup)}>{t('Ungroup')}</button></div>
@@ -528,7 +556,7 @@ function AdvancedSelectionPanel(){
 }
 
 function ModelingPanel({brush}:{brush:BrushObject}){
-  const t=useT();
+  const t=useT();const profileName=useEditor(s=>s.settings.gameProfile==='cs16'?'GoldSrc':'Svengine');
   const mode=useEditor(s=>s.geometryMode),indices=useEditor(s=>s.editIndices);
   const edgeCount=useEditor(s=>s.editEdgePairs.length);
   const edit=useEditor(s=>s.editVertices),clip=useEditor(s=>s.clipSelected),hollow=useEditor(s=>s.hollowSelected),push=useEditor(s=>s.pushPullFace);
@@ -543,7 +571,7 @@ function ModelingPanel({brush}:{brush:BrushObject}){
   const [thickness,setThickness]=useState(16),[extrude,setExtrude]=useState(16),[bevelWidth,setBevelWidth]=useState(8),[prefabName,setPrefabName]=useState('New Brush');
   const [message,setMessage]=useState('');
   const [delta,setDelta]=useState<[number,number,number]>([0,0,0]);
-  const run=(fn:()=>void)=>{try{fn();setMessage('');log(['Svengine: geometry operation completed.'])}catch(error){const msg=String(error);setMessage(msg);log([`Svengine geometry: ${msg}`])}};
+  const run=(fn:()=>void)=>{try{fn();setMessage('');log([`${profileName}: geometry operation completed.`])}catch(error){const msg=String(error);setMessage(msg);log([`${profileName} geometry: ${msg}`])}};
   const editPos=mode==='vertex'&&indices.length===1&&brush.vertices[indices[0]];
   const effectiveIndices=mode==='face'&&selectedFace!==null?brush.faces[selectedFace]?.indices??[]:mode==='vertex'||mode==='edge'?indices:[];
   const moveSelected=()=>run(()=>{
@@ -553,7 +581,7 @@ function ModelingPanel({brush}:{brush:BrushObject}){
     edit(brush.id,effectiveIndices,movement);setDelta([0,0,0]);
   });
   return <section className="modeling-properties">
-    <div className="property-group-title">{t('Geometry editing')} · Svengine</div>
+    <div className="property-group-title">{t('Geometry editing')} · {profileName}</div>
     <div className="hf22-geometry-workspace" aria-label={t('Geometry editing')}>
       <div className="hf22-geometry-heading"><strong>{t('Edit existing brush')}</strong><span>{brush.vertices.length} {t('vertices')} · {brush.faces.length} {t('faces')}</span></div>
       <div className="hf22-geometry-modes" role="group" aria-label={t('Geometry modes')}>
@@ -569,7 +597,7 @@ function ModelingPanel({brush}:{brush:BrushObject}){
         <div className="hf22-delta-actions"><button type="button" disabled={!effectiveIndices.length||delta.every(n=>n===0)||delta.some(n=>!Number.isFinite(n))} onClick={moveSelected}>{t('Apply movement')}</button><button type="button" disabled={delta.every(n=>n===0)} onClick={()=>setDelta([0,0,0])}>{t('Reset')}</button></div>
       </>}
       <div className="hf22-geometry-history"><button type="button" onClick={undo} disabled={!canUndo} title="Ctrl+Z">↶ {t('Undo')}</button><button type="button" onClick={redo} disabled={!canRedo} title="Ctrl+Y">↷ {t('Redo')}</button></div>
-      <p className="hf22-geometry-validation">{t('Only closed convex brushes can be exported to Svengine. Invalid edits are rejected.')}</p>
+      <p className="hf22-geometry-validation">{profileName==='GoldSrc'?'Only closed convex GoldSrc brushes can be exported. Invalid edits are rejected.':t('Only closed convex brushes can be exported to Svengine. Invalid edits are rejected.')}</p>
     </div>
     {editPos&&<VectorFields label={t('Selected vertex position')+' (local)'} value={editPos} onChange={pos=>run(()=>edit(brush.id,indices,pos.map((v,i)=>v-editPos[i]) as [number,number,number]))}/>}
     {faceMode&&selectedFace!==null&&<><div className="operation-line"><label>{t('Extrusion distance (E)')}<input type="number" step="1" min="0.01" value={extrude} onChange={e=>setExtrude(Number(e.target.value))}/></label><button onClick={()=>run(()=>extrudeFace(extrude))}>{t('Extrude')}</button><button title={t('Move the face of the existing convex solid')} onClick={()=>run(()=>push(brush.id,selectedFace,extrude))}>{t('Push/Pull')}</button></div><div className="modeling-note">{t('Extrude creates a new adjacent convex brush. Push/Pull modifies the original brush.')}</div></>}

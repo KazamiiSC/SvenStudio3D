@@ -20,9 +20,10 @@ export const wadBasename=value=>{
 export async function bspWadRoots(gameDir){
   if(typeof gameDir!=='string'||!gameDir.trim()||gameDir.length>1024)throw Error('Configure the Sven Co-op game directory first.');
   const target=path.resolve(gameDir),base=path.basename(target).toLowerCase();
-  const parent=LAYERS.includes(base)?path.dirname(target):target;
+  const parent=[...LAYERS,'cstrike'].includes(base)?path.dirname(target):target;
+  const layers=base==='cstrike'?['cstrike','valve']:LAYERS;
   const roots=[];
-  for(const layer of LAYERS){
+  for(const layer of layers){
     const candidate=path.join(parent,layer);
     try{if((await fs.stat(candidate)).isDirectory())roots.push({layer,root:await fs.realpath(candidate)})}catch{}
   }
@@ -108,7 +109,7 @@ export async function findBspWadTextures({gameDir,wadNames=[],textureNames=[],in
   const allNames=[...new Set(textureNames.map(x=>typeof x==='string'?x.trim().toLowerCase():'').filter(cleanTexture))];
   const requested=allNames.slice(0,MAX_REQUESTED);
   const roots=await bspWadRoots(gameDir);
-  if(!roots.length)throw Error('Sven Co-op game directory not found.');
+  if(!roots.length)throw Error('Configured GoldSrc game directory not found.');
   if(!requested.length)return {textures:[],missing:[],scanned:0,truncated:false};
   const inventory=await discoverFiles(roots),priority=[...new Set(wadNames.map(wadBasename).filter(Boolean))];
   const ordered=[...inventory.filter(f=>priority.includes(f.name)).sort((a,b)=>priority.indexOf(a.name)-priority.indexOf(b.name)),...inventory.filter(f=>!priority.includes(f.name))];

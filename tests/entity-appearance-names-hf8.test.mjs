@@ -73,9 +73,10 @@ test('marker modal presents one global picker, automatic/global mode and indepen
 });
 test('aliases can be searched in Explorer and Gameplay Studio',()=>{
  const explorer=r('src/components/ExplorerOrganized.tsx'),graph=r('src/components/GameplayStudio.tsx');
- assert.ok(explorer.includes('tree.groups.map(groupNode)'));
  assert.ok(explorer.includes('connectionSearchText(o,objects)'));
- assert.ok(graph.includes('connectionSearchText(e,objects)'));
+ // Gameplay Studio filters through gameplayDesigner, which includes the editor alias.
+ assert.ok(graph.includes('filterDesignEntities('));
+ assert.ok(r('src/engine/gameplayDesigner.ts').includes('e.editorAlias'));
 });
 test('brush and entity names remain project metadata, not rewritten in Valve 220 exporter',()=>{
  const type=r('src/engine/types.ts'),exp=r('src/engine/exportMap.ts');

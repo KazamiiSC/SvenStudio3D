@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
-const ts=require('/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript/lib/typescript.js');
+const ts=require('./support/typescript.cjs');
 const root=process.cwd(),dir=fs.mkdtempSync(path.join(os.tmpdir(),'gs172-'));
 for(const f of ['types','gameplay','gameplayGraph','gameplayWorkspace','gameplayDesigner']){
  const file=path.join(root,'src/engine',f+'.ts'),source=fs.readFileSync(file,'utf8');
@@ -75,7 +75,7 @@ test('new Gameplay Studio is the spatial/event/lab design with original native e
  const jsx=fs.readFileSync(path.join(root,'src/components/GameplayStudio.tsx'),'utf8');
  const parsed=ts.createSourceFile('GameplayStudio.tsx',jsx,ts.ScriptTarget.ES2022,true,ts.ScriptKind.TSX);
  assert.equal(parsed.parseDiagnostics.length,0);
- for(const token of ['Gameplay Studio <em>3.0</em>','page===\'map\'','page===\'events\'','page===\'lab\'','<OverviewCanvas','buildDesignZones','buildDesignInteractions','traceGameplayReferences','connect(fromId,toId)','disconnect(current.id)','setProp(current.id','EntityAssistant','tie(selectedBrush.id,type)','addDemo','undo'])assert.ok(jsx.includes(token),token);
+ for(const token of ['<strong>Gameplay Studio</strong>','page===\'map\'','page===\'events\'','page===\'lab\'','<OverviewCanvas','buildDesignZones','buildDesignInteractions','traceGameplayReferences','connect(fromId,toId)','disconnect(current.id)','setProp(current.id','EntityAssistant','tie(selectedBrush.id,type)','addDemo','undo'])assert.ok(jsx.includes(token),token);
  assert.ok(!jsx.includes('gs-node-head'));assert.ok(!jsx.includes('setGraphPosition('));
  const css=fs.readFileSync(path.join(root,'src/components/gameplayDesigner.css'),'utf8');
  assert.ok(css.includes('.gds-root'));

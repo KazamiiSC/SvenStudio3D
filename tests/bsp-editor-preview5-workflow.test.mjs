@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createRequire} from 'node:module';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 const require=createRequire(import.meta.url);
 require.extensions['.ts']=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText,file);
 const {readNativeBsp,writeNativeBsp,nativeProperty}=require('../src/engine/bspNativeEdit.ts');
@@ -72,8 +72,11 @@ test('group moving changes origins of points only and keeps their relative spaci
  assert.equal(nativeProperty(before.entities[2],'origin'),'10 0 10');
 });
 test('group move and batch editing reject brush entities atomically',()=>{
- const before=open();assert.throws(()=>bspTranslatePoints(before,[2,1],[12,0,0]),/Select 1/);
- assert.throws(()=>bspSetMultiplePointFields(before,[2,1],'health','50'),/Select 1/);
+ const before=open();
+ // v2.6: group moves accept brush entities (origin offset); worldspawn is still rejected.
+ assert.throws(()=>bspTranslatePoints(before,[0,1],[12,0,0]),/Select 1/);
+ // Batch keyvalues now also apply to brush entities (e.g. health of several func_breakable).
+ assert.equal(nativeProperty(bspSetMultiplePointFields(before,[2,1],'health','50').entities[1],'health'),'50');
  assert.throws(()=>bspSetMultiplePointFields(before,[2,3],'origin','0 0 0'),/Bulk editing/);
  assert.equal(nativeProperty(before.entities[2],'origin'),'10 0 10');
 });

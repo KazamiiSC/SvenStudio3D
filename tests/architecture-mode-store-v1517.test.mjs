@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
-const require=createRequire(import.meta.url),ts=require('../node_modules/typescript/lib/typescript.js');
+const require=createRequire(import.meta.url),ts=require('./support/typescript.cjs');
 for(const ext of ['.ts','.tsx'])require.extensions[ext]=(mod,filename)=>{
   const code=ts.transpileModule(readFileSync(filename,'utf8'),{fileName:filename,
     compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true,allowImportingTsExtensions:true}});

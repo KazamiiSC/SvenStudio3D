@@ -97,7 +97,7 @@ export function ContextMenu({menu,onClose}:{menu:SceneMenu;onClose:()=>void}){
   const targetAvailable=obj?.kind==='entity'&&!!obj.props.target;
   const targetNameFound=targetAvailable&&objects.some(o=>o.kind==='entity'&&!!o.props.targetname&&(obj.props.target||'').split(/[;,\s]+/).includes(o.props.targetname));
   return createPortal(<div role="menu" className="studio-context-menu" style={{left,top}} onContextMenu={e=>e.preventDefault()}>
-    <div className="context-head"><span>{obj?obj.name:t('Viewport tools')}</span><small>{obj?`${t(obj.kind==='brush'?'Brush':'Entity')} · ${obj.kind==='entity'?obj.classname:obj.primitive} · ${selectedIds.length} ${t('selected')}`:'Svengine · Valve 220'}</small></div>
+    <div className="context-head"><span>{obj?obj.name:t('Viewport tools')}</span><small>{obj?`${t(obj.kind==='brush'?'Brush':'Entity')} · ${obj.kind==='entity'?obj.classname:obj.primitive} · ${selectedIds.length} ${t('selected')}`:`${store.settings.gameProfile==='cs16'?'GoldSrc · CS 1.6':'Svengine'} · Valve 220`}</small></div>
     {obj?.hidden&&obj.kind==='brush'&&<>
       {section('Hidden brush')}
       {item('Show brush',<Eye size={15}/>,()=>store.toggleVisibility(obj.id))}
@@ -177,7 +177,7 @@ export function ContextMenu({menu,onClose}:{menu:SceneMenu;onClose:()=>void}){
   </div>,document.body);
 }
 export function OrthoQuickTools(){
-  const t=useT();const label=useEditor(s=>s.cameraLabel),ids=useEditor(s=>s.selectedIds),objects=useEditor(s=>s.project.objects);
+  const t=useT();const profile=useEditor(s=>s.settings.gameProfile);const label=useEditor(s=>s.cameraLabel),ids=useEditor(s=>s.selectedIds),objects=useEditor(s=>s.project.objects);
   const transform=useEditor(s=>s.transformSelection),step=useEditor(s=>s.snap);
   const active=/(Top|Front|Right).*Ortho/i.test(label)&&objects.some(o=>ids.includes(o.id)&&o.kind==='brush'&&!o.locked);
   const [axis,setAxis]=useState<OrthoAxis>('Z');
@@ -187,7 +187,7 @@ export function OrthoQuickTools(){
   return <div className="ortho-toolkit" onPointerDown={e=>e.stopPropagation()}>
     <div className="ortho-tool-title"><Rotate3D size={15}/><strong>{t('Ortho Transform')}</strong><span>{label}</span></div>
     <div className="ortho-line"><span>{t('Axis')}</span><select value={axis} onChange={e=>setAxis(e.target.value as OrthoAxis)} aria-label="Rotate axis"><option>X</option><option>Y</option><option>Z</option></select>
-      <span className="ortho-info">Svengine</span></div>
+      <span className="ortho-info">{profile==='cs16'?'GoldSrc':'Svengine'}</span></div>
     <div className="ortho-line"><span>{t('Rotate')}</span>{[-90,-15,15,90].map(v=><button key={v} onClick={()=>act('rotate',v)} title={`${v}° ${axis}`}>{v>0?'+':''}{v}°</button>)}</div>
     <div className="ortho-line"><span>{t('Move')}</span><button onClick={()=>act('nudge',-step)}>−{step}</button><button onClick={()=>act('nudge',step)}>+{step}</button>
       <span>{t('Scale')}</span><button onClick={()=>act('scale',.8)}>80%</button><button onClick={()=>act('scale',1.25)}>125%</button></div>

@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
-const ts=require('/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript/lib/typescript.js');
+const ts=require('./support/typescript.cjs');
 const root=process.cwd(),tmp=fs.mkdtempSync(path.join(os.tmpdir(),'gameplay171-'));
 for(const file of ['types','gameplay','gameplayGraph','gameplayWorkspace']){
  const input=fs.readFileSync(path.join(root,'src/engine',file+'.ts'),'utf8');
@@ -59,7 +59,8 @@ test('Gameplay Studio replaces the old graph with spatial sectors, native event 
  assert.equal(sf.parseDiagnostics.length,0);
  for(const needle of ["page==='map'","page==='events'","page==='lab'",'buildDesignZones','<OverviewCanvas','buildDesignInteractions','traceGameplayReferences','connect(fromId,toId)','setProp(current.id'])assert.ok(source.includes(needle),needle);
 });
-test('new controls are CSS-scoped to Gameplay Studio, without changing other studio styles',()=>{
+test('the retired v3.1 Gameplay shell left no orphan CSS behind (HF5 cleanup)',()=>{
  const css=fs.readFileSync(path.join(root,'src/style.css'),'utf8');
- for(const selector of ['.gs-v31-shell .gs-systems-overview','.gs-v31-shell .gs-system-card','.gs-v31-shell .gs-minimap','.gs-v31-shell .gs-scope-tabs'])assert.ok(css.includes(selector),selector);
+ // No component renders .gs-v31-shell any more; its scoped rules were removed with the dead-CSS pass.
+ assert.ok(!css.includes('.gs-v31-shell'));
 });

@@ -1,3 +1,4 @@
+import {legacyI18nSource} from './support/legacyI18n.cjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -58,7 +59,7 @@ test('controls include enlarging, focus and history',()=>{
  for(const snippet of ['setExpandedStudio','setFocusRoute','setExpandedElevation','onClick={undoPath}','onClick={redoPath}'])assert.ok(source.includes(snippet),snippet);
 });
 test('six locales have main route navigation controls',()=>{
- const source=read('src/i18n.ts');
+ const source=legacyI18nSource();
  for(const locale of ['es','ru','ko','zh','pt'])assert.match(source,new RegExp('Object\\.assign\\('+locale+', \\{[^;]*"Fit route"'));
  assert.match(source,/export type Locale = 'es'\|'en'\|'ru'\|'ko'\|'zh'\|'pt'/);
 });

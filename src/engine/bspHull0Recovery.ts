@@ -43,8 +43,8 @@ const readLumps=(source:ArrayBuffer)=>{
   return {at,size};
  });
 };
-function polyhedron(planes:Plane[],sourceFaces:BspFace[],map:BspMap,label:string,number:number):Brush|null{
- if(planes.length>30)throw Error('BSP hull is too complex for safe browser reconstruction (30-plane limit).');
+function polyhedron(planes:Plane[],sourceFaces:BspFace[],map:BspMap,label:string,number:number,maxPlanes=30):Brush|null{
+ if(planes.length>maxPlanes)throw Error(`BSP hull is too complex for safe browser reconstruction (${maxPlanes}-plane limit).`);
  // Intersect triple planes and keep only intersections inside ALL halfspaces.
  const vertices:Vec3[]=[];
  for(let a=0;a<planes.length;a++)for(let b=a+1;b<planes.length;b++)for(let c=b+1;c<planes.length;c++){
@@ -89,7 +89,7 @@ function polyhedron(planes:Plane[],sourceFaces:BspFace[],map:BspMap,label:string
  if(problems.length)throw Error(`Recovered submodel solid ${number} invalid: ${problems[0]}`);
  return brush;
 }
-export function recoverSolidSubmodelHull0(map:BspMap,source:ArrayBuffer,faceIds:readonly number[],label:string):{modelIndex:number;brushes:Brush[]}{
+export function recoverSolidSubmodelHull0(map:BspMap,source:ArrayBuffer,faceIds:readonly number[],label:string,wholeModel=false):{modelIndex:number;brushes:Brush[]}{
  const lumps=readLumps(source),view=new DataView(source);
  if(lumps[14].size%64||lumps[5].size%24||lumps[10].size%28||lumps[1].size%20)throw Error('Malformed BSP hull/model tables.');
  const byId=new Map(map.faces.map((f,i)=>[bspOriginalFaceIndex(f,i),f]));
@@ -100,7 +100,8 @@ export function recoverSolidSubmodelHull0(map:BspMap,source:ArrayBuffer,faceIds:
  if(modelIndex>=lumps[14].size/64)throw Error('BSP model index is out of bounds.');
  const modelAt=lumps[14].at+64*modelIndex;
  const first=view.getInt32(modelAt+56,true),count=view.getInt32(modelAt+60,true);
- if(count<4||count>256||selected.length!==count||new Set(faceIds).size!==count||faceIds.some(id=>id<first||id>=first+count))throw Error('Select the entire *N submodel (every BSP face) before reconstructing solid hulls.');
+ // wholeModel: the caller passes every face the viewer knows for this *N (some, like invisible tool faces, are not drawn).
+ if(wholeModel?(count<1||count>2048||faceIds.some(id=>id<first||id>=first+count)):(count<4||count>256||selected.length!==count||new Set(faceIds).size!==count||faceIds.some(id=>id<first||id>=first+count)))throw Error('Select the entire *N submodel (every BSP face) before reconstructing solid hulls.');
  const sourceFaces=selected as BspFace[];
  const low=[0,1,2].map(i=>view.getFloat32(modelAt+4*i,true)) as Vec3;
  const high=[0,1,2].map(i=>view.getFloat32(modelAt+12+4*i,true)) as Vec3;
@@ -140,4 +141,51 @@ export function recoverSolidSubmodelHull0(map:BspMap,source:ArrayBuffer,faceIds:
  walk(head,initial,new Set());
  if(!brushes.length)throw Error('No bounded solid BSP leaf cells could be reconstructed.');
  return {modelIndex,brushes};
+}
+/** v2.6: solid cells of WORLDSPAWN inside the selection box (+margin). Cells that touch the box
+ * boundary belong to floors/walls that continue outside and are dropped, so only the object that
+ * lies fully inside the box remains (chairs, tables, consoles built from world brushes). */
+export function recoverSolidWorldHull0InBox(map:BspMap,source:ArrayBuffer,faceIds:readonly number[],label:string,margin=8,explicitBox?:{lo:Vec3;hi:Vec3},keepClipped=false):{brushes:Brush[];dropped:number}{
+ const lumps=readLumps(source),view=new DataView(source);
+ const byId=new Map(map.faces.map((f,i)=>[bspOriginalFaceIndex(f,i),f]));
+ const selected=faceIds.map(id=>byId.get(id)).filter((f):f is BspFace=>!!f);
+ if(!selected.length&&!explicitBox)throw Error('Select the faces of the object first.');
+ if(selected.some(f=>f.model!==0))throw Error('World solid recovery works on worldspawn faces; use Hull 0 for *N brush entities.');
+ const lo:Vec3=[Infinity,Infinity,Infinity],hi:Vec3=[-Infinity,-Infinity,-Infinity];
+ for(const f of selected)for(const p of f.points)for(let i=0;i<3;i++){lo[i]=Math.min(lo[i],p[i]);hi[i]=Math.max(hi[i],p[i]);}
+ const box=explicitBox?{lo:[...explicitBox.lo] as Vec3,hi:[...explicitBox.hi] as Vec3}:{lo:lo.map(v=>v-margin) as Vec3,hi:hi.map(v=>v+margin) as Vec3};
+ if(box.lo.some((v,i)=>!Number.isFinite(v)||box.hi[i]-v>4096))throw Error('Selection box is larger than 4096 units; select a smaller object.');
+ const initial:Plane[]=[];
+ for(let i=0;i<3;i++){const plus:Vec3=[0,0,0],minus:Vec3=[0,0,0];plus[i]=1;minus[i]=-1;initial.push({n:plus,d:box.hi[i],id:-1-i*2},{n:minus,d:-box.lo[i],id:-2-i*2});}
+ const near=map.faces.filter(f=>f.model===0&&f.points.every(p=>p.every((v,i)=>v>=box.lo[i]-1&&v<=box.hi[i]+1)));
+ const nodeCount=lumps[5].size/24,leafCount=lumps[10].size/28,planeCount=lumps[1].size/20;
+ const head=view.getInt32(lumps[14].at+36,true);
+ const corners:Vec3[]=[];for(const x of [box.lo[0],box.hi[0]])for(const y of [box.lo[1],box.hi[1]])for(const z of [box.lo[2],box.hi[2]])corners.push([x,y,z]);
+ const brushes:Brush[]=[];let visited=0,dropped=0;
+ const walk=(node:number,path:Plane[])=>{
+  if(++visited>20000)throw Error('World BSP traversal limit reached; select a smaller object.');
+  if(node<0){
+   const leaf=-node-1;if(leaf>=leafCount)return;
+   if(view.getInt32(lumps[10].at+leaf*28,true)!==-2)return;
+   const textureFaces=near.length?near:selected;if(!textureFaces.length){dropped++;return;}
+   let brush:Brush|null=null;try{brush=polyhedron(path,textureFaces,map,label,brushes.length+1,64);}catch{dropped++;return;}if(!brush)return;
+   const pts=brush.vertices.map(v=>[v[0]+brush.position[0],v[1]+brush.position[1],v[2]+brush.position[2]]);
+   const touches=pts.some(p=>p.some((v,i)=>Math.abs(v-box.lo[i])<.05||Math.abs(v-box.hi[i])<.05));
+   if(touches&&!keepClipped){dropped++;return;}
+   brushes.push(brush);if(brushes.length>256)throw Error('Too many solid cells (limit 256).');return;
+  }
+  if(node>=nodeCount)throw Error('Invalid world BSP node.');
+  const at=lumps[5].at+node*24,planeId=view.getInt32(at,true),front=view.getInt16(at+4,true),back=view.getInt16(at+6,true);
+  if(planeId<0||planeId>=planeCount)throw Error('Invalid world BSP plane.');
+  const ap=lumps[1].at+planeId*20,n=[0,4,8].map(d=>view.getFloat32(ap+d,true)) as Vec3,d=view.getFloat32(ap+12,true);
+  const sides=corners.map(c=>dot(n,c)-d),min=Math.min(...sides),max=Math.max(...sides);
+  if(min>=0)return walk(front,path);
+  if(max<=0)return walk(back,path);
+  if(path.length>=64)throw Error('World BSP area is too detailed (64 planes).');
+  walk(front,[...path,{n:n.map(v=>-v) as Vec3,d:-d,id:planeId}]);
+  walk(back,[...path,{n,d,id:planeId}]);
+ };
+ walk(head,initial);
+ if(!brushes.length&&!explicitBox)throw Error('No solid object was found fully inside the selection box. Select every face of the object (or widen the margin).');
+ return {brushes,dropped};
 }

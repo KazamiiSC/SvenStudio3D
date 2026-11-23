@@ -5,12 +5,12 @@ import {getBrushBatchSummary,formatMapRenderReport,type MapRenderSample} from '.
 
 type MonitorDom={badge:HTMLButtonElement;panel:HTMLElement;details:HTMLElement;copy:HTMLButtonElement;download:HTMLButtonElement;close:HTMLButtonElement};
 const diagnosticCopy={
-  es:{title:'Diagnóstico MAP · HF17 HF5',help:'No modifica el mapa. Revisá las caras NULL ocultas y compará el mismo lugar con agrupación activada y desactivada.',copy:'Copiar informe',download:'Descargar TXT',close:'Cerrar',tip:'FPS · clic para diagnóstico'},
-  en:{title:'MAP diagnostics · HF17 HF5',help:'Read-only. Check hidden NULL faces and compare batching at the same camera position.',copy:'Copy report',download:'Download TXT',close:'Close',tip:'FPS · click for diagnostics'},
-  ru:{title:'Диагностика MAP · HF17 HF5',help:'Только чтение. Проверьте скрытые грани NULL и сравните группировку при одной позиции камеры.',copy:'Копировать отчёт',download:'Скачать TXT',close:'Закрыть',tip:'FPS · диагностика'},
-  ko:{title:'MAP 진단 · HF17 HF5',help:'읽기 전용. 숨겨진 NULL 면과 동일한 카메라 위치에서의 브러시 병합 효과를 비교하세요.',copy:'보고서 복사',download:'TXT 다운로드',close:'닫기',tip:'FPS · 진단 열기'},
-  zh:{title:'MAP 诊断 · HF17 HF5',help:'只读。检查隐藏的 NULL 面，并在相同相机位置比较笔刷合批效果。',copy:'复制报告',download:'下载 TXT',close:'关闭',tip:'FPS · 点击诊断'},
-  pt:{title:'Diagnóstico MAP · HF17 HF5',help:'Somente leitura. Confira as faces NULL ocultas e compare o agrupamento na mesma câmera.',copy:'Copiar relatório',download:'Baixar TXT',close:'Fechar',tip:'FPS · clique para diagnóstico'},
+  es:{title:'Diagnóstico MAP HF5',help:'No modifica el mapa. Revisá las caras NULL ocultas y compará el mismo lugar con agrupación activada y desactivada.',copy:'Copiar informe',download:'Descargar TXT',close:'Cerrar',tip:'FPS · clic para diagnóstico'},
+  en:{title:'MAP diagnostics HF5',help:'Read-only. Check hidden NULL faces and compare batching at the same camera position.',copy:'Copy report',download:'Download TXT',close:'Close',tip:'FPS · click for diagnostics'},
+  ru:{title:'Диагностика MAP HF5',help:'Только чтение. Проверьте скрытые грани NULL и сравните группировку при одной позиции камеры.',copy:'Копировать отчёт',download:'Скачать TXT',close:'Закрыть',tip:'FPS · диагностика'},
+  ko:{title:'MAP 진단 HF5',help:'읽기 전용. 숨겨진 NULL 면과 동일한 카메라 위치에서의 브러시 병합 효과를 비교하세요.',copy:'보고서 복사',download:'TXT 다운로드',close:'닫기',tip:'FPS · 진단 열기'},
+  zh:{title:'MAP 诊断 HF5',help:'只读。检查隐藏的 NULL 面，并在相同相机位置比较笔刷合批效果。',copy:'复制报告',download:'下载 TXT',close:'关闭',tip:'FPS · 点击诊断'},
+  pt:{title:'Diagnóstico MAP HF5',help:'Somente leitura. Confira as faces NULL ocultas e compare o agrupamento na mesma câmera.',copy:'Copiar relatório',download:'Baixar TXT',close:'Fechar',tip:'FPS · clique para diagnóstico'},
 } as const;
 
 /** HF17 HF5: FPS and read-only WebGL draw statistics. Updates the DOM once

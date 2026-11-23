@@ -1,5 +1,7 @@
 import {useEffect,useRef,useState,type ReactNode,type CSSProperties,type PointerEvent as ReactPointerEvent,type DragEvent} from 'react';
+import {VIEWPORT_THEMES} from '../engine/viewportThemes';
 import {GripVertical,ArrowLeft,ArrowRight,ArrowDownToLine,PanelLeft,PanelRight,PanelTop,PanelBottom,RotateCcw,SlidersHorizontal,Layers,Blocks,FolderTree,Terminal,LayoutTemplate,Eye,EyeOff,Move,Sun,Check} from 'lucide-react';
+import {useHudLayout} from '../hudLayout';
 import {useStudioLayout,TOOLBAR_GROUPS,normalizeToolbarGroups,type DockPanelId,type DockSide,type ToolbarGroup} from '../layout';
 import {INTERFACE_THEMES,INTERFACE_THEME_NAMES,INTERFACE_THEME_SWATCHES,interfaceThemeCopy} from '../engine/interfaceThemes';
 import {useT} from '../i18n';
@@ -230,27 +232,18 @@ export function DockWorkspace({toolbar,viewport,consolePanel}:{toolbar:ReactNode
     {(layout.compactTools===false)&&(layout.toolbarDock==='bottom'||layout.toolbarDock==='right')&&bar}
   </div>;
 }
-export function LayoutModal({onClose}:{onClose:()=>void}){
-  useEffect(()=>{
-    const esc=(e:KeyboardEvent)=>{if(e.key==='Escape'){e.preventDefault();onClose()}};
-    window.addEventListener('keydown',esc);
-    return ()=>window.removeEventListener('keydown',esc);
-  },[onClose]);
+/* v2.4: the former "Appearance & accent theme" dialog is split into clear sections of the Editor
+ * Preferences window (PreferencesStudio). Duplicated titles, duplicated hints and the two separate
+ * preset lists are merged; internal jargon ("HF17 HF1") is gone. */
+export function ThemeSettings(){
   const t=useT();
   const layout=useStudioLayout();
-  const [workspaceName,setWorkspaceName]=useState('');
   const locale=useEditor(s=>s.locale);
   const appearanceText=appearanceLabels[locale];
   const themeText=interfaceThemeCopy(locale);
-  const orderedToolbar=normalizeToolbarGroups(layout.toolbarGroups??TOOLBAR_GROUPS);
-  const toolbarLabels:Record<ToolbarGroup,string>={transform:'Transform',view:'View',geometry:'Geometry editing',tools:'Tools',grid:'Grid',edit:'Edit',studios:'Studios'};
-  return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal-card layout-modal" onMouseDown={e=>e.stopPropagation()}>
-    <div className="modal-title"><LayoutTemplate size={19}/><span>{appearanceText.title}</span><button onClick={onClose}>×</button></div>
-    <p className="modal-subtext">{t('Drag panel headers or choose a docking side. Resize the dividers. Changes are saved automatically.')}</p>
-    <section className="studio-appearance-section" aria-label={appearanceText.title}>
-      <div className="layout-subtitle"><Sun size={15}/>{appearanceText.title}</div>
-      <div className="layout-subtitle"><LayoutTemplate size={16}/>{themeText.heading}</div>
-      <p className="modal-subtext studio-appearance-hint">{themeText.subtitle}</p>
+  return <>
+    <section className="pref-card">
+      <header><strong>{themeText.heading}</strong><small>{themeText.subtitle}</small></header>
       <div className="studio-theme-grid" role="group" aria-label={themeText.heading}>
         {INTERFACE_THEMES.map(id=>{
           const swatch=INTERFACE_THEME_SWATCHES[id];
@@ -265,58 +258,84 @@ export function LayoutModal({onClose}:{onClose:()=>void}){
           </button>;
         })}
       </div>
-      <p className="modal-subtext studio-appearance-hint">{appearanceText.hint}</p>
-      <div className="layout-subtitle">{appearanceText.accent}</div>
+    </section>
+    <section className="pref-card">
+      <header><strong>{appearanceText.accent}</strong><small>{appearanceText.hint}</small></header>
       <div className="layout-theme-choices">{(['nebula','ice','ember','mint','orchid','gold'] as const).map(id=><button type="button" key={id} aria-pressed={layout.accent===id} className={`theme-choice theme-${id} ${layout.accent===id?'chosen':''}`} onClick={()=>layout.setAccent(id)}><span/>{t(id[0].toUpperCase()+id.slice(1))}</button>)}</div>
     </section>
-    <div className="layout-subtitle">{t('Quick layouts')}</div>
-    <div className="ui3-workflow-presets">
-      {(['construction','entities','bsp'] as const).map(preset=><button type="button" key={preset} title={preset==='bsp'?t('BSP viewport inspector layout only'):t('Workspace preset')} onClick={()=>{
-        layout.usePreset(preset);
-        if(preset==='construction')useEditor.getState().setResourceView('textures');
-        if(preset==='entities')useEditor.getState().setResourceView('entities');
-      }}><LayoutTemplate size={16}/>{t(preset==='construction'?'Construction workspace':preset==='entities'?'Entities workspace':'BSP workspace')}</button>)}
-    </div>
-    <div className="layout-subtitle">{t('Saved workspaces')}</div>
-    <form className="ui3-save-workspace" onSubmit={e=>{e.preventDefault();layout.saveCurrentWorkspace(workspaceName);setWorkspaceName('')}}>
-      <input aria-label={t('Workspace name')} placeholder={t('Workspace name')} value={workspaceName} maxLength={48} onChange={e=>setWorkspaceName(e.target.value)}/>
-      <button disabled={!workspaceName.trim()} type="submit">{t('Save workspace')}</button>
-    </form>
-    <div className="ui3-saved-workspaces">
-      {Object.keys(layout.savedWorkspaces).length===0&&<small>{t('No saved workspaces')}</small>}
-      {Object.keys(layout.savedWorkspaces).map(name=><div key={name}><span title={name}>{name}</span>
-        <button type="button" onClick={()=>layout.restoreSavedWorkspace(name)}>{t('Apply')}</button>
-        <button type="button" onClick={()=>layout.deleteSavedWorkspace(name)} aria-label={`${t('Delete')} ${name}`}>×</button>
-      </div>)}
-    </div>
-    <div className="layout-presets">{(['organized','creative','classic','focus','wide','minimal'] as const).map(k=><button key={k} onClick={()=>layout.usePreset(k)}><LayoutTemplate size={19}/><span>{t(k[0].toUpperCase()+k.slice(1))}</span></button>)}</div>
-    <div className="layout-subtitle">{t('Toolbar style')}</div><div className="layout-side-choices"><button className={layout.compactTools!==false?'chosen':''} onClick={()=>layout.setCompactTools(true)}>{t('Floating tools')}</button><button className={layout.compactTools===false?'chosen':''} onClick={()=>layout.setCompactTools(false)}>{t('Classic ribbon')}</button></div>
-    {layout.compactTools===false?<>
-      <div className="layout-subtitle">{t('Toolbar location')}</div>
-      <div className="layout-side-choices">{sides.map(side=>{const Icon=sideIcons[side];return <button key={side} className={layout.toolbarDock===side?'chosen':''} onClick={()=>layout.setToolbarDock(side)}><Icon size={18}/>{t(side[0].toUpperCase()+side.slice(1))}</button>})}</div>
-    </>:<p className="modal-subtext">{t('Move floating tools with Edit HUD. Toolbar docking applies to Classic ribbon only.')}</p>}
-    <div className="layout-subtitle">{t('Toolbar sections')}</div>
-    <p className="modal-subtext">{t('Pin the most-used toolbar groups to the front. The others stay available.')}</p>
-    <p className="modal-subtext">{t('Drag the section label on the classic toolbar, or use the arrows below to change its order.')}</p>
-    <div className="layout-toolbar-sections">{orderedToolbar.map((id,index)=><div key={id}>
-      <button type="button" className={layout.pinnedToolbarGroups.includes(id)?'ui3-pinned':'ui3-unpinned'} onClick={()=>layout.togglePinnedToolbarGroup(id)} title={t('Pin or unpin toolbar group')} aria-pressed={layout.pinnedToolbarGroups.includes(id)}>★</button><GripVertical size={14}/><strong>{t(toolbarLabels[id])}</strong>
-      <button type="button" title={t('Move left')} aria-label={`${t(toolbarLabels[id])} · ${t('Move left')}`} disabled={index===0} onClick={()=>layout.stepToolbarGroup(id,-1)}><ArrowLeft size={14}/></button>
-      <button type="button" title={t('Move right')} aria-label={`${t(toolbarLabels[id])} · ${t('Move right')}`} disabled={index===orderedToolbar.length-1} onClick={()=>layout.stepToolbarGroup(id,1)}><ArrowRight size={14}/></button>
-    </div>)}</div>
-    <div className="layout-subtitle">{t('Panels')}</div>
-    <div className="layout-panel-list">{(['assets','explorer','properties'] as const).map(id=>{const Icon=panelIcons[id];return <div key={id}><Icon size={16}/><strong>{t(panelNames[id])}</strong><AttachSelect value={layout.sides[id]} label={panelNames[id]} onChange={side=>layout.movePanel(id,side)}/><button className="visibility-toggle" onClick={()=>layout.setVisible(id,!layout.visible[id])}>{layout.visible[id]?<Eye size={16}/>:<EyeOff size={16}/>}</button></div>})}</div>
-    <div className="layout-subtitle">{t('Adaptive layout / Windows display scaling')}</div>
-    <label className="adaptive-layout-setting"><input type="checkbox" checked={layout.autoLayout} onChange={e=>layout.setAutoLayout(e.target.checked)}/><span>{t('Automatically adjust docks and toolbars to available space')}</span></label>
-    <p className="modal-subtext">{t('Recommended for Windows 125% / 150% display scaling. Keeps manual panel sizes and restores them when there is more space. Does not alter MAP geometry or browser zoom.')}</p>
-    <div className="layout-subtitle">{t('Interface size')} <output>{Math.round(layout.uiScale*100)}%</output></div>
-    <input className="layout-scale-slider" aria-label={t('Interface size')} type="range" min="0.8" max="1.2" step="0.05" value={layout.uiScale} onChange={e=>layout.setScale(Number(e.target.value))}/>
-    <div className="layout-subtitle">{t('Font size')} <output>{Math.round(layout.fontScale*100)}%</output></div>
-    <input className="layout-scale-slider" aria-label={t('Font size')} type="range" min="0.9" max="1.2" step="0.05" value={layout.fontScale} onChange={e=>layout.setFontScale(Number(e.target.value))}/>
-    <div className="layout-subtitle">{t('Large map performance')}</div>
-    <div className="layout-performance-options">{(['quality','balanced','large'] as const).map(id=><button key={id} className={layout.performancePreset===id?'chosen':''} onClick={()=>layout.setPerformancePreset(id)}>{t(id==='quality'?'Quality':id==='balanced'?'Balanced':'Large maps')}</button>)}</div>
-    <label className="adaptive-layout-setting"><input type="checkbox" checked={layout.opaqueBrushBatching} onChange={e=>layout.setOpaqueBrushBatching(e.target.checked)}/><span>{t('Batch opaque brushes (HF17 HF1)')}</span></label>
-    <p className="modal-subtext">{t('Batching merges compatible opaque surfaces for fewer GPU draw calls. Disable it here to compare FPS or if a visual problem appears. It never changes MAP geometry.')}</p>
-    <p className="modal-subtext">{t('Performance settings affect only viewport previews, never compiled map content.')}</p>
-    <div className="layout-bottom-buttons"><button onClick={layout.resetLayout}><RotateCcw size={16}/>{t('Reset layout')}</button><button className="primary-action" onClick={onClose}>{t('Done')}</button></div>
-  </div></div>;
+    <section className="pref-card">
+      <header><strong>{t('Size and text')}</strong><small>{t('Scale the whole interface or only the text, for example on 125% / 150% Windows displays.')}</small></header>
+      <label className="pref-slider"><span>{t('Interface size')}</span><input aria-label={t('Interface size')} type="range" min="0.8" max="1.2" step="0.05" value={layout.uiScale} onChange={e=>layout.setScale(Number(e.target.value))}/><output>{Math.round(layout.uiScale*100)}%</output></label>
+      <label className="pref-slider"><span>{t('Font size')}</span><input aria-label={t('Font size')} type="range" min="0.9" max="1.2" step="0.05" value={layout.fontScale} onChange={e=>layout.setFontScale(Number(e.target.value))}/><output>{Math.round(layout.fontScale*100)}%</output></label>
+    </section>
+  </>;
+}
+export function WorkspaceSettings(){
+  const t=useT();
+  const layout=useStudioLayout();
+  const [workspaceName,setWorkspaceName]=useState('');
+  const orderedToolbar=normalizeToolbarGroups(layout.toolbarGroups??TOOLBAR_GROUPS);
+  const toolbarLabels:Record<ToolbarGroup,string>={transform:'Transform',view:'View',geometry:'Geometry editing',modeling:'Modeling',textures:'Textures',tools:'Tools',grid:'Grid',edit:'Edit',studios:'Studios'};
+  const presets=[
+    ...(['construction','entities','bsp'] as const).map(id=>({id,label:id==='construction'?'Construction workspace':id==='entities'?'Entities workspace':'BSP workspace',apply:()=>{layout.usePreset(id);if(id==='construction')useEditor.getState().setResourceView('textures');if(id==='entities')useEditor.getState().setResourceView('entities');}})),
+    ...(['organized','creative','classic','focus','wide','minimal'] as const).map(id=>({id,label:id[0].toUpperCase()+id.slice(1),apply:()=>layout.usePreset(id)}))
+  ];
+  return <>
+    <section className="pref-card">
+      <header><strong>{t('Layouts')}</strong><small>{t('Drag panel headers or choose a docking side. Resize the dividers. Changes are saved automatically.')}</small></header>
+      <div className="pref-preset-grid">{presets.map(p=><button type="button" key={p.id} onClick={p.apply}><LayoutTemplate size={16}/><span>{t(p.label)}</span></button>)}</div>
+      <form className="ui3-save-workspace" onSubmit={e=>{e.preventDefault();layout.saveCurrentWorkspace(workspaceName);setWorkspaceName('')}}>
+        <input aria-label={t('Workspace name')} placeholder={t('Workspace name')} value={workspaceName} maxLength={48} onChange={e=>setWorkspaceName(e.target.value)}/>
+        <button disabled={!workspaceName.trim()} type="submit">{t('Save workspace')}</button>
+      </form>
+      <div className="ui3-saved-workspaces">
+        {Object.keys(layout.savedWorkspaces).length===0&&<small>{t('No saved workspaces')}</small>}
+        {Object.keys(layout.savedWorkspaces).map(name=><div key={name}><span title={name}>{name}</span>
+          <button type="button" onClick={()=>layout.restoreSavedWorkspace(name)}>{t('Apply')}</button>
+          <button type="button" onClick={()=>layout.deleteSavedWorkspace(name)} aria-label={`${t('Delete')} ${name}`}>×</button>
+        </div>)}
+      </div>
+    </section>
+    <section className="pref-card">
+      <header><strong>{t('Panels')}</strong></header>
+      <div className="layout-panel-list">{(['assets','explorer','properties'] as const).map(id=>{const Icon=panelIcons[id];return <div key={id}><Icon size={16}/><strong>{t(panelNames[id])}</strong><AttachSelect value={layout.sides[id]} label={panelNames[id]} onChange={side=>layout.movePanel(id,side)}/><button className="visibility-toggle" onClick={()=>layout.setVisible(id,!layout.visible[id])}>{layout.visible[id]?<Eye size={16}/>:<EyeOff size={16}/>}</button></div>})}</div>
+      <label className="pref-toggle adaptive-layout-setting"><input type="checkbox" checked={layout.autoLayout} onChange={e=>layout.setAutoLayout(e.target.checked)}/><span><b>{t('Automatically adjust docks and toolbars to available space')}</b><small>{t('Recommended for Windows 125% / 150% display scaling. Keeps manual panel sizes and restores them when there is more space. Does not alter MAP geometry or browser zoom.')}</small></span></label>
+    </section>
+    <section className="pref-card">
+      <header><strong>{t('Toolbar')}</strong><small>{t('Pin the most-used toolbar groups to the front. The others stay available.')}</small></header>
+      <div className="pref-segmented"><button className={layout.compactTools!==false?'chosen':''} onClick={()=>layout.setCompactTools(true)}>{t('Floating tools')}</button><button className={layout.compactTools===false?'chosen':''} onClick={()=>layout.setCompactTools(false)}>{t('Classic ribbon')}</button></div>
+      {layout.compactTools===false?<div className="pref-segmented">{sides.map(side=>{const Icon=sideIcons[side];return <button key={side} className={layout.toolbarDock===side?'chosen':''} onClick={()=>layout.setToolbarDock(side)}><Icon size={16}/>{t(side[0].toUpperCase()+side.slice(1))}</button>})}</div>
+        :<p className="modal-subtext">{t('Move floating tools with Edit HUD. Toolbar docking applies to Classic ribbon only.')}</p>}
+      <div className="layout-toolbar-sections">{orderedToolbar.map((id,index)=><div key={id} className={layout.hiddenToolbarGroups.includes(id)?'is-hidden':''}>
+        <button type="button" className={layout.pinnedToolbarGroups.includes(id)?'ui3-pinned':'ui3-unpinned'} onClick={()=>layout.togglePinnedToolbarGroup(id)} title={t('Pin or unpin toolbar group')} aria-pressed={layout.pinnedToolbarGroups.includes(id)}>★</button><GripVertical size={14}/><strong>{t(toolbarLabels[id])}</strong>
+        <button type="button" title={t('Show/hide toolbar group')} aria-pressed={!layout.hiddenToolbarGroups.includes(id)} onClick={()=>layout.toggleToolbarGroupHidden(id)}>{layout.hiddenToolbarGroups.includes(id)?<EyeOff size={14}/>:<Eye size={14}/>}</button>
+        <button type="button" title={t('Move left')} aria-label={`${t(toolbarLabels[id])} · ${t('Move left')}`} disabled={index===0} onClick={()=>layout.stepToolbarGroup(id,-1)}><ArrowLeft size={14}/></button>
+        <button type="button" title={t('Move right')} aria-label={`${t(toolbarLabels[id])} · ${t('Move right')}`} disabled={index===orderedToolbar.length-1} onClick={()=>layout.stepToolbarGroup(id,1)}><ArrowRight size={14}/></button>
+      </div>)}</div>
+    </section>
+    <div className="pref-actions"><button onClick={layout.resetLayout}><RotateCcw size={15}/>{t('Reset layout')}</button></div>
+  </>;
+}
+export function ViewportSettings(){
+  const t=useT();
+  const layout=useStudioLayout();
+  const fps=useHudLayout(s=>s.items.fps.visible),updateHud=useHudLayout(s=>s.update);
+  const ratios:[number,string][]=[[0,'Automatic (from the quality preset)'],[2,'Sharp'],[1.5,'High'],[1.25,'Balanced'],[1,'Fast'],[.75,'Fastest']];
+  return <>
+    <section className="pref-card">
+      <header><strong>{t('3D viewport style')}</strong><small>{t('Background and grid colours of the 3D view. Editor look only: the compiled map does not change.')}</small></header>
+      <div className="pref-viewport-themes">{VIEWPORT_THEMES.map(th=><button type="button" key={th.id} className={layout.viewportTheme===th.id?'chosen':''} aria-pressed={layout.viewportTheme===th.id} onClick={()=>layout.setViewportTheme(th.id)}>
+        <span className="pref-theme-swatch" style={{background:`linear-gradient(180deg,${th.top},${th.bottom})`}}><i style={{borderColor:th.grid}}/></span><b>{t(th.label)}</b></button>)}</div>
+    </section>
+    <section className="pref-card">
+      <header><strong>{t('Large map performance')}</strong><small>{t('Performance settings affect only viewport previews, never compiled map content.')}</small></header>
+      <div className="pref-segmented">{(['quality','balanced','large'] as const).map(id=><button key={id} className={layout.performancePreset===id?'chosen':''} onClick={()=>layout.setPerformancePreset(id)}>{t(id==='quality'?'Quality':id==='balanced'?'Balanced':'Large maps')}</button>)}</div>
+      <label className="pref-row"><span><b>{t('3D viewport resolution')}</b><small>{t('Lower values render fewer pixels: much higher FPS on 4K or 150% displays, slightly softer image.')}</small></span>
+        <select value={layout.viewportPixelRatio} onChange={e=>layout.setViewportPixelRatio(Number(e.target.value))}>{ratios.map(([v,l])=><option key={v} value={v}>{t(l)}{v?` · ${v}×`:''}</option>)}</select></label>
+      <label className="pref-toggle"><input type="checkbox" checked={layout.opaqueBrushBatching} onChange={e=>layout.setOpaqueBrushBatching(e.target.checked)}/><span><b>{t('Group brushes for more FPS')}</b><small>{t('Batching merges compatible opaque surfaces for fewer GPU draw calls. Disable it here to compare FPS or if a visual problem appears. It never changes MAP geometry.')}</small></span></label>
+      <label className="pref-row"><span><b>{t('3D entity models')}</b><small>{t('By default every model placed in the map is shown. On very heavy maps you can show only the models near the camera.')}</small></span>
+        <select value={layout.modelDisplay} onChange={e=>layout.setModelDisplay(e.target.value as 'all'|'near')}><option value="all">{t('Show all models')}</option><option value="near">{t('Only near the camera')}</option></select></label>
+      {layout.modelDisplay==='near'&&<label className="pref-slider"><span>{t('Model distance')}</span><input type="range" min="500" max="32000" step="500" value={layout.modelDistance} onChange={e=>layout.setModelDistance(Number(e.target.value))}/><output>{layout.modelDistance} u</output></label>}      <label className="pref-toggle"><input type="checkbox" checked={fps} onChange={e=>updateHud('fps',{visible:e.target.checked})}/><span><b>{t('Show FPS counter')}</b></span></label>
+    </section>
+  </>;
 }

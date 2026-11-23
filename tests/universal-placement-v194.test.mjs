@@ -1,3 +1,4 @@
+import {withSplitParts} from './support/splitParts.cjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -7,7 +8,7 @@ import {
   closestPlacementVertex,closestPlacementEdge,clampPlacement,readUniversalPlacement,saveUniversalPlacement
 } from '../src/engine/universalPlacement.ts';
 const require=createRequire(import.meta.url);
-const ts=require('typescript');
+const ts=require('./support/typescript.cjs');
 const settings=(updates={})=>normalizeUniversalPlacement({...DEFAULT_UNIVERSAL_PLACEMENT,...updates});
 const calculate=(config,hit=[96,80,150],floor=[98,79,32],vertex=null,step=1,elevation=0)=>computeUniversalPlacement(settings(config),hit,floor,vertex,step,elevation);
 
@@ -66,7 +67,7 @@ test('settings are persisted only as UI preferences and recover from corrupted d
  }finally{if(initial===undefined)delete globalThis.localStorage;else globalThis.localStorage=initial}
 });
 test('shared resolver is used by all compatible click-to-place tools',()=>{
- const vp=fs.readFileSync(new URL('../src/components/Viewport.tsx',import.meta.url),'utf8');
+ const vp=withSplitParts(fs.readFileSync(new URL('../src/components/Viewport.tsx',import.meta.url),'utf8'),'Viewport');
  for(const name of ['PrimitivePlacement','PrefabClickPlacement','EnvironmentPlacement','BlueprintClickPlacement','TerrainClickPlacement','NpcClickPlacement','AudioClickPlacement','CinematicClickPlacement']){
    assert.match(vp,new RegExp(`function ${name}\\(\\)[\\s\\S]*?(?=\\nfunction |\\n/\\*\\*)`),`missing ${name}`);
  }
@@ -85,7 +86,7 @@ test('viewport and new UI parse cleanly as TSX and preserve constrained wall ope
    const ast=ts.createSourceFile(file,source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
    assert.equal(ast.parseDiagnostics.length,0,`${file}: ${ast.parseDiagnostics.map(x=>x.messageText).join('; ')}`);
  }
- const source=fs.readFileSync(new URL('../src/components/Viewport.tsx',import.meta.url),'utf8');
+ const source=withSplitParts(fs.readFileSync(new URL('../src/components/Viewport.tsx',import.meta.url),'utf8'),'Viewport');
  assert.match(source,/function Wall|function BrushVisual/);
  assert.match(source,/architecturePlacement/);
 });

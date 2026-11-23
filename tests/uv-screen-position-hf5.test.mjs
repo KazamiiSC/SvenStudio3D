@@ -8,8 +8,8 @@ test('HF5: the UV widget mounts as ordinary DOM under viewport-frame, never with
   const viewport=source('src/components/Viewport.tsx');
   const texture=source('src/components/TextureStudio.tsx');
   const css=source('src/style.css');
-  assert.match(viewport,/<div className="viewport-frame">[\s\S]*?<TextureUVHandles\/>[\s\S]*?<Canvas shadows=/);
-  assert.ok(viewport.indexOf('<TextureUVHandles/>')<viewport.indexOf('<Canvas shadows='));
+  assert.match(viewport,/<div className=\{`viewport-frame[\s\S]*?<TextureUVHandles\/>[\s\S]*?<Canvas frameloop=\{viewportPaused\?'never':'always'\} shadows=/);
+  assert.ok(viewport.indexOf('<TextureUVHandles/>')<viewport.indexOf('<Canvas frameloop='));
   assert.match(texture,/className="texture-uv-screen-overlay" data-screen-fixed="true"/);
   assert.doesNotMatch(texture,/<Html\b|useFrame\(|useThree\(|\.project\(camera\)|camera\.matrixWorldInverse/);
   assert.match(css,/\.viewport-frame>\.texture-uv-screen-overlay\{position:absolute;inset:0/);

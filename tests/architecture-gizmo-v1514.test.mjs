@@ -5,22 +5,16 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {createRequire} from 'node:module';
-import ts from 'typescript';
+import {compileEngine} from './support/engineClosure.cjs';
 
 const root=process.cwd();
 const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'sv-gizmo-'));
 try {
   // Compile the genuine engine into a temporary CommonJS directory. This
   // avoids Vite, React and platform-specific native dependencies.
-  const engineFiles=['types','geometry','exportMap','modeling','advancedModeling','architecture','transformUX','gridPrecision','textureStudio','textureAxisSafety','valve220UV'];
-  for(const name of engineFiles){
-    const input=fs.readFileSync(path.join(root,'src','engine',`${name}.ts`),'utf8');
-    const output=ts.transpileModule(input,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText.replace(/require\((['\"])(\.\/[^'\"]+)\.ts\1\)/g,'require($1$2.js$1)');
-    const file=path.join(tmp,'src','engine',`${name}.js`);
-    fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,output);
-  }
+  compileEngine(root,tmp,['geometry','exportMap','modeling','advancedModeling','architecture','transformUX','gridPrecision','textureStudio']);
   fs.writeFileSync(path.join(tmp,'package.json'),' {"type":"commonjs"}');
-  fs.symlinkSync(path.join(root,'node_modules'),path.join(tmp,'node_modules'),'dir');
+  fs.symlinkSync(path.join(root,'node_modules'),path.join(tmp,'node_modules'),'junction'); // junction: no admin rights needed on Windows
   const require=createRequire(path.join(tmp,'runner.cjs'));
   const {createBrush,createArch,transformedVertices}=require('./src/engine/geometry.js');
   const {createMultipleWallOpenings,createArchitecture,centerArchitectureFragment}=require('./src/engine/architecture.js');

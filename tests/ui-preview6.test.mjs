@@ -1,7 +1,8 @@
+import {withSplitParts} from './support/splitParts.cjs';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 const read=async file=>readFile(new URL('../'+file,import.meta.url),'utf8');
 
 test('Preview 6 modified React/TypeScript modules parse successfully',async()=>{
@@ -25,9 +26,9 @@ test('FPS monitor keeps FPS display and a read-only optional diagnostics panel',
 test('FPS uses a movable HUD slot without covering mouse help',async()=>{
   const hud=await read('src/hudLayout.ts');
   const widget=await read('src/components/HudWidget.tsx');
-  const viewport=await read('src/components/Viewport.tsx');
+  const viewport=withSplitParts(await read('src/components/Viewport.tsx'),'Viewport');
   const css=await read('src/style.css');
-  assert.match(hud,/'fps'\] as const/);
+  assert.match(hud,/HUD_IDS=\[[^\]]*'fps'[^\]]*\] as const/);
   assert.match(hud,/fps:item\(90,15/);
   assert.match(widget,/fps:'FPS'/);
   assert.match(viewport,/<HudWidget id="fps">/);
@@ -43,16 +44,18 @@ test('No separate on-screen label diagnostic counter remains',async()=>{
 });
 
 test('Workspace secondary actions are grouped and all settings remain reachable',async()=>{
-  const app=await read('src/App.tsx');
-  for(const dialog of ['layout','visibility','entityAppearance','controls','output']){
-    assert.match(app,new RegExp(`setDialog\\('${dialog}'\\);setWorkspaceMenu\\(false\\)`));
-  }
+  const app=withSplitParts(await read('src/App.tsx'),'App');
+  // v2.4: visibility, entity visuals and camera controls are sections of Editor preferences (one entry).
+  assert.match(app,/setDialog\('layout'\);setWorkspaceMenu\(false\)/);
+  assert.match(app,/layout:'theme',entityAppearance:'entities',controls:'camera',visibility:'hidden'/);
+  // Appearance moved to the top-bar theme button; Output opens from Build.
+  for(const dialog of ['layout','output'])assert.match(app,new RegExp(`setDialog\\('${dialog}'\\)`));
   const workspaceSection=app.split('id="sven-workspace-menu"')[1].split('</TopDropdown></div>')[0];
   assert.doesNotMatch(workspaceSection,/t\('Build configuration'\)/);
   assert.match(app,/className="top-build-settings"/);
   assert.match(app,/svenstudio:toggle-gameplay-settings/);
   assert.match(app,/setDialog\('packager'\)/);
-  assert.match(app,/saveProject\(project\)/);
+  assert.match(app,/saveProject\((?:project|useEditor\.getState\(\)\.project)\)/);
   assert.match(app,/onClick=\{\(\)=>void compile\('game'\)\}/);
   assert.match(app,/toolbarGroupProps\('geometry'\)/);
   assert.match(app,/\<BspViewer map=\{bspMap\}/);

@@ -2,6 +2,7 @@
  * Existing fast IndexedDB session recovery remains completely independent.
  */
 import type {Project} from './types';
+import {useSaveState} from './saveState';
 import {validateProjectFile} from './projectValidation';
 import {useEditor} from '../store';
 export type HistoryKind='auto'|'manual'|'safety';
@@ -53,11 +54,12 @@ export function startProjectHistoryAutosave():()=>void{
  const unsubscribe=useEditor.subscribe((next,previous)=>{
   if(next.project!==previous.project){dirty=true;lastProject=next.project;}
  });
- const check=async()=>{
-  if(disposed||running||!dirty||Date.now()-lastAttempt<intervalMs)return;
+ const check=async(minimum=intervalMs)=>{
+  if(disposed||running||!dirty||Date.now()-lastAttempt<minimum)return;
   running=true;lastAttempt=Date.now();const snapshot=lastProject;
   try{
    await saveHistoryCheckpoint(snapshot,'auto');
+   useSaveState.setState({lastBackupAt:Date.now()});
    if(lastProject===snapshot)dirty=false;
   }catch(error){
    // Never interrupt editing when local Node is unavailable or disk is full.
@@ -65,5 +67,8 @@ export function startProjectHistoryAutosave():()=>void{
   }finally{running=false;}
  };
  const timer=window.setInterval(()=>void check(),60000);
- return ()=>{disposed=true;unsubscribe();clearInterval(timer)};
+ // Also back up when the user switches tab or minimizes (at most every 2 minutes).
+ const onHidden=()=>{if(document.visibilityState==='hidden')void check(2*60*1000);};
+ document.addEventListener('visibilitychange',onHidden);
+ return ()=>{disposed=true;unsubscribe();clearInterval(timer);document.removeEventListener('visibilitychange',onHidden)};
 }

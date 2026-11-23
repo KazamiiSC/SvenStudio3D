@@ -4,7 +4,7 @@
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import {createMapPackage} from './mapPackager.js';
+import {createMapPackage,packagerProfile} from './mapPackager.js';
 import {validateExternalRoots} from './externalResources.js';
 import {validateBuildDestination} from './isolatedBuild.js';
 
@@ -22,7 +22,10 @@ function safePackageRelative(name){
   return name;
 }
 /** Create a new folder, never merge with or overwrite files in a previous export. */
-export async function writeDistribution({gameDir,mapName,destinationDir,format='folder',manualPaths=[],resourceRoots=[],compiledBspPath=null,inlineBinaryFiles=[],sourceMapPath=null,buildLog='',organizedLayout=false}={}){
+export async function writeDistribution({gameDir,mapName,destinationDir,format='folder',manualPaths=[],resourceRoots=[],compiledBspPath=null,inlineBinaryFiles=[],sourceMapPath=null,buildLog='',organizedLayout=false,gameProfile='svengine'}={}){
+  const profile=packagerProfile(gameProfile),cs16=gameProfile==='cs16';
+  // Sven Co-op installs into svencoop_addon; CS 1.6 into cstrike_downloads (always on the search path, keeps cstrike/ clean).
+  const installLayer=cs16?'cstrike_downloads':'svencoop_addon',suffix=cs16?'CS16':'SvenCoop';
   const options=distributionOptions({mapName,destinationDir,format});
   const sources=await validateExternalRoots(resourceRoots);
   const stat=await fs.stat(options.destinationDir);
@@ -31,34 +34,34 @@ export async function writeDistribution({gameDir,mapName,destinationDir,format='
   const gameReal=await fs.realpath(gameDir);
   if(format!=='install')await validateBuildDestination(realDestination,gameDir);
   // Do not create nested output folders in the live game data tree.
-  if(format!=='install'&&(realDestination===gameReal||realDestination.startsWith(gameReal+path.sep)))throw Error('Choose a separate export folder, not a Sven Co-op game directory. The BSP is installed in maps/ separately.');
-  const result=await createMapPackage({gameDir,mapName,manualPaths,resourceRoots:sources,compiledBspPath,inlineBinaryFiles,generateRes:true,acknowledgeMissing:false,returnFiles:true});
+  if(format!=='install'&&(realDestination===gameReal||realDestination.startsWith(gameReal+path.sep)))throw Error(`Choose a separate export folder, not a ${profile.name} game directory.`);
+  const result=await createMapPackage({gameDir,mapName,manualPaths,resourceRoots:sources,compiledBspPath,inlineBinaryFiles,generateRes:true,acknowledgeMissing:false,returnFiles:true,gameProfile});
   if(!Array.isArray(result.files)||!result.files.length||result.files.length>MAX_FILES)throw Error('Package file count is outside allowed bounds.');
   if(format==='install'){
     // Explicit install, after a complete dependency preflight. Never overwrite
     // resources or BSPs already in the user's game. Source files stay untouched.
     const realGame=await fs.realpath(gameDir);
-    const base=['svencoop','svencoop_addon','svencoop_downloads'].includes(path.basename(realGame).toLowerCase())?path.dirname(realGame):realGame;
-    const addon=path.join(base,'svencoop_addon');
+    const base=profile.layers.includes(path.basename(realGame).toLowerCase())?path.dirname(realGame):realGame;
+    const addon=path.join(base,installLayer);
     await fs.mkdir(addon,{recursive:true});const addonReal=await fs.realpath(addon);
     const actions=[];
     for(const file of result.files){
       const relative=safePackageRelative(file.path);
       if(relative==='SVENSTUDIO_PACKAGING_REPORT.txt')continue;
       const target=path.resolve(addonReal,...relative.replaceAll('\\','/').split('/'));
-      if(!target.startsWith(addonReal+path.sep))throw Error('Resource install path escapes svencoop_addon.');
+      if(!target.startsWith(addonReal+path.sep))throw Error(`Resource install path escapes ${installLayer}.`);
       try{const current=await fs.readFile(target);
         if(!current.equals(file.bytes))throw Error(`Cannot install ${relative}: a different file already exists. No resources installed.`);
       }catch(e){if(e.code!=='ENOENT')throw e;actions.push({target,data:file.bytes})}
     }
     const created=[];
-    try{for(const a of actions){await fs.mkdir(path.dirname(a.target),{recursive:true});const parent=await fs.realpath(path.dirname(a.target));if(!(parent===addonReal||parent.startsWith(addonReal+path.sep)))throw Error('Installation path escapes svencoop_addon through a symlink.');await fs.writeFile(a.target,a.data,{flag:'wx'});created.push(a.target)}}
+    try{for(const a of actions){await fs.mkdir(path.dirname(a.target),{recursive:true});const parent=await fs.realpath(path.dirname(a.target));if(!(parent===addonReal||parent.startsWith(addonReal+path.sep)))throw Error(`Installation path escapes ${installLayer} through a symlink.`);await fs.writeFile(a.target,a.data,{flag:'wx'});created.push(a.target)}}
     catch(e){for(const f of created)await fs.unlink(f).catch(()=>{});throw e}
     return {destination:addonReal,files:actions.length,bytes:actions.reduce((n,a)=>n+a.data.length,0),warnings:result.inventory.warnings,missing:0};
   }
   let destination;
   for(let i=1;i<=999;i++){
-    const folder=path.join(realDestination,`${mapName}_SvenCoop${i===1?'':`_${i}`}`);
+    const folder=path.join(realDestination,`${mapName}_${suffix}${i===1?'':`_${i}`}`);
     try{await fs.mkdir(folder);destination=folder;break;}catch(error){if(error.code!=='EEXIST')throw error;}
   }
   if(!destination)throw Error('Too many exported versions in this folder.');
@@ -77,7 +80,7 @@ export async function writeDistribution({gameDir,mapName,destinationDir,format='
       await fs.mkdir(path.join(destination,'Logs'));
       await fs.writeFile(path.join(destination,'Logs','compilacion.log'),buildLog||'Compile finished; no stdout captured.\n',{flag:'wx'});
     }
-    if(format==='folder_zip')await fs.writeFile(path.join(destination,`${mapName}_SvenCoop.zip`),result.zip,{flag:'wx'});
+    if(format==='folder_zip')await fs.writeFile(path.join(destination,`${mapName}_${suffix}.zip`),result.zip,{flag:'wx'});
     return {destination,files:result.files.length,bytes:result.files.reduce((n,f)=>n+f.bytes.length,0),warnings:result.inventory.warnings,missing:result.inventory.missing};
   }catch(error){await fs.rm(destination,{recursive:true,force:true});throw error;}
 }

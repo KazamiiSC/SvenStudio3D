@@ -1,4 +1,5 @@
 import {saveStudioBlob} from '../engine/studioFiles';
+import {KitGallery} from './KitGallery';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {Canvas,useThree} from '@react-three/fiber';
 import {OrbitControls} from '@react-three/drei';
@@ -18,6 +19,7 @@ import {selectPathGroups} from '../engine/pathGroupSelector';
 import {PathPlanEditor} from './PathPlanEditor';
 import {Path3DControls,type PathAxis} from './Path3DControls';
 import {CurvedGeometryPanel} from './CurvedGeometryPanel';
+import {defaultScatter,scatterSpots,type ScatterOptions} from '../engine/mapTools24';
 import {createRailwayExtras,defaultRailwaySettings,checkRailwayGraph,type RailwaySettings} from '../engine/railwayBuilder';
 
 const STARTER_TEXTURES=['SV_BRICK01','SV_CONCRET','SV_TILE01','SV_METAL01','SV_GRID01'];
@@ -144,7 +146,17 @@ export function TerrainShapeStudio({onClose,initialTab='terrain'}:{onClose:()=>v
   const applyTerrain=useEditor(s=>s.applyTerrain);
   const applySmartWorld=useEditor(s=>s.applySmartWorld);
   const compileBusy=useEditor(s=>s.compileBusy);
-  const [tab,setTab]=useState<'terrain'|'rocks'|'paths'|'curves'>(initialTab);
+  const [tab,setTab]=useState<'terrain'|'rocks'|'paths'|'curves'|'scatter'|'weather'|'nature'>(initialTab);
+  // v2.4: rock layout/roughness and scatter follow the same preview → place-by-click flow.
+  const [rockLayout,setRockLayout]=useState<'cluster'|'ring'>('cluster'),[rockRoughness,setRockRoughness]=useState(0);
+  const [scatter,setScatter]=useState<ScatterOptions>({...defaultScatter});
+  const upScatter=(p:Partial<ScatterOptions>)=>setScatter(v=>({...v,...p}));
+  const selectedIds=useEditor(s=>s.selectedIds);
+  const [scatterIds,setScatterIds]=useState<string[]>(()=>useEditor.getState().selectedIds.slice(0,32));
+  const [scatterArea,setScatterArea]=useState<'circle'|'brushes'>('circle'),[areaIds,setAreaIds]=useState<string[]>([]);
+  const areaBrushes=useMemo(()=>areaIds.filter(id=>objects.some(o=>o.id===id&&o.kind==='brush')),[areaIds,objects]);
+  const scatterTemplates=useMemo(()=>scatterIds.map(id=>objects.find(o=>o.id===id)).filter((o):o is NonNullable<typeof o>=>!!o&&!(o.kind==='brush'&&o.entityId)),[scatterIds,objects]);
+  const scatterPreview=useMemo(()=>{try{return {spots:scatterSpots(scatter),error:''};}catch(e){return {spots:[] as [number,number][],error:String(e instanceof Error?e.message:e)};}},[scatter]);
   const [draft,setDraft]=useState<TerrainDraft>(()=>{const d=defaultTerrain();return {...d,optimized:true,heights:generateWorldHeights(d.resolution,'hills',192,7)}});
   const [tool,setTool]=useState<TerrainTool>('raise');
   const [radius,setRadius]=useState(128),[strength,setStrength]=useState(32);
@@ -532,8 +544,17 @@ export function TerrainShapeStudio({onClose,initialTab='terrain'}:{onClose:()=>v
       }else if(tab==='terrain'){
         const errors=validateTerrainDraft(draft);if(errors.length)throw Error(errors.join(' · '));
         startTerrainPlacement({kind:'terrain',draft});
+      }else if(tab==='scatter'){
+        if(!scatterTemplates.length)throw Error(t('Select the objects to scatter in the map first (entities or brushes).'));
+        if(scatterArea==='brushes'){
+          const n=useEditor.getState().scatterOnArea(scatterTemplates.map(o=>o.id),areaBrushes,scatter);
+          useEditor.getState().appendLogs([`World Builder: ${n} scattered copies.`]);
+          onClose();return;
+        }
+        if(scatterPreview.error)throw Error(scatterPreview.error);
+        startTerrainPlacement({kind:'scatter',draft,scatter:{options:scatter,templateIds:scatterTemplates.map(o=>o.id)}});
       }else{
-        startTerrainPlacement({kind:'rocks',draft,rocks:{count:rockCount,radius:rockRadius,height:rockHeight,seed}});
+        startTerrainPlacement({kind:'rocks',draft,rocks:{count:rockCount,radius:rockRadius,height:rockHeight,seed,layout:rockLayout,roughness:rockRoughness}});
       }
       onClose();
     }catch(error){setMessage(String(error));}
@@ -549,9 +570,9 @@ export function TerrainShapeStudio({onClose,initialTab='terrain'}:{onClose:()=>v
     setShowBase(mode!=='thin');setMessage('');
   };
   const rockBrushes=useMemo(()=>{
-    try{return createRockCluster({origin:[0,0,0],count:rockCount,radius:rockRadius,height:rockHeight,seed,texture:draft.texture});}
+    try{return createRockCluster({origin:[0,0,0],count:rockCount,radius:rockRadius,height:rockHeight,seed,texture:draft.texture,layout:rockLayout,roughness:rockRoughness});}
     catch{return [] as Brush[];}
-  },[rockCount,rockRadius,rockHeight,seed,draft.texture]);
+  },[rockCount,rockRadius,rockHeight,seed,draft.texture,rockLayout,rockRoughness]);
   const setNumber=(key:'width'|'depth',value:number)=>setDraft(d=>({...d,[key]:Number.isFinite(value)?value:d[key]}));
   const setOrigin=(i:number,value:number)=>setDraft(d=>({...d,origin:d.origin.map((v,j)=>i===j&&Number.isFinite(value)?value:v) as Vec3}));
   const paint=(x:number,y:number)=>{
@@ -585,8 +606,8 @@ export function TerrainShapeStudio({onClose,initialTab='terrain'}:{onClose:()=>v
         {<button className="terrain-expand-button" title={expandedStudio?t('Restore editor size'):t('Maximize World Builder Studio')} aria-label={expandedStudio?t('Restore editor size'):t('Maximize World Builder Studio')} onClick={()=>setExpandedStudio(v=>!v)}>{expandedStudio?<Minimize2 size={18}/>:<Maximize2 size={18}/>}</button>}
         <button title={t('Close')} onClick={onClose}><X size={20}/></button>
       </header>
-      <div className="terrain-tabs" role="tablist" aria-label={t("World Builder Studio")}><button role="tab" aria-selected={tab==='terrain'} className={tab==='terrain'?'active':''} onClick={()=>{setTab('terrain');setMessage('')}}>{t('Sculpt Terrain')}</button><button role="tab" aria-selected={tab==='rocks'} className={tab==='rocks'?'active':''} onClick={()=>{setTab('rocks');setMessage('')}}>{t('Rock & Cliff Generator')}</button><button role="tab" aria-selected={tab==='paths'} className={tab==='paths'?'active':''} onClick={()=>{setTab('paths');setMessage('')}}>{t('Path & Structure Studio')}</button><button role="tab" aria-selected={tab==='curves'} className={tab==='curves'?'active':''} onClick={()=>{setTab('curves');setMessage('')}}>{t('Curves & Repetitions')}</button></div>
-      {tab==='curves'?<CurvedGeometryPanel embedded onClose={()=>setTab('paths')}/>:<div className="terrain-layout">
+      <div className="terrain-tabs" role="tablist" aria-label={t("World Builder Studio")}><button role="tab" aria-selected={tab==='terrain'} className={tab==='terrain'?'active':''} onClick={()=>{setTab('terrain');setMessage('')}}>{t('Sculpt Terrain')}</button><button role="tab" aria-selected={tab==='rocks'} className={tab==='rocks'?'active':''} onClick={()=>{setTab('rocks');setMessage('')}}>{t('Rock & Cliff Generator')}</button><button role="tab" aria-selected={tab==='scatter'} className={tab==='scatter'?'active':''} onClick={()=>{setTab('scatter');setMessage('')}}>{t('Scatter')}</button><button role="tab" aria-selected={tab==='paths'} className={tab==='paths'?'active':''} onClick={()=>{setTab('paths');setMessage('')}}>{t('Path & Structure Studio')}</button><button role="tab" aria-selected={tab==='curves'} className={tab==='curves'?'active':''} onClick={()=>{setTab('curves');setMessage('')}}>{t('Curves & Repetitions')}</button><button role="tab" aria-selected={tab==='weather'} className={tab==='weather'?'active':''} onClick={()=>{setTab('weather');setMessage('')}}>{t('Weather & water')}</button><button role="tab" aria-selected={tab==='nature'} className={tab==='nature'?'active':''} onClick={()=>{setTab('nature');setMessage('')}}>{t('Nature & ruins')}</button></div>
+      {tab==='curves'?<CurvedGeometryPanel embedded onClose={()=>setTab('paths')} onPlace={onClose}/>:tab==='weather'?<div className="wb-kits"><KitGallery wide studio="weather" onStart={onClose}/></div>:tab==='nature'?<div className="wb-kits"><KitGallery wide studio="world" onStart={onClose}/></div>:<div className="terrain-layout">
         <aside className="terrain-tools">
           {tab==='terrain'&&<nav className="wb-section-nav" aria-label={t('World Builder tools')}>
             {([['wb-landscapes','Landscapes'],['wb-landforms','Landforms'],['wb-precision','Precision'],['wb-textures','Textures']] as const).map(([id,label])=><button key={id} type="button" onClick={()=>document.getElementById(id)?.scrollIntoView({block:'nearest',behavior:'smooth'})}>{t(label)}</button>)}
@@ -708,6 +729,29 @@ export function TerrainShapeStudio({onClose,initialTab='terrain'}:{onClose:()=>v
             <label>{t('Cluster radius')} <output>{rockRadius} u</output><input type="range" min="16" max="512" step="16" value={rockRadius} onChange={e=>setRockRadius(+e.target.value)}/></label>
             <label>{t('Rock height')} <output>{rockHeight} u</output><input type="range" min="16" max="512" step="16" value={rockHeight} onChange={e=>setRockHeight(+e.target.value)}/></label>
             <label>{t('Random seed')}<input type="number" value={seed} step="1" onChange={e=>setSeed(Number.isFinite(e.target.valueAsNumber)?e.target.valueAsNumber:0)}/></label>
+            <label>{t('Layout')}<select value={rockLayout} onChange={e=>setRockLayout(e.target.value as 'cluster'|'ring')}><option value="cluster">{t('Cluster')}</option><option value="ring">{t('Ring (cave)')}</option></select></label>
+            <label>{t('Roughness')} <output>{Math.round(rockRoughness*100)}%</output><input type="range" min="0" max="1" step="0.05" value={rockRoughness} onChange={e=>setRockRoughness(+e.target.value)}/></label>
+            <p className="terrain-muted">{t('Ring places the rocks in a circle to wall in a cave or a crater. Roughness 0 keeps the classic smooth rocks.')}</p>
+          </>}
+          {tab==='scatter'&&<>
+            <p className="terrain-muted">{t('Copies the selected entities or brushes at random spots around the point you click. Each copy stands on the floor below it, also on terrain.')}</p>
+            <div className={`wb-scatter-templates${scatterTemplates.length?' is-ready':''}`}>
+              <strong>{t('Objects to copy')}: {scatterTemplates.length}</strong>
+              <small>{scatterTemplates.length?scatterTemplates.slice(0,6).map(o=>o.kind==='entity'?o.classname:o.name).join(', ')+(scatterTemplates.length>6?'…':''):t('Select entities or brushes in the map, then press the button.')}</small>
+              <button type="button" className="terrain-secondary" disabled={!selectedIds.length} onClick={()=>setScatterIds(selectedIds.slice(0,32))}><MousePointer2 size={14}/>{t('Use current selection')} ({selectedIds.length})</button>
+            </div>
+            <label>{t('Area')}<select value={scatterArea} onChange={e=>setScatterArea(e.target.value as 'circle'|'brushes')}><option value="circle">{t('Circle around the click')}</option><option value="brushes">{t('On top of chosen brushes (terrain, floors…)')}</option></select></label>
+            {scatterArea==='brushes'&&<div className={`wb-scatter-templates${areaBrushes.length?' is-ready':''}`}>
+              <strong>{t('Area brushes')}: {areaBrushes.length}</strong>
+              <small>{t('Select the brushes that form the area (for example the whole terrain), then press the button.')}</small>
+              <button type="button" className="terrain-secondary" disabled={!selectedIds.length} onClick={()=>setAreaIds(selectedIds.slice(0,2048))}><MousePointer2 size={14}/>{t('Use current selection as area')} ({selectedIds.length})</button>
+            </div>}
+            <label>{t('Copies')} <output>{scatter.count}</output><input type="range" min="1" max="128" value={scatter.count} onChange={e=>upScatter({count:+e.target.value})}/></label>
+            {scatterArea==='circle'&&<label>{t('Area radius')} <output>{scatter.radius} u</output><input type="range" min="32" max="2048" step="16" value={scatter.radius} onChange={e=>upScatter({radius:+e.target.value})}/></label>}
+            <label>{t('Minimum spacing')} <output>{scatter.minSpacing} u</output><input type="range" min="0" max="512" step="8" value={scatter.minSpacing} onChange={e=>upScatter({minSpacing:+e.target.value})}/></label>
+            <label>{t('Random seed')}<input type="number" value={scatter.seed} step="1" onChange={e=>upScatter({seed:Number.isFinite(e.target.valueAsNumber)?e.target.valueAsNumber:1})}/></label>
+            <label className="terrain-check"><input type="checkbox" checked={scatter.randomYaw} onChange={e=>upScatter({randomYaw:e.target.checked})}/>{t('Random rotation')}</label>
+            {scatterArea==='circle'&&scatterPreview.spots.length<scatter.count&&<div className="terrain-warning"><TriangleAlert size={15}/>{`${scatterPreview.spots.length}/${scatter.count} · ${t('Not enough room for this spacing: lower the spacing or use a bigger area.')}`}</div>}
           </>}
           {tab==='paths'&&<>
             <label>{t('Saved editable routes')}
@@ -837,7 +881,7 @@ export function TerrainShapeStudio({onClose,initialTab='terrain'}:{onClose:()=>v
           <label className="terrain-wad-import"><ImageIcon size={13}/> {importingWad?t('Importing WAD...'):t('Import WAD file')}<input type="file" accept=".wad" multiple disabled={importingWad} onChange={importWad}/></label>
           <button className="terrain-secondary" onClick={()=>setDraft(d=>({...d,texture:texture||d.texture}))}>{t('Use selected WAD texture')}</button>
           {!previewTexture&&<p className="terrain-muted">{t('Texture preview unavailable. Import the matching WAD.')}</p>}
-          {tab==='paths'?<div className="terrain-info terrain-placement-hint"><MousePointer2 size={16}/><span>{t('Choose the placement point in the MAP viewport. The route will not be created at world origin.')}</span></div>:<>
+          {tab==='paths'||tab==='scatter'?<div className="terrain-info terrain-placement-hint"><MousePointer2 size={16}/><span>{t('Choose the placement point in the MAP viewport. The route will not be created at world origin.')}</span></div>:<>
             <label>{t('Placement center (X / Y / Z)')}</label>
             <div className="terrain-inline three">{draft.origin.map((v,i)=><input aria-label={['X','Y','Z'][i]} key={i} type="number" value={v} step="16" onChange={e=>setOrigin(i,e.target.valueAsNumber)}/>)}</div>
             <button className="terrain-secondary" onClick={useSelection}><MousePointer2 size={14}/>{t('Use selected object position')}</button>
@@ -845,7 +889,7 @@ export function TerrainShapeStudio({onClose,initialTab='terrain'}:{onClose:()=>v
         </aside>
         <main className="terrain-preview">
           <div className="terrain-preview-head">
-            <span>{t('Interactive preview')} <small>· {tab==='terrain'?`${count} ${t('brushes')}`:tab==='rocks'?`${rockCount} ${t('rocks')}`:`${pathPreview.brushes.length} ${t('brushes')}`}</small></span>
+            <span>{t('Interactive preview')} <small>· {tab==='terrain'?`${count} ${t('brushes')}`:tab==='rocks'?`${rockCount} ${t('rocks')}`:tab==='scatter'?`${scatterPreview.spots.length} ${t('Copies').toLowerCase()}`:`${pathPreview.brushes.length} ${t('brushes')}`}</small></span>
             {tab==='paths'&&<div className="terrain-preview-actions">
               <button className={!pathView3D?'active':''} onClick={()=>{setPathView3D(false);setEditIn3D(false)}}>{t('Edit route')}</button>
               <button className={pathView3D&&!editIn3D?'active':''} onClick={()=>{setPathView3D(true);setEditIn3D(false)}}>{t('3D geometry preview')}</button>
@@ -902,7 +946,11 @@ export function TerrainShapeStudio({onClose,initialTab='terrain'}:{onClose:()=>v
                   onDraggingChange={setPath3DDragging}/>}</>:tab==='terrain'?<><PreviewSurface draft={draft} tool={tool} radius={radius} strength={strength} sculptMode={sculptMode} showBase={showBase} diagonalMode={diagonalMode} onToggleDiagonal={toggleDiagonal} onPaint={paint} onStrokeStart={snapshotHeights} texture={previewTexture}/>
                   {vertexMode&&<TerrainVertexHandles draft={draft} selected={selectedVertex} onSelect={setSelectedVertex} onBeginDrag={snapshotHeights} onMove={moveTerrainVertex}/>}
                 </>:
-                <group>{rockBrushes.map(b=><RockShape key={b.id} brush={b} texture={previewTexture}/>)}</group>}
+                tab==='scatter'?<group position={[0,-96,0]}>
+                  <mesh rotation={[-Math.PI/2,0,0]} position={[0,1,0]}><ringGeometry args={[Math.max(1,scatter.radius-4),scatter.radius,64]}/><meshBasicMaterial color="#7dffb0" side={THREE.DoubleSide}/></mesh>
+                  {scatterPreview.spots.map(([x,y],i)=><mesh key={i} position={[x,16,-y]}><boxGeometry args={[24,32,24]}/><meshStandardMaterial color={['#ffb347','#62d4ff','#c79bff','#7dffb0'][i%Math.max(1,Math.min(4,scatterTemplates.length))]}/></mesh>)}
+                </group>
+                :<group>{rockBrushes.map(b=><RockShape key={b.id} brush={b} texture={previewTexture}/>)}</group>}
               <OrbitControls ref={orbitRef} makeDefault enabled={!path3DDragging} enableRotate enablePan enableZoom minDistance={40} maxDistance={12000}
                 mouseButtons={tab==='terrain'?{LEFT:sculptMode||vertexMode||diagonalMode?(-1 as THREE.MOUSE):THREE.MOUSE.ROTATE,MIDDLE:THREE.MOUSE.PAN,RIGHT:THREE.MOUSE.ROTATE}:undefined}/>
 
@@ -936,7 +984,7 @@ export function TerrainShapeStudio({onClose,initialTab='terrain'}:{onClose:()=>v
             <span><strong>{draft.resolution}×{draft.resolution}</strong> celdas</span>
           </div>}
           {tab==='terrain'&&<p className="terrain-depth-readout">{t('Lowest underside relative to placement Z')}: {fmt(bottomOffset)} u · {baseMode==='thin'?t('Thin convex terrain slabs with collision.'):t('Terrain is a solid volume, not a hollow shell.')}</p>}
-          <p className="terrain-muted">{tab==='terrain'?(sculptMode?t('Left drag: sculpt · Right drag: orbit · Middle drag: pan · Wheel: zoom'):vertexMode?t('Drag cyan points vertically to edit heights · Right drag: orbit'):diagonalMode?t('Click a triangle cell to flip its diagonal · Right drag: orbit'):t('Left / right drag: orbit · Middle drag: pan · Wheel: zoom')):tab==='rocks'?t('Drag to orbit; wheel to zoom. Rocks are previewed before placement.'):t('Route preview shows shared bend edges, not overlapping rectangles. Very sharp turns are rejected.')}</p>
+          <p className="terrain-muted">{tab==='terrain'?(sculptMode?t('Left drag: sculpt · Right drag: orbit · Middle drag: pan · Wheel: zoom'):vertexMode?t('Drag cyan points vertically to edit heights · Right drag: orbit'):diagonalMode?t('Click a triangle cell to flip its diagonal · Right drag: orbit'):t('Left / right drag: orbit · Middle drag: pan · Wheel: zoom')):tab==='rocks'?t('Drag to orbit; wheel to zoom. Rocks are previewed before placement.'):tab==='scatter'?t('Drag to orbit; wheel to zoom. Then press Place by clicking map and click a surface.'):t('Route preview shows shared bend edges, not overlapping rectangles. Very sharp turns are rejected.')}</p>
           {tab==='terrain'&&count>=288&&<div className="terrain-warning"><TriangleAlert size={15}/>{t('High brush count: start with 4×4 or 8×8 for performance. More segments increase BSP compile cost.')}</div>}
           <div className="terrain-info"><ShieldCheck size={17}/><span>{t('Exports only convex planar Valve 220 brushes. The preview does not compile BSP or seal leaks.')}</span></div>
           {tab==='paths'&&pathPreview.error&&<div className="terrain-warning"><TriangleAlert size={15}/>{pathPreview.error}</div>}
@@ -946,12 +994,12 @@ export function TerrainShapeStudio({onClose,initialTab='terrain'}:{onClose:()=>v
           {message&&<div className="terrain-notice"><CheckCircle2 size={15}/>{message}</div>}
         </main>
       </div>}
-      {tab!=='curves'&&<footer className="terrain-footer"><span>{t('No changes to the map until Apply. Undo/Redo supported.')}</span>
+      {tab!=='curves'&&tab!=='weather'&&tab!=='nature'&&<footer className="terrain-footer"><span>{t('No changes to the map until Apply. Undo/Redo supported.')}</span>
         {tab==='paths'&&editingPathId&&<button className="terrain-place-button" onClick={()=>{setPathEditing(editingPathId);onClose()}}>{t('Edit saved route in MAP')}</button>}
         {tab==='paths'&&editingPathId&&<button className="terrain-place-button" disabled={compileBusy||!!pathPreview.error} onClick={applyPathUpdate}>{t('Update saved route')}</button>}
         {tab==='terrain'&&record&&<button className="terrain-place-button" disabled={compileBusy||issues.length>0} onClick={apply}>{t('Update existing terrain')}</button>}
         <button onClick={onClose}>{t('Close')}</button>
-        <button className="terrain-primary" disabled={compileBusy||(tab==='terrain'&&issues.length>0)||(tab==='paths'&&!!pathPreview.error)} onClick={placeOnMap}><MousePointer2 size={14}/>{t('Place by clicking map')}</button>
+        <button className="terrain-primary" disabled={compileBusy||(tab==='terrain'&&issues.length>0)||(tab==='paths'&&!!pathPreview.error)||(tab==='scatter'&&(!scatterTemplates.length||(scatterArea==='circle'?!scatterPreview.spots.length:!areaBrushes.length)))} onClick={placeOnMap}><MousePointer2 size={14}/>{tab==='scatter'&&scatterArea==='brushes'?t('Scatter over the area'):t('Place by clicking map')}</button>
       </footer>}
     </section>
   </div>;

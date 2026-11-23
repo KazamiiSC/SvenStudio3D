@@ -2,10 +2,11 @@
 import {createArch,createBrush,transformedVertices} from './geometry';
 import {subtractConvex} from './advancedModeling';
 import {validateBrush} from './exportMap';
+import {buildSpiralStairs} from './mapTools24';
 import type {Brush,MapObject,Vec3} from './types';
 
-export type ArchitectureKind='door'|'window'|'frame'|'arch'|'stairs'|'ramp'|'column'|'room'|'corridor'|'platform'|'bridge'|'landingStairs';
-export type ArchitectureOptions={width:number;height:number;depth:number;frame:number;steps:number;cutOnly:boolean;doorLeaf:boolean;openTop?:boolean};
+export type ArchitectureKind='door'|'window'|'frame'|'arch'|'stairs'|'ramp'|'column'|'room'|'corridor'|'platform'|'bridge'|'landingStairs'|'spiralStairs';
+export type ArchitectureOptions={width:number;height:number;depth:number;frame:number;steps:number;cutOnly:boolean;doorLeaf:boolean;openTop?:boolean;/** v2.4 spiral stairs: width = step width, frame = step thickness. */innerRadius?:number;turn?:number;clockwise?:boolean;column?:boolean};
 export const defaultArchitecture:ArchitectureOptions={width:96,height:128,depth:24,frame:8,steps:8,cutOnly:false,doorLeaf:false,openTop:false};
 export type ArchitectureResult={objects:MapObject[];removeId?:string};
 export type OpeningPlacement={center:Vec3};
@@ -162,6 +163,12 @@ export function createArchitecture(kind:ArchitectureKind,o:ArchitectureOptions,s
     for(let i=0;i<steps;i++)
       box(`Landing stair ${i+1}/${steps}`,[x-d/2+(i+.5)*length,y,z+(i+1)*rise/2],[length,w,(i+1)*rise]);
     box('Stair landing',[x+d/2-landingLength/2,y,z+h-frame/2],[landingLength,w,frame]);
+  }else if(kind==='spiralStairs'){
+    // v2.4: the spiral lives next to the straight and landing stairs (one place for all stairs).
+    const inner=Math.max(0,o.innerRadius??32);
+    for(const b of buildSpiralStairs({origin:[x,y,z],innerRadius:inner,outerRadius:inner+w,stepHeight:h/steps,steps,degreesPerStep:(o.turn??360)/steps,startAngle:0,clockwise:!!o.clockwise,solid:false,thickness:frame,column:o.column??true,texture})){
+      b.group=group;b.layer='Architecture';result.push(b);
+    }
   }
   for(const b of result){const errors=validateBrush(b);if(errors.length)throw Error(`${b.name}: ${errors[0]}`)}
   return {objects:result};

@@ -28,7 +28,7 @@ async function metrics(page,root){return page.evaluate(selector=>{
   const r=el.getBoundingClientRect(),c=getComputedStyle(el);if(r.width<1||r.height<1||c.visibility==='hidden'||c.display==='none'||r.bottom<0||r.top>innerHeight||r.right<0||r.left>innerWidth)continue;
   if(el.scrollHeight>el.clientHeight+3&&['auto','scroll'].includes(c.overflowY)){const old=el.scrollTop;el.scrollTop=old===0?1:0;scroll.push({class:el.className,moves:el.scrollTop!==old});el.scrollTop=old;}
   if(el.matches(':disabled'))disabled++;
-  if(el.closest('canvas,svg,.entity-world-label,.npc-model-canvas,.pf3d-stage,.model-preview,.texture-studio-preview,.ss-home,.me-map,.gds-map-area'))continue;
+  if(el.closest('canvas,svg,.entity-world-label,.npc-model-canvas,.pf3d-stage,.model-preview,.texture-studio-preview,.ssr-home,.me-map,.gds-map-area'))continue;
   const text=[...el.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent.trim()).join(' ').trim();if(!text)continue;
   const hit=document.elementFromPoint(Math.max(0,Math.min(innerWidth-1,r.left+r.width/2)),Math.max(0,Math.min(innerHeight-1,r.top+r.height/2)));if(hit&&!el.contains(hit)&&!hit.contains(el))continue;
   inspected++;const fg=rgb(c.color),bg=background(el),a=luminance(fg),b=luminance(bg),ratio=(Math.max(a,b)+.05)/(Math.min(a,b)+.05);
@@ -37,7 +37,7 @@ async function metrics(page,root){return page.evaluate(selector=>{
  }
  const r=host.getBoundingClientRect();return {inspected,disabled,lowContrast:low.slice(0,50),clipped:clipped.slice(0,30),scroll,rect:{x:r.x,y:r.y,width:r.width,height:r.height},outside:r.left< -1||r.top< -1||r.right>innerWidth+1||r.bottom>innerHeight+1};
 },root)}
-async function boot(p){await p.goto(process.env.SVEN_AUDIT_URL || 'http://127.0.0.1:5173',{waitUntil:'domcontentloaded',timeout:30000});await p.locator('.ss-home-start').click();}
+async function boot(p){await p.goto(process.env.SVEN_AUDIT_URL || 'http://127.0.0.1:5173',{waitUntil:'domcontentloaded',timeout:30000});await p.locator('.ssr-cta').click();}
 async function open(p,action){
  if(!action)return;
  if(action==='appearance')return p.locator('.top-appearance-button').click();

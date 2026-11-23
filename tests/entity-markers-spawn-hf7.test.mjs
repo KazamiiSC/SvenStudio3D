@@ -5,7 +5,7 @@ import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 const require=createRequire(import.meta.url);
-const ts=require('/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript');
+const ts=require('./support/typescript.cjs');
 const base=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 function loadWithStubs(source,stubs={}){
  const js=ts.transpileModule(readFileSync(path.join(base,source),'utf8'),{

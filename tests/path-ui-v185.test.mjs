@@ -1,3 +1,4 @@
+import {legacyI18nSource} from './support/legacyI18n.cjs';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -16,7 +17,7 @@ test('v1.8.5 route editor exposes both 3D editing and MAP viewport handles',()=>
  assert.match(overlay,/updatePathStructure/);
 });
 test('new route keys translated to all supported non-English locales',()=>{
- const locale=read('src/i18n.ts');
+ const locale=legacyI18nSource();
  for(const lang of ['es','ru','ko','zh','pt']){
    assert.ok(locale.includes(`Object.assign(${lang},`));
    assert.match(locale,new RegExp('Edit saved route in MAP'));

@@ -9,7 +9,7 @@ import {setTimeout as sleep} from 'node:timers/promises';
 import {attachBuildTogether} from '../server/buildTogether.js';
 
 const require=createRequire(import.meta.url);
-let ts;try{ts=require('typescript')}catch{ts=require(join(dirname(dirname(process.execPath)),'lib/node_modules/typescript/lib/typescript.js'))}
+let ts;try{ts=require('./support/typescript.cjs')}catch{ts=require(join(dirname(dirname(process.execPath)),'lib/node_modules/typescript/lib/typescript.js'))}
 const project={version:1,name:'presence_test',objects:[],world:{classname:'worldspawn'},wadNames:[]};
 const pose={projection:'perspective',position:[30,50,70],target:[0,0,0],up:[0,1,0],orthoHeight:900,fov:58,aspect:1.78};
 const zustand=`export function create(init){let state;const ls=new Set;const hook=sel=>sel(state);hook.getState=()=>state;hook.setState=p=>{const prev=state;state={...state,...(typeof p==='function'?p(state):p)};for(const cb of ls)cb(state,prev)};hook.subscribe=cb=>{ls.add(cb);return()=>ls.delete(cb)};state=init(hook.setState,hook.getState,hook.subscribe);return hook}`;

@@ -1,8 +1,10 @@
+import {withSplitParts} from './support/splitParts.cjs';
+import {legacyI18nSource} from './support/legacyI18n.cjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 import {readShapeDimensions,rememberShapeDimensions} from '../src/engine/shapeDimensions.ts';
 import {unitsPerScreenPixel,preciseFaceDistance,FACE_GIZMO_TIP_PIXELS,FACE_GIZMO_HIT_PIXELS} from '../src/engine/gizmoScale.ts';
 // BuildTogether adds an isolated service to the Node entry point. Ignore just its
@@ -11,7 +13,7 @@ const withoutBuildTogetherBoot=content=>content
  .replace(/^import \{attachBuildTogether\} from '\.\/buildTogether\.js';\n/m,'')
  .replace(/\n\/\/ Dedicated authenticated collaboration port: no filesystem\/compilation API exposed\.\nattachBuildTogether\(app\);\n$/,'');
 const text=file=>fs.readFileSync(new URL(`../${file}`,import.meta.url),'utf8');
-const store=text('src/store.ts'),shape=text('src/components/ShapePalette.tsx'),view=text('src/components/Viewport.tsx');
+const store=text('src/store.ts'),shape=text('src/components/ShapePalette.tsx'),view=withSplitParts(text('src/components/Viewport.tsx'),'Viewport');
 const inputs=['src/store.ts','src/components/Viewport.tsx','src/components/ShapePalette.tsx','src/components/ViewportExtras.tsx','src/engine/shapeDimensions.ts','src/engine/gizmoScale.ts','src/i18n.ts','src/App.tsx'];
 test('all changed TS/TSX modules parse without syntax errors',()=>{
  for(const name of inputs){const tree=ts.createSourceFile(name,text(name),ts.ScriptTarget.Latest,true,name.endsWith('tsx')?ts.ScriptKind.TSX:ts.ScriptKind.TS);
@@ -45,7 +47,8 @@ test('project storage/export does not contain UI-only prefab placement state',()
 test('palette closes on selecting shape, exposes saved groups and viewport mouse placement',()=>{
  assert.match(shape,/if\(selected===kind\)\{setShape\(null\);setOpen\(false\)/);
  assert.match(shape,/if\(dimensionsEdited\)setSize\(staged\)/);
- assert.match(shape,/setPlacementPrefab\(pendingPrefab===id\?null:id\);setOpen\(false\)/);
+ assert.match(shape,/if\(pendingPrefab===id\)\{setPlacementPrefab\(null\);setOpen\(false\)/);
+ assert.match(shape,/setPlacementPrefab\(id\);setOpen\(false\)/);
  assert.match(shape,/saveSelection\(name\.trim\(\)\)/);
  assert.match(shape,/category==='prefabs'/);
  assert.match(view,/function PrefabClickPlacement/);
@@ -73,7 +76,7 @@ test('fine scaling bypasses grid snap while normal drag snaps',()=>{
  assert.match(view,/function PreciseScalePanel/);
 });
 test('all six locales include new construction controls',()=>{
- const i18n=text('src/i18n.ts');
+ const i18n=legacyI18nSource();
  for(const loc of ['es','ru','ko','zh','pt'])assert.match(i18n,new RegExp(`Object\\.assign\\(${loc},\\{[\\s\\S]*?'Reusable constructions'`));
- assert.match(text('src/App.tsx'),/v1\.6\.0/);
+ assert.ok(withSplitParts(text('src/App.tsx'),'App').includes(`v${JSON.parse(text('package.json')).version.split('.').slice(0,2).join('.')}`));
 });

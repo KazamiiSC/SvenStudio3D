@@ -1,3 +1,4 @@
+import {withSplitParts} from './support/splitParts.cjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -12,12 +13,12 @@ test('appearance is dark-only, including older saved light values',()=>{
  assert.equal(useStudioLayout.getState().appearance,'dark');
  const modal=read('components/DockWorkspace.tsx');
  assert.doesNotMatch(modal,/onClick=\{\(\)=>layout\.setAppearance\('light'\)\}/);
- const app=read('App.tsx');
- assert.equal((app.match(/setDialog\('layout'\)/g)||[]).length,1,'one appearance icon entry point');
+ const app=withSplitParts(read('App.tsx'),'App');
+ assert.equal((app.match(/onClick=\{\(\)=>setDialog\('layout'\)\}/g)||[]).length,1,'one appearance icon in the top bar');
 });
 
 test('studio menu has prefab first and no duplicate events/puzzle entries',()=>{
- const app=read('App.tsx');
+ const app=withSplitParts(read('App.tsx'),'App');
  const start=app.indexOf('<TopDropdown anchor={studiosButton}');
  const end=app.indexOf('</TopDropdown>',start);
  const menu=app.slice(start,end);
@@ -30,7 +31,7 @@ test('studio menu has prefab first and no duplicate events/puzzle entries',()=>{
 });
 
 test('output is only a navigation item beneath advanced in build config',()=>{
- const app=read('App.tsx');
+ const app=withSplitParts(read('App.tsx'),'App');
  const settings=read('components/SmartBuildSettingsModal.tsx');
  assert.ok(settings.indexOf("['advanced',Settings2,words.advanced]")<settings.indexOf('className="sb-output-nav"'));
  assert.match(settings,/onClick=\{onOpenOutput\}/);
@@ -46,7 +47,7 @@ test('WAD texture selection never updates recent-first sort or changes tile orde
 
 test('entity list arms placement for point entities and supports right click cancellation',()=>{
  const panel=read('components/Panels.tsx');
- const viewport=read('components/Viewport.tsx');
+ const viewport=withSplitParts(read('components/Viewport.tsx'),'Viewport');
  assert.match(panel,/cls\.type==='point'\?startNpc\(/);
  assert.match(viewport,/if\(e\.button===2\)\{e\.preventDefault\(\)/);
  assert.match(viewport,/state\.startNpcPlacement\(null\)/);

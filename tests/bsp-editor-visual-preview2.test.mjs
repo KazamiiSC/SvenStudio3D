@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createRequire} from 'node:module';
-import ts from 'typescript';
+import ts from './support/typescript.cjs';
 const require=createRequire(import.meta.url);
 require.extensions['.ts']=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText,file);
 const {bspResolvedModelPath,bspModelPlacements}=require('../src/engine/bspViewerAssets.ts');
@@ -53,7 +53,7 @@ test('BSP UI exposes dedicated top editor tab, compact menus, model library, and
  const library=fs.readFileSync(new URL('../src/components/BspModelLibrary.tsx',import.meta.url),'utf8');
  assert.match(app,/bsp-editor-global-tab/);assert.match(app,/editingRequested=\{bspEditorActive\}/);
  assert.match(viewer,/bsp-toolbar-compact/);assert.match(viewer,/bsp-toolbar-popover/);assert.match(viewer,/BspModelLibrary/);
- assert.match(viewer,/onPlace=\{brushPaste&&!fly\?pasteBrushAt:placement&&!fly\?placePointAt:undefined\}/); // preserves point placement while enabling brush-target placement
+ assert.match(viewer,/onPlace=\{boxPlacing&&!fly\?[^\n]*:brushPaste&&!fly\?pasteBrushAt:placement&&!fly\?placePointAt:undefined\}/); // v2.6 box placement first // preserves point placement while enabling brush-target placement
  assert.match(viewer,/setPlacement\(\{classname,model,spec\}\)/); // model behavior presets are retained until surface click
  assert.match(viewer,/onClick=\{\(\)=>startPlacement\(newEntityClass\)\}/);
  assert.match(library,/\/api\/assets\/models/);assert.match(library,/ModelPreviewModal/);

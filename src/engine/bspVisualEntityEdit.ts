@@ -2,11 +2,14 @@
  * This layer reuses bspNativeEdit's validated, copy-on-export entity lump writer.
  */
 import type {BspEntity, BspMap} from './bsp';
-import {addNativeEntity,addNativeProperty,nativeClassname,nativeProperty,removeNativeEntity,setNativeValue,type NativeBsp,type NativeEntity} from './bspNativeEdit';
+import {addNativeEntity,addNativeProperty,appendNativeBrushInstance,nativeClassname,nativeProperty,removeNativeEntity,setNativeValue,type NativeBsp,type NativeEntity} from './bspNativeEdit';
+import {bspBrushEntityCenter,bspIsBrushEntity,bspModelCenters} from './bspBrushEntityEdit';
 import type {Vec3} from './types';
 
 export const bspPointEditable=(entity:NativeEntity|undefined,index:number)=>!!entity&&index>0&&
   nativeClassname(entity)!=='worldspawn'&&!entity.pairs.some(p=>p.key==='model'&&/^\*\d+$/.test(p.value));
+/** v2.6: point entities AND compiled brush entities can be moved, duplicated and deleted (not worldspawn). */
+export const bspEntityEditable=(entity:NativeEntity|undefined,index:number)=>!!entity&&index>0&&nativeClassname(entity)!=='worldspawn';
 
 export function bspEditVector(value:string):Vec3{
   const fields=value.trim().split(/\s+/);
@@ -26,7 +29,7 @@ export const bspFormatNumber=(v:number)=>String(Number(v.toFixed(3)));
 export const bspFormatVector=(pos:Vec3)=>pos.map(bspFormatNumber).join(' ');
 
 export function bspSetPointField(doc:NativeBsp,index:number,key:string,value:string,pairIndex?:number):NativeBsp{
-  if(!bspPointEditable(doc.entities[index],index))throw Error('Compiled brush entities and worldspawn cannot be transformed in BSP visual edit mode.');
+  if(!bspEntityEditable(doc.entities[index],index))throw Error('worldspawn cannot be transformed in BSP visual edit mode.');
   if(key==='origin')bspEditVector(value);
   if(key==='model'&&/^\*\d+$/.test(value))throw Error('Cannot assign a compiled brush model reference to a point entity.');
   if(key==='angles'||key==='angle'){
@@ -58,7 +61,8 @@ export function bspPointYaw(entity:NativeEntity):number{
   const yaw=Number(lastPairValue(entity,'angle'));return Number.isFinite(yaw)?yaw:0;
 }
 export function bspDuplicatePoint(doc:NativeBsp,index:number):NativeBsp{
-  const entity=doc.entities[index];if(!bspPointEditable(entity,index))throw Error('Only point entities can be duplicated in BSP visual edit mode.');
+  const entity=doc.entities[index];if(!bspEntityEditable(entity,index))throw Error('worldspawn cannot be duplicated.');
+  if(bspIsBrushEntity(entity)){const o=bspEditVector(lastPairValue(entity,'origin')||'0 0 0');return appendNativeBrushInstance(doc,index,bspFormatVector([o[0]+32,o[1],o[2]]));}
   const start=doc.entities.length;
   const origin=bspEditVector(lastPairValue(entity,'origin')||'0 0 0');
   let next=addNativeEntity(doc,nativeClassname(entity),bspFormatVector([origin[0]+32,origin[1],origin[2]]));
@@ -71,7 +75,7 @@ export function bspDuplicatePoint(doc:NativeBsp,index:number):NativeBsp{
   return next;
 }
 export function bspDeletePoint(doc:NativeBsp,index:number):NativeBsp{
-  if(!bspPointEditable(doc.entities[index],index))throw Error('Only point entities can be removed in BSP visual edit mode.');
+  if(!bspEntityEditable(doc.entities[index],index))throw Error('worldspawn cannot be removed.');
   return removeNativeEntity(doc,index);
 }
 /** Original BSP geometry stays in place. This only substitutes entities for fast live preview. */
@@ -86,5 +90,8 @@ export function bspPreviewEntities(doc:NativeBsp):BspEntity[]{
 }
 export function bspPreviewMap(map:BspMap,doc:NativeBsp):BspMap{
   const entities=bspPreviewEntities(doc);
+  // Brush entities get a display position (model centre + origin) so they can be picked and moved.
+  const centers=bspModelCenters(map.faces);
+  doc.entities.forEach((e,i)=>{if(bspIsBrushEntity(e)){const c=bspBrushEntityCenter(e,centers);if(c)entities[i]={...entities[i],origin:c};}});
   return {...map,entities,stats:{...map.stats,entities:entities.length}};
 }

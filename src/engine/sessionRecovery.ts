@@ -28,7 +28,7 @@ export type RecoverySnapshot={
 function validSnapshot(input:unknown):input is RecoverySnapshot{
   if(!input||typeof input!=='object')return false;
   const s=input as Partial<RecoverySnapshot>;
-  return s.version===1&&Number.isFinite(s.savedAt)&&!!s.project&&s.project.version===1&&s.project.target==='svengine'&&
+  return s.version===1&&Number.isFinite(s.savedAt)&&!!s.project&&s.project.version===1&&(s.project.target==='svengine'||s.project.target==='cs16')&&
     typeof s.project.name==='string'&&Array.isArray(s.project.objects)&&s.project.objects.length<=100000&&
     !!s.project.world&&typeof s.project.world==='object'&&!!s.view&&Array.isArray(s.view.selectedIds);
 }

@@ -1,10 +1,11 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
-const ts=require('typescript');
+const ts=require('./support/typescript.cjs');
 require.extensions['.ts']=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,file);
 const {useEditor,demoProject}=require('../src/store.ts');
-const source=fs.readFileSync(require.resolve('../src/components/Viewport.tsx'),'utf8');
+const {withSplitParts}=require('./support/splitParts.cjs');
+const source=withSplitParts(fs.readFileSync(require.resolve('../src/components/Viewport.tsx'),'utf8'),'Viewport');
 const ui=fs.readFileSync(require.resolve('../src/components/UniversalPlacementPanel.tsx'),'utf8');
 const css=fs.readFileSync(require.resolve('../src/style.css'),'utf8');
 test('all placement modes can be atomically cancelled without touching geometry or history',()=>{
